@@ -1,0 +1,19 @@
+{
+  "name": "osa-transaction-guide-portal",
+  "private": true,
+  "description": "Static OSA portal - optional minify step for production assets",
+  "scripts": {
+    "minify": "node scripts/minify-assets.mjs",
+    "api:start": "node server/index.js",
+    "db:setup": "node server/run-sql.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^5.1.0",
+    "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  }
+}

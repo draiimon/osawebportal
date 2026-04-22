@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>OSA Transaction Guide Portal · Home</title>
+    <link rel="canonical" href="/">
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+            background:
+                radial-gradient(circle at 20% 20%, rgba(132, 26, 45, 0.14), transparent 52%),
+                radial-gradient(circle at 80% 0%, rgba(199, 154, 73, 0.16), transparent 48%),
+                rgba(255, 253, 249, 0.72);
+            display: grid;
+            place-items: center;
+        }
+
+        .osa-loader {
+            width: min(88vw, 380px);
+            display: grid;
+            grid-template-columns: 32px 1fr;
+            grid-template-areas:
+                "spinner content"
+                "bar bar";
+            gap: 8px 12px;
+            align-items: center;
+            padding: 14px 14px 12px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(132, 26, 45, 0.14);
+            border-left: 4px solid #c79a49;
+            box-shadow: 0 14px 32px rgba(50, 25, 14, 0.14);
+        }
+
+        .osa-loader__spinner {
+            grid-area: spinner;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            border: 3px solid rgba(132, 26, 45, 0.16);
+            border-top-color: #841a2d;
+            border-right-color: #c79a49;
+            animation: osaLoaderSpin 0.8s linear infinite;
+        }
+
+        .osa-loader__content {
+            grid-area: content;
+            display: grid;
+            gap: 2px;
+            line-height: 1.25;
+        }
+
+        .osa-loader__content strong {
+            color: #2c1a15;
+            font-size: 0.94rem;
+        }
+
+        .osa-loader__content span {
+            color: #66534a;
+            font-size: 0.78rem;
+        }
+
+        .osa-loader__bar {
+            grid-area: bar;
+            position: relative;
+            height: 4px;
+            overflow: hidden;
+            background: rgba(132, 26, 45, 0.12);
+        }
+
+        .osa-loader__bar span {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            width: 34%;
+            background: linear-gradient(90deg, #841a2d 0%, #c79a49 55%, #ffe0a8 100%);
+            box-shadow: 0 0 8px rgba(199, 154, 73, 0.5);
+            animation: osaLoaderBarSlide 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+
+        @keyframes osaLoaderSpin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes osaLoaderBarSlide {
+            0% {
+                transform: translateX(-100%);
+            }
+
+            100% {
+                transform: translateX(350%);
+            }
+        }
+    </style>
+    <script>
+        (function () {
+            fetch("./preview.html", { cache: "no-store" })
+                .then(function (response) {
+                    if (!response.ok) throw new Error("Failed to load home page.");
+                    return response.text();
+                })
+                .then(function (html) {
+                    document.open();
+                    document.write(html);
+                    document.close();
+                    if (window.location.pathname !== "/") {
+                        window.history.replaceState({}, "", "/" + window.location.search + window.location.hash);
+                    }
+                })
+                .catch(function () {
+                    document.body.innerHTML =
+                        'Unable to load Home page. <a href="/preview.html">Open Home</a>.';
+                });
+        })();
+    </script>
+</head>
+<body>
+    <div class="osa-loader" role="status" aria-live="polite" aria-label="Loading content">
+        <div class="osa-loader__spinner" aria-hidden="true"></div>
+        <div class="osa-loader__content">
+            <strong>Loading OSA Portal</strong>
+            <span>Please wait while content is prepared...</span>
+        </div>
+        <div class="osa-loader__bar"><span></span></div>
+    </div>
+    <noscript>
+        JavaScript is required to open the portal. <a href="/preview.html">Open Home</a>.
+    </noscript>
+</body>
+</html>

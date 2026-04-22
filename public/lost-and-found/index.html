@@ -1,0 +1,1915 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light">
+    <title>Lost &amp; Found · OSA Transaction Guide Portal</title>
+    <link rel="icon" type="image/png" href="/assets/images/eac-emblem.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/css/osa-design.css?v=40">
+    <link rel="stylesheet" href="/css/osa-ai.css?v=39">
+    <script src="/assets/js/portal-shell.js?v=42" defer></script>
+    <script src="/assets/js/osa-chat-loader.js?v=37" defer></script>
+    <script src="/assets/js/osa-api-client.js?v=2" defer></script>
+
+    <style>
+        /* ── Design tokens matching main page ── */
+        :root {
+            --brand: #841a2d;
+            --brand-deep: #5c0f1d;
+            --gold: #c79a49;
+            --gold-deep: #a07830;
+            --ink: #1c1917;
+            --muted: #675a4f;
+            --paper: #fffdf9;
+            --line: rgba(90, 62, 40, 0.12);
+            --shadow: 0 4px 18px rgba(54, 29, 16, 0.08);
+            --font-body: 'Plus Jakarta Sans', -apple-system, sans-serif;
+            --font-serif: Georgia, 'Times New Roman', serif;
+            --lf-edge: clamp(8px, 1.4vw, 18px);
+            --lf-edge-mobile: 10px;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: linear-gradient(180deg, rgba(255, 252, 248, 0.98), rgba(251, 246, 238, 0.96));
+            color: var(--ink);
+            font-family: var(--font-body);
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        img {
+            display: block;
+            max-width: 100%;
+        }
+
+        /* ── Page shell ── */
+        .page {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .page-main {
+            flex: 1;
+            padding: 0;
+        }
+
+        /* ── Hero / section header ── */
+        .lf-hero {
+            position: relative;
+            overflow: hidden;
+            isolation: isolate;
+            background: linear-gradient(180deg, rgba(255, 252, 248, 0.96), rgba(251, 246, 238, 0.94));
+            border-bottom: 1px solid rgba(90, 62, 40, 0.08);
+            margin-top: calc(var(--nav-h) * -1);
+            padding: var(--nav-h) var(--lf-edge) 16px;
+        }
+
+        .lf-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            z-index: -2;
+            background:
+                linear-gradient(120deg, rgba(132, 26, 45, 0.08), transparent 52%),
+                url("/assets/images/eac-photo.png") center/cover no-repeat;
+            opacity: 0.28;
+            pointer-events: none;
+        }
+
+        .lf-hero::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            z-index: -1;
+            background:
+                radial-gradient(circle at top right, rgba(199, 154, 73, 0.14), transparent 30%),
+                linear-gradient(180deg, rgba(255, 255, 255, 0.74), rgba(250, 244, 236, 0.9));
+            pointer-events: none;
+        }
+
+        .lf-hero-inner {
+            position: relative;
+            width: 100%;
+            margin: 0 auto;
+            display: block;
+        }
+
+        .lf-hero-copy {
+            position: relative;
+            overflow: hidden;
+            padding: 16px 0 12px;
+            max-width: 860px;
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+        }
+
+        .lf-hero-copy::before {
+            display: none;
+        }
+
+        .lf-hero-copy > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .lf-eyebrow {
+            display: inline-block;
+            margin-bottom: 14px;
+            font-size: 0.92rem;
+            font-weight: 900;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: var(--brand);
+        }
+
+        .lf-hero h1 {
+            font-family: var(--font-serif);
+            font-size: clamp(1.85rem, 3vw, 2.45rem);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+            margin-bottom: 10px;
+            color: var(--ink);
+        }
+
+        .lf-hero p {
+            font-size: 0.92rem;
+            color: #5b4d44;
+            line-height: 1.58;
+            max-width: 62ch;
+        }
+
+        .lf-hero p strong {
+            color: var(--ink);
+            font-weight: 700;
+        }
+
+        .lf-hero-actions {
+            margin-top: 18px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn-claim {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 40px;
+            padding: 0 16px;
+            background: var(--gold);
+            color: #2f1908;
+            font-size: 0.8rem;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+            border: none;
+            border-radius: 0 !important;
+            cursor: pointer;
+            font-family: var(--font-body);
+            box-shadow: 0 14px 30px rgba(199, 154, 73, 0.3);
+            transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .btn-claim:hover {
+            background: #d3a752;
+            transform: translateY(-2px);
+            box-shadow: 0 18px 34px rgba(199, 154, 73, 0.38);
+        }
+
+        .btn-announcements {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 40px;
+            padding: 0 16px;
+            background: rgba(255, 253, 249, 0.92);
+            color: var(--brand);
+            font-size: 0.8rem;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+            border: 1px solid rgba(132, 26, 45, 0.16);
+            border-radius: 0 !important;
+            cursor: pointer;
+            font-family: var(--font-body);
+            transition: transform 180ms ease, border-color 180ms ease, background 180ms ease, color 180ms ease;
+            white-space: nowrap;
+            flex-shrink: 0;
+            text-decoration: none;
+            animation: heroContentIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.12s both;
+        }
+
+        .btn-announcements:hover {
+            background: rgba(132, 26, 45, 0.08);
+            border-color: rgba(132, 26, 45, 0.28);
+            color: var(--brand-deep);
+            transform: translateY(-2px);
+        }
+
+        /* ── Toolbar ── */
+        .lf-toolbar {
+            width: 100%;
+            margin: 0 auto;
+            padding: 18px var(--lf-edge) 0;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
+            justify-content: space-between;
+        }
+
+        .lf-filters {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .lf-chip {
+            padding: 7px 18px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            font-family: var(--font-body);
+            border: 1px solid var(--line);
+            background: rgba(255, 253, 249, 0.9);
+            color: var(--muted);
+            border-radius: 0 !important;
+            cursor: pointer;
+            transition: all 0.18s;
+            letter-spacing: 0.01em;
+        }
+
+        .lf-chip:hover {
+            border-color: rgba(132, 26, 45, 0.28);
+            color: var(--brand);
+            background: rgba(132, 26, 45, 0.05);
+        }
+
+        .lf-chip.active {
+            background: var(--brand);
+            border-color: transparent;
+            color: #fff;
+            box-shadow: 0 6px 18px rgba(132, 26, 45, 0.28);
+        }
+
+        .lf-search-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 253, 249, 0.95);
+            border: 1px solid var(--line);
+            border-radius: 0 !important;
+            padding: 8px 16px;
+            transition: border-color 0.18s, box-shadow 0.18s;
+            flex: 0 1 260px;
+            min-width: 220px;
+        }
+
+        .lf-search-wrap:focus-within {
+            border-color: rgba(132, 26, 45, 0.28);
+            box-shadow: 0 0 0 3px rgba(132, 26, 45, 0.08);
+        }
+
+        .lf-search-wrap svg {
+            color: var(--muted);
+            flex-shrink: 0;
+        }
+
+        .lf-search-wrap input {
+            background: none;
+            border: none;
+            outline: none;
+            color: var(--ink);
+            font-size: 0.88rem;
+            font-family: var(--font-body);
+            width: 100%;
+            min-width: 0;
+        }
+
+        .lf-search-wrap input::placeholder {
+            color: var(--muted);
+        }
+
+        /* ── Section ── */
+        .lf-section {
+            width: 100%;
+            margin: 0 auto;
+            padding: 20px var(--lf-edge) 80px;
+        }
+
+        .lf-meta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .lf-count {
+            font-size: 0.82rem;
+            color: var(--muted);
+            font-weight: 500;
+        }
+
+        .lf-count strong {
+            color: var(--ink);
+        }
+
+        /* ── Grid ── */
+        .lf-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 20px;
+        }
+
+        @media (max-width:1200px) {
+            .lf-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width:860px) {
+            .lf-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width:520px) {
+            .lf-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ── Card ── */
+        .lf-card {
+            background: linear-gradient(180deg, #fffdf9, #faf5ed);
+            border: 1px solid var(--line);
+            border-top: 3px solid var(--brand);
+            border-radius: 0 !important;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(54, 29, 16, 0.05);
+            transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 220ms ease, border-color 220ms ease,
+                border-top-color 220ms ease;
+            animation: cardUp 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+
+        .lf-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 22px 48px rgba(54, 29, 16, 0.15);
+            border-color: rgba(132, 26, 45, 0.22);
+            border-top-color: var(--gold);
+        }
+
+        @keyframes cardUp {
+            from {
+                opacity: 0;
+                transform: translateY(14px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes heroContentIn {
+            from {
+                opacity: 0;
+                transform: translateY(18px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes heroPanelIn {
+            from {
+                opacity: 0;
+                transform: translateY(14px) scale(0.985);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .lf-card-top {
+            position: absolute;
+            inset: auto 16px 16px 16px;
+            bottom: 16px;
+            z-index: 2;
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+            padding: 0;
+            border: none;
+        }
+
+        .lf-card-org-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--brand);
+            border-radius: 999px !important;
+            margin-bottom: 6px;
+            box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.14);
+            flex-shrink: 0;
+        }
+
+        .lf-card-top-main {
+            min-width: 0;
+            flex: 1;
+            display: grid;
+            gap: 5px;
+        }
+
+        .lf-card-ref {
+            font-size: 0.66rem;
+            font-weight: 700;
+            color: rgba(255, 241, 224, 0.9);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .lf-card-date {
+            font-size: 0.74rem;
+            color: rgba(255, 239, 220, 0.78);
+        }
+
+        .lf-card-media-shell {
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* card image */
+        .lf-card-img {
+            position: relative;
+            overflow: hidden;
+            background: rgba(132, 26, 45, 0.06);
+            min-height: 290px;
+        }
+
+        .lf-card-img img {
+            width: 100%;
+            height: 290px;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.36s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .lf-card:hover .lf-card-img img {
+            transform: scale(1.07);
+        }
+
+        .lf-card-img-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.7fr) minmax(88px, 0.9fr);
+            gap: 2px;
+            background: rgba(132, 26, 45, 0.06);
+            height: 290px;
+        }
+
+        .lf-card-img-grid.is-double {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .lf-card-img-grid.is-double .lf-card-img-grid-cell {
+            grid-row: 1 / span 2;
+        }
+
+        .lf-card-img-grid-cell {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .lf-card-img-grid-cell.is-featured {
+            grid-row: 1 / span 2;
+        }
+
+        .lf-card-img-grid-cell.is-stack:only-child {
+            grid-row: 1 / span 2;
+        }
+
+        .lf-card-img-grid.is-triple .lf-card-img-grid-cell.is-featured {
+            grid-row: 1 / span 2;
+        }
+
+        .lf-card-img-grid.is-triple .lf-card-img-grid-cell.is-stack:last-child {
+            grid-column: 2;
+            grid-row: 2;
+        }
+
+        .lf-card-img-grid-cell img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+
+        .lf-card:hover .lf-card-img-grid-cell img {
+            transform: scale(1.05);
+        }
+
+        .lf-media-fade {
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(180deg, rgba(10, 8, 8, 0.02) 0%, rgba(10, 8, 8, 0.08) 38%, rgba(18, 12, 10, 0.84) 100%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .lf-more-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(28, 25, 23, 0.52);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 800;
+            backdrop-filter: blur(2px);
+        }
+
+        .lf-img-overlays {
+            position: absolute;
+            top: auto;
+            bottom: 16px;
+            right: 14px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-end;
+            gap: 6px;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .lf-tag {
+            font-size: 0.63rem;
+            font-weight: 800;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            padding: 6px 11px;
+            border-radius: 999px !important;
+            background: rgba(255, 250, 244, 0.88);
+            border: 1px solid rgba(255, 250, 244, 0.5);
+            color: var(--brand);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        /* card body */
+        .lf-card-body {
+            padding: 12px 14px 8px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .lf-card-title {
+            font-family: var(--font-serif);
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--ink);
+            line-height: 1.25;
+        }
+
+        .lf-card-caption {
+            font-size: 0.81rem;
+            color: var(--muted);
+            line-height: 1.55;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* card footer */
+        .lf-card-foot {
+            padding: 10px 14px 13px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            flex-wrap: wrap;
+            border-top: 1px solid var(--line);
+        }
+
+        .lf-view-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: var(--brand);
+            background: rgba(132, 26, 45, 0.07);
+            border: 1px solid rgba(132, 26, 45, 0.14);
+            border-radius: 8px;
+            padding: 5px 13px;
+            cursor: pointer;
+            font-family: var(--font-body);
+            transition: all 0.18s;
+        }
+
+        .lf-view-btn:hover {
+            background: rgba(132, 26, 45, 0.13);
+            border-color: rgba(132, 26, 45, 0.28);
+            transform: translateY(-1px);
+        }
+
+        .lf-share-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--muted);
+            background: none;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 5px 13px;
+            cursor: pointer;
+            font-family: var(--font-body);
+            transition: all 0.18s;
+        }
+
+        .lf-share-btn:hover {
+            color: var(--ink);
+            border-color: rgba(90, 62, 40, 0.22);
+        }
+
+        /* ── Empty state ── */
+        .lf-empty {
+            grid-column: 1/-1;
+            text-align: center;
+            padding: 72px 20px;
+            border: 1.5px dashed rgba(90, 62, 40, 0.18);
+            border-radius: 16px;
+            background: rgba(255, 253, 249, 0.5);
+        }
+
+        .lf-empty-icon {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+            opacity: 0.45;
+        }
+
+        .lf-empty p {
+            font-size: 0.9rem;
+            color: var(--muted);
+        }
+
+        /* ══════════════════════════════════════════
+       iOS-STYLE LIGHTBOX — redesigned
+    ══════════════════════════════════════════ */
+        #lf-lightbox {
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            pointer-events: none;
+            background: rgba(14, 10, 8, 0.0);
+            transition: opacity 0.28s ease, background 0.28s ease;
+        }
+
+        #lf-lightbox.open {
+            opacity: 1;
+            pointer-events: all;
+            background: rgba(14, 10, 8, 0.96);
+        }
+
+        /* Top chrome */
+        .lb-chrome {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 22px 14px;
+            background: linear-gradient(180deg, rgba(14, 10, 8, 0.88) 0%, transparent 100%);
+            flex-shrink: 0;
+        }
+
+        .lb-info {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .lb-counter {
+            font-size: 0.68rem;
+            font-weight: 800;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--gold);
+        }
+
+        .lb-item-name {
+            font-family: var(--font-serif);
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1.2;
+        }
+
+        .lb-ref {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.45);
+            margin-top: 1px;
+        }
+
+        .lb-close {
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
+            min-height: 40px;
+            aspect-ratio: 1 / 1;
+            border-radius: 999px !important;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.18s, transform 0.22s, border-color 0.18s;
+            flex-shrink: 0;
+            flex: 0 0 40px;
+            font-family: var(--font-body);
+            padding: 0;
+            line-height: 1;
+        }
+
+        .lb-close:hover {
+            background: rgba(255, 255, 255, 0.18);
+            border-color: rgba(255, 255, 255, 0.22);
+            transform: scale(1.04);
+        }
+
+        .lb-close svg {
+            width: 16px;
+            height: 16px;
+            stroke: currentColor;
+            stroke-width: 2.2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+        }
+
+        /* Image stage */
+        .lb-stage {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            padding: 0 max(18px, 3vw);
+        }
+
+        .lb-img-wrap {
+            position: relative;
+            max-width: 100%;
+            max-height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lb-img-wrap img {
+            max-width: min(94vw, 1320px);
+            max-height: 58vh;
+            object-fit: contain;
+            border-radius: 12px;
+            box-shadow: 0 24px 72px rgba(0, 0, 0, 0.7);
+            transition: opacity 0.22s ease, transform 0.22s ease;
+        }
+
+        .lb-img-wrap img.transitioning {
+            opacity: 0;
+            transform: scale(0.96);
+        }
+
+        /* Nav arrows */
+        .lb-nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 44px;
+            height: 44px;
+            border-radius: 999px !important;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.18s, border-color 0.18s, transform 0.18s;
+            z-index: 2;
+            font-family: var(--font-body);
+            padding: 0;
+        }
+
+        .lb-nav-btn:hover {
+            background: rgba(255, 255, 255, 0.18);
+            border-color: rgba(255, 255, 255, 0.24);
+        }
+
+        .lb-nav-btn:disabled {
+            opacity: 0.18;
+            cursor: default;
+        }
+
+        .lb-nav-btn svg {
+            width: 18px;
+            height: 18px;
+            stroke: currentColor;
+            stroke-width: 2.2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+        }
+
+        .lb-nav-prev {
+            left: 12px;
+        }
+
+        .lb-nav-next {
+            right: 12px;
+        }
+
+        /* Thumbnail strip */
+        .lb-strip {
+            display: flex;
+            gap: 7px;
+            justify-content: center;
+            align-items: center;
+            padding: 10px 20px 4px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            flex-shrink: 0;
+        }
+
+        .lb-strip::-webkit-scrollbar {
+            display: none;
+        }
+
+        .lb-thumb {
+            width: 52px;
+            height: 52px;
+            border-radius: 8px;
+            object-fit: cover;
+            flex-shrink: 0;
+            border: 2.5px solid transparent;
+            opacity: 0.5;
+            cursor: pointer;
+            transition: opacity 0.18s, border-color 0.18s;
+        }
+
+        .lb-thumb.active {
+            border-color: var(--gold);
+            opacity: 1;
+        }
+
+        .lb-thumb:hover {
+            opacity: 0.82;
+        }
+
+        /* ── Details card — redesigned ── */
+        .lb-details {
+            width: 100%;
+            padding: 12px max(14px, 2vw) 20px;
+            flex-shrink: 0;
+        }
+
+        .lb-details-card {
+            max-width: 1120px;
+            margin: 0 auto;
+            background: rgba(255, 253, 249, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid var(--brand);
+            border-radius: 0 !important;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            overflow: hidden;
+        }
+
+        /* top strip: item ref + status badges */
+        .lb-card-top {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            padding: 11px 16px 9px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .lb-card-num {
+            font-size: 0.67rem;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--gold);
+            background: rgba(199, 154, 73, 0.12);
+            border: 1px solid rgba(199, 154, 73, 0.22);
+            border-radius: 10px !important;
+            padding: 3px 10px;
+        }
+
+        .lb-card-tag {
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            padding: 3px 10px;
+            border-radius: 10px !important;
+            background: rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.65);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .lb-photo-count {
+            margin-left: auto;
+            font-size: 0.65rem;
+            color: rgba(255, 255, 255, 0.35);
+            font-weight: 600;
+            letter-spacing: 0.04em;
+        }
+
+        /* body: description left, meta right */
+        .lb-card-body {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(180px, 260px);
+            gap: 18px;
+            padding: 13px 16px 12px;
+            align-items: start;
+        }
+
+        @media (max-width: 600px) {
+            .lf-hero-inner {
+                align-items: flex-start;
+            }
+
+            .lf-hero-copy {
+                flex-basis: 100%;
+            }
+
+            .btn-claim {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .btn-announcements {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .lb-card-body {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .lb-desc-block {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .lb-desc-label {
+            font-size: 0.6rem;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: rgba(199, 154, 73, 0.8);
+        }
+
+        .lb-caption {
+            font-size: 0.87rem;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.65;
+        }
+
+        .lb-meta-block {
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+            min-width: 150px;
+            flex-shrink: 0;
+        }
+
+        .lb-meta-item {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .lb-meta-label {
+            font-size: 0.58rem;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .lb-meta-value {
+            font-size: 0.79rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* footer: CTA only */
+        .lb-card-foot {
+            padding: 9px 16px 13px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.07);
+            flex-wrap: wrap;
+        }
+
+        .lb-cta {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            min-height: 36px;
+            padding: 0 18px;
+            border-radius: 9px;
+            background: var(--gold);
+            color: #2f1908;
+            font-size: 0.8rem;
+            font-weight: 800;
+            border: none;
+            cursor: pointer;
+            font-family: var(--font-body);
+            transition: background 0.18s, transform 0.18s;
+            letter-spacing: 0.02em;
+            white-space: nowrap;
+        }
+
+        .lb-cta:hover {
+            background: #d3a752;
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 800px) {
+            #lf-lightbox {
+                display: block;
+                overflow-y: auto;
+            }
+
+            .lf-hero,
+            .lf-toolbar,
+            .lf-section {
+                padding-left: var(--lf-edge-mobile);
+                padding-right: var(--lf-edge-mobile);
+            }
+
+            .lf-toolbar {
+                gap: 10px;
+            }
+
+            .lf-filters {
+                width: 100%;
+            }
+
+            .lf-search-wrap {
+                width: 100%;
+                min-width: 0;
+                flex: 1 1 100%;
+            }
+
+            .lf-grid {
+                gap: 14px;
+            }
+
+            .lf-card-img {
+                min-height: 300px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: #f4ede6;
+            }
+
+            .lf-card-img img {
+                height: 300px;
+                object-fit: contain;
+                object-position: center;
+                background: #f4ede6;
+            }
+
+            .lf-card-img-grid {
+                height: 300px;
+            }
+
+            .lf-card-img-grid-cell {
+                background: #f4ede6;
+            }
+
+            .lf-card-img-grid-cell img {
+                height: 100%;
+                object-position: center;
+            }
+
+            .lf-view-btn,
+            .lf-share-btn {
+                flex: 1 1 calc(50% - 4px);
+                justify-content: center;
+            }
+
+            .lb-chrome {
+                position: sticky;
+                top: 0;
+                background: rgba(14, 10, 8, 0.95);
+                backdrop-filter: blur(10px);
+                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            }
+
+            .lb-stage {
+                min-height: 50vh;
+                padding: 16px 8px;
+            }
+
+            .lb-img-wrap {
+                width: 100%;
+                height: 100%;
+            }
+
+            .lb-img-wrap img {
+                max-width: 96vw;
+                max-height: 48vh;
+            }
+
+            .lb-details {
+                padding: 10px 10px 40px;
+            }
+
+            .lb-nav-btn {
+                width: 36px;
+                height: 36px;
+            }
+
+            .lb-close {
+                width: 36px;
+                height: 36px;
+                min-width: 36px;
+                min-height: 36px;
+                flex-basis: 36px;
+            }
+
+            .lb-nav-prev {
+                left: 4px;
+            }
+
+            .lb-nav-next {
+                right: 4px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .lf-hero {
+                padding-top: var(--nav-h);
+                padding-bottom: 12px;
+            }
+
+            .lf-hero-copy {
+                padding: 12px 0 10px;
+            }
+
+            .lf-hero h1 {
+                font-size: clamp(1.55rem, 7vw, 2rem);
+                margin-bottom: 8px;
+            }
+
+            .lf-hero p {
+                font-size: 0.86rem;
+            }
+
+            .lf-eyebrow {
+                font-size: 0.82rem;
+                letter-spacing: 0.18em;
+            }
+
+            .lf-card-img {
+                min-height: 280px;
+            }
+
+            .lf-card-img img {
+                height: 280px;
+            }
+
+            .lf-card-img-grid {
+                height: 280px;
+            }
+
+            .lf-card-top {
+                inset: auto 12px 12px 12px;
+                bottom: 12px;
+            }
+
+            .lf-img-overlays {
+                bottom: 12px;
+                right: 12px;
+            }
+
+            .lf-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .lf-card {
+                border-radius: 0 !important;
+            }
+
+            .lf-card-top {
+                padding: 10px 12px 8px;
+            }
+
+            .lf-card-body {
+                padding: 10px 12px 8px;
+            }
+
+            .lf-card-foot {
+                padding: 10px 12px 12px;
+            }
+
+            .lb-card-body {
+                grid-template-columns: 1fr;
+            }
+
+            .lb-card-foot {
+                align-items: stretch;
+            }
+
+            .lb-cta {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+
+            .lf-hero-intro .lf-eyebrow,
+            .lf-hero-intro h1,
+            .lf-hero-intro > p,
+            .lf-hero-actions,
+            .btn-announcements {
+                animation: none !important;
+            }
+        }
+
+        /* FAB stays visible (with chat icon in widget); lightbox CTA remains text-only */
+    </style>
+</head>
+
+<body class="page-lost-found">
+    <div class="page">
+        <div data-portal-shell data-active="lost-found"></div>
+
+        <main class="page-main">
+
+            <!-- ── Hero ── -->
+            <section class="lf-hero">
+                <div class="lf-hero-inner">
+                    <div class="lf-hero-copy">
+                        <div class="lf-hero-intro" style="animation: heroContentIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;">
+                            <div class="lf-eyebrow">Lost &amp; Found</div>
+                            <h1>Lost Items Board</h1>
+                            <p>Browse items recovered by OSA. Note the <strong>Item Number</strong> (e.g., LF-1001)
+                                then tap <strong>Start Claim via Ask OSA</strong> to begin OTP verification.</p>
+                        </div>
+                        <div class="lf-hero-actions" style="animation: heroPanelIn 0.85s cubic-bezier(0.2, 0.8, 0.2, 1) 0.15s both;">
+                            <a href="/announcements/" class="btn-announcements">
+                                Open Announcements
+                            </a>
+                            <button type="button" data-chat-open class="btn-claim" aria-controls="osa-chat-widget"
+                                style="animation: heroContentIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.15s both;"
+                                aria-expanded="false">
+                                Start Claim via Ask OSA
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ── Toolbar ── -->
+            <div class="lf-toolbar" data-animate="reveal">
+                <div class="lf-filters" id="lf-filters">
+                    <button class="lf-chip active" data-filter="all">All Items</button>
+                    <button class="lf-chip" data-filter="wallet">Wallet</button>
+                    <button class="lf-chip" data-filter="bag">Bag</button>
+                    <button class="lf-chip" data-filter="electronics">Electronics</button>
+                    <button class="lf-chip" data-filter="personal item">Personal Item</button>
+                </div>
+                <div class="lf-search-wrap">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8" />
+                        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                    </svg>
+                    <input type="search" id="lf-search" placeholder="Search items…" autocomplete="off">
+                </div>
+            </div>
+
+            <!-- ── Grid ── -->
+            <section class="lf-section" data-animate="reveal">
+                <div class="lf-meta">
+                    <p class="lf-count" id="lf-count"></p>
+                </div>
+                <div class="lf-grid" id="lf-grid"></div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- ══════════════════════════════════════
+     iOS-Style Lightbox
+══════════════════════════════════════ -->
+    <div id="lf-lightbox" role="dialog" aria-modal="true" aria-label="Item viewer">
+
+        <!-- Top chrome -->
+        <div class="lb-chrome">
+            <div class="lb-info">
+                <div class="lb-counter" id="lb-counter">1 / 1</div>
+                <div class="lb-item-name" id="lb-item-name"></div>
+                <div class="lb-ref" id="lb-ref"></div>
+            </div>
+            <button class="lb-close" id="lb-close" aria-label="Close viewer">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M18 6 6 18" />
+                    <path d="M6 6 18 18" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Image stage -->
+        <div class="lb-stage">
+            <button class="lb-nav-btn lb-nav-prev" id="lb-prev" aria-label="Previous image">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M15 18 9 12l6-6" />
+                </svg>
+            </button>
+            <div class="lb-img-wrap" id="lb-img-wrap">
+                <div id="lb-zoom-inner"
+                    style="display:flex; align-items:center; justify-content:center; width:100%; height:100%;">
+                    <img id="lb-img" src="" alt="">
+                </div>
+            </div>
+            <button class="lb-nav-btn lb-nav-next" id="lb-next" aria-label="Next image">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="m9 6 6 6-6 6" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Thumbnail strip -->
+        <div class="lb-strip" id="lb-strip"></div>
+
+        <!-- Details card -->
+        <div class="lb-details">
+            <div class="lb-details-card">
+                <!-- badges row -->
+                <div class="lb-card-top" id="lb-card-top"></div>
+                <!-- description + meta -->
+                <div class="lb-card-body">
+                    <div class="lb-desc-block">
+                        <div class="lb-desc-label">Description</div>
+                        <p class="lb-caption" id="lb-caption"></p>
+                    </div>
+                    <div class="lb-meta-block" id="lb-meta-block"></div>
+                </div>
+                <!-- CTA footer -->
+                <div class="lb-card-foot">
+                    <button class="lb-cta" data-chat-open type="button" onclick="closeLightbox()">
+                        Claim via Ask OSA
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ════════════════════════════════════════
+           DATA
+        ════════════════════════════════════════ */
+        var ITEMS = [
+            {
+                itemNumber: "LF-1001", date: "April 18, 2025", status: "Unclaimed",
+                title: "Black Leather Wallet", tag: "Wallet",
+                caption: "Recovered near the student lounge on the ground floor. No name or ID found inside. Contains some cards and a small amount of cash.",
+                images: ["https://images.unsplash.com/photo-1627123424574-724758594e93?w=700&q=80"]
+            },
+            {
+                itemNumber: "LF-1002", date: "April 19, 2025", status: "Unclaimed",
+                title: "Black Backpack", tag: "Bag",
+                caption: "Found inside the library, second floor near the reference section. No name tag attached. Contains notebooks and a pencil case.",
+                images: [
+                    "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=700&q=80",
+                    "https://images.unsplash.com/photo-1622560480654-d96214fdc887?w=700&q=80"
+                ]
+            },
+            {
+                itemNumber: "LF-1003", date: "April 20, 2025", status: "Unclaimed",
+                title: "iPhone 13 — Space Gray", tag: "Electronics",
+                caption: "Left in Room 301 after afternoon class. Screen has a small crack on the upper right corner. Bring valid school ID to claim.",
+                images: [
+                    "https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?w=700&q=80",
+                    "https://images.unsplash.com/photo-1605236453806-6ff36851218e?w=700&q=80",
+                    "https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=700&q=80"
+                ]
+            },
+            {
+                itemNumber: "LF-1004", date: "April 21, 2025", status: "Claimed",
+                title: "Stainless Steel Tumbler", tag: "Personal Item",
+                caption: "Found at the canteen area near Table 7. Dark gray with a school logo sticker. Bring receipt or proof of purchase to claim.",
+                images: ["https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=700&q=80"]
+            },
+            {
+                itemNumber: "LF-1005", date: "April 22, 2025", status: "Unclaimed",
+                title: "Blue Water Bottle", tag: "Personal Item",
+                caption: "Recovered at the gymnasium after PE class. No markings found on the item. Blue with a white cap and a small dent on the side.",
+                images: ["https://images.unsplash.com/photo-1559839914-17aae19cec71?w=700&q=80"]
+            },
+            {
+                itemNumber: "LF-1006", date: "April 22, 2025", status: "Unclaimed",
+                title: "Eyeglasses — Brown Case", tag: "Personal Item",
+                caption: "Left at the registrar's waiting area. Brown hard case with prescription lenses inside. No brand markings visible.",
+                images: ["https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=700&q=80"]
+            }
+        ];
+
+        // Merge any admin-saved items from localStorage
+        try {
+            var saved = JSON.parse(localStorage.getItem('osaLostFound') || '[]');
+            if (Array.isArray(saved) && saved.length) {
+                ITEMS = saved.map(function (s) {
+                    return {
+                        itemNumber: s.itemNumber || s.refNo || 'LF-???',
+                        date: s.date || s.postedAt || '',
+                        time: s.time || '',
+                        status: s.status || 'Unclaimed',
+                        title: s.title || s.itemName || 'Recovered Item',
+                        tag: s.tag || 'Personal Item',
+                        caption: s.caption || s.details || '',
+                        images: s.images || (s.imageUrl ? [s.imageUrl] : [])
+                    };
+                }).concat(ITEMS);
+            }
+        } catch (e) { }
+
+        function hydrateLostFoundFromApi() {
+            if (!window.OSAApiClient || typeof window.OSAApiClient.loadLostFoundItems !== 'function') {
+                return Promise.resolve();
+            }
+            return window.OSAApiClient.loadLostFoundItems()
+                .then(function (apiItems) {
+                    if (!Array.isArray(apiItems) || !apiItems.length) return;
+                    ITEMS = apiItems.map(function (s) {
+                        return {
+                            itemNumber: s.itemNumber || s.refNo || 'LF-???',
+                            date: s.date || s.postedAt || '',
+                            time: s.time || '',
+                            status: s.status || 'Unclaimed',
+                            title: s.title || s.itemName || 'Recovered Item',
+                            tag: s.tag || 'Personal Item',
+                            caption: s.caption || s.details || '',
+                            images: s.images || (s.imageUrl ? [s.imageUrl] : [])
+                        };
+                    });
+                })
+                .catch(function () {
+                    // Fallback to localStorage/default seed when API is unavailable.
+                });
+        }
+
+        /* ════════════════════════════════════════
+           STATE
+        ════════════════════════════════════════ */
+        var currentFilter = 'all';
+        var currentSearch = '';
+
+        function getFiltered() {
+            return ITEMS.filter(function (item) {
+                var matchTag = currentFilter === 'all' || (item.tag || '').toLowerCase() === currentFilter;
+                var q = currentSearch.toLowerCase().trim();
+                var matchQ = !q
+                    || (item.title || '').toLowerCase().includes(q)
+                    || (item.caption || '').toLowerCase().includes(q)
+                    || (item.itemNumber || '').toLowerCase().includes(q)
+                    || (item.tag || '').toLowerCase().includes(q);
+                return matchTag && matchQ;
+            });
+        }
+
+        /* ════════════════════════════════════════
+           RENDER GRID
+        ════════════════════════════════════════ */
+        function tagColor(tag) {
+            var map = { 'Wallet': '#a07830', 'Bag': '#4a3b8c', 'Electronics': '#1a5a9a', 'Personal Item': '#2a7a54' };
+            return map[tag] || '#675a4f';
+        }
+
+        function formatLostFoundDate(item) {
+            var date = item && item.date ? item.date : '';
+            var time = item && item.time ? item.time : '';
+            return date + (time ? ' · ' + time : '');
+        }
+
+        function renderGrid() {
+            var grid = document.getElementById('lf-grid');
+            var countEl = document.getElementById('lf-count');
+            var items = getFiltered();
+
+            countEl.innerHTML = '<strong>' + items.length + '</strong> item' + (items.length !== 1 ? 's' : '') + ' showing';
+
+            if (!items.length) {
+                grid.innerHTML = '<div class="lf-empty"><div class="lf-empty-icon">🔍</div><p>No items match your search.</p></div>';
+                return;
+            }
+
+            grid.innerHTML = items.map(function (item, i) {
+                var imgs = item.images || [];
+                var isMulti = imgs.length > 1;
+                var delay = (i * 0.055).toFixed(2);
+
+                // Image block
+                var imgBlock = '';
+                if (imgs.length === 0) {
+                    imgBlock = '<div class="lf-card-img" style="display:flex;align-items:center;justify-content:center;"><span style="font-size:2rem;opacity:0.3">📷</span></div>';
+                } else if (!isMulti) {
+                    imgBlock = '<div class="lf-card-img">'
+                        + '<img src="' + imgs[0] + '" alt="' + item.title + '" loading="lazy" decoding="async">'
+                        + '</div>';
+                } else {
+                    var extraCount = imgs.length - 3;
+                    var gridClass = 'lf-card-img-grid';
+                    if (imgs.length === 2) gridClass += ' is-double';
+                    if (imgs.length === 3) gridClass += ' is-triple';
+                    var featured = '<div class="lf-card-img-grid-cell is-featured"><img src="' + imgs[0] + '" alt="' + item.title + '" loading="lazy" decoding="async"></div>';
+                    var sideCells = imgs.slice(1, 3).map(function (src, ci) {
+                        var overlay = (ci === 1 && extraCount > 0)
+                            ? '<div class="lf-more-overlay">+' + extraCount + '</div>' : '';
+                        return '<div class="lf-card-img-grid-cell is-stack"><img src="' + src + '" alt="" loading="lazy" decoding="async">' + overlay + '</div>';
+                    }).join('');
+                    imgBlock = '<div class="' + gridClass + '">' + featured + sideCells + '</div>';
+                }
+
+                return '<article class="lf-card" data-idx="' + i + '" style="animation-delay:' + delay + 's">'
+                    + '<div class="lf-card-media-shell">'
+                    + imgBlock
+                    + '<div class="lf-media-fade"></div>'
+                    + '<div class="lf-img-overlays">'
+                    + '<span class="lf-tag">' + (item.tag || '') + '</span>'
+                    + '</div>'
+                    + '<div class="lf-card-top">'
+                    + '<div class="lf-card-org-dot"></div>'
+                    + '<div class="lf-card-top-main">'
+                    + '<span class="lf-card-ref">OSA · ' + (item.itemNumber || '') + '</span>'
+                    + '<span class="lf-card-date">' + formatLostFoundDate(item) + '</span>'
+                    + '</div>'
+                    + '</div>'
+                    + '</div>'
+                    + '<div class="lf-card-body">'
+                    + '<div class="lf-card-title">' + (item.title || '') + '</div>'
+                    + '<p class="lf-card-caption">' + (item.caption || '') + '</p>'
+                    + '</div>'
+                    + '<div class="lf-card-foot">'
+                    + '<button class="lf-view-btn" data-idx="' + i + '" type="button">'
+                    + 'View Details'
+                    + '</button>'
+                    + '<button class="lf-share-btn" type="button" data-share="' + (item.itemNumber || '') + '">'
+                    + '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>'
+                    + 'Share'
+                    + '</button>'
+                    + '</div>'
+                    + '</article>';
+            }).join('');
+
+            // Events
+            grid.querySelectorAll('[data-idx]').forEach(function (el) {
+                el.addEventListener('click', function (e) {
+                    if (e.target.closest('[data-share]')) return;
+                    var idx = parseInt(el.dataset.idx, 10);
+                    openLightbox(items, idx);
+                });
+            });
+            grid.querySelectorAll('[data-share]').forEach(function (btn) {
+                btn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    var num = btn.dataset.share;
+                    if (navigator.share) {
+                        navigator.share({ title: 'Lost & Found: ' + num, url: window.location.href });
+                    } else {
+                        navigator.clipboard && navigator.clipboard.writeText(window.location.href + '?item=' + num);
+                        btn.textContent = 'Copied!';
+                        setTimeout(function () { btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share'; }, 1800);
+                    }
+                });
+            });
+        }
+
+        /* ════════════════════════════════════════
+           LIGHTBOX
+        ════════════════════════════════════════ */
+        var LB = { items: [], itemIndex: 0, imgIndex: 0 };
+
+        function openLightbox(items, itemIdx) {
+            LB.items = items;
+            LB.itemIndex = itemIdx;
+            LB.imgIndex = 0;
+            document.body.style.overflow = 'hidden';
+            document.getElementById('lf-lightbox').classList.add('open');
+            renderLightbox();
+        }
+
+        function closeLightbox() {
+            document.getElementById('lf-lightbox').classList.remove('open');
+            document.body.style.overflow = '';
+            resetZoom();
+        }
+
+        function renderLightbox() {
+            var item = LB.items[LB.itemIndex];
+            var imgs = item.images || [];
+            var cur = LB.imgIndex;
+            var total = LB.items.length;
+            // Counter
+            document.getElementById('lb-counter').textContent = 'Item ' + (LB.itemIndex + 1) + ' of ' + total;
+            document.getElementById('lb-item-name').textContent = item.title || '';
+            document.getElementById('lb-ref').textContent = (item.itemNumber || '') + ' · ' + formatLostFoundDate(item);
+
+            // Image
+            var imgEl = document.getElementById('lb-img');
+            imgEl.classList.add('transitioning');
+            var src = imgs[cur] || '';
+            var tmp = new Image();
+            tmp.onload = function () {
+                imgEl.src = src;
+                imgEl.alt = item.title || '';
+                resetZoom();
+                setTimeout(function () { imgEl.classList.remove('transitioning'); }, 30);
+            };
+            tmp.onerror = function () { imgEl.src = src; imgEl.classList.remove('transitioning'); resetZoom(); };
+            tmp.src = src;
+
+            // Nav arrows
+            document.getElementById('lb-prev').disabled = cur === 0;
+            document.getElementById('lb-next').disabled = cur >= imgs.length - 1;
+
+            // Thumbnail strip
+            var strip = document.getElementById('lb-strip');
+            if (imgs.length > 1) {
+                strip.style.display = 'flex';
+                strip.innerHTML = imgs.map(function (src, i) {
+                    return '<img class="lb-thumb' + (i === cur ? ' active' : '') + '" src="' + src + '" alt="Photo ' + (i + 1) + '" data-i="' + i + '" loading="lazy">';
+                }).join('');
+                strip.querySelectorAll('.lb-thumb').forEach(function (th) {
+                    th.addEventListener('click', function () {
+                        LB.imgIndex = parseInt(th.dataset.i, 10);
+                        renderLightbox();
+                    });
+                });
+            } else {
+                strip.style.display = 'none';
+                strip.innerHTML = '';
+            }
+
+            // Card top: badges
+            document.getElementById('lb-card-top').innerHTML =
+                '<span class="lb-card-num">' + (item.itemNumber || '') + '</span>'
+                + '<span class="lb-card-tag">' + (item.tag || '') + '</span>'
+                + (imgs.length > 1 ? '<span class="lb-photo-count">' + imgs.length + ' photos</span>' : '');
+
+            // Caption
+            document.getElementById('lb-caption').textContent = item.caption || 'No description available.';
+
+            // Meta block
+            document.getElementById('lb-meta-block').innerHTML =
+                '<div class="lb-meta-item"><div class="lb-meta-label">Item No.</div><div class="lb-meta-value">' + (item.itemNumber || '—') + '</div></div>'
+                + '<div class="lb-meta-item"><div class="lb-meta-label">Date Found</div><div class="lb-meta-value">' + (formatLostFoundDate(item) || '—') + '</div></div>'
+                + '<div class="lb-meta-item"><div class="lb-meta-label">Category</div><div class="lb-meta-value">' + (item.tag || '—') + '</div></div>'
+                + '<div class="lb-meta-item"><div class="lb-meta-label">Status</div><div class="lb-meta-value">' + (item.status || '—') + '</div></div>';
+        }
+
+        function lbGo(dir) {
+            var item = LB.items[LB.itemIndex];
+            var imgs = item.images || [];
+            var newIdx = LB.imgIndex + dir;
+            if (newIdx < 0 || newIdx >= imgs.length) return;
+            LB.imgIndex = newIdx;
+            renderLightbox();
+        }
+
+        // Controls
+        document.getElementById('lb-close').addEventListener('click', closeLightbox);
+        document.getElementById('lb-prev').addEventListener('click', function () { lbGo(-1); });
+        document.getElementById('lb-next').addEventListener('click', function () { lbGo(1); });
+        document.getElementById('lf-lightbox').addEventListener('click', function (e) {
+            if (e.target === this) closeLightbox();
+        });
+
+        // Keyboard
+        document.addEventListener('keydown', function (e) {
+            var box = document.getElementById('lf-lightbox');
+            if (!box.classList.contains('open')) return;
+            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'ArrowLeft') lbGo(-1);
+            if (e.key === 'ArrowRight') lbGo(1);
+        });
+
+        // Touch swipe
+        (function () {
+            var stage = document.getElementById('lf-lightbox');
+            var startX = 0;
+            var startY = 0;
+            var trackingSwipe = false;
+            var swipeCanceled = false;
+            var LF_SWIPE_MIN_X = 72;
+            var LF_SWIPE_MAX_Y = 54;
+            var LF_SWIPE_RATIO = 1.5;
+            stage.addEventListener('touchstart', function (e) {
+                if (e.touches.length !== 1) return;
+                startX = e.touches[0].clientX;
+                startY = e.touches[0].clientY;
+                trackingSwipe = true;
+                swipeCanceled = false;
+            }, { passive: true });
+            stage.addEventListener('touchmove', function (e) {
+                if (!trackingSwipe || swipeCanceled) return;
+                if (e.touches.length !== 1) return;
+
+                var moveX = e.touches[0].clientX - startX;
+                var moveY = e.touches[0].clientY - startY;
+                if (Math.abs(moveY) > LF_SWIPE_MAX_Y && Math.abs(moveY) >= Math.abs(moveX)) {
+                    swipeCanceled = true;
+                }
+            }, { passive: true });
+            stage.addEventListener('touchend', function (e) {
+                if (!trackingSwipe) return;
+                trackingSwipe = false;
+                if (e.changedTouches.length !== 1 || touchMode) return;
+                if (swipeCanceled) return;
+                var item = LB.items[LB.itemIndex];
+                var imgs = item && item.images ? item.images : [];
+                if (!imgs.length || imgs.length <= 1) return;
+                if (scale > (MIN_SCALE + 0.02)) return;
+
+                var dx = e.changedTouches[0].clientX - startX;
+                var dy = e.changedTouches[0].clientY - startY;
+                var absDx = Math.abs(dx);
+                var absDy = Math.abs(dy);
+                if (absDx >= LF_SWIPE_MIN_X && absDy <= LF_SWIPE_MAX_Y && absDx > absDy * LF_SWIPE_RATIO) {
+                    lbGo(dx < 0 ? 1 : -1);
+                }
+            }, { passive: true });
+            stage.addEventListener('touchcancel', function () {
+                trackingSwipe = false;
+                swipeCanceled = false;
+            }, { passive: true });
+        })();
+
+        /* ════════════════════════════════════════
+           ZOOM LOGIC
+        ════════════════════════════════════════ */
+        var scale = 1, tx = 0, ty = 0;
+        var MIN_SCALE = 1, MAX_SCALE = 4;
+        var touchMode = null;
+        var startDist = 0, startScale = 1;
+        var panStartX = 0, panStartY = 0, panStartTx = 0, panStartTy = 0;
+        var didPinch = false;
+        var lastTap = 0, lastX = 0, lastY = 0;
+
+        function applyZoom() {
+            var inner = document.getElementById('lb-zoom-inner');
+            if (inner) inner.style.transform = 'translate3d(' + tx + 'px,' + ty + 'px,0) scale(' + scale + ')';
+        }
+        function resetZoom() {
+            scale = 1; tx = 0; ty = 0;
+            applyZoom();
+            touchMode = null;
+        }
+        function getDist(a, b) {
+            return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+        }
+
+        var imgWrap = document.getElementById('lb-img-wrap');
+        if (imgWrap) {
+            imgWrap.addEventListener('wheel', function (e) {
+                if (!document.getElementById('lf-lightbox').classList.contains('open')) return;
+                var delta = e.deltaY > 0 ? -0.12 : 0.12;
+                if ((scale + delta) < MIN_SCALE && scale === MIN_SCALE) return;
+                e.preventDefault();
+                scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale + delta));
+                applyZoom();
+            }, { passive: false });
+
+            imgWrap.addEventListener('touchstart', function (e) {
+                if (e.touches.length === 2) {
+                    touchMode = 'pinch';
+                    didPinch = true;
+                    startDist = getDist(e.touches[0], e.touches[1]);
+                    startScale = scale;
+                } else if (e.touches.length === 1 && scale > MIN_SCALE) {
+                    touchMode = 'pan';
+                    panStartX = e.touches[0].clientX;
+                    panStartY = e.touches[0].clientY;
+                    panStartTx = tx;
+                    panStartTy = ty;
+                }
+            }, { passive: true });
+
+            imgWrap.addEventListener('touchmove', function (e) {
+                if (touchMode === 'pinch' && e.touches.length === 2) {
+                    e.preventDefault();
+                    var d = getDist(e.touches[0], e.touches[1]);
+                    scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, startScale * (d / startDist)));
+                    applyZoom();
+                } else if (touchMode === 'pan' && e.touches.length === 1 && scale > MIN_SCALE) {
+                    e.preventDefault();
+                    tx = panStartTx + (e.touches[0].clientX - panStartX);
+                    ty = panStartTy + (e.touches[0].clientY - panStartY);
+                    applyZoom();
+                }
+            }, { passive: false });
+
+            imgWrap.addEventListener('touchend', function (e) {
+                if (e.touches.length < 2) touchMode = null;
+                if (e.touches.length === 0 && didPinch) { didPinch = false; return; }
+                if (e.changedTouches.length === 1 && !didPinch) {
+                    var now = Date.now(), px = e.changedTouches[0].clientX, py = e.changedTouches[0].clientY;
+                    if (now - lastTap < 300 && Math.hypot(px - lastX, py - lastY) < 30) {
+                        e.preventDefault();
+                        if (scale > MIN_SCALE) resetZoom();
+                        else { scale = 2.5; applyZoom(); }
+                        lastTap = 0; return;
+                    }
+                    lastTap = now; lastX = px; lastY = py;
+                }
+            }, { passive: false }); // passive false to allow preventDefault on double tap
+        }
+
+        /* ════════════════════════════════════════
+           FILTER + SEARCH
+        ════════════════════════════════════════ */
+        document.getElementById('lf-filters').addEventListener('click', function (e) {
+            var chip = e.target.closest('.lf-chip');
+            if (!chip) return;
+            document.querySelectorAll('.lf-chip').forEach(function (c) { c.classList.remove('active'); });
+            chip.classList.add('active');
+            currentFilter = chip.dataset.filter;
+            renderGrid();
+        });
+
+        var searchTimer;
+        document.getElementById('lf-search').addEventListener('input', function (e) {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(function () {
+                currentSearch = e.target.value;
+                renderGrid();
+            }, 220);
+        });
+
+        // Initial render
+        hydrateLostFoundFromApi().finally(function () {
+            renderGrid();
+        });
+    </script>
+</body>
+
+</html>

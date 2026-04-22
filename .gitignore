@@ -1,0 +1,19 @@
+/vendor
+/node_modules
+/.env
+/server/.env
+/server/node_modules
+/server/data/announcements.json
+/storage/*.key
+/storage/app/public
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/testing/*
+/storage/framework/views/*
+/storage/logs/*
+/.phpunit.result.cache
+.DS_Store
+Thumbs.db
+
+# Editor / local tooling
+.cursor/debug*.log

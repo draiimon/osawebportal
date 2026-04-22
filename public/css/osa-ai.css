@@ -1,0 +1,1261 @@
+/* OSA AI Assistant — Unified with core EAC Cavite palette and sharp edges */
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+:root {
+    --osai-in: 240ms ease-out;
+    --osai-in-fast: 180ms ease-out;
+    --osai-r-shell: 0px;
+    --osai-r-bubble: 0px;
+    --osai-r-control: 0px;
+    --osai-r-chip: 0px;
+}
+
+/* ----- Chat page layout cards (hero + sidebar) ----- */
+.chat-page-hero {
+    border: 1px solid var(--line) !important;
+    border-radius: var(--osai-r-shell) !important;
+    background: var(--paper) !important;
+    box-shadow: var(--shadow) !important;
+}
+
+.chat-aside-panel {
+    border: 1px solid var(--line) !important;
+    border-radius: var(--osai-r-shell) !important;
+    background: var(--paper-strong) !important;
+    box-shadow: var(--shadow) !important;
+}
+
+.chat-aside-panel--accent {
+    border-color: var(--gold) !important;
+    background: #fffdf8 !important;
+}
+
+.chat-field {
+    border-radius: var(--osai-r-control) !important;
+    border-color: var(--line) !important;
+    background: #fff !important;
+}
+
+.chat-field:focus {
+    outline: none !important;
+    border-color: var(--brand) !important;
+    box-shadow: 0 0 0 2px rgba(132, 26, 45, 0.2) !important;
+}
+
+.chat-btn-clear {
+    border-radius: var(--osai-r-control) !important;
+}
+
+.chat-badge-pill {
+    border-radius: 0 !important;
+}
+
+/* ----- Main assistant shell ----- */
+.osa-ai-shell {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+    border: none !important;
+    border-radius: var(--osai-r-shell) !important;
+    background: var(--paper);
+    box-shadow: var(--shadow);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+}
+
+.osa-ai-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.55rem 0.9rem;
+    background: var(--brand) !important;
+    color: #fffef9;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+    z-index: 10;
+}
+
+.osa-ai-header__brand {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    min-width: 0;
+}
+
+.osa-ai-header__mark {
+    display: grid;
+    place-items: center;
+    width: 2.35rem;
+    height: 2.35rem;
+    flex-shrink: 0;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.15);
+    /* Flat subtle transparent */
+    border-radius: 0 !important;
+}
+
+.osa-ai-header__mark svg {
+    width: 1.15rem;
+    height: 1.15rem;
+    opacity: 0.95;
+    color: var(--gold-soft);
+}
+
+.osa-ai-header__titles strong {
+    display: block;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.2px;
+}
+
+.osa-ai-header__titles span {
+    display: block;
+    margin-top: 2px;
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.osa-ai-header__status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.32rem 0.6rem;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--brand-deep);
+    border: 1px solid rgba(199, 154, 73, 0.55);
+    background: linear-gradient(180deg, var(--gold-soft) 0%, #e8d4a8 100%);
+    border-radius: 0 !important;
+}
+
+.osa-ai-header__dot {
+    width: 0.45rem;
+    height: 0.45rem;
+    border-radius: 0 !important;
+    background: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.28);
+}
+
+@keyframes osaiPulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .osa-ai-header__dot {
+        animation: osaiPulse 2.4s ease-in-out infinite;
+    }
+}
+
+.osa-ai-thread {
+    flex: 1;
+    min-height: 14rem;
+    max-height: min(65vh, 650px);
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: 1.25rem 1rem 0.75rem;
+    scroll-behavior: smooth;
+    background: transparent;
+    /* Removed so blurry BG shines through */
+}
+
+@media (max-width: 640px) {
+    .osa-ai-thread {
+        max-height: min(46vh, 440px);
+    }
+}
+
+.osa-ai-msg {
+    display: flex;
+    align-items: flex-end;
+    padding: 1px 8px;
+    margin-bottom: 8px;
+    opacity: 0;
+    transform: translateY(6px);
+    min-width: 0;
+}
+
+.osa-ai-msg>div {
+    display: flex;
+    flex-direction: column;
+    max-width: 72%;
+}
+
+.osa-ai-msg--user>div {
+    align-items: flex-end;
+}
+
+.osa-ai-msg--assistant>div {
+    align-items: flex-start;
+}
+
+.osa-ai-msg.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity var(--osai-in), transform var(--osai-in);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .osa-ai-msg {
+        opacity: 1;
+        transform: none;
+    }
+
+    .osa-ai-msg.is-visible {
+        transition: none;
+    }
+}
+
+.osa-ai-msg--assistant {
+    justify-content: flex-start;
+}
+
+.osa-ai-msg--user {
+    justify-content: flex-end;
+}
+
+.osa-ai-msg__bubble {
+    width: fit-content;
+    max-width: 100%;
+    padding: 8px 12px;
+    font-size: 15px;
+    line-height: 1.42;
+    color: #050505;
+    border: none;
+    background: #f0f2f5;
+    box-shadow: none;
+    border-radius: 18px !important;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
+    position: relative;
+    margin: 0;
+}
+
+.osa-ai-msg__bubble p {
+    margin: 0 !important;
+}
+
+.osa-ai-msg__bubble p+p {
+    margin-top: 0.5rem !important;
+}
+
+.osa-ai-msg--user .osa-ai-msg__bubble {
+    border: 1px solid rgba(164, 32, 58, 0.4);
+    background: linear-gradient(135deg, rgba(164, 32, 58, 0.82) 0%, rgba(132, 26, 45, 0.86) 100%) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    color: #ffffff !important;
+    box-shadow: inset 0 -2px 5px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(132, 26, 45, 0.2) !important;
+    border-radius: 18px !important;
+    border-bottom-right-radius: 4px !important;
+    margin-right: 8px;
+}
+
+.osa-ai-msg--assistant .osa-ai-msg__bubble {
+    background: rgba(255, 255, 255, 0.55) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04) !important;
+    border-bottom-left-radius: 4px !important;
+}
+
+.osa-ai-msg--user .osa-ai-msg__bubble p,
+.osa-ai-msg--user .osa-ai-msg__bubble span,
+.osa-ai-msg--user .osa-ai-msg__bubble strong,
+.osa-ai-msg--user .osa-ai-msg__bubble a {
+    color: #ffffff !important;
+}
+
+.osa-ai-msg--assistant .osa-ai-msg__bubble p,
+.osa-ai-msg--assistant .osa-ai-msg__bubble span,
+.osa-ai-msg--assistant .osa-ai-msg__bubble strong,
+.osa-ai-msg--assistant .osa-ai-msg__bubble a {
+    color: #050505 !important;
+}
+
+.osa-ai-msg__meta {
+    margin-top: 2px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #65676b;
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.osa-ai-msg--user .osa-ai-msg__meta {
+    text-align: right;
+    padding-right: 4px;
+}
+
+.osa-ai-msg--assistant .osa-ai-msg__meta {
+    text-align: left;
+    padding-left: 4px;
+}
+
+.osa-ai-typing {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.28rem;
+    padding: 0.55rem 0.75rem;
+    border: 1px dashed rgba(141, 21, 39, 0.2);
+    background: rgba(255, 253, 248, 0.95);
+    border-radius: 12px !important;
+}
+
+.osa-ai-typing span {
+    width: 0.35rem;
+    height: 0.35rem;
+    border-radius: 999px !important;
+    background: var(--osai-maroon);
+    opacity: 0.35;
+}
+
+@keyframes osaiDot {
+
+    0%,
+    80%,
+    100% {
+        opacity: 0.25;
+    }
+
+    40% {
+        opacity: 1;
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .osa-ai-typing span:nth-child(1) {
+        animation: osaiDot 1s ease-in-out infinite;
+    }
+
+    .osa-ai-typing span:nth-child(2) {
+        animation: osaiDot 1s ease-in-out 0.18s infinite;
+    }
+
+    .osa-ai-typing span:nth-child(3) {
+        animation: osaiDot 1s ease-in-out 0.36s infinite;
+    }
+}
+
+.osa-ai-rich {
+    margin-top: 10px;
+    background: transparent;
+    border: none;
+    border-radius: 0 !important;
+    overflow: hidden;
+}
+
+.osa-ai-rich summary {
+    cursor: pointer;
+    padding: 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: inherit;
+    list-style: none;
+    border-bottom: none;
+}
+
+.osa-ai-rich summary::-webkit-details-marker {
+    display: none;
+}
+
+.osa-ai-rich[open] summary {
+    border-bottom: none;
+}
+
+.osa-ai-rich ul {
+    margin: 6px 0 0 0;
+    padding: 0 0 0 20px;
+    font-size: 15px;
+    color: inherit;
+    line-height: 1.42;
+}
+
+.osa-ai-chips-wrapper {
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 6px 0 8px;
+    border-top: .5px solid rgba(0, 0, 0, .05);
+}
+
+.osa-ai-chips {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: 4px 12px 6px;
+    gap: 8px;
+    background: transparent !important;
+}
+
+.osa-ai-chips.is-dragging {
+    cursor: grabbing;
+}
+
+.osa-ai-chips::-webkit-scrollbar {
+    display: none;
+}
+
+.osa-ai-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 7px 14px;
+    background: #fff;
+    border-radius: 8px !important;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--brand);
+    white-space: nowrap;
+    flex-shrink: 0;
+    cursor: pointer;
+    box-shadow: none;
+    border: 1px solid rgba(132, 26, 45, .18) !important;
+    transition: background .12s, color .12s;
+}
+
+.osa-ai-chip:active {
+    background: var(--brand) !important;
+    color: #fff !important;
+}
+
+.osa-ai-composer {
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: .5px solid rgba(0, 0, 0, .08);
+    padding: 6px 10px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.osa-ai-composer__row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+}
+
+.osa-ai-composer textarea {
+    flex: 1;
+    background: #fffdf9 !important;
+    border-radius: 8px !important;
+    padding: 8px 14px;
+    min-height: 42px;
+    border: 1px solid rgba(132, 26, 45, 0.18) !important;
+    font-family: inherit;
+    font-size: 15px;
+    color: #000;
+    outline: none !important;
+    resize: none;
+    line-height: 1.4;
+    max-height: 80px;
+    overflow-y: auto;
+}
+
+.osa-ai-composer textarea::placeholder {
+    color: #8e8e93;
+}
+
+.osa-ai-btn-send {
+    width: 42px;
+    height: 42px;
+    min-height: 42px !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    border: none !important;
+    transition: opacity .12s;
+    padding: 0 !important;
+    box-shadow: none;
+}
+
+.osa-ai-btn-send:active {
+    opacity: 0.72;
+}
+
+.osa-ai-btn-send:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.osa-ai-btn-send svg {
+    width: 25px;
+    height: 25px;
+    fill: var(--brand);
+    margin-left: 0;
+}
+
+.osa-ai-composer__hint {
+    text-align: center;
+    font-size: 10.5px;
+    color: #aeaeb2;
+    padding: 3px 12px 0;
+    flex-shrink: 0;
+    line-height: 1.4;
+    margin: 0;
+}
+
+.osa-ai-otp {
+    max-width: 100%;
+    padding: 12px 12px 0;
+    border: 1px solid rgba(90, 62, 40, 0.12);
+    background: linear-gradient(180deg, #fffdfb, #faf4ec);
+    box-shadow: 0 10px 28px rgba(54, 29, 16, 0.06);
+    border-radius: 0 !important;
+    margin: 8px 0 0;
+    border-top: 3px solid var(--brand);
+}
+
+.osa-ai-otp__title {
+    margin: 0 0 0.6rem;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold-deep);
+    border-bottom: 1px solid rgba(132, 26, 45, 0.08);
+    padding-bottom: 8px;
+    display: inline-block;
+}
+
+.osa-ai-otp__text {
+    margin: 0 0 0.8rem;
+    font-size: 0.8rem;
+    color: #5a4d44;
+    line-height: 1.4;
+}
+
+.osa-ai-otp__field {
+    margin-bottom: 12px;
+    display: block;
+}
+
+.osa-ai-otp__field label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+    display: block;
+}
+
+.osa-ai-otp__field input {
+    width: 100%;
+    height: 36px;
+    border: 1px solid rgba(132, 26, 45, 0.14) !important;
+    border-radius: 0 !important;
+    padding: 0 12px;
+    font-family: inherit;
+    font-size: 13.5px;
+    color: var(--ink);
+    background: rgba(255, 255, 255, 0.65) !important;
+    outline: none !important;
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+    box-shadow: none;
+}
+
+.osa-ai-otp__field input:focus {
+    background: #fff !important;
+    border-color: var(--brand) !important;
+    box-shadow: 0 0 0 3px rgba(164, 32, 58, 0.15) !important;
+}
+
+.osa-ai-otp__field input[autocomplete="one-time-code"] {
+    letter-spacing: 4px;
+    font-size: 16px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.osa-ai-otp__field input[autocomplete="one-time-code"]::placeholder {
+    letter-spacing: 0;
+    font-size: 13px;
+    font-weight: 400;
+}
+
+.osa-ai-otp__actions {
+    display: block;
+    margin-top: 2px;
+}
+
+.osa-ai-otp__btn {
+    width: 100%;
+    height: 36px;
+    border: none !important;
+    border-radius: 0 !important;
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.12s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink);
+    background: #e4e6eb !important;
+}
+
+.osa-ai-otp__btn:active {
+    opacity: 0.88;
+}
+
+.osa-ai-otp__btn--primary {
+    background: linear-gradient(135deg, #a4203a 0%, var(--brand) 100%) !important;
+    color: #fff !important;
+}
+
+.osa-ai-otp__btn:disabled {
+    background: #bcc0c4 !important;
+    color: #fff !important;
+    cursor: not-allowed;
+    opacity: 1;
+}
+
+.osa-ai-otp__status {
+    margin-top: 0.5rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    min-height: 1.1rem;
+}
+
+.osa-ai-otp__status.is-ok {
+    color: #15803d;
+}
+
+.osa-ai-otp__status.is-err {
+    color: #b91c1c;
+}
+
+.osa-ai-otp__status.is-wait {
+    color: #b45309;
+}
+
+.osa-ai-otp__demo {
+    margin-top: 0.35rem;
+    font-size: 0.65rem;
+    color: var(--muted);
+    font-style: italic;
+}
+
+.osa-ai-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 0.55rem;
+}
+
+.osa-ai-actions button {
+    min-height: 1.85rem;
+    padding: 0 0.65rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    cursor: pointer;
+    color: var(--brand);
+    border: 1px solid rgba(132, 26, 45, 0.2) !important;
+    background: #fff !important;
+    border-radius: 0 !important;
+    transition: background 0.15s ease;
+}
+
+.osa-ai-actions button:hover {
+    background: rgba(132, 26, 45, 0.05) !important;
+}
+
+.osa-launcher-fab {
+    position: fixed;
+    right: max(1rem, env(safe-area-inset-right, 0px));
+    bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+    z-index: 2147483000;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-height: 3.2rem;
+    padding: 0 1.25rem;
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #fffef9;
+    cursor: pointer;
+    border: none !important;
+    background: var(--brand) !important;
+    border-radius: 999px !important;
+    box-shadow: 0 6px 20px rgba(132, 26, 45, 0.25);
+    transition: box-shadow 220ms ease, filter 220ms ease, opacity 250ms ease, visibility 250ms ease;
+    pointer-events: auto !important;
+    touch-action: manipulation;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    will-change: transform;
+}
+
+@media (max-width: 640px) {
+    .osa-launcher-fab {
+        min-height: 2.8rem;
+        padding: 0 1rem;
+        font-size: 0.75rem;
+    }
+}
+
+.osa-launcher-fab:hover,
+.osa-launcher-fab:focus-visible {
+    outline: none;
+    filter: brightness(1.06);
+    box-shadow: 0 14px 36px rgba(61, 34, 19, 0.28);
+}
+
+
+.osa-launcher-fab svg {
+    width: 1.15rem;
+    height: 1.15rem;
+    flex-shrink: 0;
+}
+
+.osa-launcher-fab[aria-expanded="true"] {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(20px) scale(0.9);
+}
+
+.osa-launcher-panel {
+    position: fixed;
+    /* Forces perfectly equal margins horizontally via calc! */
+    right: max(1rem, env(safe-area-inset-right, 1rem));
+    left: auto;
+    bottom: max(1rem, env(safe-area-inset-bottom, 1rem));
+    z-index: 2147482999;
+    width: min(390px, calc(100vw - 2rem));
+    height: min(700px, calc(100vh - 2rem));
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+    border: none !important;
+    /* Removed ANY outline or borders for a modern, seamless look */
+    border-radius: var(--osai-r-shell) !important;
+    background: linear-gradient(135deg, rgba(254, 236, 201, 1) 0%, rgba(246, 213, 218, 1) 100%) !important;
+    /* Richer tinted red/yellow background */
+    box-shadow: 0 16px 48px rgba(20, 10, 5, 0.15) !important;
+
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(12px) scale(0.98);
+    transition: opacity 200ms ease, transform 200ms ease, visibility 200ms ease;
+}
+
+.osa-launcher-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('../assets/images/eac-photo.png') center/cover no-repeat;
+    filter: blur(8px);
+    opacity: 0.35;
+    /* Increased opacity from 0.1 to 0.35 so it's explicitly visible */
+    pointer-events: none;
+    z-index: 0;
+}
+
+.osa-launcher-panel>* {
+    position: relative;
+    z-index: 1;
+    /* Keeps headers/chat over the background img */
+}
+
+.osa-launcher-panel.is-open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .osa-launcher-panel {
+        transition: opacity 120ms ease, visibility 120ms ease;
+        transform: none;
+    }
+
+    .osa-launcher-panel.is-open {
+        transform: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .osa-launcher-panel {
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100vw !important;
+        height: 100dvh !important;
+        max-width: 100vw !important;
+        max-height: 100dvh !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        outline: none !important;
+        z-index: 9999 !important;
+        /* Guarantee it floats above any mobile navbars/footers */
+    }
+
+    .osa-launcher-panel .osa-ai-shell {
+        border: none !important;
+        border-radius: 0 !important;
+        height: 100%;
+        max-height: 100dvh !important;
+    }
+
+    .osa-launcher-panel .osa-ai-composer {
+        padding: 1rem 1rem max(1.5rem, env(safe-area-inset-bottom, 1.5rem));
+        /* Stronger base padding for physical thumbs */
+    }
+
+    .osa-launcher-panel .osa-ai-header {
+        padding-top: max(1.2rem, env(safe-area-inset-top, 1.2rem));
+        padding-right: 0.75rem;
+        /* Balances the wide SVG close button */
+    }
+
+    .osa-ai-btn-send {
+        width: 42px;
+        height: 42px;
+        min-height: 42px !important;
+        padding: 0 !important;
+    }
+
+    .osa-ai-composer textarea {
+        min-height: 3rem;
+    }
+}
+
+.osa-launcher-panel .osa-ai-thread {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none !important;
+    /* Forces the layout to push the composer to the true bottom */
+}
+
+.osa-launcher-panel .osa-ai-composer textarea {
+    min-height: 2.35rem;
+}
+
+.osa-launcher-head__close {
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    color: rgba(255, 255, 255, 0.95);
+    padding: 0.65rem;
+    /* Massive thumb target for mobile */
+    cursor: pointer;
+    opacity: 0.95;
+    transition: transform 150ms ease, opacity 150ms ease;
+    margin-right: -0.5rem;
+    /* Optically centers the X relative to the right edge */
+}
+
+.osa-launcher-head__close:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.osa-launcher-fab.is-hidden {
+    opacity: 0 !important;
+    visibility: hidden;
+    pointer-events: none !important;
+    transform: translateY(15px) scale(0.9);
+}
+
+/* ----- Thesis manuscript — 3-tier UI affordances ----- */
+.osa-ai-subhead {
+    padding: 0.5rem 1rem 0.35rem;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255, 254, 249, 0.72);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.osa-ai-tier-rail {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.35rem;
+    padding: 0.45rem 0.75rem 0.55rem;
+    border-bottom: 1px solid var(--osai-line);
+    background: linear-gradient(180deg, rgba(249, 244, 234, 0.9), rgba(255, 253, 248, 0.65));
+}
+
+.osa-ai-tier-rail__cell {
+    padding: 0.35rem 0.4rem;
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-align: center;
+    line-height: 1.35;
+    color: var(--osai-maroon-deep);
+    border: 1px solid rgba(141, 21, 39, 0.15);
+    background: rgba(255, 255, 255, 0.85);
+    border-radius: var(--osai-r-control) !important;
+}
+
+.osa-ai-tier-rail__cell strong {
+    display: block;
+    font-size: 0.62rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--osai-maroon);
+}
+
+.osa-ai-tier-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.55rem;
+}
+
+.osa-ai-badge-tier {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border-radius: 9999px !important;
+    border: 1px solid transparent;
+}
+
+.osa-ai-badge-tier--t1 {
+    color: #14532d;
+    background: linear-gradient(180deg, #dcfce7, #bbf7d0);
+    border-color: rgba(21, 128, 61, 0.35);
+}
+
+.osa-ai-badge-tier--t2 {
+    color: #7c2d12;
+    background: linear-gradient(180deg, #ffedd5, #fed7aa);
+    border-color: rgba(194, 65, 12, 0.35);
+}
+
+.osa-ai-badge-tier--t3 {
+    color: #fffef9;
+    background: linear-gradient(165deg, var(--osai-maroon), var(--osai-maroon-deep));
+    border-color: rgba(0, 0, 0, 0.15);
+}
+
+.osa-ai-tier-footnote {
+    width: 100%;
+    margin: 0;
+    font-size: 0.68rem;
+    color: #78716c;
+    line-height: 1.4;
+}
+
+.osa-ai-source-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 0.5rem;
+}
+
+.osa-ai-source-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.45rem;
+    font-size: 0.62rem;
+    font-weight: 700;
+    color: var(--osai-maroon-deep);
+    border: 1px dashed rgba(141, 21, 39, 0.35);
+    background: rgba(255, 251, 245, 0.95);
+    border-radius: var(--osai-r-control) !important;
+}
+
+.osa-ai-hub {
+    margin-top: 0.65rem;
+    padding: 0.75rem 0.85rem;
+    border: 1px solid rgba(141, 21, 39, 0.2);
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(249, 244, 234, 0.65));
+    border-radius: 12px !important;
+}
+
+.osa-ai-hub__title {
+    margin: 0 0 0.2rem;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--osai-maroon);
+}
+
+.osa-ai-hub__sub {
+    margin: 0 0 0.65rem;
+    font-size: 0.75rem;
+    color: #57534e;
+    line-height: 1.45;
+}
+
+.osa-ai-hub__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.4rem;
+}
+
+@media (min-width: 480px) {
+    .osa-ai-hub__grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.osa-ai-hub__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.35rem;
+    padding: 0 0.65rem;
+    font-size: 0.72rem;
+    font-weight: 800;
+    cursor: pointer;
+    color: var(--brand);
+    border: 1px solid rgba(132, 26, 45, 0.2) !important;
+    background: var(--paper) !important;
+    border-radius: var(--osai-r-control) !important;
+    transition: background 0.15s ease;
+}
+
+.osa-ai-hub__btn:hover {
+    background: rgba(132, 26, 45, 0.05) !important;
+}
+
+.osa-ai-hub__btn--secondary {
+    color: #fffef9;
+    border: none !important;
+    background: var(--brand) !important;
+}
+
+.osa-ai-formcard {
+    margin-top: 0.5rem;
+    padding: 0.75rem 0.85rem;
+    border: 1px solid var(--osai-line);
+    background: #fff;
+    border-top: 3px solid var(--brand);
+    border-radius: 0 !important;
+    box-shadow: 0 10px 28px rgba(54, 29, 16, 0.06);
+}
+
+.osa-ai-formcard__label {
+    display: block;
+    margin-bottom: 0.35rem;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: #78716c;
+}
+
+.osa-ai-formcard input,
+.osa-ai-formcard textarea,
+.osa-ai-formcard select {
+    width: 100%;
+    margin-bottom: 0.5rem;
+    padding: 0.45rem 0.55rem;
+    font: inherit;
+    font-size: 0.8rem;
+    border: 1px solid rgba(141, 21, 39, 0.18) !important;
+    border-radius: 0 !important;
+}
+
+.osa-ai-formcard__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.35rem;
+}
+
+.osa-ai-case-ref {
+    margin: 0.5rem 0 0;
+    padding: 0.55rem 0.65rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--osai-maroon-deep);
+    border: 1px solid rgba(212, 166, 81, 0.45);
+    background: linear-gradient(180deg, #fffbeb, #fef3c7);
+    border-radius: 0 !important;
+}
+
+.osa-ai-continuity-note {
+    margin-top: 0.5rem;
+    padding: 0.45rem 0.55rem;
+    font-size: 0.65rem;
+    color: #57534e;
+    line-height: 1.45;
+    border-left: 3px solid var(--osai-gold);
+    background: rgba(255, 251, 245, 0.9);
+    border-radius: 0 var(--osai-r-control) var(--osai-r-control) 0 !important;
+}
+
+.chat-aside-tier {
+    display: grid;
+    gap: 0.45rem;
+}
+
+.chat-aside-tier__step {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+    padding: 0.45rem 0.5rem;
+    font-size: 0.7rem;
+    line-height: 1.4;
+    color: #44403c;
+    border: 1px solid rgba(141, 21, 39, 0.1);
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: var(--osai-r-control) !important;
+}
+
+.chat-aside-tier__num {
+    flex-shrink: 0;
+    width: 1.35rem;
+    height: 1.35rem;
+    display: grid;
+    place-items: center;
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: #fffef9;
+    background: var(--osai-maroon);
+    border-radius: 9999px !important;
+}
+
+/* ----- Full /chat page: primary assistant is the hero; wider canvas + taller thread ----- */
+.chat-page-shell {
+    max-width: min(100%, 96rem) !important;
+}
+
+.chat-page-shell .osa-ai-shell {
+    min-height: min(82vh, 920px) !important;
+}
+
+.chat-page-shell .osa-ai-thread {
+    min-height: 18rem !important;
+    max-height: min(64vh, 720px) !important;
+}
+
+@media (max-width: 640px) {
+    .chat-page-shell .osa-ai-thread {
+        max-height: min(54vh, 560px) !important;
+    }
+}
+
+.chat-page-shell .osa-ai-msg__bubble {
+    max-width: 72% !important;
+}
+
+.chat-page-shell .osa-ai-composer textarea {
+    min-height: 3.35rem !important;
+    font-size: 0.9375rem !important;
+}
+
+.chat-page-shell .osa-ai-btn-send {
+    width: 42px;
+    height: 42px;
+    min-height: 42px !important;
+    padding: 0 !important;
+}
+
+.chat-page-shell .osa-ai-header {
+    padding: 1rem 1.15rem !important;
+}
+
+.chat-page-shell .osa-ai-header__titles strong {
+    font-size: 1.05rem !important;
+}
+
+.chat-page-shell .osa-ai-subhead {
+    font-size: 0.84rem !important;
+    padding: 0.55rem 1rem !important;
+}
+
+.chat-page-shell .osa-ai-tier-rail {
+    padding: 0.45rem 1rem !important;
+}
+
+.chat-page-shell .osa-ai-tier-rail__cell {
+    font-size: 0.72rem !important;
+}
+
+/* -------------------------------------------------------------------------
+   Low-end mobile: drop expensive compositing (blur/backdrop) — keep visuals close
+   ------------------------------------------------------------------------- */
+@media (max-width: 960px) {
+
+    .osa-ai-chips-wrapper,
+    .osa-ai-composer {
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+    }
+
+    .osa-ai-msg--user .osa-ai-msg__bubble,
+    .osa-ai-msg--assistant .osa-ai-msg__bubble {
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+    }
+
+    .osa-launcher-panel::before {
+        filter: blur(5px);
+        opacity: 0.28;
+    }
+
+    .osa-launcher-fab {
+        will-change: auto;
+        box-shadow: 0 4px 14px rgba(132, 26, 45, 0.22);
+    }
+
+    .osa-launcher-fab:hover,
+    .osa-launcher-fab:focus-visible {
+        box-shadow: 0 8px 22px rgba(61, 34, 19, 0.2);
+    }
+
+    .osa-launcher-panel {
+        box-shadow: 0 8px 28px rgba(20, 10, 5, 0.12) !important;
+    }
+}

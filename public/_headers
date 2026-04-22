@@ -1,0 +1,11 @@
+# Netlify-style cache headers (applied when deployed to Netlify).
+# Tweak max-age if you ship hashed filenames and want longer caching.
+
+/css/*
+  Cache-Control: public, max-age=86400
+
+/assets/*
+  Cache-Control: public, max-age=86400
+
+/*.html
+  Cache-Control: public, max-age=60, must-revalidate

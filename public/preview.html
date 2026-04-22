@@ -1,0 +1,3409 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="color-scheme" content="light">
+    <script>
+        (function () {
+            window.__OSAInlineBootActive = true;
+            window.__OSAInlineBootShown = false;
+            window.__OSAInlineBootShowTimer = null;
+            document.documentElement.classList.add("osa-inline-booting");
+            function ensureBootLoader() {
+                if (document.getElementById("osa-inline-loader")) return;
+                var html = ''
+                    + '<div class="osa-loader" id="osa-inline-loader" role="status" aria-live="polite" aria-label="Loading content">'
+                    + '  <div class="osa-loader__backdrop"></div>'
+                    + '  <div class="osa-loader__card">'
+                    + '    <div class="osa-loader__spinner" aria-hidden="true"></div>'
+                    + '    <div class="osa-loader__content">'
+                    + '      <strong>Loading OSA Portal</strong>'
+                    + '      <span>Please wait while content is prepared...</span>'
+                    + '    </div>'
+                    + '    <div class="osa-loader__bar"><span></span></div>'
+                    + '  </div>'
+                    + '</div>';
+                document.documentElement.insertAdjacentHTML("afterbegin", html);
+            }
+            ensureBootLoader();
+            window.__OSAInlineBootShowTimer = window.setTimeout(function () {
+                if (!window.__OSAInlineBootActive) return;
+                var inlineLoader = document.getElementById("osa-inline-loader");
+                if (!inlineLoader) return;
+                inlineLoader.classList.add("is-visible");
+                document.documentElement.classList.add("osa-inline-loader-visible");
+                window.__OSAInlineBootShown = true;
+            }, 220);
+            if (window.location.hash === "#dashboard") {
+                window.history.replaceState({}, "", window.location.pathname + window.location.search);
+            }
+            if (/\/preview\.html$/i.test(window.location.pathname)) {
+                var cleanPath = window.location.pathname.replace(/\/preview\.html$/i, "/");
+                var cleanHash = window.location.hash === "#dashboard" ? "" : window.location.hash;
+                var cleanUrl = cleanPath + window.location.search + cleanHash;
+                window.history.replaceState({}, "", cleanUrl);
+            }
+        })();
+    </script>
+    <style>
+        /* Critical inline boot loader (shows before external CSS/JS finish loading) */
+        html.osa-inline-booting.osa-inline-loader-visible,
+        html.osa-inline-booting.osa-inline-loader-visible body {
+            overflow: hidden !important;
+        }
+
+        html.osa-inline-booting.osa-inline-loader-visible .page {
+            visibility: hidden;
+        }
+
+        html.osa-inline-booting #osa-chat-fab,
+        html.osa-inline-booting #osa-chat-widget,
+        html.osa-inline-booting [data-osa-chat-root] {
+            opacity: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+        }
+
+        .osa-loader {
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
+            display: grid;
+            place-items: center;
+            font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transform: scale(0.985);
+            transition: opacity 200ms ease, transform 240ms cubic-bezier(0.22, 0.61, 0.36, 1), visibility 200ms ease;
+        }
+
+        .osa-loader.is-visible {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1);
+            pointer-events: auto;
+        }
+
+        .osa-loader__backdrop {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 20% 20%, rgba(132, 26, 45, 0.14), transparent 52%),
+                radial-gradient(circle at 80% 0%, rgba(199, 154, 73, 0.16), transparent 48%),
+                rgba(255, 253, 249, 0.72);
+            -webkit-backdrop-filter: blur(2px);
+            backdrop-filter: blur(2px);
+        }
+
+        .osa-loader__card {
+            position: relative;
+            width: min(88vw, 380px);
+            display: grid;
+            grid-template-columns: 32px 1fr;
+            grid-template-areas:
+                "spinner content"
+                "bar bar";
+            gap: 8px 12px;
+            align-items: center;
+            padding: 14px 14px 12px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(132, 26, 45, 0.14);
+            border-left: 4px solid #c79a49;
+            box-shadow: 0 14px 32px rgba(50, 25, 14, 0.14);
+        }
+
+        .osa-loader__spinner {
+            grid-area: spinner;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            border: 3px solid rgba(132, 26, 45, 0.16);
+            border-top-color: #841a2d;
+            border-right-color: #c79a49;
+            animation: osaLoaderSpin 0.8s linear infinite;
+        }
+
+        .osa-loader__content {
+            grid-area: content;
+            display: grid;
+            gap: 2px;
+            line-height: 1.25;
+        }
+
+        .osa-loader__content strong {
+            color: #2c1a15;
+            font-size: 0.94rem;
+        }
+
+        .osa-loader__content span {
+            color: #66534a;
+            font-size: 0.78rem;
+        }
+
+        .osa-loader__bar {
+            grid-area: bar;
+            position: relative;
+            height: 4px;
+            overflow: hidden;
+            background: rgba(132, 26, 45, 0.12);
+        }
+
+        .osa-loader__bar span {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            width: var(--osa-loader-progress, 8%);
+            background: linear-gradient(90deg, #841a2d 0%, #c79a49 55%, #ffe0a8 100%);
+            box-shadow: 0 0 8px rgba(199, 154, 73, 0.5);
+            transition: width 180ms linear;
+        }
+
+        @keyframes osaLoaderBarSlide {
+            0% {
+                transform: translateX(-100%);
+            }
+
+            100% {
+                transform: translateX(350%);
+            }
+        }
+
+        @keyframes osaLoaderSpin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+
+    <!-- Primary Meta Tags -->
+    <title>OSA Transaction Guide Portal · EAC Cavite</title>
+    <meta name="title" content="OSA Transaction Guide Portal · EAC Cavite">
+    <meta name="description"
+        content="Access official Office of Student Affairs services, forms, and live chatbot support efficiently via the EAC Cavite OSA portal.">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/assets/images/eac-emblem.png">
+    <link rel="apple-touch-icon" href="/assets/images/eac-emblem.png">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="/">
+    <meta property="og:title" content="OSA Transaction Guide Portal · EAC Cavite">
+    <meta property="og:description"
+        content="A modernized central hub for EAC Cavite student clearances, tracking, resources, and live OSA chatbot support.">
+    <meta property="og:image" content="/assets/images/eac-social-card-alt.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="/">
+    <meta property="twitter:title" content="OSA Transaction Guide Portal · EAC Cavite">
+    <meta property="twitter:description"
+        content="A modernized central hub for EAC Cavite student clearances, tracking, resources, and live OSA chatbot support.">
+    <meta property="twitter:image" content="/assets/images/eac-social-card-alt.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap"
+        rel="stylesheet">
+
+    <link rel="preload" href="./css/osa-design.css?v=40" as="style">
+    <link rel="preload" href="./css/osa-ai.css?v=39" as="style">
+    <link rel="stylesheet" href="./css/osa-design.css?v=40">
+    <link rel="stylesheet" href="./css/osa-ai.css?v=39">
+    <script src="/assets/js/portal-shell.js?v=42" defer></script>
+    <script src="/assets/js/osa-chat-loader.js?v=37" defer></script>
+    <style>
+        /* :root design tokens come from osa-design.css (global).
+           Do not redefine --brand / --nav-h / etc. here to keep
+           the navbar + footer identical across all pages. */
+
+        [id]:target,
+        section[id],
+        main[id] {
+            scroll-margin-top: calc(var(--nav-h-compact) + 16px);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            overflow-x: hidden;
+            width: 100%;
+            max-width: 100%;
+        }
+
+        /* body + body::before: global in osa-design.css (page grid; no global EAC seal). */
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        img {
+            display: block;
+            max-width: 100%;
+        }
+
+        /* .page, base .container, and navbar-aware container padding all come
+           from osa-design.css (global). They must NOT be redeclared here or the
+           home-page navbar + layout drift from the other pages. */
+
+        .section-compact {
+            padding: 18px 0;
+        }
+
+        .section-compact .shell {
+            padding: 18px 22px;
+        }
+
+        .section-compact h2 {
+            margin: 0 0 8px;
+            font-size: 1.25rem;
+        }
+
+        .section-compact p {
+            margin: 0;
+            font-size: 0.92rem;
+            color: var(--muted);
+        }
+
+        .rules-block {
+            font-size: 0.92rem;
+            color: #4b4038;
+            line-height: 1.65;
+        }
+
+        .rules-block ul {
+            margin: 10px 0 0;
+            padding-left: 20px;
+        }
+
+        .hero-layout {
+            display: grid;
+            gap: 22px;
+            grid-template-columns: minmax(0, 1fr);
+            align-items: stretch;
+        }
+
+        .hero-layout>div {
+            animation: heroContentIn 720ms cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+
+        .hero-title {
+            margin: 0 0 10px;
+            font-size: clamp(2rem, 4vw, 2.75rem);
+            line-height: 1.1;
+        }
+
+        .hero-cta {
+            margin-top: 18px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .hero-mock {
+            display: grid;
+            gap: 10px;
+        }
+
+        .hero-mock .mock-line {
+            animation: shimmerLine 2.6s ease-in-out infinite;
+        }
+
+        .hero-mock .mock-line:nth-child(2) {
+            animation-delay: 180ms;
+        }
+
+        .hero-mock .mock-line:nth-child(3) {
+            animation-delay: 360ms;
+        }
+
+        .hero-mock .mock-line:nth-child(4) {
+            animation-delay: 540ms;
+        }
+
+        .mock-line {
+            height: 10px;
+            border-radius: 0;
+            background: rgba(132, 26, 45, 0.14);
+        }
+
+        .mock-line.short {
+            width: 64%;
+        }
+
+        .services-carousel {
+            display: grid;
+            grid-auto-flow: column;
+            grid-auto-columns: minmax(220px, 1fr);
+            gap: 14px;
+            overflow-x: auto;
+            padding-bottom: 6px;
+            scrollbar-width: thin;
+        }
+
+        .service-tile,
+        .action-card,
+        .announcement-item,
+        .lost-item,
+        .mini-card {
+            border: 1px solid var(--line);
+            border-radius: 0;
+            background: var(--paper);
+            padding: 16px;
+            min-height: 148px;
+        }
+
+        .service-tile h3,
+        .action-card h3,
+        .announcement-item h3,
+        .lost-item h3,
+        .mini-card h3 {
+            margin: 0 0 8px;
+            font-size: 1rem;
+        }
+
+        .service-tile p,
+        .action-card p,
+        .announcement-item p,
+        .lost-item p,
+        .mini-card p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: var(--muted);
+        }
+
+        .action-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+        }
+
+        @media (min-width: 1024px) {
+            .action-grid {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+            }
+        }
+
+        .chat-preview {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(280px, 0.9fr);
+            gap: 16px;
+            align-items: start;
+        }
+
+        .chat-bubble {
+            max-width: 86%;
+            border-radius: 0;
+            padding: 10px 12px;
+            font-size: 0.88rem;
+            line-height: 1.45;
+            margin-bottom: 8px;
+        }
+
+        .chat-bubble.user {
+            margin-left: auto;
+            background: var(--brand);
+            color: #fff;
+        }
+
+        .chat-bubble.bot {
+            border: 1px solid var(--line);
+            background: #fff;
+            color: #4a3f37;
+        }
+
+        .announcements-grid,
+        .lost-grid,
+        .mini-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+        }
+
+        @media (min-width: 1024px) {
+
+            .announcements-grid,
+            .lost-grid,
+            .mini-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            border-radius: 0;
+            font-size: 0.72rem;
+            font-weight: 700;
+        }
+
+        .status-pill.claimed {
+            background: rgba(16, 185, 129, 0.14);
+            color: #047857;
+        }
+
+        .status-pill.unclaimed {
+            background: rgba(245, 158, 11, 0.16);
+            color: #b45309;
+        }
+
+        @media (max-width: 1020px) {
+
+            .hero-layout,
+            .chat-preview {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        main.page-main {
+            flex: 1 1 auto;
+            width: 100%;
+            max-width: 100%;
+            padding-bottom: 64px;
+            box-sizing: border-box;
+        }
+
+        .hero {
+            padding-top: 24px;
+        }
+
+        .hero-grid,
+        .grid-2,
+        .grid-3 {
+            display: grid;
+            gap: 22px;
+        }
+
+        .hero-grid {
+            grid-template-columns: minmax(0, 1.22fr) minmax(320px, 0.78fr);
+            align-items: stretch;
+        }
+
+        .grid-2 {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .grid-3 {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .shell,
+        .panel,
+        .card {
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            background: var(--paper);
+            box-shadow: var(--shadow);
+        }
+
+        .section-shell {
+            padding: 64px 48px;
+        }
+
+        .panel,
+        .card {
+            padding: 24px;
+        }
+
+        .hero-stage {
+            position: relative;
+            overflow: hidden;
+            min-height: 0;
+            padding: 34px;
+            border-radius: 0;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(247, 240, 231, 0.96));
+            color: var(--ink);
+            box-shadow: 0 22px 44px rgba(63, 17, 22, 0.08);
+        }
+
+        .hero-stage::before {
+            content: "";
+            position: absolute;
+            inset: -6px;
+            background: radial-gradient(circle at top right, rgba(199, 154, 73, 0.12), transparent 32%);
+            opacity: 0.22;
+            pointer-events: none;
+        }
+
+        .hero-stage::after {
+            display: none;
+        }
+
+        .student-hub,
+        .hero-side-stack {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            gap: 14px;
+        }
+
+        .student-hub-copy {
+            max-width: 680px;
+        }
+
+        .hero-eyebrow {
+            display: inline-block;
+            margin-bottom: 6px;
+            color: var(--brand);
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+        }
+
+        h1,
+        h2,
+        h3 {
+            margin: 0;
+            font-family: Georgia, "Times New Roman", serif;
+            line-height: 1.02;
+            letter-spacing: -0.01em;
+        }
+
+        h1 {
+            margin-bottom: 12px;
+            font-size: clamp(2rem, 3.2vw, 2.85rem);
+        }
+
+        h2 {
+            margin-bottom: 10px;
+            font-size: clamp(1.5rem, 2.2vw, 2.2rem);
+        }
+
+        h3 {
+            margin-bottom: 8px;
+            font-size: 1.12rem;
+        }
+
+        p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 0.95rem;
+            line-height: 1.62;
+        }
+
+        .hero-stage p {
+            color: var(--muted);
+        }
+
+        .lead {
+            font-size: 0.98rem;
+            color: var(--ink);
+        }
+
+        .cta-row,
+        .quick-board,
+        .resource-list,
+        .timeline,
+        .social-links,
+        .admin-actions,
+        .admin-list {
+            margin-top: 20px;
+        }
+
+        .cta-row,
+        .social-links,
+        .admin-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 44px;
+            padding: 0 18px;
+            border: 1px solid transparent;
+            border-radius: 0;
+            background: transparent;
+            font-size: 0.88rem;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+            transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease, border-color 180ms ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: var(--gold);
+            color: #2f1908;
+            box-shadow: 0 14px 30px rgba(199, 154, 73, 0.26);
+        }
+
+        .btn-primary:hover {
+            background: #d3a752;
+            box-shadow: 0 18px 34px rgba(199, 154, 73, 0.32);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.18);
+            color: #fffaf2;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.14);
+        }
+
+        .btn-neutral {
+            background: #fffdf8;
+            border-color: rgba(132, 26, 45, 0.12);
+            color: var(--brand);
+        }
+
+        .btn-neutral:hover {
+            background: #ffffff;
+            border-color: rgba(132, 26, 45, 0.16);
+        }
+
+        .service-picker {
+            display: grid;
+            gap: 8px;
+            padding: 16px;
+            border: 1px solid rgba(97, 49, 31, 0.1);
+            border-radius: 0;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .service-picker label {
+            color: var(--brand);
+            font-size: 0.78rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .service-picker-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 12px;
+        }
+
+        .service-picker select {
+            min-height: 44px;
+            padding: 0 14px;
+            border: 1px solid rgba(90, 62, 40, 0.14);
+            border-radius: 0;
+            background: #fff;
+            color: var(--ink);
+            font: inherit;
+        }
+
+        .priority-actions {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .priority-card {
+            display: grid;
+            gap: 6px;
+            padding: 16px;
+            border: 1px solid rgba(97, 49, 31, 0.1);
+            border-radius: 0;
+            background: rgba(255, 255, 255, 0.88);
+            color: var(--ink);
+            text-align: left;
+            transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+        }
+
+        .priority-card strong {
+            color: var(--brand);
+            font-size: 0.98rem;
+        }
+
+        .priority-card span {
+            color: var(--muted);
+            font-size: 0.88rem;
+            line-height: 1.55;
+        }
+
+        .priority-card-button {
+            width: 100%;
+            cursor: pointer;
+            font: inherit;
+        }
+
+        .priority-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .priority-line {
+            padding: 14px 16px;
+            border-left: 4px solid #8a1324;
+            border-radius: 0;
+            background: rgba(138, 19, 36, 0.06);
+        }
+
+        .priority-line strong {
+            display: block;
+            margin-bottom: 4px;
+            color: var(--ink);
+            font-size: 0.94rem;
+        }
+
+        .priority-line span {
+            color: var(--muted);
+            font-size: 0.88rem;
+            line-height: 1.55;
+        }
+
+        .hero-side {
+            position: relative;
+            overflow: hidden;
+            border-radius: 0;
+            background: linear-gradient(180deg, rgba(255, 250, 244, 0.96), rgba(245, 236, 225, 0.96));
+        }
+
+        .hero-side::before {
+            content: "";
+            position: absolute;
+            inset: -6px;
+            background:
+                linear-gradient(180deg, rgba(132, 26, 45, 0.12), rgba(255, 255, 255, 0.06)),
+                url("./assets/images/eac-photo.png") center/cover no-repeat;
+            filter: blur(3px);
+            transform: scale(1.02);
+            opacity: 0.34;
+            pointer-events: none;
+        }
+
+        .hero-side>* {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-side .section-copy {
+            max-width: none;
+        }
+
+        .contact-list,
+        .timeline,
+        .output,
+        .resource-list,
+        .admin-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .contact-item,
+        .timeline-item,
+        .resource-item,
+        .output,
+        .admin-list-item,
+        .stat-card {
+            padding: 15px 16px;
+            border: 1px solid var(--line);
+            border-radius: 0;
+            background: rgba(255, 255, 255, 0.82);
+        }
+
+        .contact-item span,
+        .stat-card span {
+            display: block;
+            margin-bottom: 6px;
+            color: var(--brand);
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+        }
+
+        .quick-board {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .quick-link {
+            display: grid;
+            gap: 6px;
+            padding: 16px;
+            border: 1px solid var(--line);
+            border-radius: 0;
+            background: rgba(255, 255, 255, 0.88);
+            color: var(--ink);
+        }
+
+        .quick-link strong {
+            color: var(--brand);
+            font-size: 0.94rem;
+        }
+
+        .quick-link span {
+            color: var(--muted);
+            font-size: 0.86rem;
+            line-height: 1.6;
+        }
+
+        .chat-entry {
+            padding: 16px;
+            border: 1px solid rgba(97, 49, 31, 0.1);
+            border-radius: 0;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .chat-entry strong {
+            display: block;
+            margin-bottom: 6px;
+            color: var(--brand);
+            font-size: 1rem;
+        }
+
+        .chat-entry p {
+            font-size: 0.9rem;
+        }
+
+        .hero-mini-note {
+            margin-top: 4px;
+            color: #6f6259;
+            font-size: 0.85rem;
+        }
+
+        .section-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 18px;
+            margin-bottom: 24px;
+        }
+
+        .section-copy {
+            max-width: 620px;
+        }
+
+        .section-copy p {
+            margin-top: 8px;
+        }
+
+        .service-stage {
+            padding: 0;
+        }
+
+        .service-track {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            width: 100%;
+            animation: none;
+        }
+
+        .service-card {
+            position: relative;
+            width: auto;
+            min-height: 230px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 241, 232, 0.96));
+        }
+
+        .service-card[aria-hidden="true"] {
+            display: none;
+        }
+
+        .service-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at top right, rgba(199, 154, 73, 0.16), transparent 30%);
+            opacity: 0.2;
+            pointer-events: none;
+        }
+
+        .service-card>* {
+            position: relative;
+            z-index: 1;
+        }
+
+        .service-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .service-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 18px;
+            color: var(--brand);
+            font-size: 0.84rem;
+            font-weight: 800;
+        }
+
+        .resource-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.02fr) minmax(0, 0.98fr);
+            gap: 18px;
+        }
+
+        .resource-panel {
+            display: grid;
+            gap: 18px;
+        }
+
+        .resource-hero {
+            position: relative;
+            overflow: hidden;
+            min-height: 360px;
+            border-radius: 0;
+            background: linear-gradient(145deg, rgba(84, 14, 26, 0.94), rgba(132, 26, 45, 0.78));
+            color: #fffaf3;
+        }
+
+        .resource-hero::before {
+            content: "";
+            position: absolute;
+            inset: -6px;
+            background:
+                linear-gradient(145deg, rgba(92, 16, 29, 0.4), rgba(92, 16, 29, 0.06)),
+                url("./assets/images/eac-photo.png") center/cover no-repeat;
+            filter: blur(3px);
+            transform: scale(1.02);
+            opacity: 0.52;
+            pointer-events: none;
+        }
+
+        .resource-hero::after {
+            display: none;
+        }
+
+        .resource-hero>* {
+            position: relative;
+            z-index: 1;
+        }
+
+        .resource-list {
+            margin-top: 0;
+        }
+
+        .feature-stack {
+            display: grid;
+            gap: 12px;
+        }
+
+        .resource-library {
+            display: grid;
+            gap: 16px;
+        }
+
+        .resource-feature {
+            display: grid;
+            grid-template-columns: minmax(220px, 0.8fr) minmax(0, 1.1fr) minmax(170px, 0.46fr);
+            gap: 18px;
+            align-items: center;
+            padding: 20px;
+            border: 1px solid var(--line);
+            border-radius: 0;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(247, 240, 231, 0.96));
+            box-shadow: var(--shadow);
+        }
+
+        .resource-feature-copy {
+            display: grid;
+            gap: 10px;
+        }
+
+        .resource-feature-copy p {
+            max-width: 560px;
+        }
+
+        .resource-actions {
+            display: grid;
+            gap: 10px;
+        }
+
+        .download-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .download-card {
+            padding: 18px;
+            border: 1px solid var(--line);
+            border-radius: 0;
+            background: rgba(255, 255, 255, 0.92);
+            box-shadow: var(--shadow);
+        }
+
+        .download-card strong {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--ink);
+            font-size: 1rem;
+        }
+
+        .download-card p {
+            min-height: 72px;
+            font-size: 0.88rem;
+        }
+
+        .download-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .resource-tabs {
+            display: grid;
+            gap: 18px;
+            padding: 18px;
+            border: 1px solid var(--line);
+            border-radius: 0;
+            background: linear-gradient(180deg, rgba(255, 252, 247, 0.95), rgba(246, 238, 228, 0.94));
+            box-shadow: var(--shadow);
+        }
+
+        .resource-tab-list {
+            display: none;
+        }
+
+        .resource-tab-panel {
+            display: grid;
+            grid-template-columns: minmax(220px, 0.78fr) minmax(0, 1fr);
+            gap: 16px;
+            align-items: stretch;
+        }
+
+        .resource-preview {
+            position: relative;
+            min-height: 228px;
+            overflow: hidden;
+            border-radius: 0;
+            background:
+                linear-gradient(160deg, rgba(84, 14, 26, 0.34), rgba(132, 26, 45, 0.08)),
+                var(--resource-image, url("./assets/images/eac-photo.png")) center/cover no-repeat;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+        }
+
+        .resource-preview::after {
+            content: "";
+            position: absolute;
+            inset: auto 14px 14px 14px;
+            height: 56px;
+            border-radius: 0;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0), rgba(20, 10, 8, 0.68));
+        }
+
+        .resource-preview-label {
+            position: absolute;
+            left: 16px;
+            bottom: 18px;
+            z-index: 1;
+            display: grid;
+            gap: 4px;
+            color: #fff9f2;
+        }
+
+        .resource-preview-label span {
+            font-size: 0.66rem;
+            font-weight: 800;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            opacity: 0.78;
+        }
+
+        .resource-preview-label strong {
+            font-size: 1rem;
+            letter-spacing: 0.02em;
+        }
+
+        .resource-preview.manual-cover {
+            display: grid;
+            place-items: center;
+            padding: 20px 18px;
+            background: linear-gradient(180deg, #fffdfa 0%, #fbf7f1 100%);
+            box-shadow: inset 0 0 0 1px rgba(133, 29, 43, 0.1), 0 16px 34px rgba(56, 30, 17, 0.08);
+        }
+
+        .resource-preview.manual-cover::after {
+            display: none;
+        }
+
+        .manual-cover-sheet {
+            width: 100%;
+            max-width: 290px;
+            min-height: 100%;
+            display: grid;
+            justify-items: center;
+            align-content: center;
+            gap: 16px;
+            padding: 18px 12px;
+            border: 1px solid rgba(131, 25, 44, 0.1);
+            border-radius: 0;
+            background: #fffefd;
+            text-align: center;
+        }
+
+        .manual-cover-title {
+            color: #121212;
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            line-height: 1.1;
+            text-transform: uppercase;
+        }
+
+        .manual-cover-emblem {
+            width: 110px;
+            height: 132px;
+            object-fit: contain;
+        }
+
+        .manual-cover-name {
+            color: #111111;
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 2rem;
+            font-weight: 700;
+            line-height: 0.92;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+        }
+
+        .manual-cover-edition {
+            color: #1f1a17;
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 1.05rem;
+            font-weight: 600;
+        }
+
+        .resource-detail {
+            display: grid;
+            align-content: start;
+            gap: 12px;
+            padding: 8px 0;
+        }
+
+        .resource-item strong,
+        .admin-list-item strong {
+            display: block;
+            margin-bottom: 6px;
+            color: var(--ink);
+            font-size: 0.96rem;
+        }
+
+        .resource-item span,
+        .admin-list-item span {
+            display: block;
+            color: var(--muted);
+            font-size: 0.88rem;
+            line-height: 1.62;
+        }
+
+        .support-board {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            gap: 18px;
+        }
+
+        .support-card {
+            overflow: hidden;
+            border-radius: 0;
+        }
+
+        .support-card.portal-dark {
+            background: linear-gradient(160deg, rgba(88, 13, 27, 0.96), rgba(132, 26, 45, 0.84));
+            color: #fffaf4;
+            box-shadow: 0 28px 62px rgba(58, 19, 21, 0.2);
+        }
+
+        .support-card.portal-dark p,
+        .support-card.portal-dark .label,
+        .support-card.portal-dark .timeline-item {
+            color: rgba(255, 249, 241, 0.86);
+        }
+
+        .support-card.portal-dark .label {
+            color: #f1d7a7;
+        }
+
+        .support-card.portal-dark .timeline-item {
+            border-color: rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .support-card.portal-dark h2 {
+            color: #fffaf4;
+        }
+
+        .support-card.portal-light {
+            background: linear-gradient(180deg, rgba(255, 251, 245, 0.96), rgba(247, 240, 230, 0.94));
+        }
+
+        .chat-quick-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .chat-quick-btn {
+            border: 1px solid rgba(97, 49, 31, 0.16);
+            background: #fffdf9;
+            color: var(--brand);
+            border-radius: 0;
+            min-height: 34px;
+            padding: 0 10px;
+            font: inherit;
+            font-size: 0.76rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .portal-form {
+            display: grid;
+            gap: 12px;
+        }
+
+        .portal-form label {
+            display: grid;
+            gap: 8px;
+            font-size: 0.92rem;
+            font-weight: 700;
+        }
+
+        .portal-form input,
+        .portal-form textarea,
+        .portal-form select {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid rgba(90, 62, 40, 0.14);
+            border-radius: 0;
+            background: #fff;
+            color: var(--ink);
+            font: inherit;
+            transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+        }
+
+        .portal-form input:focus,
+        .portal-form textarea:focus,
+        .portal-form select:focus {
+            outline: none;
+            border-color: rgba(132, 26, 45, 0.26);
+            box-shadow: 0 0 0 4px rgba(132, 26, 45, 0.08);
+            transform: translateY(-1px);
+        }
+
+        .portal-form textarea {
+            min-height: 124px;
+            resize: vertical;
+        }
+
+        .social-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .social-card {
+            position: relative;
+            overflow: hidden;
+            min-height: 280px;
+            border-radius: 0;
+            color: #fffaf4;
+            background: linear-gradient(150deg, rgba(30, 23, 21, 0.16), rgba(30, 23, 21, 0.46));
+        }
+
+        .social-card::before {
+            content: "";
+            position: absolute;
+            inset: -6px;
+            background:
+                linear-gradient(180deg, rgba(109, 21, 36, 0.2), rgba(18, 12, 11, 0.62)),
+                var(--social-image, url("./assets/images/eac-photo.png")) center/cover no-repeat;
+            filter: blur(3px);
+            transform: scale(1.02);
+            transition: transform 320ms ease;
+        }
+
+        .social-card>* {
+            position: relative;
+            z-index: 1;
+        }
+
+        .social-content {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: end;
+        }
+
+        .social-links a {
+            display: inline-flex;
+            align-items: center;
+            min-height: 36px;
+            padding: 0 12px;
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 0;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fffaf4;
+            font-size: 0.84rem;
+            font-weight: 700;
+            transition: background 180ms ease;
+        }
+
+        .social-links a:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .admin-stage {
+            position: relative;
+            overflow: hidden;
+            padding: 30px;
+            border-radius: 0;
+            background: linear-gradient(145deg, rgba(88, 13, 27, 0.96), rgba(132, 26, 45, 0.84));
+            box-shadow: 0 28px 62px rgba(58, 19, 21, 0.22);
+            color: #fffaf4;
+        }
+
+        .admin-stage::before {
+            content: "";
+            position: absolute;
+            inset: -8px;
+            background:
+                linear-gradient(140deg, rgba(17, 10, 8, 0.14), rgba(17, 10, 8, 0.42)),
+                url("./assets/images/eac-photo.png") center/cover no-repeat;
+            opacity: 0.2;
+            filter: blur(3px);
+            transform: scale(1.02);
+            pointer-events: none;
+        }
+
+        .admin-stage>* {
+            position: relative;
+            z-index: 1;
+        }
+
+        .admin-stage p,
+        .admin-stage .label {
+            color: rgba(255, 248, 241, 0.84);
+        }
+
+        .admin-stage .label {
+            color: #f1d7a7;
+        }
+
+        .admin-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 18px;
+            margin-bottom: 22px;
+        }
+
+        .admin-head h2,
+        .admin-main h3 {
+            color: #fffaf4;
+        }
+
+        .admin-top {
+            display: grid;
+            grid-template-columns: minmax(0, 1.08fr) minmax(300px, 0.92fr);
+            gap: 18px;
+            margin-bottom: 18px;
+        }
+
+        .admin-main {
+            padding: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: var(--radius);
+            background: rgba(255, 255, 255, 0.08);
+            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px);
+        }
+
+        .admin-glance {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .admin-glance-card {
+            padding: 15px;
+            border-radius: 0;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .admin-glance-card strong {
+            display: block;
+            margin-bottom: 6px;
+            color: #fffaf4;
+            font-size: 1.04rem;
+        }
+
+        .admin-side {
+            display: grid;
+            gap: 14px;
+        }
+
+        .stat-card {
+            background: rgba(255, 250, 244, 0.94);
+            box-shadow: 0 14px 28px rgba(32, 15, 12, 0.08);
+        }
+
+        .stat-card strong {
+            display: block;
+            margin-bottom: 6px;
+            color: var(--ink);
+            font-size: 1.08rem;
+        }
+
+        .admin-board {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .admin-column {
+            padding: 20px;
+            border-radius: 0;
+            background: rgba(255, 251, 246, 0.96);
+            box-shadow: 0 16px 30px rgba(32, 16, 12, 0.08);
+        }
+
+        .admin-column-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .admin-column h3,
+        .admin-column .label {
+            color: var(--ink);
+        }
+
+        @keyframes serviceLoop {
+            from {
+                transform: translateX(0);
+            }
+
+            to {
+                transform: translateX(calc(-318px * 6));
+            }
+        }
+
+        @media (max-width: 1120px) {
+
+            .hero-grid,
+            .resource-grid,
+            .support-board,
+            .grid-2,
+            .grid-3,
+            .social-grid,
+            .admin-top,
+            .admin-board {
+                grid-template-columns: 1fr;
+            }
+
+            .admin-glance {
+                grid-template-columns: 1fr;
+            }
+
+            .service-track {
+                grid-template-columns: 1fr;
+            }
+
+            .resource-feature,
+            .download-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 940px) {
+            .resource-tab-panel {
+                grid-template-columns: 1fr;
+            }
+
+            .service-picker-row,
+            .priority-actions {
+                grid-template-columns: 1fr;
+            }
+
+            .quick-board {
+                grid-template-columns: 1fr;
+            }
+
+            .section-head,
+            .admin-head,
+            .admin-actions {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .hero-side-panel {
+                -webkit-backdrop-filter: none;
+                backdrop-filter: none;
+            }
+
+            /* Full-width layout: no artificial side shrink — horizontal inset comes from padding-inline only */
+            .container:not(.site-navbar__bar):not(.section-shell) {
+                width: 100%;
+                max-width: 100%;
+            }
+
+            .section-shell,
+            .panel,
+            .card,
+            .admin-stage {
+                padding: 18px;
+            }
+
+            h1 {
+                font-size: 2.05rem;
+            }
+
+            h2 {
+                font-size: 1.68rem;
+            }
+
+            .cta-row,
+            .social-links {
+                flex-direction: column;
+            }
+
+            .btn,
+            .social-links a {
+                width: 100%;
+            }
+
+            .service-track {
+                grid-template-columns: 1fr;
+            }
+
+            .service-card {
+                min-height: 210px;
+            }
+
+            .osa-launcher-fab,
+            .osa-launcher-panel {
+                right: 14px;
+            }
+
+            .osa-launcher-panel {
+                width: calc(100vw - 28px);
+            }
+        }
+
+        /* Modern refinement overrides — :root/body/body::before/::after moved
+           to osa-design.css (global). Keep only home-page content layout below. */
+
+        /* Full-bleed containers for the home page sections only.
+           The footer + navbar must keep the global centered .container layout
+           (max-width from osa-design.css) so the footer matches every other page. */
+        .page-main .container,
+        main .container {
+            width: 100%;
+            max-width: none;
+            margin: 0;
+        }
+
+        .section-shell {
+            padding: clamp(38px, 5.5vw, 74px) clamp(16px, 5vw, 76px);
+            border-radius: 0;
+            border: none;
+            box-shadow: none;
+            width: 100%;
+        }
+
+        .section-shell>* {
+            width: min(100%, 1260px);
+            margin-inline: auto;
+        }
+
+        .section-copy h2 {
+            margin-bottom: 8px;
+            font-size: clamp(1.25rem, 2.1vw, 1.8rem);
+            letter-spacing: -0.01em;
+        }
+
+        .section-copy p {
+            max-width: 64ch;
+            color: #675a4f;
+        }
+
+        .hero-title {
+            font-size: clamp(2rem, 4.8vw, 3.1rem);
+            letter-spacing: -0.02em;
+        }
+
+        .hero-layout,
+        .chat-preview,
+        .mini-grid,
+        .announcements-grid,
+        .lost-grid,
+        .action-grid {
+            gap: var(--space-5);
+        }
+
+        .hero-eyebrow {
+            font-size: 0.7rem;
+            letter-spacing: 0.2em;
+        }
+
+        .hero-surface,
+        .dashboard-surface,
+        .services-surface,
+        .manual-surface,
+        .chat-preview-surface,
+        .announcements-surface,
+        .lost-found-surface {
+            position: relative;
+            overflow: hidden;
+            isolation: isolate;
+            background: linear-gradient(180deg, rgba(255, 252, 248, 0.96), rgba(251, 246, 238, 0.94));
+        }
+
+        .hero-surface::before,
+        .dashboard-surface::before,
+        .services-surface::before,
+        .manual-surface::before,
+        .chat-preview-surface::before,
+        .announcements-surface::before,
+        .lost-found-surface::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .hero-surface::before {
+            background:
+                linear-gradient(120deg, rgba(132, 26, 45, 0.07), transparent 52%),
+                url("./assets/images/eac-photo.png") center / cover no-repeat;
+            opacity: 0.32;
+        }
+
+        /* First hero band tucks under fixed navbar (same pattern as Announcements + Lost & Found) */
+        #dashboard.section.hero.hero-surface {
+            margin-top: calc(var(--nav-h) * -1);
+            padding-top: var(--nav-h);
+            border-top: none;
+        }
+
+        #dashboard.hero {
+            padding-top: 0;
+        }
+
+        /* Full-bleed section bands: every .section-shell spans the viewport; inner padding is on the shell */
+        .section {
+            width: 100%;
+            max-width: 100%;
+            margin: 0;
+            padding: 0;
+            border-top: 1px solid rgba(90, 62, 40, 0.08);
+            box-sizing: border-box;
+        }
+
+        .section>.container.section-shell {
+            width: 100%;
+            max-width: none;
+            margin-left: 0;
+            margin-right: 0;
+            box-sizing: border-box;
+        }
+
+        .dashboard-surface::before {
+            background: radial-gradient(circle at 12% 12%, rgba(132, 26, 45, 0.1), transparent 48%);
+            opacity: 0.9;
+        }
+
+        .services-surface::before {
+            background: linear-gradient(135deg,
+                    rgba(255, 248, 238, 0.9) 0%,
+                    rgba(251, 243, 228, 0.85) 100%);
+        }
+
+        .manual-surface::before {
+            background: linear-gradient(160deg,
+                    rgba(199, 154, 73, 0.06) 0%,
+                    rgba(255, 248, 238, 0.9) 40%,
+                    rgba(251, 243, 228, 0.85) 100%);
+        }
+
+        .chat-preview-surface::before {
+            background:
+                linear-gradient(180deg, rgba(255, 252, 248, 0.92) 0%, rgba(251, 246, 238, 0.88) 45%, rgba(255, 252, 248, 0.94) 100%);
+        }
+
+        /* Chatbot Preview — calm editorial layout (no busy motion) */
+        .chat-preview-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(300px, 480px);
+            gap: clamp(1.5rem, 5vw, 3rem);
+            align-items: stretch;
+        }
+
+        @media (max-width: 1020px) {
+            .chat-preview-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .chat-preview-intro {
+            padding: 0.25rem 0 0;
+            border-left: 3px solid #c79a49;
+            padding-left: 1.25rem;
+        }
+
+        .chat-preview-eyebrow {
+            margin: 0 0 0.35rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #841a2d;
+        }
+
+        .chat-preview-title {
+            margin: 0 0 0.75rem;
+            font-size: clamp(1.5rem, 2.8vw, 2.1rem);
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            line-height: 1.2;
+            color: #1c1917;
+        }
+
+        .chat-preview-lede {
+            margin: 0;
+            max-width: 48ch;
+            font-size: 0.94rem;
+            line-height: 1.65;
+            color: #57534e;
+        }
+
+        .chat-preview-points {
+            margin: 1rem 0 0;
+            padding: 0 0 0 1.1rem;
+            font-size: 0.88rem;
+            line-height: 1.55;
+            color: #44403c;
+        }
+
+        .chat-preview-points li {
+            margin-bottom: 0.35rem;
+        }
+
+        .chat-preview-showcase {
+            position: relative;
+            display: flex;
+            align-items: stretch;
+            justify-content: flex-end;
+        }
+
+        .chat-preview-stage {
+            position: relative;
+            width: 100%;
+            max-width: 440px;
+            padding: 0.65rem;
+            background: linear-gradient(165deg, rgba(255, 255, 255, 0.92), rgba(250, 243, 232, 0.88));
+            border: 1px solid rgba(132, 26, 45, 0.1);
+            box-shadow:
+                0 4px 6px -1px rgba(54, 29, 16, 0.06),
+                0 22px 48px -12px rgba(54, 29, 16, 0.14);
+        }
+
+        .chat-preview-stage__chrome {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 0.55rem;
+            padding-left: 0.15rem;
+        }
+
+        .chat-preview-stage__chrome span {
+            width: 9px;
+            height: 9px;
+            border-radius: 999px !important;
+            opacity: 0.85;
+        }
+
+        .chat-preview-stage__chrome span:nth-child(1) {
+            background: #ef4444;
+        }
+
+        .chat-preview-stage__chrome span:nth-child(2) {
+            background: #f59e0b;
+        }
+
+        .chat-preview-stage__chrome span:nth-child(3) {
+            background: #22c55e;
+        }
+
+        .chat-preview-showcase-inner {
+            position: relative;
+            transition: opacity 0.28s ease, transform 0.28s ease;
+        }
+
+        .chat-preview-showcase-inner.is-restarting {
+            opacity: 0;
+            transform: translateY(4px);
+        }
+
+        #preview-chat-thread {
+            min-height: 220px;
+            max-height: min(44vh, 340px);
+            overflow-y: auto;
+            scroll-behavior: smooth;
+            background: linear-gradient(180deg, #faf7f2 0%, #f5f0e8 100%);
+            border: 1px solid rgba(97, 49, 31, 0.08);
+        }
+
+        .preview-chat-msg {
+            animation: previewMsgIn 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+
+        @keyframes previewMsgIn {
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .preview-typing-msg {
+            animation: previewMsgIn 0.28s ease both;
+        }
+
+        .chat-preview-chips-live {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+
+            .preview-chat-msg,
+            .preview-typing-msg {
+                animation: none !important;
+            }
+        }
+
+        .announcements-surface::before,
+        .lost-found-surface::before {
+            background: linear-gradient(135deg,
+                    rgba(255, 248, 238, 0.9) 0%,
+                    rgba(251, 243, 228, 0.85) 100%);
+        }
+
+        /* Right-side hero support panel removed (redundant with navbar + module pages). */
+
+        /* 100% of parent — do not use vw here; 96vw was wider than the padded .section-shell and caused asymmetric overflow (images flush on one side). */
+        .services-carousel-wrap {
+            display: grid;
+            gap: var(--space-2);
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+            margin-inline: 0;
+            box-sizing: border-box;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .services-carousel {
+            display: grid;
+            grid-auto-flow: column;
+            grid-auto-columns: minmax(300px, 380px);
+            gap: 18px;
+            padding: 8px 0 calc(var(--space-2) + 2px);
+            width: 100%;
+            min-width: 0;
+            box-sizing: border-box;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scroll-snap-type: none;
+            cursor: grab;
+            touch-action: pan-x pan-y;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .services-carousel::-webkit-scrollbar {
+            display: none;
+        }
+
+        .services-carousel.is-dragging {
+            cursor: grabbing;
+        }
+
+        .service-tile {
+            min-height: 168px;
+            scroll-snap-align: none;
+            --focus: 1;
+            transform: none;
+            opacity: 1;
+            transition: border-color 240ms ease, box-shadow 240ms ease;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(250, 245, 238, 0.95));
+            border-radius: var(--inner-radius);
+        }
+
+        .service-tile.is-active {
+            border-color: rgba(132, 26, 45, 0.26);
+            box-shadow: 0 20px 36px rgba(58, 31, 18, 0.12);
+        }
+
+        /* OSA Services — institutional rich cards */
+        .service-tile.service-card {
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 320px;
+            max-width: 100%;
+            border: 1px solid rgba(90, 62, 40, 0.12);
+            background: linear-gradient(180deg, #fffdf9 0%, #faf4eb 100%);
+            box-shadow: 0 14px 36px rgba(54, 29, 16, 0.1);
+            overflow: hidden;
+        }
+
+        .service-card__visual {
+            position: relative;
+            height: 96px;
+            flex-shrink: 0;
+            background-color: rgba(90, 62, 40, 0.12);
+            background-image: url("./assets/images/eac-photo.png");
+            background-position: center center;
+            background-size: cover;
+            background-repeat: no-repeat;
+        }
+
+        .service-card__visual::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+
+        .service-card--g1 .service-card__visual::after {
+            background: linear-gradient(135deg, rgba(90, 18, 32, 0.88) 0%, rgba(132, 26, 45, 0.45) 55%, rgba(199, 154, 73, 0.25) 100%);
+        }
+
+        .service-card--g2 .service-card__visual::after {
+            background: linear-gradient(120deg, rgba(61, 40, 24, 0.82) 0%, rgba(132, 26, 45, 0.5) 100%);
+        }
+
+        .service-card--g3 .service-card__visual::after {
+            background: linear-gradient(160deg, rgba(132, 26, 45, 0.78) 0%, rgba(40, 28, 22, 0.65) 100%);
+        }
+
+        .service-card--g4 .service-card__visual::after {
+            background: linear-gradient(145deg, rgba(199, 154, 73, 0.55) 0%, rgba(132, 26, 45, 0.75) 100%);
+        }
+
+        .service-card--g5 .service-card__visual::after {
+            background: linear-gradient(180deg, rgba(90, 62, 40, 0.55) 0%, rgba(132, 26, 45, 0.82) 100%);
+        }
+
+        .service-card--g6 .service-card__visual::after {
+            background: linear-gradient(90deg, rgba(40, 52, 72, 0.65) 0%, rgba(132, 26, 45, 0.72) 100%);
+        }
+
+        .service-card--g7 .service-card__visual::after {
+            background: linear-gradient(135deg, rgba(132, 26, 45, 0.7) 0%, rgba(199, 154, 73, 0.4) 100%);
+        }
+
+        .service-card__body {
+            padding: 14px 16px 16px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-height: 0;
+        }
+
+        .service-card__body h3 {
+            margin: 0;
+            font-size: 0.98rem;
+            line-height: 1.28;
+            letter-spacing: -0.01em;
+            color: #2a201b;
+        }
+
+        .service-card__lead {
+            margin: 0;
+            font-size: 0.84rem;
+            line-height: 1.5;
+            color: #5c5048;
+            flex: 1;
+        }
+
+        .section-copy a.resource-link {
+            color: var(--brand);
+            font-weight: 700;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+
+        .section-copy a.resource-link:hover {
+            color: var(--brand-deep);
+        }
+
+        .manual-highlight {
+            margin-bottom: var(--space-5);
+            padding: var(--space-5);
+            border: 1px solid rgba(199, 154, 73, 0.35);
+            border-radius: var(--outer-radius);
+            background: linear-gradient(135deg, rgba(255, 252, 246, 0.97) 0%, rgba(250, 240, 226, 0.95) 100%);
+            box-shadow: 0 16px 40px rgba(54, 29, 16, 0.08);
+        }
+
+        .manual-highlight__inner {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: var(--space-4);
+            align-items: center;
+            width: 100%;
+        }
+
+        .manual-highlight__cover {
+            width: 100%;
+            max-width: min(240px, 32vw);
+            height: auto;
+            border-radius: 0;
+            border: 1px solid rgba(132, 26, 45, 0.14);
+            box-shadow: 0 14px 32px rgba(54, 29, 16, 0.14);
+            object-fit: cover;
+            aspect-ratio: 3 / 4;
+        }
+
+        .manual-highlight__label {
+            display: inline-block;
+            margin-bottom: 6px;
+            font-size: 0.68rem;
+            font-weight: 800;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--brand);
+        }
+
+        .manual-highlight h3 {
+            margin: 0 0 8px;
+            font-size: 1.2rem;
+        }
+
+        .manual-highlight p {
+            margin: 0 0 14px;
+            font-size: 0.92rem;
+            color: #5a4d44;
+            max-width: none;
+        }
+
+        @media (max-width: 640px) {
+            .manual-highlight__inner {
+                grid-template-columns: 1fr;
+            }
+
+            .manual-highlight__cover {
+                display: block;
+                max-width: 200px;
+                margin-inline: auto;
+            }
+        }
+
+        .action-grid--manual-forms {
+            grid-template-columns: 1fr;
+        }
+
+        @media (min-width: 768px) {
+            .action-grid--manual-forms {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .action-grid--manual-forms {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+
+        .action-card,
+        .announcement-item,
+        .lost-item,
+        .mini-card {
+            min-height: 138px;
+            background: linear-gradient(180deg, #fffdf9, #fbf6ee);
+            border-radius: var(--inner-radius);
+            padding: var(--space-4);
+        }
+
+        .chat-widget-preview {
+            border: 1px solid rgba(97, 49, 31, 0.16);
+            border-radius: var(--outer-radius);
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: 0 16px 34px rgba(54, 29, 16, 0.12);
+        }
+
+        .chat-quick-btn {
+            transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+        }
+
+        .chat-quick-btn:hover,
+        .chat-quick-btn:focus-visible {
+            background: rgba(132, 26, 45, 0.08);
+            border-color: rgba(132, 26, 45, 0.24);
+            transform: translateY(-1px);
+            outline: none;
+        }
+
+        .dashboard-chat-cta {
+            margin-top: 16px;
+        }
+
+        .otp-title {
+            font-size: 1rem;
+        }
+
+        .portal-form input,
+        .portal-form textarea,
+        .portal-form select {
+            border-radius: var(--inner-radius);
+            padding: 12px;
+        }
+
+        .btn {
+            border-radius: var(--inner-radius);
+            transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 220ms ease, background 220ms ease, border-color 220ms ease;
+        }
+
+        @media (max-width: 940px) {
+            .services-carousel {
+                grid-auto-columns: minmax(244px, 286px);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                width: 100%;
+            }
+
+            .section-shell {
+                padding: 28px 16px;
+            }
+
+        }
+
+        @keyframes shimmerLine {
+
+            0%,
+            100% {
+                opacity: 0.5;
+                transform: scaleX(0.94);
+            }
+
+            50% {
+                opacity: 0.95;
+                transform: scaleX(1);
+            }
+        }
+
+        @keyframes chatFabFloat {
+
+            0%,
+            100% {
+                transform: translateY(0);
+                box-shadow: 0 20px 38px rgba(52, 23, 14, 0.24);
+            }
+
+            50% {
+                transform: translateY(-3px);
+                box-shadow: 0 24px 42px rgba(52, 23, 14, 0.28);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            html {
+                scroll-behavior: auto;
+            }
+
+            .hero-subtitle-rotator,
+            .hero-subtitle-rotator.is-entering,
+            .hero-subtitle-rotator.is-leaving {
+                animation: none !important;
+            }
+
+            .mock-line {
+                animation: none !important;
+            }
+
+            .osa-launcher-fab {
+                animation: none !important;
+            }
+        }
+
+        /* Square UI — enforce zero radius everywhere */
+        *,
+        *::before,
+        *::after {
+            border-radius: 0 !important;
+        }
+
+        /* ═══════════════════════════════════════════════════════════
+           UI IMPROVEMENTS — visual polish layer
+           ═══════════════════════════════════════════════════════════ */
+
+        /* 1. Hero title: EAC brand-color gradient text
+           color: transparent is the Firefox fallback since Firefox ignores
+           -webkit-text-fill-color but does honour background-clip: text + color: transparent */
+        .hero-title {
+            background: linear-gradient(145deg, #1a1210 5%, #841a2d 65%, #b08830 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+            padding-bottom: 0.04em;
+        }
+
+        /* 2. Hero eyebrow: badge / chip with brand-dot */
+        .hero-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 4px 10px 4px 8px;
+            background: rgba(132, 26, 45, 0.08);
+            border: 1px solid rgba(132, 26, 45, 0.18);
+            margin-bottom: 14px;
+        }
+
+        .hero-eyebrow::before {
+            content: "";
+            display: inline-block;
+            width: 5px;
+            height: 5px;
+            background: var(--brand);
+            flex-shrink: 0;
+        }
+
+        /* 3. Removed fake "live" badge and pulsing status visuals. */
+
+        /* 4. Service card visual area: keep original photo, slightly taller */
+        .service-card__visual {
+            height: 120px;
+        }
+
+        /* 5. Service card hover: lift + glow */
+        .service-tile.service-card {
+            transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+                box-shadow 220ms ease,
+                border-color 220ms ease;
+        }
+
+        .service-tile.service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 26px 56px rgba(54, 29, 16, 0.2);
+            border-color: rgba(132, 26, 45, 0.28);
+        }
+
+        /* 7. Section headings: consistent gradient underline accent
+              Uses bottom: -4px so it floats below text without
+              touching margins — identical for all three sections */
+        .section-copy h2 {
+            position: relative;
+        }
+
+        .section-copy h2::after {
+            content: "";
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 30px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--brand), var(--gold));
+        }
+
+        /* 8. Hero side panel: suppress heading underline + add separator line */
+        /* Removed hero-side-panel heading overrides (panel removed). */
+
+        /* 9. Mini-cards (module pages): brand top border + gold-on-hover */
+        .mini-card {
+            border-top: 3px solid var(--brand);
+            background: linear-gradient(180deg, #fffdfb 0%, #faf5ed 100%);
+            transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
+                box-shadow 200ms ease,
+                border-top-color 200ms ease;
+        }
+
+        .mini-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 42px rgba(54, 29, 16, 0.13);
+            border-top-color: var(--gold);
+        }
+
+        .mini-card h3 {
+            color: #000;
+        }
+
+        .announcement-sneak-list {
+            margin: 10px 0 0;
+            padding-left: 16px;
+            display: grid;
+            gap: 6px;
+            font-size: 0.8rem;
+            color: #5b4d44;
+            line-height: 1.45;
+        }
+
+        .announcement-sneak-list li {
+            margin: 0;
+        }
+
+        .announcement-sneak-empty {
+            margin-top: 10px;
+            font-size: 0.78rem;
+            color: #74665a;
+            font-style: italic;
+        }
+
+        /* 10. Hero subtitle rotator: minimal, clean, fast */
+        .hero-subtitle-rotator {
+            margin: 0;
+            max-width: 760px;
+            line-height: 1.56;
+            min-height: calc(1.56em * 2);
+            display: block;
+            color: #222222;
+            font-weight: 700;
+            font-size: clamp(0.9rem, 1.06vw, 0.98rem);
+            letter-spacing: 0;
+            padding: 0;
+            background: transparent;
+            border: 0;
+        }
+
+        .hero-subtitle-rotator.is-entering {
+            animation: heroSubtitleIn 360ms cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .hero-subtitle-rotator.is-leaving {
+            animation: heroSubtitleOut 220ms ease-in;
+        }
+
+        .hero-guide-card {
+            width: 100%;
+            max-width: 520px;
+            box-sizing: border-box;
+            margin: 0 auto;
+            padding: 2rem;
+            border-radius: 0 !important;
+            border: 1px solid rgba(132, 26, 45, 0.08);
+            border-left: 4px solid var(--gold);
+            background: rgba(255, 253, 249, 0.8);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            box-shadow: 0 8px 24px rgba(54, 29, 16, 0.04);
+            text-align: left;
+            animation: heroPanelIn 0.85s cubic-bezier(0.2, 0.8, 0.2, 1) 0.15s both;
+            display: flex;
+            flex-direction: column;
+            height: 468px;
+        }
+
+        .hero-guide-rotator {
+            position: relative;
+            flex: 1 1 auto;
+            min-height: 0;
+            height: auto;
+            overflow: hidden;
+        }
+
+        .hero-guide-slide {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            align-content: start;
+            gap: 1.15rem;
+            opacity: 0;
+            transform: translateX(38px) scale(0.985);
+            pointer-events: none;
+        }
+
+        .hero-guide-slide.is-active {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+            pointer-events: auto;
+            transition: opacity 360ms ease, transform 500ms cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .hero-guide-slide.is-leaving {
+            opacity: 0;
+            transform: translateX(-34px) scale(0.985);
+            transition: opacity 220ms ease, transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .hero-guide-kicker {
+            margin: 0;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--gold-deep);
+            font-weight: 800;
+        }
+
+        .hero-guide-title {
+            margin: 0;
+            font-size: 1.55rem;
+            color: var(--ink);
+            line-height: 1.2;
+            padding: 0;
+            border: 0;
+        }
+
+        .hero-guide-title span {
+            color: var(--brand);
+        }
+
+        .hero-guide-list {
+            display: grid;
+            gap: 1.05rem;
+        }
+
+        .hero-guide-item h4 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--brand);
+            margin: 0 0 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .hero-guide-item h4 span {
+            color: var(--gold-deep);
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+
+        .hero-guide-item p {
+            font-size: 0.88rem;
+            color: #5a4d44;
+            line-height: 1.5;
+            margin: 0;
+            padding-left: 17px;
+        }
+
+        .hero-guide-dots {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-top: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .hero-guide-dot {
+            width: 24px;
+            height: 3px;
+            background: rgba(132, 26, 45, 0.16);
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+
+        .hero-guide-dot.is-active {
+            background: var(--gold);
+        }
+
+        @keyframes heroSubtitleIn {
+            from {
+                opacity: 0;
+                transform: translateY(7px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes heroSubtitleOut {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            to {
+                opacity: 0;
+                transform: translateY(-6px);
+            }
+        }
+
+        /* 11. Action cards (forms): gold left accent + hover lift */
+        .action-card {
+            border-left: 4px solid var(--gold);
+            background: linear-gradient(180deg, #fffdfb 0%, #faf5ed 100%);
+            transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
+                box-shadow 200ms ease;
+        }
+
+        .action-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 18px 38px rgba(54, 29, 16, 0.13);
+        }
+
+        .action-card h3 {
+            color: var(--ink);
+            font-size: 1.05rem;
+        }
+
+        /* 12. Manual highlight: prominent gold top accent */
+        .manual-highlight {
+            border-top: 4px solid var(--gold);
+        }
+
+        /* 13. Services section: slightly warmer background tint */
+        .services-surface {
+            background: linear-gradient(180deg, rgba(255, 250, 241, 0.97), rgba(253, 246, 232, 0.96));
+        }
+
+        /* 14. Responsive Hero Layout */
+        .home-hero-grid {
+            display: grid;
+            gap: 4rem;
+            grid-template-columns: 1.25fr 1fr;
+            align-items: center;
+        }
+
+        @media (max-width: 960px) {
+            .home-hero-grid {
+                grid-template-columns: 1fr;
+                gap: 3rem;
+            }
+
+            .hero-guide-rotator {
+                overflow: hidden;
+            }
+
+            .hero-guide-card {
+                height: 560px;
+            }
+
+            .hero-guide-slide {
+                gap: 0.95rem;
+            }
+
+            .hero-guide-title {
+                font-size: 1.25rem;
+                line-height: 1.22;
+            }
+
+            .hero-guide-item h4 {
+                font-size: 0.9rem;
+            }
+
+            .hero-guide-item p {
+                font-size: 0.84rem;
+                line-height: 1.45;
+                padding-left: 15px;
+            }
+        }
+
+        /* In system dark mode (e.g., Brave auto-dark environments), remove harsh section edges
+           for the three primary containers requested by UX. */
+        @media (prefers-color-scheme: dark) {
+            #services.section,
+            #manual.section,
+            #module-pages.section {
+                border-top: none !important;
+            }
+
+            .services-surface,
+            .manual-surface,
+            .announcements-surface {
+                border: none !important;
+                outline: none !important;
+                box-shadow: none !important;
+                background: linear-gradient(180deg, rgba(255, 252, 248, 0.98), rgba(251, 246, 238, 0.96)) !important;
+            }
+
+            .services-surface::before,
+            .manual-surface::before,
+            .announcements-surface::before {
+                opacity: 0.55 !important;
+                box-shadow: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page">
+        <div data-portal-shell data-active="dashboard"></div>
+
+        <main id="top" class="page-main">
+            <section class="section hero hero-surface" id="dashboard">
+                <div class="container">
+                    <div class="hero-layout home-hero-grid" style="padding: 64px 0;">
+                        <!-- Left Side: Hero Content -->
+                        <div style="animation: heroContentIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;">
+                            <h1 class="hero-title"
+                                style="font-size: clamp(2.4rem, 4vw, 3.2rem); line-height: 1.15; margin-bottom: 1.2rem;">
+                                OSA Transaction Guide Portal</h1>
+                            <p class="lead hero-subtitle-rotator" id="hero-subtitle-rotator"
+                                style="margin-bottom: 2rem;">Access OSA services, forms, and student support in one easy
+                                portal.</p>
+                            <div class="hero-cta">
+                                <button class="btn btn-primary" type="button" data-chat-open
+                                    aria-controls="osa-chat-widget" aria-expanded="false"
+                                    style="border-radius: 0 !important;">Open Ask OSA</button>
+                                <a class="btn btn-neutral" href="/announcements"
+                                    style="border-radius: 0 !important;">View Announcements</a>
+                            </div>
+                        </div>
+
+                        <!-- Right Side: Platform Guide -->
+                        <div class="hero-guide-card">
+                            <div class="hero-guide-rotator" id="hero-guide-rotator" aria-live="polite">
+                                <article class="hero-guide-slide is-active">
+                                    <p class="hero-guide-kicker">Chat Guide</p>
+                                    <h2 class="hero-guide-title">Start with Ask OSA.<br><span>Get guided support fast.</span></h2>
+                                    <div class="hero-guide-list">
+                                        <div class="hero-guide-item">
+                                            <h4><span>&rsaquo;</span> Open the live assistant</h4>
+                                            <p>Launch Ask OSA from the bottom-right button and type your concern naturally for instant guidance.</p>
+                                        </div>
+                                        <div class="hero-guide-item">
+                                            <h4><span>&rsaquo;</span> Verify when needed</h4>
+                                            <p>Protected actions like claims, appointments, and escalations can trigger secure student-email verification.</p>
+                                        </div>
+                                        <div class="hero-guide-item">
+                                            <h4><span>&rsaquo;</span> Continue the flow</h4>
+                                            <p>Stay inside the chat to receive the next step, required links, and any OTP prompt for sensitive requests.</p>
+                                        </div>
+                                    </div>
+                                </article>
+                                <article class="hero-guide-slide">
+                                    <p class="hero-guide-kicker">Announcement Guide</p>
+                                    <h2 class="hero-guide-title">Stay updated fast.<br><span>Check posted notices clearly.</span></h2>
+                                    <div class="hero-guide-list">
+                                        <div class="hero-guide-item">
+                                            <h4><span>&rsaquo;</span> Browse all OSA posts</h4>
+                                            <p>See advisories, schedules, reminders, and event updates together in one organized announcement page.</p>
+                                        </div>
+                                        <div class="hero-guide-item">
+                                            <h4><span>&rsaquo;</span> Open the full bulletin</h4>
+                                            <p>View the complete announcement, attached images, and context before acting on any school update.</p>
+                                        </div>
+                                        <div class="hero-guide-item">
+                                            <h4><span>&rsaquo;</span> Search what matters</h4>
+                                            <p>Use titles, dates, categories, or keywords to find the exact posting you need faster.</p>
+                                        </div>
+                                    </div>
+                                </article>
+                                <article class="hero-guide-slide">
+                                    <p class="hero-guide-kicker">Lost &amp; Found Guide</p>
+                                    <h2 class="hero-guide-title">Review items first.<br><span>Claim them the right way.</span></h2>
+                                    <div class="hero-guide-list">
+                                        <div class="hero-guide-item">
+                                            <h4><span>&rsaquo;</span> Inspect the listing</h4>
+                                            <p>Check the item photos, category, and description to confirm the posted entry matches your property.</p>
+                                        </div>
+                                        <div class="hero-guide-item">
+                                            <h4><span>&rsaquo;</span> Keep the item number</h4>
+                                            <p>Note the Lost &amp; Found reference code before opening Ask OSA so the verification flow moves faster.</p>
+                                        </div>
+                                        <div class="hero-guide-item">
+                                            <h4><span>&rsaquo;</span> Complete the claim flow</h4>
+                                            <p>Follow the guided chat process for proof-of-ownership checks and any OTP step required for restricted requests.</p>
+                                        </div>
+                                    </div>
+                                </article>
+                            </div>
+                            <div class="hero-guide-dots" id="hero-guide-dots">
+                                <span class="hero-guide-dot is-active"></span>
+                                <span class="hero-guide-dot"></span>
+                                <span class="hero-guide-dot"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section" id="services">
+                <div class="container shell section-shell services-surface">
+                    <div class="section-head">
+                        <div class="section-copy">
+                            <h2>OSA Services</h2>
+                            <p>These entries follow the Office of Student Affairs role in student life and development
+                                at EAC.</p>
+                        </div>
+                    </div>
+                    <div class="services-carousel-wrap">
+                        <div class="services-carousel" id="services-carousel">
+                            <article class="service-tile service-card service-card--g1" data-service="conduct">
+                                <div class="service-card__visual" role="presentation"></div>
+                                <div class="service-card__body">
+                                    <h3>Student Conduct and Discipline</h3>
+                                    <p class="service-card__lead">OSA attends to student conduct and discipline in line
+                                        with college policies—consistent with the OSA mandate on student life and
+                                        welfare.</p>
+                                </div>
+                            </article>
+                            <article class="service-tile service-card service-card--g2" data-service="lostfound">
+                                <div class="service-card__visual" role="presentation"></div>
+                                <div class="service-card__body">
+                                    <h3>Lost &amp; Found</h3>
+                                    <p class="service-card__lead">Coordinates logging and release of found items
+                                        reported on campus through OSA, so students have a single office to report or
+                                        claim property.</p>
+                                </div>
+                            </article>
+                            <article class="service-tile service-card service-card--g3" data-service="id">
+                                <div class="service-card__visual" role="presentation"></div>
+                                <div class="service-card__body">
+                                    <h3>ID Processing</h3>
+                                    <p class="service-card__lead">School ID services for new students, replacement, and
+                                        updates are processed through OSA following campus procedures and posted
+                                        requirements.</p>
+                                </div>
+                            </article>
+                            <article class="service-tile service-card service-card--g4" data-service="scholarship">
+                                <div class="service-card__visual" role="presentation"></div>
+                                <div class="service-card__body">
+                                    <h3>Scholarship Applications and Inquiries</h3>
+                                    <p class="service-card__lead">Listed under official OSA services: assistance with
+                                        scholarship applications and inquiries, including requirements and schedules
+                                        published by the institution.</p>
+                                </div>
+                            </article>
+                            <article class="service-tile service-card service-card--g5" data-service="goodmoral">
+                                <div class="service-card__visual" role="presentation"></div>
+                                <div class="service-card__body">
+                                    <h3>Issuance of Good Moral Character Certificate</h3>
+                                    <p class="service-card__lead">OSA processes requests for Good Moral Character
+                                        certificates (and related clearance documentation) according to published
+                                        procedures and release schedules.</p>
+                                </div>
+                            </article>
+                            <article class="service-tile service-card service-card--g6" data-service="iso">
+                                <div class="service-card__visual" role="presentation"></div>
+                                <div class="service-card__body">
+                                    <h3>ISO and PACUCOA Accreditation</h3>
+                                    <p class="service-card__lead">Student-affairs support tied to institutional quality
+                                        assurance and accreditation (e.g., ISO, PACUCOA) is coordinated through OSA as
+                                        the liaison for student-facing requirements.</p>
+                                </div>
+                            </article>
+                            <article class="service-tile service-card service-card--g7" data-service="laap">
+                                <div class="service-card__visual" role="presentation"></div>
+                                <div class="service-card__body">
+                                    <h3>Learner Activity Program (LAAP)</h3>
+                                    <p class="service-card__lead">OSA supports co-curricular and student activities
+                                        under LAAP—aligning programs with institutional guidelines and student
+                                        organization rules.</p>
+                                </div>
+                            </article>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section" id="manual">
+                <div class="container shell section-shell manual-surface">
+                    <div class="section-head">
+                        <div class="section-copy">
+                            <h2>Student Manual and Forms</h2>
+                            <p>Downloadable OSA forms and official references. Use the highlighted manual below as the
+                                primary document.</p>
+                        </div>
+                    </div>
+                    <div class="manual-highlight" id="manual-resource">
+                        <div class="manual-highlight__inner">
+                            <img class="manual-highlight__cover" src="./assets/images/student-manual-cover-2021.png"
+                                width="600" height="800" loading="lazy" decoding="async"
+                                alt="Cover of the Emilio Aguinaldo College Student Manual, 2021 edition">
+                            <div>
+                                <span class="manual-highlight__label">Primary reference document</span>
+                                <h3>EAC-C Student Manual</h3>
+                                <p>Central handbook for student rights, responsibilities, and academic norms. Open the
+                                    PDF for full text; use Ask OSA for guided interpretation and service-specific
+                                    questions.</p>
+                                <a class="btn btn-primary"
+                                    href="https://drive.google.com/file/d/1Sk4s2GnO7SGkEaDnmXNBqjZP1a10Y9qR/view?usp=sharing"
+                                    target="_blank" rel="noopener noreferrer">Open Student Manual (PDF)</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="action-grid action-grid--manual-forms">
+                        <article class="action-card">
+                            <h3>Scholarship Application</h3>
+                            <p>Download application form.</p>
+                            <div class="hero-cta">
+                                <a class="btn btn-primary"
+                                    href="https://www.eac.edu.ph/wp-content/uploads/2021/08/QF-OSA-010-07.15.2021-Rev.01-Scholarship-Application-OSA-FORMS-2021-2.doc"
+                                    target="_blank" rel="noopener noreferrer">Download</a>
+                            </div>
+                        </article>
+                        <article class="action-card">
+                            <h3>Incident Report Form</h3>
+                            <p>Use for conduct-related filing.</p>
+                            <div class="hero-cta">
+                                <a class="btn btn-primary"
+                                    href="https://www.eac.edu.ph/wp-content/uploads/2021/08/QF-OSA-012-07.15.2021-Rev.01-Incident-Report.doc"
+                                    target="_blank" rel="noopener noreferrer">Download</a>
+                            </div>
+                        </article>
+                        <article class="action-card">
+                            <h3>Academic Leave Form</h3>
+                            <p>Leave of absence application.</p>
+                            <div class="hero-cta">
+                                <a class="btn btn-primary"
+                                    href="https://www.eac.edu.ph/wp-content/uploads/2021/08/QF-OSA-013-07.15.2021-Rev.0Academic-Leave-of-Absence-Application-Form.doc"
+                                    target="_blank" rel="noopener noreferrer">Download</a>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section" id="module-pages">
+                <div class="container shell section-shell announcements-surface">
+                    <div class="section-head">
+                        <div class="section-copy">
+                            <h2>Dedicated Module Pages</h2>
+                            <p>Serves as the central landing page, providing a clear overview of the portal and quick
+                                access to key features and services.</p>
+                        </div>
+                    </div>
+                    <div class="mini-grid">
+                        <article class="mini-card">
+                            <h3>Announcements / News</h3>
+                            <p>Displays official announcements, advisories, and updates with accurate timestamps.</p>
+                            <ul class="announcement-sneak-list" id="announcement-sneak-list">
+                                <li>Preparing latest campus updates...</li>
+                            </ul>
+                            <p class="announcement-sneak-empty" id="announcement-sneak-empty">No posted announcements
+                                yet.</p>
+                            <p style="margin-top:0.65rem"><a class="btn btn-neutral" href="/announcements">Open page</a>
+                            </p>
+                        </article>
+                        <article class="mini-card">
+                            <h3>Lost &amp; Found Board</h3>
+                            <p>Displays reported items with images, descriptions, timestamps, and claim status.</p>
+                            <p style="margin-top:0.65rem"><a class="btn btn-neutral" href="/lost-and-found">Open
+                                    page</a></p>
+                        </article>
+                        <article class="mini-card">
+                            <h3>About Portal</h3>
+                            <p>Displays system overview, features, service details, and relevant information about EAC
+                                Cavite's OSA office.</p>
+                            <p style="margin-top:0.65rem">
+                                <a class="btn btn-neutral" href="/about-portal">About Portal</a>
+                            </p>
+                        </article>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const navLinks = document.querySelectorAll("[data-nav]");
+            const navLinksMobile = document.querySelectorAll("[data-nav-mobile]");
+            const servicesCarousel = document.getElementById("services-carousel");
+            const announcementSneakList = document.getElementById("announcement-sneak-list");
+            const announcementSneakEmpty = document.getElementById("announcement-sneak-empty");
+            const heroSubtitleRotator = document.getElementById("hero-subtitle-rotator");
+            const heroGuideRotator = document.getElementById("hero-guide-rotator");
+            const heroGuideSlides = heroGuideRotator ? Array.from(heroGuideRotator.querySelectorAll(".hero-guide-slide")) : [];
+            const heroGuideDots = Array.from(document.querySelectorAll("#hero-guide-dots .hero-guide-dot"));
+            const heroCaptions = [
+                "Access OSA services, forms, and student support in one easy portal.",
+                "Clear student guidance for requirements, forms, and OSA procedures.",
+                "Follow verified steps so transactions are quicker and easier to complete.",
+                "Use one portal to navigate OSA processes with confidence.",
+                "Student-first access to OSA support, updates, and service information."
+            ];
+            if (heroSubtitleRotator && heroCaptions.length > 1) {
+                let heroCaptionIndex = 0;
+                const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                const playEnter = () => {
+                    heroSubtitleRotator.classList.remove("is-leaving");
+                    heroSubtitleRotator.classList.remove("is-entering");
+                    window.requestAnimationFrame(() => {
+                        heroSubtitleRotator.classList.add("is-entering");
+                    });
+                    window.setTimeout(() => {
+                        heroSubtitleRotator.classList.remove("is-entering");
+                    }, 380);
+                };
+                if (!prefersReducedMotion) {
+                    playEnter();
+                }
+                const rotateHeroCaption = () => {
+                    const nextIndex = (heroCaptionIndex + 1) % heroCaptions.length;
+                    if (!prefersReducedMotion) {
+                        heroSubtitleRotator.classList.add("is-leaving");
+                        window.setTimeout(() => {
+                            heroSubtitleRotator.textContent = heroCaptions[nextIndex];
+                            playEnter();
+                        }, 180);
+                    } else {
+                        heroSubtitleRotator.textContent = heroCaptions[nextIndex];
+                    }
+                    heroCaptionIndex = nextIndex;
+                };
+                window.setInterval(rotateHeroCaption, 4600);
+            }
+
+            if (heroGuideSlides.length > 1) {
+                let heroGuideIndex = 0;
+                const prefersReducedMotionGuide = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+                const isMobileGuide =
+                    window.matchMedia("(max-width: 960px)").matches
+                    || window.matchMedia("(hover: none), (pointer: coarse)").matches;
+                let heroGuideTimer = null;
+                const syncHeroGuideDots = () => {
+                    heroGuideDots.forEach((dot, index) => {
+                        dot.classList.toggle("is-active", index === heroGuideIndex);
+                    });
+                };
+                const showHeroGuideAt = (nextIndex) => {
+                    const current = heroGuideSlides[heroGuideIndex];
+                    const next = heroGuideSlides[nextIndex];
+                    if (!current || !next || nextIndex === heroGuideIndex) return;
+                    if (prefersReducedMotionGuide) {
+                        current.classList.remove("is-active");
+                        next.classList.add("is-active");
+                    } else {
+                        current.classList.add("is-leaving");
+                        current.classList.remove("is-active");
+                        window.setTimeout(() => {
+                            current.classList.remove("is-leaving");
+                            next.classList.add("is-active");
+                        }, 220);
+                    }
+                    heroGuideIndex = nextIndex;
+                    syncHeroGuideDots();
+                };
+                const rotateHeroGuide = () => {
+                    const nextIndex = (heroGuideIndex + 1) % heroGuideSlides.length;
+                    showHeroGuideAt(nextIndex);
+                };
+                syncHeroGuideDots();
+                heroGuideDots.forEach((dot, index) => {
+                    dot.addEventListener("click", () => showHeroGuideAt(index));
+                });
+                if (!isMobileGuide) {
+                    heroGuideTimer = window.setInterval(rotateHeroGuide, 4200);
+                    if (heroGuideRotator) {
+                        heroGuideRotator.addEventListener("mouseenter", () => {
+                            if (heroGuideTimer) {
+                                window.clearInterval(heroGuideTimer);
+                                heroGuideTimer = null;
+                            }
+                        });
+                        heroGuideRotator.addEventListener("mouseleave", () => {
+                            if (!heroGuideTimer) {
+                                heroGuideTimer = window.setInterval(rotateHeroGuide, 4200);
+                            }
+                        });
+                    }
+                }
+            }
+
+            const renderAnnouncementSneaks = () => {
+                if (!announcementSneakList || !announcementSneakEmpty) return;
+                const fallback = [
+                    "Watch for new advisories from OSA admin.",
+                    "Schedule updates will appear here once posted."
+                ];
+                try {
+                    const raw = localStorage.getItem("osaAnnouncements");
+                    const parsed = JSON.parse(raw || "[]");
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        const top = parsed.slice(0, 3).map((item) => {
+                            const date = item && item.date ? item.date : "Recent";
+                            const title = item && item.title ? item.title : "Announcement";
+                            return `${date} - ${title}`;
+                        });
+                        announcementSneakList.innerHTML = top.map((text) => `<li>${text}</li>`).join("");
+                        announcementSneakEmpty.style.display = "none";
+                        return;
+                    }
+                } catch (e) {
+                    // Keep fallback content if localStorage is unavailable/invalid.
+                }
+                announcementSneakList.innerHTML = fallback.map((text) => `<li>${text}</li>`).join("");
+                announcementSneakEmpty.style.display = "";
+            };
+            renderAnnouncementSneaks();
+
+            function hrefToHash(href) {
+                if (!href) return "";
+                var idx = href.indexOf("#");
+                return idx >= 0 ? href.substring(idx) : "";
+            }
+            function isHomeHref(href) {
+                if (!href) return false;
+                try {
+                    var url = new URL(href, window.location.origin);
+                    return url.pathname === "/" && !url.hash;
+                } catch (e) {
+                    return href === "/" || href === "";
+                }
+            }
+            const sections = Array.from(navLinks)
+                .map((link) => {
+                    var hash = hrefToHash(link.getAttribute("href"));
+                    if (!hash || hash.length < 2) return null;
+                    try { return document.querySelector(hash); } catch (e) { return null; }
+                })
+                .filter(Boolean);
+
+            function setActiveNav(href) {
+                if (!href) return;
+                var targetHash = hrefToHash(href) || href;
+                navLinks.forEach((link) => {
+                    var linkHref = link.getAttribute("href");
+                    var isActive = hrefToHash(linkHref) === targetHash
+                        || (targetHash === "#dashboard" && isHomeHref(linkHref));
+                    link.classList.toggle("is-active", isActive);
+                });
+                navLinksMobile.forEach((link) => {
+                    var linkHref = link.getAttribute("href");
+                    var isActive = hrefToHash(linkHref) === targetHash
+                        || (targetHash === "#dashboard" && isHomeHref(linkHref));
+                    link.classList.toggle("is-active", isActive);
+                });
+            }
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) setActiveNav(`#${entry.target.id}`);
+                });
+            }, {
+                rootMargin: "-26% 0px -52% 0px",
+                threshold: 0.12
+            });
+
+            sections.forEach((section) => observer.observe(section));
+
+            navLinks.forEach((link) => {
+                link.addEventListener("click", () => setActiveNav(link.getAttribute("href")));
+            });
+
+            navLinksMobile.forEach((link) => {
+                link.addEventListener("click", () => {
+                    setActiveNav(link.getAttribute("href"));
+                });
+            });
+
+            setActiveNav("#dashboard");
+
+            if (servicesCarousel) {
+                const supportsHover = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+                const isTouchLikeDevice =
+                    window.matchMedia("(hover: none), (pointer: coarse)").matches
+                    || (typeof navigator !== "undefined" && navigator.maxTouchPoints > 0);
+                const autoSpeedPxPerMs = 0.12; // Slightly faster than before.
+                let rafId = 0;
+                let lastFrameTime = 0;
+                let isInteracting = false;
+                let resumeTimer = null;
+                let frameQueued = false;
+                let hoverPaused = false;
+                let touchHolding = false;
+                let isMouseDragging = false;
+                let mouseStartX = 0;
+                let mouseStartScrollLeft = 0;
+
+                const originalTiles = Array.from(servicesCarousel.querySelectorAll(".service-tile"));
+                originalTiles.forEach((tile) => {
+                    servicesCarousel.appendChild(tile.cloneNode(true));
+                });
+
+                const normalizeLoopPosition = () => {
+                    const loopPoint = servicesCarousel.scrollWidth / 2;
+                    if (!loopPoint) return;
+                    if (servicesCarousel.scrollLeft >= loopPoint) {
+                        servicesCarousel.scrollLeft -= loopPoint;
+                    } else if (servicesCarousel.scrollLeft < 0) {
+                        servicesCarousel.scrollLeft += loopPoint;
+                    }
+                };
+
+                const updateActiveServiceTiles = () => {
+                    const tiles = servicesCarousel.querySelectorAll(".service-tile");
+                    const center = servicesCarousel.scrollLeft + (servicesCarousel.clientWidth / 2);
+                    let strongest = -1;
+                    let activeTile = null;
+                    tiles.forEach((tile) => {
+                        const tileCenter = tile.offsetLeft + (tile.offsetWidth / 2);
+                        const distance = Math.abs(center - tileCenter);
+                        const maxDistance = servicesCarousel.clientWidth * 0.9;
+                        const focus = Math.max(0, 1 - (distance / Math.max(1, maxDistance)));
+                        tile.style.setProperty("--focus", focus.toFixed(3));
+                        if (focus > strongest) {
+                            strongest = focus;
+                            activeTile = tile;
+                        }
+                    });
+                    tiles.forEach((tile) => tile.classList.remove("is-active"));
+                    if (activeTile) activeTile.classList.add("is-active");
+                };
+
+                const queueActiveUpdate = () => {
+                    if (frameQueued) return;
+                    frameQueued = true;
+                    window.requestAnimationFrame(() => {
+                        updateActiveServiceTiles();
+                        frameQueued = false;
+                    });
+                };
+
+                const syncInteractionState = () => {
+                    isInteracting = hoverPaused || touchHolding || isMouseDragging;
+                    servicesCarousel.classList.toggle("is-dragging", isMouseDragging);
+                };
+
+                const beginHold = (kind) => {
+                    if (resumeTimer) {
+                        window.clearTimeout(resumeTimer);
+                        resumeTimer = null;
+                    }
+                    if (kind === "touch") touchHolding = true;
+                    if (kind === "mouse") isMouseDragging = true;
+                    syncInteractionState();
+                };
+
+                const endHoldSoon = (kind, delayMs = 220) => {
+                    if (resumeTimer) window.clearTimeout(resumeTimer);
+                    resumeTimer = window.setTimeout(() => {
+                        if (kind === "touch") touchHolding = false;
+                        if (kind === "mouse") isMouseDragging = false;
+                        syncInteractionState();
+                    }, delayMs);
+                };
+
+                const autoScrollFrame = (time) => {
+                    if (!lastFrameTime) lastFrameTime = time;
+                    const dt = time - lastFrameTime;
+                    lastFrameTime = time;
+                    if (!isInteracting) {
+                        servicesCarousel.scrollLeft += autoSpeedPxPerMs * dt;
+                    }
+                    normalizeLoopPosition();
+                    updateActiveServiceTiles();
+                    rafId = window.requestAnimationFrame(autoScrollFrame);
+                };
+
+                // Phone/tablet: hold pauses, release resumes without sticky state.
+                if (isTouchLikeDevice) {
+                    servicesCarousel.addEventListener("touchstart", () => beginHold("touch"), { passive: true });
+                    servicesCarousel.addEventListener("touchend", () => endHoldSoon("touch", 180), { passive: true });
+                    servicesCarousel.addEventListener("touchcancel", () => endHoldSoon("touch", 180), { passive: true });
+                    // Safety if finger released outside carousel.
+                    window.addEventListener("touchend", () => endHoldSoon("touch", 180), { passive: true });
+                    window.addEventListener("touchcancel", () => endHoldSoon("touch", 180), { passive: true });
+                } else {
+                    // Desktop: draggable/swipable by mouse + wheel scroll.
+                    servicesCarousel.addEventListener("pointerdown", (event) => {
+                        if (event.pointerType !== "mouse" || event.button !== 0) return;
+                        beginHold("mouse");
+                        mouseStartX = event.clientX;
+                        mouseStartScrollLeft = servicesCarousel.scrollLeft;
+                    });
+                    window.addEventListener("pointermove", (event) => {
+                        if (!isMouseDragging || event.pointerType !== "mouse") return;
+                        const dx = event.clientX - mouseStartX;
+                        servicesCarousel.scrollLeft = mouseStartScrollLeft - dx;
+                        normalizeLoopPosition();
+                        queueActiveUpdate();
+                    }, { passive: true });
+                    const endDesktopHold = () => endHoldSoon("mouse", 120);
+                    servicesCarousel.addEventListener("pointerup", endDesktopHold, { passive: true });
+                    servicesCarousel.addEventListener("pointercancel", endDesktopHold, { passive: true });
+                    window.addEventListener("pointerup", endDesktopHold, { passive: true });
+                    window.addEventListener("pointercancel", endDesktopHold, { passive: true });
+
+                    servicesCarousel.addEventListener("wheel", (event) => {
+                        // Vertical wheel translates to horizontal movement for mouse users.
+                        if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
+                        event.preventDefault();
+                        servicesCarousel.scrollLeft += event.deltaY;
+                        normalizeLoopPosition();
+                        queueActiveUpdate();
+                    }, { passive: false });
+                }
+
+                if (supportsHover) {
+                    servicesCarousel.addEventListener("mouseenter", () => {
+                        hoverPaused = true;
+                        syncInteractionState();
+                    });
+                    servicesCarousel.addEventListener("mouseleave", () => {
+                        hoverPaused = false;
+                        syncInteractionState();
+                    });
+                }
+
+                servicesCarousel.addEventListener("scroll", () => {
+                    normalizeLoopPosition();
+                    queueActiveUpdate();
+                }, { passive: true });
+
+                window.addEventListener("resize", queueActiveUpdate);
+                servicesCarousel.scrollLeft = 1;
+                syncInteractionState();
+                updateActiveServiceTiles();
+                rafId = window.requestAnimationFrame(autoScrollFrame);
+                window.addEventListener("beforeunload", () => {
+                    if (rafId) window.cancelAnimationFrame(rafId);
+                });
+            }
+
+            (function markAppReady() {
+                var notifyReady = function () {
+                    window.__OSAAppReady = true;
+                    try {
+                        window.dispatchEvent(new CustomEvent("osa:app-ready"));
+                    } catch (e) {
+                        var evt = document.createEvent("Event");
+                        evt.initEvent("osa:app-ready", false, false);
+                        window.dispatchEvent(evt);
+                    }
+                };
+                // Wait for two paint frames so layout/styles are fully settled.
+                window.requestAnimationFrame(function () {
+                    window.requestAnimationFrame(notifyReady);
+                });
+            })();
+
+        });
+
+        (function initBootGate() {
+            var released = false;
+            var release = function () {
+                if (released) return;
+                released = true;
+                if (window.__OSAInlineBootShowTimer) {
+                    window.clearTimeout(window.__OSAInlineBootShowTimer);
+                    window.__OSAInlineBootShowTimer = null;
+                }
+                var inlineLoader = document.getElementById("osa-inline-loader");
+                if (inlineLoader) {
+                    inlineLoader.classList.remove("is-visible");
+                    window.setTimeout(function () {
+                        if (inlineLoader && inlineLoader.parentNode) {
+                            inlineLoader.parentNode.removeChild(inlineLoader);
+                        }
+                    }, 220);
+                }
+                window.__OSAInlineBootActive = false;
+                document.documentElement.classList.remove("osa-inline-booting");
+                document.documentElement.classList.remove("osa-inline-loader-visible");
+            };
+
+            var waitForDomReady = new Promise(function (resolve) {
+                if (document.readyState !== "loading") return resolve();
+                document.addEventListener("DOMContentLoaded", function () { resolve(); }, { once: true });
+            });
+
+            var waitForShell = new Promise(function (resolve) {
+                if (window.__OSAShellReady) return resolve();
+                window.addEventListener("osa:shell-ready", function () { resolve(); }, { once: true });
+                // Do not over-block if event is missed.
+                window.setTimeout(resolve, 2500);
+            });
+
+            var waitForShellDom = new Promise(function (resolve) {
+                var done = false;
+                var finish = function () {
+                    if (done) return;
+                    done = true;
+                    if (observer) observer.disconnect();
+                    clearInterval(pollId);
+                    resolve();
+                };
+                var isShellRendered = function () {
+                    var nav = document.getElementById("site-navbar");
+                    var footer = document.querySelector(".site-footer");
+                    if (!nav || !footer) return false;
+                    if (nav.offsetHeight < 24 || footer.offsetHeight < 24) return false;
+                    var links = nav.querySelectorAll(".site-navbar__link");
+                    if (!links || links.length < 3) return false;
+                    var navStyle = window.getComputedStyle(nav);
+                    return navStyle.display !== "none" && navStyle.visibility !== "hidden";
+                };
+                if (isShellRendered()) return finish();
+                var observer = new MutationObserver(function () {
+                    if (isShellRendered()) finish();
+                });
+                observer.observe(document.documentElement, { childList: true, subtree: true });
+                var pollId = window.setInterval(function () {
+                    if (isShellRendered()) finish();
+                }, 80);
+                // Safety timeout
+                window.setTimeout(finish, 4200);
+            });
+
+            var waitForApp = new Promise(function (resolve) {
+                if (window.__OSAAppReady) return resolve();
+                window.addEventListener("osa:app-ready", function () { resolve(); }, { once: true });
+                // Fallback to avoid very long loader on noisy/slow devices.
+                window.setTimeout(resolve, 3000);
+            });
+
+            var waitForFonts = new Promise(function (resolve) {
+                if (!document.fonts || !document.fonts.ready) return resolve();
+                var done = false;
+                var finish = function () {
+                    if (done) return;
+                    done = true;
+                    resolve();
+                };
+                document.fonts.ready.then(finish).catch(finish);
+                // Do not block UI too long for webfont fetch on slow networks.
+                window.setTimeout(finish, 1400);
+            });
+
+            var waitForStablePaint = new Promise(function (resolve) {
+                window.requestAnimationFrame(function () {
+                    window.requestAnimationFrame(function () {
+                        resolve();
+                    });
+                });
+            });
+
+            Promise.all([waitForDomReady, waitForShell, waitForShellDom, waitForApp, waitForFonts, waitForStablePaint]).then(release);
+            // Final safety timeout only as last resort.
+            window.setTimeout(release, 9000);
+        })();
+
+    </script>
+</body>
+
+</html>
+
+</html>
+
+</html>
