@@ -5,15 +5,36 @@
   "scripts": {
     "minify": "node scripts/minify-assets.mjs",
     "api:start": "node server/index.js",
-    "db:setup": "node server/run-sql.js"
+    "db:setup": "node server/run-sql.js",
+    "prisma:generate": "prisma generate",
+    "prisma:push": "prisma db push"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.90.0",
+    "@google/genai": "^1.50.1",
+    "@prisma/client": "^6.19.3",
+    "axios": "^1.15.2",
+    "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.6.1",
     "express": "^5.1.0",
-    "pg": "^8.16.3"
+    "express-rate-limit": "^8.3.2",
+    "jsonwebtoken": "^9.0.3",
+    "pdf-parse": "^2.4.5",
+    "pg": "^8.16.3",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "react-router-dom": "^7.14.2",
+    "socket.io": "^4.8.3",
+    "socket.io-client": "^4.8.3"
   },
   "devDependencies": {
-    "esbuild": "^0.25.0"
+    "@vitejs/plugin-react": "^6.0.1",
+    "autoprefixer": "^10.5.0",
+    "esbuild": "^0.28.0",
+    "postcss": "^8.5.10",
+    "prisma": "^6.19.3",
+    "tailwindcss": "^4.2.4",
+    "vite": "^8.0.10"
   }
 }

@@ -1,21 +1,21 @@
-const CACHE_VERSION = "osa-static-v1.0.7";
-const RUNTIME_CACHE = "osa-runtime-v1.0.7";
+const CACHE_VERSION = "osa-static-v1.0.12";
+const RUNTIME_CACHE = "osa-runtime-v1.0.12";
 
 const PRECACHE_URLS = [
   "/",
-  "/preview.html",
+  "/preview",
   "/announcements/",
-  "/announcements/index.html",
+  "/announcements",
   "/lost-and-found/",
-  "/lost-and-found/index.html",
+  "/lost-and-found",
   "/about-portal/",
-  "/about-portal/index.html",
+  "/about-portal",
   "/css/osa-design.css?v=40",
-  "/css/osa-ai.css?v=39",
-  "/assets/js/portal-shell.js?v=42",
+  "/css/osa-ai.css?v=45",
+  "/assets/js/portal-shell.js?v=44",
   "/assets/js/osa-api-client.js?v=2",
-  "/assets/js/osa-chat-loader.js?v=37",
-  "/assets/js/osa-chat-widget.js?v=37",
+  "/assets/js/osa-chat-loader.js?v=64",
+  "/assets/js/osa-chat-widget.js?v=64",
   "/assets/images/eac-emblem.png",
 ];
 
@@ -73,14 +73,15 @@ self.addEventListener("fetch", (event) => {
         .catch(async () => {
           const cachedExact = await caches.match(request);
           if (cachedExact) return cachedExact;
-          if (url.pathname === "/" || url.pathname === "/preview.html") {
-            return (await caches.match("/preview.html")) || (await caches.match("/"));
+          if (url.pathname === "/" || url.pathname === "/preview") {
+            return (await caches.match("/preview")) || (await caches.match("/"));
           }
-          const fallbackRoute = `${url.pathname.replace(/\/$/, "")}/index.html`;
+          const fallbackRoute = url.pathname.replace(/\/$/, "");
           return (
             (await caches.match(fallbackRoute)) ||
-            (await caches.match("/preview.html")) ||
-            (await caches.match("/"))
+            (await caches.match(`${fallbackRoute}/`)) ||
+            (await caches.match("/")) ||
+            (await caches.match("/preview"))
           );
         })
     );

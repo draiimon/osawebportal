@@ -19,9 +19,7 @@
         }
     }
 
-    var widgetUrl = (cur && cur.indexOf('.min.js') !== -1)
-        ? '/assets/js/osa-chat-widget.min.js?v=37'
-        : '/assets/js/osa-chat-widget.js?v=37';
+    var widgetUrl = '/assets/js/osa-chat-widget.js?v=64';
 
     var done = false;
 

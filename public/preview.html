@@ -209,12 +209,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap"
         rel="stylesheet">
 
-    <link rel="preload" href="./css/osa-design.css?v=40" as="style">
-    <link rel="preload" href="./css/osa-ai.css?v=39" as="style">
-    <link rel="stylesheet" href="./css/osa-design.css?v=40">
-    <link rel="stylesheet" href="./css/osa-ai.css?v=39">
-    <script src="/assets/js/portal-shell.js?v=42" defer></script>
-    <script src="/assets/js/osa-chat-loader.js?v=37" defer></script>
+    <link rel="preload" href="./css/osa-design.css?v=41" as="style">
+    <link rel="preload" href="./css/osa-ai.css?v=45" as="style">
+    <link rel="stylesheet" href="./css/osa-design.css?v=41">
+    <link rel="stylesheet" href="./css/osa-ai.css?v=45">
+    <script src="/assets/js/portal-shell.js?v=44" defer></script>
+    <script src="/assets/js/osa-chat-loader.js?v=64" defer></script>
     <style>
         /* :root design tokens come from osa-design.css (global).
            Do not redefine --brand / --nav-h / etc. here to keep
@@ -2662,7 +2662,7 @@
                     <div class="hero-layout home-hero-grid" style="padding: 64px 0;">
                         <!-- Left Side: Hero Content -->
                         <div style="animation: heroContentIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;">
-                            <h1 class="hero-title"
+                            <h1 class="hero-title" id="home-hero-title"
                                 style="font-size: clamp(2.4rem, 4vw, 3.2rem); line-height: 1.15; margin-bottom: 1.2rem;">
                                 OSA Transaction Guide Portal</h1>
                             <p class="lead hero-subtitle-rotator" id="hero-subtitle-rotator"
@@ -2840,17 +2840,17 @@
                                 alt="Cover of the Emilio Aguinaldo College Student Manual, 2021 edition">
                             <div>
                                 <span class="manual-highlight__label">Primary reference document</span>
-                                <h3>EAC-C Student Manual</h3>
-                                <p>Central handbook for student rights, responsibilities, and academic norms. Open the
+                                <h3 id="manual-title">EAC-C Student Manual</h3>
+                                <p id="manual-description">Central handbook for student rights, responsibilities, and academic norms. Open the
                                     PDF for full text; use Ask OSA for guided interpretation and service-specific
                                     questions.</p>
-                                <a class="btn btn-primary"
+                                <a class="btn btn-primary" id="manual-link"
                                     href="https://drive.google.com/file/d/1Sk4s2GnO7SGkEaDnmXNBqjZP1a10Y9qR/view?usp=sharing"
                                     target="_blank" rel="noopener noreferrer">Open Student Manual (PDF)</a>
                             </div>
                         </div>
                     </div>
-                    <div class="action-grid action-grid--manual-forms">
+                    <div class="action-grid action-grid--manual-forms" id="manual-forms-grid">
                         <article class="action-card">
                             <h3>Scholarship Application</h3>
                             <p>Download application form.</p>
@@ -2931,17 +2931,140 @@
             const servicesCarousel = document.getElementById("services-carousel");
             const announcementSneakList = document.getElementById("announcement-sneak-list");
             const announcementSneakEmpty = document.getElementById("announcement-sneak-empty");
+            const homeHeroTitle = document.getElementById("home-hero-title");
             const heroSubtitleRotator = document.getElementById("hero-subtitle-rotator");
             const heroGuideRotator = document.getElementById("hero-guide-rotator");
+            const heroGuideDotsWrap = document.getElementById("hero-guide-dots");
+            const manualCover = document.querySelector(".manual-highlight__cover");
+            const manualTitle = document.getElementById("manual-title");
+            const manualDescription = document.getElementById("manual-description");
+            const manualLink = document.getElementById("manual-link");
+            const manualFormsGrid = document.getElementById("manual-forms-grid");
+            const homeDefaults = {
+                hero: {
+                    title: "OSA Transaction Guide Portal",
+                    subtitles: [
+                        "Access OSA services, forms, and student support in one easy portal.",
+                        "Clear student guidance for requirements, forms, and OSA procedures.",
+                        "Follow verified steps so transactions are quicker and easier to complete.",
+                        "Use one portal to navigate OSA processes with confidence.",
+                        "Student-first access to OSA support, updates, and service information."
+                    ]
+                },
+                slides: [
+                    { kicker: "Chat Guide", title: "Start with Ask OSA.", subtitle: "Get guided support fast.", items: [
+                        { heading: "Open the live assistant", desc: "Launch Ask OSA from the bottom-right button and type your concern naturally for instant guidance." },
+                        { heading: "Verify when needed", desc: "Protected actions like claims, appointments, and escalations can trigger secure student-email verification." },
+                        { heading: "Continue the flow", desc: "Stay inside the chat to receive the next step, required links, and any OTP prompt for sensitive requests." }
+                    ]},
+                    { kicker: "Announcement Guide", title: "Stay updated fast.", subtitle: "Check posted notices clearly.", items: [
+                        { heading: "Browse all OSA posts", desc: "See advisories, schedules, reminders, and event updates together in one organized announcement page." },
+                        { heading: "Open the full bulletin", desc: "View the complete announcement, attached images, and context before acting on any school update." },
+                        { heading: "Search what matters", desc: "Use titles, dates, categories, or keywords to find the exact posting you need faster." }
+                    ]},
+                    { kicker: "Lost & Found Guide", title: "Review items first.", subtitle: "Claim them the right way.", items: [
+                        { heading: "Inspect the listing", desc: "Check the item photos, category, and description to confirm the posted entry matches your property." },
+                        { heading: "Keep the item number", desc: "Note the Lost & Found reference code before opening Ask OSA so the verification flow moves faster." },
+                        { heading: "Complete the claim flow", desc: "Follow the guided chat process for proof-of-ownership checks and any OTP step required for restricted requests." }
+                    ]}
+                ],
+                services: [
+                    { title: "Student Conduct and Discipline", desc: "OSA attends to student conduct and discipline in line with college policies—consistent with the OSA mandate on student life and welfare." },
+                    { title: "Lost & Found", desc: "Coordinates logging and release of found items reported on campus through OSA, so students have a single office to report or claim property." },
+                    { title: "ID Processing", desc: "School ID services for new students, replacement, and updates are processed through OSA following campus procedures and posted requirements." },
+                    { title: "Scholarship Applications and Inquiries", desc: "Listed under official OSA services: assistance with scholarship applications and inquiries, including requirements and schedules published by the institution." },
+                    { title: "Issuance of Good Moral Character Certificate", desc: "OSA processes requests for Good Moral Character certificates (and related clearance documentation) according to published procedures and release schedules." },
+                    { title: "ISO and PACUCOA Accreditation", desc: "Student-affairs support tied to institutional quality assurance and accreditation (e.g., ISO, PACUCOA) is coordinated through OSA as the liaison for student-facing requirements." },
+                    { title: "Learner Activity Program (LAAP)", desc: "OSA supports co-curricular and student activities under LAAP—aligning programs with institutional guidelines and student organization rules." }
+                ],
+                manual: {
+                    title: "EAC-C Student Manual",
+                    description: "Central handbook for student rights, responsibilities, and academic norms. Open the PDF for full text; use Ask OSA for guided interpretation and service-specific questions.",
+                    link: "https://drive.google.com/file/d/1Sk4s2GnO7SGkEaDnmXNBqjZP1a10Y9qR/view?usp=sharing",
+                    cover: "./assets/images/student-manual-cover-2021.png"
+                },
+                forms: [
+                    { title: "Scholarship Application", link: "https://www.eac.edu.ph/wp-content/uploads/2021/08/QF-OSA-010-07.15.2021-Rev.01-Scholarship-Application-OSA-FORMS-2021-2.doc" },
+                    { title: "Incident Report Form", link: "https://www.eac.edu.ph/wp-content/uploads/2021/08/QF-OSA-012-07.15.2021-Rev.01-Incident-Report.doc" },
+                    { title: "Academic Leave Form", link: "https://www.eac.edu.ph/wp-content/uploads/2021/08/QF-OSA-013-07.15.2021-Rev.0Academic-Leave-of-Absence-Application-Form.doc" }
+                ]
+            };
+            const readJSONStorage = (key, fallback) => {
+                try {
+                    const raw = localStorage.getItem(key);
+                    if (!raw) return fallback;
+                    const parsed = JSON.parse(raw);
+                    return parsed && typeof parsed === "object" ? parsed : fallback;
+                } catch (e) {
+                    return fallback;
+                }
+            };
+            const renderGuideSlides = (slides) => {
+                if (!heroGuideRotator || !heroGuideDotsWrap) return;
+                heroGuideRotator.innerHTML = slides.map((slide, index) => {
+                    const items = Array.isArray(slide.items) ? slide.items.slice(0, 3) : [];
+                    const activeClass = index === 0 ? " is-active" : "";
+                    return `<article class="hero-guide-slide${activeClass}">
+                                    <p class="hero-guide-kicker">${slide.kicker || ""}</p>
+                                    <h2 class="hero-guide-title">${slide.title || ""}<br><span>${slide.subtitle || ""}</span></h2>
+                                    <div class="hero-guide-list">
+                                        ${items.map((item) => `<div class="hero-guide-item"><h4><span>&rsaquo;</span> ${item.heading || ""}</h4><p>${item.desc || ""}</p></div>`).join("")}
+                                    </div>
+                                </article>`;
+                }).join("");
+                heroGuideDotsWrap.innerHTML = slides.map((_, index) => `<span class="hero-guide-dot${index === 0 ? " is-active" : ""}"></span>`).join("");
+            };
+            const renderServices = (services) => {
+                if (!servicesCarousel) return;
+                servicesCarousel.innerHTML = services.map((service, index) => {
+                    const imageStyle = service.image ? ` style="background-image:url(${JSON.stringify(service.image)})"` : "";
+                    return `<article class="service-tile service-card service-card--g${(index % 7) + 1}" data-service="service-${index + 1}">
+                                <div class="service-card__visual" role="presentation"${imageStyle}></div>
+                                <div class="service-card__body">
+                                    <h3>${service.title || ""}</h3>
+                                    <p class="service-card__lead">${service.desc || ""}</p>
+                                </div>
+                            </article>`;
+                }).join("");
+            };
+            const renderManualForms = (forms) => {
+                if (!manualFormsGrid) return;
+                manualFormsGrid.innerHTML = forms.map((form) => `<article class="action-card">
+                            <h3>${form.title || "Downloadable Form"}</h3>
+                            <p>Download form.</p>
+                            <div class="hero-cta">
+                                <a class="btn btn-primary" href="${form.link || "#"}" target="_blank" rel="noopener noreferrer">Download</a>
+                            </div>
+                        </article>`).join("");
+            };
+            const homeContent = readJSONStorage("osaHomeContent", {});
+            const mergedHome = {
+                hero: Object.assign({}, homeDefaults.hero, homeContent.hero || {}),
+                slides: Array.isArray(homeContent.slides) && homeContent.slides.length ? homeContent.slides : homeDefaults.slides,
+                services: Array.isArray(homeContent.services) && homeContent.services.length ? homeContent.services : homeDefaults.services,
+                manual: Object.assign({}, homeDefaults.manual, homeContent.manual || {}),
+                forms: Array.isArray(homeContent.forms) && homeContent.forms.length ? homeContent.forms : homeDefaults.forms
+            };
+            if (homeHeroTitle) homeHeroTitle.textContent = mergedHome.hero.title || homeDefaults.hero.title;
+            if (heroSubtitleRotator) heroSubtitleRotator.textContent = (mergedHome.hero.subtitles && mergedHome.hero.subtitles[0]) || homeDefaults.hero.subtitles[0];
+            renderGuideSlides(mergedHome.slides);
+            renderServices(mergedHome.services);
+            if (manualCover && mergedHome.manual.cover) manualCover.src = mergedHome.manual.cover;
+            if (manualTitle) manualTitle.textContent = mergedHome.manual.title || homeDefaults.manual.title;
+            if (manualDescription) manualDescription.textContent = mergedHome.manual.description || homeDefaults.manual.description;
+            if (manualLink && mergedHome.manual.link) manualLink.href = mergedHome.manual.link;
+            renderManualForms(mergedHome.forms);
             const heroGuideSlides = heroGuideRotator ? Array.from(heroGuideRotator.querySelectorAll(".hero-guide-slide")) : [];
             const heroGuideDots = Array.from(document.querySelectorAll("#hero-guide-dots .hero-guide-dot"));
-            const heroCaptions = [
-                "Access OSA services, forms, and student support in one easy portal.",
-                "Clear student guidance for requirements, forms, and OSA procedures.",
-                "Follow verified steps so transactions are quicker and easier to complete.",
-                "Use one portal to navigate OSA processes with confidence.",
-                "Student-first access to OSA support, updates, and service information."
-            ];
+            let heroCaptions = Array.isArray(mergedHome.hero.subtitles) && mergedHome.hero.subtitles.length
+                ? mergedHome.hero.subtitles
+                : [
+                    "Access OSA services, forms, and student support in one easy portal.",
+                    "Clear student guidance for requirements, forms, and OSA procedures.",
+                    "Follow verified steps so transactions are quicker and easier to complete.",
+                    "Use one portal to navigate OSA processes with confidence.",
+                    "Student-first access to OSA support, updates, and service information."
+                ];
             if (heroSubtitleRotator && heroCaptions.length > 1) {
                 let heroCaptionIndex = 0;
                 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;

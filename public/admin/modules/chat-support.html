@@ -1,0 +1,1850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Chat Support · OSA Admin</title>
+  <link rel="icon" type="image/png" href="/assets/images/eac-emblem.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/admin/admin-shell.css?v=20260423j">
+  <style>
+    :root {
+      --brand: #841a2d;
+      --brand-deep: #5c0f1d;
+      --gold: #c79a49;
+      --ink: #1c1917;
+      --muted: #675a4f;
+      --paper: #fffdf9;
+      --line: rgba(90,62,40,0.12);
+    }
+
+    .admin-main.admin-main--chat-support {
+      width: 100%;
+      max-width: none;
+      padding-bottom: 28px;
+    }
+
+    .chat-support-panel {
+      margin-bottom: 0;
+    }
+
+    .chat-support-panel__body {
+      padding: 0;
+    }
+
+    /* ── Two-panel layout ─────────────────────────────── */
+    .chat-support-wrap {
+      display: grid;
+      grid-template-columns: clamp(320px, 25vw, 390px) minmax(0, 1fr);
+      min-height: calc(100dvh - var(--shell-top) - 210px);
+      height: calc(100dvh - var(--shell-top) - 210px);
+      overflow: hidden;
+      background: linear-gradient(180deg, rgba(255,255,255,0.94) 0%, rgba(255,251,246,0.9) 100%);
+    }
+
+    @media (min-width: 769px) {
+      .chat-support-wrap > .ticket-panel.hidden {
+        display: flex !important;
+      }
+      .chat-support-wrap > .convo-panel {
+        display: flex !important;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .admin-main.admin-main--chat-support {
+        padding-bottom: 0;
+      }
+      .chat-support-wrap {
+        grid-template-columns: 1fr;
+        min-height: calc(100dvh - var(--shell-top) - 186px);
+        height: calc(100dvh - var(--shell-top) - 186px);
+      }
+      .convo-panel { display: none; }
+      .convo-panel.active { display: flex; }
+      .ticket-panel.hidden { display: none; }
+      .status-tab { font-size: 11px; padding: 8px 4px; }
+    }
+
+    /* ── Left: Ticket panel ───────────────────────────── */
+    .ticket-panel {
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--line);
+      background: rgba(255,255,255,0.98);
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    .ticket-panel__header {
+      flex-shrink: 0;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: var(--paper);
+    }
+
+    .ticket-panel__title {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--ink);
+      letter-spacing: 0.02em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .open-count {
+      font-size: 11px;
+      font-weight: 700;
+      background: var(--brand);
+      color: #fff;
+      padding: 2px 7px;
+      border-radius: 99px;
+      min-width: 20px;
+      text-align: center;
+    }
+
+    .status-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--line);
+      flex-shrink: 0;
+    }
+
+    .status-tab {
+      flex: 1;
+      padding: 9px 8px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      font-family: inherit;
+      transition: color 0.15s, border-color 0.15s;
+      letter-spacing: 0.03em;
+    }
+
+    .status-tab.active {
+      color: var(--brand);
+      border-bottom-color: var(--brand);
+    }
+
+    .ticket-list {
+      flex: 1;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+
+    .ticket-item {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      cursor: pointer;
+      transition: background 0.12s;
+      position: relative;
+    }
+
+    .ticket-item:hover { background: #fdf6ec; }
+    .ticket-item.selected { background: #fff4e6; border-right: 3px solid var(--brand); }
+
+    .ticket-item__head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 5px;
+    }
+
+    .ticket-item__name {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .active-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #22c55e;
+      flex-shrink: 0;
+      animation: dotPulse 2s infinite;
+    }
+
+    @keyframes dotPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.45; }
+    }
+
+    .ticket-item__time {
+      font-size: 11px;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+
+    .ticket-item__case {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--brand);
+      letter-spacing: 0.04em;
+      margin-bottom: 4px;
+    }
+
+    .ticket-item__concern {
+      font-size: 12.5px;
+      color: var(--muted);
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .ticket-status-badge {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border-radius: 2px;
+    }
+
+    .ticket-status-badge.open { background: #fef3c7; color: #92400e; }
+    .ticket-status-badge.in_progress { background: #dbeafe; color: #1e40af; }
+    .ticket-status-badge.resolved { background: #dcfce7; color: #166534; }
+    .ticket-status-badge.approved { background: #dcfce7; color: #166534; }
+
+    .empty-tickets {
+      padding: 40px 20px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .refresh-btn {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--brand);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .refresh-btn svg {
+      width: 13px;
+      height: 13px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2.5;
+      stroke-linecap: round;
+    }
+
+    /* ── Right: Conversation panel ────────────────────── */
+    .convo-panel {
+      display: flex;
+      flex-direction: column;
+      background:
+        radial-gradient(circle at top right, rgba(199,154,73,0.09), transparent 22%),
+        linear-gradient(180deg, #fffdf9 0%, #fffaf4 100%);
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    .convo-empty {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 40px;
+      text-align: center;
+    }
+
+    .convo-empty__icon {
+      width: 56px;
+      height: 56px;
+      background: rgba(132,26,45,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+    }
+
+    .convo-empty__icon svg { stroke: var(--brand); }
+
+    .convo-empty__title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .convo-empty__sub {
+      font-size: 13px;
+      color: var(--muted);
+      max-width: 280px;
+      line-height: 1.5;
+    }
+
+    .convo-topbar {
+      flex-shrink: 0;
+      padding: 12px 20px;
+      background: #fff;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .convo-topbar__back {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      padding: 0;
+      margin-right: 4px;
+    }
+
+    @media (max-width: 768px) { .convo-topbar__back { display: flex; } }
+
+    .convo-topbar__avatar {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, var(--brand) 0%, #a82840 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .convo-topbar__info { flex: 1; min-width: 0; }
+
+    .convo-topbar__name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--ink);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .convo-topbar__sub {
+      font-size: 11.5px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .convo-topbar__actions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .btn-resolve {
+      padding: 7px 14px;
+      background: #166534;
+      color: #fff;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+
+    .btn-resolve:hover { background: #15803d; }
+    .btn-resolve:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    @media (max-width: 1100px) {
+      .convo-topbar { align-items: flex-start; }
+      .convo-topbar__actions { max-width: 320px; }
+    }
+
+    @media (max-width: 900px) {
+      .convo-topbar {
+        flex-wrap: wrap;
+        padding: 10px 12px;
+        gap: 8px;
+      }
+      .convo-topbar__info {
+        min-width: calc(100% - 56px);
+      }
+      .convo-topbar__actions {
+        width: 100%;
+        max-width: none;
+        justify-content: flex-start;
+      }
+      .convo-topbar__actions .btn-resolve {
+        flex: 1 1 140px;
+        padding: 8px 10px;
+        font-size: 11px;
+      }
+      #session-limit-panel {
+        gap: 6px !important;
+      }
+      #session-limit-panel select,
+      #session-limit-panel input {
+        flex: 1 1 140px;
+        min-width: 120px;
+      }
+      #auto-close-minutes {
+        flex: 0 0 88px !important;
+        width: 88px !important;
+      }
+      #ticket-search {
+        font-size: 12px !important;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .convo-topbar__sub {
+        gap: 4px;
+        font-size: 10.5px;
+      }
+      .convo-topbar__actions .btn-resolve {
+        flex: 1 1 100%;
+      }
+      #session-limit-panel > strong {
+        width: 100%;
+      }
+      #session-limit-hint {
+        width: 100%;
+      }
+    }
+
+    /* ── Thread ───────────────────────────────────────── */
+    .convo-thread {
+      flex: 1;
+      overflow-y: auto;
+      padding: 18px clamp(14px, 2.2vw, 30px);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overscroll-behavior: contain;
+    }
+
+    .cmsg {
+      display: flex;
+      flex-direction: column;
+      max-width: min(78%, 760px);
+      animation: msgIn 0.18s ease;
+    }
+
+    .concern-card {
+      max-width: min(860px, 100%);
+    }
+
+    @keyframes msgIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .cmsg--user { align-self: flex-end; align-items: flex-end; }
+    .cmsg--assistant, .cmsg--staff { align-self: flex-start; align-items: flex-start; }
+
+    .cmsg__label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 3px;
+      padding: 0 2px;
+    }
+
+    .cmsg--user .cmsg__label { color: var(--muted); }
+    .cmsg--assistant .cmsg__label { color: var(--muted); }
+    .cmsg--staff .cmsg__label { color: #1d4ed8; }
+
+    .cmsg__bubble {
+      padding: 10px 14px;
+      font-size: 13.5px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .cmsg--user .cmsg__bubble {
+      background: linear-gradient(135deg, var(--brand) 0%, #a82840 100%);
+      color: #fff;
+      border-radius: 2px;
+    }
+
+    .cmsg--assistant .cmsg__bubble {
+      background: #fff;
+      border: 1px solid var(--line);
+      color: var(--ink);
+      border-radius: 2px;
+    }
+
+    .cmsg--staff .cmsg__bubble {
+      background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%);
+      color: #fff;
+      border-radius: 2px;
+    }
+
+    .cmsg__time {
+      font-size: 10.5px;
+      color: var(--muted);
+      margin-top: 3px;
+      padding: 0 2px;
+    }
+
+    /* ── Lost & Found claim: schedule visit ───────────── */
+    .lf-schedule-panel {
+      flex-shrink: 0;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, #fffbeb 0%, #fff 100%);
+      padding: 12px 16px 14px;
+    }
+    .lf-schedule-panel.hidden { display: none; }
+    .lf-schedule-panel__title {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #92400e;
+      margin: 0 0 8px;
+    }
+    .lf-schedule-panel__meta {
+      font-size: 12.5px;
+      color: var(--ink);
+      line-height: 1.45;
+      margin-bottom: 8px;
+    }
+    .lf-schedule-panel__scheduled {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 10px;
+      padding: 8px 10px;
+      background: rgba(255,255,255,0.8);
+      border-radius: 2px;
+      border: 1px solid var(--line);
+    }
+    .lf-schedule-panel .field-row { margin-bottom: 8px; }
+    .lf-schedule-panel label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .lf-schedule-panel input[type="datetime-local"],
+    .lf-schedule-panel input[type="text"],
+    .lf-schedule-panel textarea {
+      width: 100%;
+      box-sizing: border-box;
+      font-family: inherit;
+      font-size: 13px;
+      padding: 8px 10px;
+      border: 1.5px solid var(--line);
+      border-radius: 2px;
+      background: #fff;
+    }
+    .lf-schedule-panel textarea {
+      min-height: 56px;
+      resize: vertical;
+    }
+    .btn-lf-schedule {
+      margin-top: 10px;
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 700;
+      font-family: inherit;
+      border: none;
+      border-radius: 2px;
+      cursor: pointer;
+      background: var(--brand);
+      color: #fff;
+      letter-spacing: 0.03em;
+    }
+    .btn-lf-schedule:hover { filter: brightness(1.05); }
+    .btn-lf-schedule:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    /* ── Concern card ─────────────────────────────────── */
+    .concern-card {
+      margin: 0 0 8px;
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-left: 4px solid #f59e0b;
+      padding: 12px 14px;
+      border-radius: 2px;
+    }
+
+    .concern-card__label {
+      font-size: 10.5px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #92400e;
+      margin-bottom: 6px;
+    }
+
+    .concern-card__text {
+      font-size: 13px;
+      color: #78350f;
+      line-height: 1.55;
+      white-space: pre-wrap;
+    }
+
+    /* ── Composer ─────────────────────────────────────── */
+    .convo-composer {
+      flex-shrink: 0;
+      padding: 12px clamp(14px, 2vw, 24px);
+      background: rgba(255,255,255,0.94);
+      border-top: 1px solid var(--line);
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+    }
+
+    .convo-composer textarea {
+      flex: 1;
+      border: 1.5px solid var(--line);
+      background: var(--paper);
+      padding: 10px 14px;
+      font-family: inherit;
+      font-size: 13.5px;
+      color: var(--ink);
+      resize: none;
+      outline: none;
+      max-height: 110px;
+      overflow-y: auto;
+      line-height: 1.5;
+      border-radius: 2px;
+      transition: border-color 0.15s;
+    }
+
+    .convo-composer textarea:focus { border-color: var(--brand); }
+    .convo-composer textarea::placeholder { color: #b8a89a; }
+
+    .btn-send-staff {
+      width: 40px;
+      height: 40px;
+      background: var(--brand);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: #fff;
+      border-radius: 2px;
+      transition: background 0.15s;
+    }
+
+    .btn-send-staff:hover:not(:disabled) { background: var(--brand-deep); }
+    .btn-send-staff:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ── Resolve modal ────────────────────────────────── */
+    .modal-bg {
+      position: fixed;
+      inset: 0;
+      background: rgba(25,20,18,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      padding: 20px;
+    }
+
+    .modal-box {
+      width: 100%;
+      max-width: 500px;
+      background: #fff;
+      border-radius: 3px;
+      box-shadow: 0 20px 60px rgba(54,29,16,0.22);
+      padding: 28px;
+    }
+
+    .modal-box h3 {
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--ink);
+      margin-bottom: 6px;
+      letter-spacing: -0.02em;
+    }
+
+    .modal-box p { font-size: 13px; color: var(--muted); margin-bottom: 18px; line-height: 1.5; }
+
+    .field-group { margin-bottom: 14px; }
+
+    .field-group label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .field-group input, .field-group textarea, .field-group select {
+      width: 100%;
+      border: 1.5px solid var(--line);
+      background: var(--paper);
+      padding: 10px 12px;
+      font-family: inherit;
+      font-size: 13.5px;
+      color: var(--ink);
+      outline: none;
+      border-radius: 2px;
+      transition: border-color 0.15s;
+    }
+
+    .field-group textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+    .field-group input:focus, .field-group textarea:focus, .field-group select:focus { border-color: var(--brand); }
+
+    .faq-fields { display: none; margin-top: 14px; }
+    .faq-fields.visible { display: block; }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 6px;
+    }
+
+    .checkbox-row input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--brand); cursor: pointer; }
+    .checkbox-row label { font-size: 13px; font-weight: 600; color: var(--ink); cursor: pointer; }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .btn-cancel-modal {
+      flex: 1;
+      padding: 11px;
+      background: #f5ede0;
+      border: 1px solid var(--line);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      border-radius: 2px;
+    }
+
+    .btn-submit-resolve {
+      flex: 2;
+      padding: 11px;
+      background: #166534;
+      color: #fff;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: background 0.15s;
+    }
+
+    .btn-submit-resolve:hover:not(:disabled) { background: #15803d; }
+    .btn-submit-resolve:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 1200px) {
+      .chat-support-wrap {
+        grid-template-columns: minmax(300px, 360px) minmax(0, 1fr);
+      }
+    }
+
+    @media (min-width: 769px) and (max-width: 900px) {
+      .admin-main.admin-main--chat-support {
+        padding-inline: 14px;
+      }
+      .chat-support-wrap {
+        min-height: calc(100dvh - var(--shell-top) - 104px);
+        height: calc(100dvh - var(--shell-top) - 104px);
+      }
+    }
+  </style>
+</head>
+<body class="chat-support-screen">
+<div class="admin-page" id="admin-page">
+
+  <!-- Shell nav injected here -->
+  <div id="admin-nav-shell"></div>
+
+  <main class="admin-main admin-main--chat-support" id="admin-main">
+    <div class="page-header">
+      <div>
+        <div class="page-header__eyebrow">Support Operations</div>
+        <h1>Chat Support</h1>
+        <p>Handle live student escalation tickets and respond in real time.</p>
+      </div>
+    </div>
+
+    <section class="panel chat-support-panel">
+      <div class="panel-body chat-support-panel__body">
+        <!-- Two-panel layout -->
+        <div class="chat-support-wrap">
+
+      <!-- LEFT: Ticket list -->
+      <div class="ticket-panel" id="ticket-panel">
+        <div class="ticket-panel__header">
+          <div class="ticket-panel__title">
+            Tickets
+            <span class="open-count" id="open-count">0</span>
+          </div>
+          <button type="button" class="refresh-btn" id="btn-refresh">
+            <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            Refresh
+          </button>
+        </div>
+        <div class="status-tabs">
+          <button type="button" class="status-tab active" data-status="open">Open</button>
+          <button type="button" class="status-tab" data-status="in_progress">In Progress</button>
+          <button type="button" class="status-tab" data-status="resolved">Resolved</button>
+          <button type="button" class="status-tab" data-status="approved">Approved</button>
+        </div>
+        <div style="padding:10px 12px;border-bottom:1px solid var(--line);background:#fff">
+          <input id="ticket-search" type="search" placeholder="Search by case ID or student name" style="width:100%;border:1.5px solid var(--line);padding:8px 10px;font:inherit;font-size:12.5px;border-radius:2px;outline:none">
+        </div>
+        <div class="ticket-list" id="ticket-list">
+          <div class="empty-tickets">Loading tickets…</div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Conversation -->
+      <div class="convo-panel" id="convo-panel">
+        <!-- Empty state -->
+        <div class="convo-empty" id="convo-empty">
+          <div class="convo-empty__icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <div class="convo-empty__title">No ticket selected</div>
+          <div class="convo-empty__sub">Select a ticket from the list to view the conversation and reply to the student.</div>
+        </div>
+
+        <!-- Conversation view (hidden until ticket selected) -->
+        <div class="convo-topbar hidden" id="convo-topbar">
+          <button type="button" class="convo-topbar__back" id="btn-back" aria-label="Back to list">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <div class="convo-topbar__avatar" id="convo-avatar">?</div>
+          <div class="convo-topbar__info">
+            <div class="convo-topbar__name" id="convo-name">—</div>
+            <div class="convo-topbar__sub">
+              <span id="convo-case-id">—</span>
+              <span>·</span>
+              <span id="convo-ticket-type">General</span>
+              <span>·</span>
+              <span id="convo-email">—</span>
+              <span id="convo-appt-approved" class="hidden" style="color:#166534;font-weight:800">Appointment Approved</span>
+              <span id="convo-active-label" class="hidden" style="color:#22c55e;font-weight:700">● Online</span>
+            </div>
+          </div>
+          <div class="convo-topbar__actions">
+            <button type="button" class="btn-resolve" id="btn-approve-appt" style="background:#0f766e">Approve Appointment</button>
+            <button type="button" class="btn-resolve" id="btn-end-session" style="background:#9f1239">End Session</button>
+            <button type="button" class="btn-resolve" id="btn-resolve-ticket">Resolve Ticket</button>
+          </div>
+        </div>
+        <div id="session-limit-panel" class="hidden" style="padding:10px 14px;border-bottom:1px solid var(--line);background:#fffbeb;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <strong style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#92400e">Session limit</strong>
+          <select id="auto-close-mode" aria-label="Auto close mode" style="border:1.5px solid var(--line);padding:6px 8px;font:inherit;font-size:12px;border-radius:2px">
+            <option value="off">Off</option>
+            <option value="inactive">Auto-close if inactive</option>
+            <option value="absolute">Auto-close after total time</option>
+          </select>
+          <input id="auto-close-minutes" aria-label="Auto close minutes" type="number" min="1" max="240" step="1" value="15" style="width:78px;border:1.5px solid var(--line);padding:6px 8px;font:inherit;font-size:12px;border-radius:2px">
+          <span style="font-size:12px;color:var(--muted)">minutes</span>
+          <span id="session-limit-hint" style="font-size:11.5px;color:#92400e"></span>
+        </div>
+
+        <div class="lf-schedule-panel hidden" id="lf-schedule-panel">
+          <div class="lf-schedule-panel__title">Lost &amp; Found · Visit schedule</div>
+          <div class="lf-schedule-panel__meta" id="lf-meta"></div>
+          <div class="lf-schedule-panel__scheduled" id="lf-scheduled-display"></div>
+          <div class="field-row">
+            <label for="lf-appt-when">Visit date &amp; time</label>
+            <input type="datetime-local" id="lf-appt-when" autocomplete="off">
+          </div>
+          <div class="field-row">
+            <label for="lf-appt-loc">Location</label>
+            <input type="text" id="lf-appt-loc" placeholder="OSA Office" maxlength="200" autocomplete="off">
+          </div>
+          <div class="field-row">
+            <label for="lf-appt-notes">Notes (shown to student in chat)</label>
+            <textarea id="lf-appt-notes" maxlength="2000" placeholder="Optional directions or reminders"></textarea>
+          </div>
+          <button type="button" class="btn-lf-schedule" id="btn-lf-schedule">Schedule / update visit</button>
+        </div>
+
+        <div class="convo-thread hidden" id="convo-thread"></div>
+
+        <div class="convo-composer hidden" id="convo-composer">
+          <label class="sr-only" for="staff-input">Your message</label>
+          <textarea id="staff-input" rows="1" placeholder="Type a message to the student…" maxlength="2000"></textarea>
+          <button type="button" class="btn-send-staff" id="btn-send-staff" disabled aria-label="Send">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+          </button>
+        </div>
+      </div>
+
+        </div><!-- /.chat-support-wrap -->
+      </div>
+    </section>
+  </main>
+</div><!-- /.admin-page -->
+
+<!-- ── Resolve modal ──────────────────────────────────────── -->
+<div id="resolve-modal" class="modal-bg hidden" role="dialog" aria-modal="true" aria-labelledby="resolve-title">
+  <div class="modal-box">
+    <h3 id="resolve-title">Resolve Ticket</h3>
+    <p>Write your final reply to the student. Optionally promote it to the FAQ knowledge base for future self-service.</p>
+    <div class="field-group">
+      <label for="resolve-reply">Staff Reply *</label>
+      <textarea id="resolve-reply" placeholder="Enter your resolution message for the student…"></textarea>
+    </div>
+    <div class="field-group">
+      <label for="resolve-category">Category</label>
+      <select id="resolve-category">
+        <option value="General">General</option>
+        <option value="Scholarship">Scholarship</option>
+        <option value="Good Moral Certificate">Good Moral Certificate</option>
+        <option value="Lost & Found">Lost &amp; Found</option>
+        <option value="Appointments">Appointments</option>
+        <option value="OSA Policies">OSA Policies</option>
+      </select>
+    </div>
+    <div class="checkbox-row">
+      <input type="checkbox" id="promote-faq" value="1">
+      <label for="promote-faq">Add this answer to the FAQ knowledge base (self-learning)</label>
+    </div>
+    <div class="faq-fields" id="faq-fields">
+      <div class="field-group" style="margin-top:14px">
+        <label for="faq-question">FAQ Question (optional — leave blank to auto-generate)</label>
+        <input type="text" id="faq-question" placeholder="e.g. How do I apply for a scholarship?">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn-cancel-modal" id="btn-cancel-resolve">Cancel</button>
+      <button type="button" class="btn-submit-resolve" id="btn-submit-resolve">Resolve &amp; Notify Student</button>
+    </div>
+  </div>
+</div>
+
+<script src="/admin/admin-shell.js?v=20260423j" defer></script>
+<script>
+(function () {
+  'use strict';
+
+  function resolveApiBase() {
+    var configured = String(window.__OSA_API_BASE__ || '').trim().replace(/\/+$/, '');
+    if (configured) return configured;
+
+    var port = String((window.__OSA_API_PORT__ != null && window.__OSA_API_PORT__ !== '') ? window.__OSA_API_PORT__ : '8787');
+    var loc = window.location;
+    var host = String((loc && loc.hostname) || '').toLowerCase();
+    var origin = (loc && loc.origin) ? loc.origin : '';
+    var staticDevPorts = { '3000': 1, '4173': 1, '5000': 1, '5173': 1, '5500': 1, '5501': 1, '8888': 1 };
+
+    if (!loc || loc.protocol === 'file:') return 'http://127.0.0.1:' + port;
+    if (host === 'localhost' || host === '127.0.0.1' || host === '::1' || host === '[::1]') {
+      return 'http://127.0.0.1:' + port;
+    }
+    if (loc.port && loc.port !== port && staticDevPorts[loc.port]) {
+      return loc.protocol + '//' + host + ':' + port;
+    }
+    return origin || ('http://127.0.0.1:' + port);
+  }
+
+  var API = resolveApiBase() + '/api/v1';
+
+  function adminKey() { return sessionStorage.getItem('osa_admin_token') || ''; }
+  function staffName() { return sessionStorage.getItem('osa_admin_name') || 'OSA Staff'; }
+
+  function apiHeaders() {
+    return {
+      'Content-Type': 'application/json',
+      'x-admin-key': adminKey(),
+    };
+  }
+
+  /* ── State ── */
+  var state = {
+    currentStatus: 'open',
+    currentSearch: '',
+    currentCaseId: null,
+    currentSessionId: null,
+    currentConcern: '',
+    currentTicketStatus: null,
+    currentTicketType: 'general',
+    currentAppointmentStatus: '',
+    currentNeedsEndPrompt: false,
+    ticketSelectedAtMs: 0,
+    autoCloseTriggeredCaseId: '',
+    pollTimer: null,
+    busy: false,
+  };
+
+  /* ── DOM refs ── */
+  var ticketList     = document.getElementById('ticket-list');
+  var openCount      = document.getElementById('open-count');
+  var convoEmpty     = document.getElementById('convo-empty');
+  var convoTopbar    = document.getElementById('convo-topbar');
+  var convoThread    = document.getElementById('convo-thread');
+  var convoComposer  = document.getElementById('convo-composer');
+  var convoName      = document.getElementById('convo-name');
+  var convoCaseId    = document.getElementById('convo-case-id');
+  var convoTicketType= document.getElementById('convo-ticket-type');
+  var convoEmail     = document.getElementById('convo-email');
+  var convoApptApproved = document.getElementById('convo-appt-approved');
+  var convoAvatar    = document.getElementById('convo-avatar');
+  var convoActive    = document.getElementById('convo-active-label');
+  var staffInput     = document.getElementById('staff-input');
+  var btnSend        = document.getElementById('btn-send-staff');
+  var btnApproveAppt = document.getElementById('btn-approve-appt');
+  var btnEndSession  = document.getElementById('btn-end-session');
+  var btnResolve     = document.getElementById('btn-resolve-ticket');
+  var btnRefresh     = document.getElementById('btn-refresh');
+  var btnBack        = document.getElementById('btn-back');
+  var ticketSearch   = document.getElementById('ticket-search');
+  var sessionLimitPanel = document.getElementById('session-limit-panel');
+  var autoCloseMode  = document.getElementById('auto-close-mode');
+  var autoCloseMinutes = document.getElementById('auto-close-minutes');
+  var sessionLimitHint = document.getElementById('session-limit-hint');
+  var resolveModal   = document.getElementById('resolve-modal');
+  var resolveReply   = document.getElementById('resolve-reply');
+  var resolveCategory= document.getElementById('resolve-category');
+  var promoteFaq     = document.getElementById('promote-faq');
+  var faqFields      = document.getElementById('faq-fields');
+  var faqQuestion    = document.getElementById('faq-question');
+  var btnCancelRes   = document.getElementById('btn-cancel-resolve');
+  var btnSubmitRes   = document.getElementById('btn-submit-resolve');
+  var lfSchedulePanel = document.getElementById('lf-schedule-panel');
+  var lfMeta          = document.getElementById('lf-meta');
+  var lfScheduledDisp = document.getElementById('lf-scheduled-display');
+  var lfApptWhen      = document.getElementById('lf-appt-when');
+  var lfApptLoc       = document.getElementById('lf-appt-loc');
+  var lfApptNotes     = document.getElementById('lf-appt-notes');
+  var btnLfSchedule   = document.getElementById('btn-lf-schedule');
+
+  /* ── Helpers ── */
+  function fmtTime(iso) {
+    if (!iso) return '';
+    var d = new Date(iso);
+    var h = d.getHours(), m = d.getMinutes();
+    var ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    return h + ':' + (m < 10 ? '0' : '') + m + ' ' + ampm;
+  }
+
+  function fmtDate(iso) {
+    if (!iso) return '';
+    var d = new Date(iso);
+    var opts = { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+    return d.toLocaleString('en-PH', opts);
+  }
+
+  function escapeHtml(s) {
+    return String(s || '')
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function initials(name) {
+    return String(name || '?').split(' ').map(function (w) { return w[0]; }).slice(0, 2).join('').toUpperCase();
+  }
+
+  function isMobileLayout() {
+    return window.matchMedia('(max-width: 768px)').matches;
+  }
+
+  function syncResponsivePanels(hasSelectedTicket) {
+    var ticketPanel = document.getElementById('ticket-panel');
+    var convoPanelEl = document.getElementById('convo-panel');
+    if (!ticketPanel || !convoPanelEl) return;
+
+    if (isMobileLayout()) {
+      ticketPanel.classList.toggle('hidden', !!hasSelectedTicket);
+      convoPanelEl.classList.toggle('active', !!hasSelectedTicket);
+      return;
+    }
+
+    ticketPanel.classList.remove('hidden');
+    convoPanelEl.classList.add('active');
+  }
+
+  function ticketTypeLabel(raw) {
+    var t = String(raw || 'general').trim().toLowerCase();
+    if (!t) t = 'general';
+    return t.replace(/_/g, ' ').replace(/\b\w/g, function (m) { return m.toUpperCase(); });
+  }
+
+  function statusBadgeLabel(t) {
+    if (String(t.appointment_status || '').toLowerCase() === 'approved') return 'approved';
+    return String(t.status || '').replace('_', ' ');
+  }
+
+  function toDatetimeLocalValue(iso) {
+    if (!iso) return '';
+    var d = new Date(iso);
+    if (!Number.isFinite(d.getTime())) return '';
+    function pad(n) { return (n < 10 ? '0' : '') + n; }
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+  }
+
+  function fillLfSchedulePanel(t) {
+    if (!lfSchedulePanel) return;
+    if (!t || t.ticket_type !== 'claim') {
+      lfSchedulePanel.classList.add('hidden');
+      return;
+    }
+    lfSchedulePanel.classList.remove('hidden');
+
+    var metaParts = [];
+    if (t.claim_item_number) metaParts.push('Item <strong>' + escapeHtml(t.claim_item_number) + '</strong>');
+    if (t.appointment_track) metaParts.push('Student track: <strong>' + escapeHtml(t.appointment_track) + '</strong>');
+    if (t.preferred_day) metaParts.push('Preferred day: ' + escapeHtml(t.preferred_day));
+    if (t.preferred_time_window) metaParts.push('Time window: ' + escapeHtml(t.preferred_time_window));
+    if (t.appointment_status) metaParts.push('Status: ' + escapeHtml(t.appointment_status));
+    lfMeta.innerHTML = metaParts.length ? metaParts.join('<br>') : 'Lost &amp; Found claim ticket.';
+
+    if (t.appointment_datetime) {
+      lfScheduledDisp.innerHTML =
+        '<strong>Scheduled:</strong> ' + escapeHtml(fmtDate(t.appointment_datetime)) +
+        (t.appointment_location ? ' · ' + escapeHtml(t.appointment_location) : '');
+    } else {
+      lfScheduledDisp.innerHTML = '<span style="color:#92400e;font-weight:600">No visit scheduled yet.</span>';
+    }
+
+    lfApptWhen.value = toDatetimeLocalValue(t.appointment_datetime);
+    lfApptLoc.value = t.appointment_location || 'OSA Office';
+    lfApptNotes.value = t.appointment_notes ? String(t.appointment_notes) : '';
+    btnLfSchedule.disabled = t.status === 'resolved';
+  }
+
+  var STAFF_PREFIX = '[OSA Staff ·';
+  function parseStaffMessage(text) {
+    if (!text.startsWith(STAFF_PREFIX)) return null;
+    var close = text.indexOf(']');
+    if (close < 0) return null;
+    return {
+      staffName: text.slice(STAFF_PREFIX.length, close).trim(),
+      body: text.slice(close + 1).replace(/^\n+/, ''),
+    };
+  }
+
+  /* ── Ticket list ── */
+  function loadTickets() {
+    ticketList.innerHTML = '<div class="empty-tickets">Loading…</div>';
+    var url = API + '/chat/tickets?status=' + encodeURIComponent(state.currentStatus);
+    if (state.currentSearch) {
+      url += '&q=' + encodeURIComponent(state.currentSearch);
+    }
+    fetch(url, { headers: apiHeaders() })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (!data.success || !data.tickets.length) {
+          ticketList.innerHTML = '<div class="empty-tickets">No ' + state.currentStatus.replace('_', ' ') + ' tickets.</div>';
+          if (state.currentStatus === 'open' || state.currentStatus === 'approved') openCount.textContent = '0';
+          return;
+        }
+        if (state.currentStatus === 'open' || state.currentStatus === 'approved') openCount.textContent = data.tickets.length;
+        renderTickets(data.tickets);
+      })
+      .catch(function () {
+        ticketList.innerHTML = '<div class="empty-tickets">Failed to load tickets.</div>';
+      });
+  }
+
+  function renderTickets(tickets) {
+    ticketList.innerHTML = '';
+    tickets.forEach(function (t) {
+      var item = document.createElement('div');
+      item.className = 'ticket-item' + (t.case_id === state.currentCaseId ? ' selected' : '');
+      item.dataset.caseId = t.case_id;
+      item.dataset.sessionId = t.session_id;
+      item.dataset.studentName = t.student_name;
+      item.dataset.studentEmail = t.student_email;
+      item.dataset.concern = t.concern;
+      item.dataset.status = t.status;
+
+      var activeDot = t.is_student_active
+        ? '<span class="active-dot" title="Student is online"></span>'
+        : '';
+      var lfBadge = (t.ticket_type === 'claim')
+        ? '<span style="font-size:10px;font-weight:800;background:#fde68a;color:#78350f;padding:2px 7px;border-radius:99px;margin-left:6px;letter-spacing:0.04em">LF CLAIM</span>'
+        : '';
+      var approvedBadge = (String(t.appointment_status || '').toLowerCase() === 'approved')
+        ? '<span style="font-size:10px;font-weight:800;background:#dcfce7;color:#166534;padding:2px 7px;border-radius:99px;margin-left:6px;letter-spacing:0.04em">APPROVED</span>'
+        : '';
+      var statusClass = (String(t.appointment_status || '').toLowerCase() === 'approved') ? 'approved' : (t.status || 'open');
+      var endPrompt = t.needs_end_session_prompt
+        ? '<div class="ticket-item__time" style="margin-top:6px;color:#b45309;font-weight:700">Idle live chat. Type <code>/end session</code> to close.</div>'
+        : '';
+
+      item.innerHTML =
+        '<div class="ticket-item__head">' +
+          '<div class="ticket-item__name">' + activeDot + escapeHtml(t.student_name) + lfBadge + approvedBadge + '</div>' +
+          '<span class="ticket-status-badge ' + statusClass + '">' + statusBadgeLabel(t) + '</span>' +
+        '</div>' +
+        '<div class="ticket-item__case">' + escapeHtml(t.case_id) + '</div>' +
+        '<div class="ticket-item__concern">' + escapeHtml(t.concern) + '</div>' +
+        '<div class="ticket-item__time" style="margin-top:5px">' + fmtDate(t.created_at) + '</div>' +
+        endPrompt;
+
+      item.addEventListener('click', function () {
+        selectTicket(t);
+      });
+
+      ticketList.appendChild(item);
+    });
+  }
+
+  /* ── Select ticket ── */
+  function selectTicket(t) {
+    state.currentCaseId = t.case_id;
+    state.currentSessionId = t.session_id;
+    state.currentConcern = t.concern || '';
+    state.currentTicketStatus = t.status;
+    state.currentTicketType = t.ticket_type || 'general';
+    state.currentAppointmentStatus = t.appointment_status || '';
+    state.currentNeedsEndPrompt = !!t.needs_end_session_prompt;
+    state.ticketSelectedAtMs = Date.now();
+    state.autoCloseTriggeredCaseId = '';
+
+    // Update selected style
+    document.querySelectorAll('.ticket-item').forEach(function (el) {
+      el.classList.toggle('selected', el.dataset.caseId === t.case_id);
+    });
+
+    // Fill topbar
+    convoName.textContent = t.student_name;
+    convoCaseId.textContent = t.case_id;
+    convoTicketType.textContent = ticketTypeLabel(t.ticket_type);
+    convoEmail.textContent = t.student_email;
+    convoAvatar.textContent = initials(t.student_name);
+    if (convoApptApproved) {
+      if (String(t.appointment_status || '').toLowerCase() === 'approved') {
+        convoApptApproved.classList.remove('hidden');
+      } else {
+        convoApptApproved.classList.add('hidden');
+      }
+    }
+    if (t.is_student_active) {
+      convoActive.classList.remove('hidden');
+    } else {
+      convoActive.classList.add('hidden');
+    }
+    btnResolve.disabled = t.status === 'resolved';
+    if (btnApproveAppt) btnApproveAppt.disabled = t.status === 'resolved' || String(t.appointment_status || '').toLowerCase() === 'approved';
+    if (btnEndSession) btnEndSession.disabled = t.status === 'resolved';
+
+    // Show panels
+    convoEmpty.classList.add('hidden');
+    convoTopbar.classList.remove('hidden');
+    convoThread.classList.remove('hidden');
+    if (t.status !== 'resolved') {
+      convoComposer.classList.remove('hidden');
+    } else {
+      convoComposer.classList.add('hidden');
+    }
+    if (sessionLimitPanel) sessionLimitPanel.classList.toggle('hidden', t.status === 'resolved');
+    staffInput.placeholder = state.currentNeedsEndPrompt
+      ? 'Session idle. Send update or type /end session to close…'
+      : 'Type a message to the student…';
+
+    fillLfSchedulePanel(t);
+
+    syncResponsivePanels(true);
+
+    loadMessages(t.session_id, t.concern);
+    startPolling();
+  }
+
+  /* ── Load messages ── */
+  function loadMessages(sessionId, concern) {
+    fetch(API + '/chat/session/' + encodeURIComponent(sessionId) + '/messages')
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (!data.success) return;
+        renderMessages(data.messages, concern);
+      })
+      .catch(function () {});
+  }
+
+  function renderMessages(messages, concern) {
+    convoThread.innerHTML = '';
+
+    // Concern card at top
+    if (concern) {
+      var card = document.createElement('div');
+      card.className = 'concern-card';
+      card.innerHTML =
+        '<div class="concern-card__label">Student\'s Escalation Concern</div>' +
+        '<div class="concern-card__text">' + escapeHtml(concern) + '</div>';
+      convoThread.appendChild(card);
+    }
+
+    messages.forEach(function (m) {
+      appendMsg(m.role, m.content, m.created_at, false);
+    });
+
+    convoThread.scrollTop = convoThread.scrollHeight;
+  }
+
+  function appendMsg(role, content, time, scroll) {
+    var staffInfo = (role === 'assistant') ? parseStaffMessage(content) : null;
+    var cssRole = staffInfo ? 'staff' : role;
+
+    var div = document.createElement('div');
+    div.className = 'cmsg cmsg--' + cssRole;
+
+    if (staffInfo || role === 'assistant') {
+      var label = document.createElement('div');
+      label.className = 'cmsg__label';
+      label.textContent = staffInfo ? staffInfo.staffName : 'AI Assistant';
+      div.appendChild(label);
+    } else if (role === 'user') {
+      var label2 = document.createElement('div');
+      label2.className = 'cmsg__label';
+      label2.textContent = 'Student';
+      div.appendChild(label2);
+    }
+
+    var bubble = document.createElement('div');
+    bubble.className = 'cmsg__bubble';
+    bubble.textContent = staffInfo ? staffInfo.body : content;
+    div.appendChild(bubble);
+
+    var ts = document.createElement('div');
+    ts.className = 'cmsg__time';
+    ts.textContent = fmtTime(time);
+    div.appendChild(ts);
+
+    convoThread.appendChild(div);
+    if (scroll !== false) convoThread.scrollTop = convoThread.scrollHeight;
+  }
+
+  /* ── Polling for new messages ── */
+  var lastMsgCount = 0;
+
+  function startPolling() {
+    stopPolling();
+    lastMsgCount = 0;
+    state.pollTimer = setInterval(function () {
+      if (!state.currentSessionId || !state.currentCaseId) return;
+
+      // Poll messages
+      fetch(API + '/chat/session/' + encodeURIComponent(state.currentSessionId) + '/messages')
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (!data.success) return;
+          if (data.messages.length !== lastMsgCount) {
+            lastMsgCount = data.messages.length;
+            var concern = document.querySelector('.concern-card .concern-card__text');
+            renderMessages(data.messages, concern ? concern.textContent : '');
+          }
+          maybeAutoClose(data.messages);
+        })
+        .catch(function () {});
+
+      // Poll ticket status — detect external resolve (another tab, auto-close, backend)
+      if (state.currentTicketStatus !== 'resolved') {
+        fetch(API + '/chat/tickets/' + encodeURIComponent(state.currentCaseId) + '/status', { headers: apiHeaders() })
+          .then(function (r) { return r.json(); })
+          .catch(function () { return null; })
+          .then(function (d) {
+            if (!d || !d.success || !d.ticket) return;
+            if (d.ticket.status === 'resolved' && state.currentTicketStatus !== 'resolved') {
+              state.currentTicketStatus = 'resolved';
+              btnResolve.disabled = true;
+              if (btnApproveAppt) btnApproveAppt.disabled = true;
+              if (btnEndSession) btnEndSession.disabled = true;
+              convoComposer.classList.add('hidden');
+              if (sessionLimitPanel) sessionLimitPanel.classList.add('hidden');
+              appendSystemPill('Session was closed externally');
+              loadTickets();
+            }
+          });
+      }
+
+      // Update student online indicator
+      fetch(API + '/chat/session/' + encodeURIComponent(state.currentSessionId) + '/active')
+        .then(function (r) { return r.json(); })
+        .then(function (s) {
+          if (s.active) {
+            convoActive.classList.remove('hidden');
+          } else {
+            convoActive.classList.add('hidden');
+          }
+        }).catch(function () {});
+    }, 5000);
+  }
+
+  function stopPolling() {
+    if (state.pollTimer) { clearInterval(state.pollTimer); state.pollTimer = null; }
+  }
+
+  function readAutoCloseConfig() {
+    var mode = String((autoCloseMode && autoCloseMode.value) || 'off').trim();
+    var mins = parseInt((autoCloseMinutes && autoCloseMinutes.value) || '0', 10);
+    if (!Number.isFinite(mins) || mins < 1) mins = 0;
+    return { mode: mode, minutes: mins };
+  }
+
+  function maybeAutoClose(messages) {
+    if (!state.currentCaseId || state.currentTicketStatus === 'resolved') return;
+    if (state.autoCloseTriggeredCaseId === state.currentCaseId) return;
+    var cfg = readAutoCloseConfig();
+    if (cfg.mode === 'off' || !cfg.minutes) {
+      if (sessionLimitHint) sessionLimitHint.textContent = '';
+      return;
+    }
+    var now = Date.now();
+    var limitMs = cfg.minutes * 60 * 1000;
+    var elapsedMs = 0;
+    if (cfg.mode === 'absolute') {
+      elapsedMs = Math.max(0, now - (state.ticketSelectedAtMs || now));
+    } else {
+      var last = (messages && messages.length) ? messages[messages.length - 1] : null;
+      var lastTs = last ? new Date(last.created_at).getTime() : state.ticketSelectedAtMs;
+      if (!Number.isFinite(lastTs)) lastTs = state.ticketSelectedAtMs || now;
+      elapsedMs = Math.max(0, now - lastTs);
+    }
+    var remaining = Math.max(0, Math.ceil((limitMs - elapsedMs) / 1000));
+    if (sessionLimitHint) {
+      sessionLimitHint.textContent = remaining
+        ? ('Auto-close in ~' + Math.ceil(remaining / 60) + 'm (' + cfg.mode + ')')
+        : 'Auto-closing now…';
+    }
+    if (elapsedMs >= limitMs) {
+      state.autoCloseTriggeredCaseId = state.currentCaseId;
+      endCurrentSession('auto-close: ' + cfg.mode + ' limit reached');
+    }
+  }
+
+  function endCurrentSession(reason) {
+    if (!state.currentCaseId || state.busy || state.currentTicketStatus === 'resolved') return;
+    state.busy = true;
+    if (btnEndSession) btnEndSession.disabled = true;
+
+    function appendSystemPill(text) {
+      var pill = document.createElement('div');
+      pill.style.cssText = 'text-align:center;padding:10px 16px;';
+      pill.innerHTML = '<span style="display:inline-block;background:#fee2e2;color:#991b1b;font-size:11.5px;font-weight:700;padding:5px 14px;border-radius:99px;letter-spacing:0.04em">● ' + escapeHtml(text) + '</span>';
+      convoThread.appendChild(pill);
+      convoThread.scrollTop = convoThread.scrollHeight;
+    }
+
+    function markClosedUi() {
+      state.currentTicketStatus = 'resolved';
+      btnResolve.disabled = true;
+      if (btnApproveAppt) btnApproveAppt.disabled = true;
+      if (btnEndSession) btnEndSession.disabled = true;
+      convoComposer.classList.add('hidden');
+      if (sessionLimitPanel) sessionLimitPanel.classList.add('hidden');
+      appendSystemPill('Session closed — student has been notified');
+      loadMessages(state.currentSessionId, state.currentConcern);
+      loadTickets();
+    }
+
+    function fallbackEndViaStaffCommand() {
+      return fetch(API + '/chat/tickets/' + encodeURIComponent(state.currentCaseId) + '/staff-message', {
+        method: 'POST',
+        headers: apiHeaders(),
+        body: JSON.stringify({
+          content: '/end session',
+          staff_name: staffName(),
+        }),
+      }).then(function (r) { return r.json(); });
+    }
+
+    fetch(API + '/chat/tickets/' + encodeURIComponent(state.currentCaseId) + '/end-session', {
+      method: 'POST',
+      headers: apiHeaders(),
+      body: JSON.stringify({ staff_name: staffName(), reason: reason || '' }),
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        // If backend is older (missing endpoint) or returns conflict, use legacy /end session command flow.
+        if (!data.success) {
+          var msg = String(data.message || '');
+          if (msg.toLowerCase().indexOf('already closed') >= 0) {
+            state.busy = false;
+            markClosedUi();
+            return;
+          }
+          return fallbackEndViaStaffCommand().then(function (fallbackData) {
+            state.busy = false;
+            if (!fallbackData || !fallbackData.success) {
+              if (btnEndSession) btnEndSession.disabled = false;
+              alert('Could not end session: ' + ((fallbackData && fallbackData.message) || msg || 'Unknown error'));
+              return;
+            }
+            markClosedUi();
+          });
+        }
+        state.busy = false;
+        markClosedUi();
+      })
+      .catch(function () {
+        // Network or route mismatch; attempt legacy command route before showing error.
+        fallbackEndViaStaffCommand()
+          .then(function (fallbackData) {
+            state.busy = false;
+            if (!fallbackData || !fallbackData.success) {
+              if (btnEndSession) btnEndSession.disabled = false;
+              alert('Network error while ending session.');
+              return;
+            }
+            markClosedUi();
+          })
+          .catch(function () {
+            state.busy = false;
+            if (btnEndSession) btnEndSession.disabled = false;
+            alert('Network error while ending session.');
+          });
+      });
+  }
+
+  /* ── Send staff message ── */
+  function sendStaffMessage() {
+    var text = staffInput.value.trim();
+    if (!text || state.busy) return;
+    if (!state.currentCaseId) return;
+
+    state.busy = true;
+    btnSend.disabled = true;
+    staffInput.disabled = true;
+
+    fetch(API + '/chat/tickets/' + encodeURIComponent(state.currentCaseId) + '/staff-message', {
+      method: 'POST',
+      headers: apiHeaders(),
+      body: JSON.stringify({ content: text, staff_name: staffName() }),
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        state.busy = false;
+        staffInput.disabled = false;
+        staffInput.value = '';
+        staffInput.style.height = '';
+        btnSend.disabled = true;
+
+        if (!data.success) {
+          alert('Failed to send: ' + (data.message || 'Unknown error'));
+          return;
+        }
+
+        if (data.session_closed) {
+          // Append the end-session message to thread immediately
+          var endContent = '[OSA Staff · ' + staffName() + ']\n\n' + text;
+          appendMsg('assistant', endContent, new Date().toISOString(), true);
+          lastMsgCount++;
+          markClosedUi();
+          return;
+        }
+
+        // Immediately append own message
+        var msgContent = '[OSA Staff · ' + staffName() + ']\n\n' + text;
+        appendMsg('assistant', msgContent, new Date().toISOString(), true);
+        lastMsgCount++;
+
+        // Update ticket to in_progress in list
+        var item = ticketList.querySelector('[data-case-id="' + state.currentCaseId + '"]');
+        if (item) {
+          var badge = item.querySelector('.ticket-status-badge');
+          if (badge && badge.classList.contains('open')) {
+            badge.className = 'ticket-status-badge in_progress';
+            badge.textContent = 'in progress';
+          }
+        }
+      })
+      .catch(function () {
+        state.busy = false;
+        staffInput.disabled = false;
+        btnSend.disabled = false;
+        alert('Network error. Please try again.');
+      });
+  }
+
+  btnSend.addEventListener('click', sendStaffMessage);
+
+  if (btnEndSession) {
+    btnEndSession.addEventListener('click', function () {
+      if (!state.currentCaseId) return;
+      if (!confirm('End this live chat session now?')) return;
+      endCurrentSession('ended manually by staff');
+    });
+  }
+
+  if (btnApproveAppt) {
+    btnApproveAppt.addEventListener('click', function () {
+      if (!state.currentCaseId || state.busy) return;
+      var note = window.prompt('Optional approval note for student (leave blank if none):', '') || '';
+      state.busy = true;
+      btnApproveAppt.disabled = true;
+      fetch(API + '/chat/tickets/' + encodeURIComponent(state.currentCaseId) + '/approve-appointment', {
+        method: 'POST',
+        headers: apiHeaders(),
+        body: JSON.stringify({
+          staff_name: staffName(),
+          note: String(note || '').trim(),
+        }),
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          state.busy = false;
+          if (!data.success) {
+            btnApproveAppt.disabled = false;
+            alert('Could not approve appointment: ' + (data.message || 'Unknown error'));
+            return;
+          }
+          state.currentAppointmentStatus = 'approved';
+          if (convoApptApproved) convoApptApproved.classList.remove('hidden');
+          loadMessages(state.currentSessionId, state.currentConcern);
+          loadTickets();
+        })
+        .catch(function () {
+          state.busy = false;
+          btnApproveAppt.disabled = false;
+          alert('Network error while approving appointment.');
+        });
+    });
+  }
+
+  btnLfSchedule.addEventListener('click', function () {
+    if (!state.currentCaseId || state.busy) return;
+    var when = (lfApptWhen && lfApptWhen.value || '').trim();
+    if (!when) {
+      alert('Choose a visit date and time.');
+      return;
+    }
+    state.busy = true;
+    btnLfSchedule.disabled = true;
+    fetch(API + '/chat/tickets/' + encodeURIComponent(state.currentCaseId) + '/appointment', {
+      method: 'POST',
+      headers: apiHeaders(),
+      body: JSON.stringify({
+        staff_name: staffName(),
+        appointment_datetime: when,
+        appointment_location: (lfApptLoc && lfApptLoc.value || '').trim() || 'OSA Office',
+        appointment_notes: (lfApptNotes && lfApptNotes.value || '').trim(),
+      }),
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        state.busy = false;
+        if (!data.success) {
+          btnLfSchedule.disabled = state.currentTicketStatus === 'resolved';
+          alert('Could not schedule: ' + (data.message || 'Unknown error'));
+          return;
+        }
+        loadMessages(state.currentSessionId, state.currentConcern);
+        lastMsgCount = 0;
+        fetch(API + '/chat/tickets?status=' + encodeURIComponent(state.currentStatus), { headers: apiHeaders() })
+          .then(function (r) { return r.json(); })
+          .then(function (d) {
+            if (!d.success || !d.tickets) return;
+            var found = d.tickets.filter(function (x) { return x.case_id === state.currentCaseId; })[0];
+            if (found) fillLfSchedulePanel(found);
+          })
+          .catch(function () {});
+        loadTickets();
+      })
+      .catch(function () {
+        state.busy = false;
+        btnLfSchedule.disabled = false;
+        alert('Network error. Please try again.');
+      });
+  });
+
+  staffInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendStaffMessage();
+    }
+  });
+
+  staffInput.addEventListener('input', function () {
+    btnSend.disabled = !staffInput.value.trim() || state.busy;
+    staffInput.style.height = 'auto';
+    staffInput.style.height = Math.min(staffInput.scrollHeight, 110) + 'px';
+  });
+
+  /* ── Resolve ticket ── */
+  btnResolve.addEventListener('click', function () {
+    resolveReply.value = '';
+    faqQuestion.value = '';
+    promoteFaq.checked = false;
+    faqFields.classList.remove('visible');
+    btnSubmitRes.disabled = false;
+    btnSubmitRes.textContent = 'Resolve & Notify Student';
+    resolveModal.classList.remove('hidden');
+    setTimeout(function () { resolveReply.focus(); }, 60);
+  });
+
+  promoteFaq.addEventListener('change', function () {
+    faqFields.classList.toggle('visible', promoteFaq.checked);
+  });
+
+  btnCancelRes.addEventListener('click', function () {
+    resolveModal.classList.add('hidden');
+  });
+
+  resolveModal.addEventListener('click', function (e) {
+    if (e.target === resolveModal) resolveModal.classList.add('hidden');
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !resolveModal.classList.contains('hidden')) {
+      resolveModal.classList.add('hidden');
+    }
+  });
+
+  btnSubmitRes.addEventListener('click', function () {
+    var reply = resolveReply.value.trim();
+    if (!reply) { alert('Please enter a staff reply.'); return; }
+
+    btnSubmitRes.disabled = true;
+    btnSubmitRes.textContent = 'Resolving…';
+
+    var body = {
+      staff_reply: reply,
+      promote_to_faq: promoteFaq.checked,
+      faq_question: faqQuestion.value.trim(),
+      faq_answer: reply,
+      faq_category: resolveCategory.value,
+    };
+
+    fetch(API + '/chat/tickets/' + encodeURIComponent(state.currentCaseId) + '/resolve', {
+      method: 'PUT',
+      headers: apiHeaders(),
+      body: JSON.stringify(body),
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        resolveModal.classList.add('hidden');
+        if (!data.success) { alert('Error: ' + data.message); return; }
+
+        btnResolve.disabled = true;
+        if (btnApproveAppt) btnApproveAppt.disabled = true;
+        if (btnEndSession) btnEndSession.disabled = true;
+        convoComposer.classList.add('hidden');
+        state.currentTicketStatus = 'resolved';
+        stopPolling();
+
+        // Update badge in list
+        var item = ticketList.querySelector('[data-case-id="' + state.currentCaseId + '"]');
+        if (item) {
+          var badge = item.querySelector('.ticket-status-badge');
+          if (badge) { badge.className = 'ticket-status-badge resolved'; badge.textContent = 'resolved'; }
+        }
+
+        alert('Ticket resolved.' + (data.promoted_to_faq ? ' Answer added to FAQ.' : ''));
+        loadTickets();
+      })
+      .catch(function () {
+        btnSubmitRes.disabled = false;
+        btnSubmitRes.textContent = 'Resolve & Notify Student';
+        alert('Network error. Please try again.');
+      });
+  });
+
+  /* ── Tabs ── */
+  document.querySelectorAll('.status-tab').forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      document.querySelectorAll('.status-tab').forEach(function (t) { t.classList.remove('active'); });
+      tab.classList.add('active');
+      state.currentStatus = tab.dataset.status;
+      loadTickets();
+    });
+  });
+
+  if (ticketSearch) {
+    ticketSearch.addEventListener('input', function () {
+      state.currentSearch = String(ticketSearch.value || '').trim();
+      loadTickets();
+    });
+  }
+
+  [autoCloseMode, autoCloseMinutes].forEach(function (el) {
+    if (!el) return;
+    el.addEventListener('input', function () {
+      state.autoCloseTriggeredCaseId = '';
+      if (sessionLimitHint) sessionLimitHint.textContent = '';
+    });
+  });
+
+  /* ── Refresh ── */
+  btnRefresh.addEventListener('click', loadTickets);
+
+  /* ── Back button (mobile) ── */
+  btnBack.addEventListener('click', function () {
+    stopPolling();
+    state.currentCaseId = null;
+    if (lfSchedulePanel) lfSchedulePanel.classList.add('hidden');
+    if (sessionLimitPanel) sessionLimitPanel.classList.add('hidden');
+    if (sessionLimitHint) sessionLimitHint.textContent = '';
+    syncResponsivePanels(false);
+  });
+
+  window.addEventListener('resize', function () {
+    syncResponsivePanels(!!state.currentCaseId);
+  });
+
+  /* ── Auto-open from email link (?case=OSA-...) ── */
+  (function checkQueryCase() {
+    var params = new URLSearchParams(window.location.search);
+    var caseId = params.get('case');
+    if (!caseId) return;
+    // Wait for tickets to load then select
+    var attempts = 0;
+    var interval = setInterval(function () {
+      var item = ticketList.querySelector('[data-case-id="' + caseId + '"]');
+      if (item) {
+        clearInterval(interval);
+        item.click();
+      } else if (++attempts > 10) {
+        clearInterval(interval);
+      }
+    }, 400);
+  })();
+
+  /* ── Initial load ── */
+  syncResponsivePanels(false);
+  loadTickets();
+
+  // Auto-refresh ticket list every 30s
+  setInterval(function () {
+    if (!state.currentCaseId) loadTickets();
+  }, 30000);
+
+})();
+</script>
+</body>
+</html>

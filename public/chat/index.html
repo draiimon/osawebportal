@@ -1,0 +1,1682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="color-scheme" content="light">
+  <title>OSA Chat Assistant · EAC Cavite</title>
+  <link rel="icon" type="image/png" href="/assets/images/eac-emblem.png">
+  <link rel="apple-touch-icon" href="/assets/images/eac-emblem.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/osa-design.css?v=40">
+  <script src="/assets/js/portal-shell.js?v=44" defer></script>
+  <style>
+    :root {
+      --brand:       #841a2d;
+      --brand-deep:  #5c101d;
+      --brand-soft:  #aa4054;
+      --gold:        #c79a49;
+      --gold-soft:   #ead3a8;
+      --paper:       #fffaf3;
+      --paper-alt:   #f5ede0;
+      --ink:         #191412;
+      --muted:       #65574d;
+      --line:        rgba(90,60,38,0.10);
+      --shadow:      0 18px 44px rgba(54,28,14,0.09);
+      --font:        'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --nav-h:       68px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font);
+      background: var(--paper);
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100dvh;
+    }
+
+    /* ── Auth screens ─────────────────────────────────────────── */
+    .auth-wrap {
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px env(safe-area-inset-bottom);
+      background: linear-gradient(160deg, #fff8f0 0%, #f5e9d6 100%);
+    }
+
+    .auth-card {
+      width: 100%;
+      max-width: 420px;
+      background: #fff;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      padding: 40px 36px 36px;
+    }
+
+    .auth-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .auth-logo img {
+      width: 44px;
+      height: 44px;
+      object-fit: contain;
+    }
+
+    .auth-logo__text strong {
+      display: block;
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--brand);
+      letter-spacing: -0.01em;
+      line-height: 1.2;
+    }
+
+    .auth-logo__text span {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .auth-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--ink);
+      letter-spacing: -0.02em;
+      margin-bottom: 6px;
+    }
+
+    .auth-sub {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 28px;
+      line-height: 1.5;
+    }
+
+    .auth-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .auth-input {
+      width: 100%;
+      border: 1.5px solid var(--line);
+      background: var(--paper);
+      padding: 13px 16px;
+      font-family: var(--font);
+      font-size: 15px;
+      color: var(--ink);
+      outline: none;
+      transition: border-color 0.18s;
+      border-radius: 0;
+      -webkit-appearance: none;
+    }
+
+    .auth-input:focus { border-color: var(--brand); }
+    .auth-input::placeholder { color: #b8a89a; }
+
+    .auth-hint {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    .auth-btn {
+      width: 100%;
+      margin-top: 20px;
+      padding: 14px;
+      background: var(--brand);
+      color: #fff;
+      font-family: var(--font);
+      font-size: 15px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      letter-spacing: 0.02em;
+      transition: background 0.18s, opacity 0.18s;
+      border-radius: 0;
+      -webkit-appearance: none;
+    }
+
+    .auth-btn:hover:not(:disabled) { background: var(--brand-deep); }
+    .auth-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    .auth-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      background: none;
+      border: none;
+      cursor: pointer;
+      margin-bottom: 20px;
+      padding: 0;
+      font-family: var(--font);
+    }
+
+    .auth-back:hover { color: var(--brand); }
+
+    .auth-error {
+      font-size: 13px;
+      color: #b91c1c;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      padding: 10px 14px;
+      margin-top: 14px;
+      display: none;
+    }
+
+    .auth-error.visible { display: block; }
+
+    .otp-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .otp-input {
+      flex: 1;
+      text-align: center;
+      font-size: 22px;
+      font-weight: 700;
+      padding: 14px 4px;
+      border: 1.5px solid var(--line);
+      background: var(--paper);
+      color: var(--ink);
+      outline: none;
+      letter-spacing: 0.08em;
+      border-radius: 0;
+      -webkit-appearance: none;
+      font-family: var(--font);
+      transition: border-color 0.18s;
+    }
+
+    .otp-input:focus { border-color: var(--brand); }
+
+    .resend-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 16px;
+    }
+
+    .resend-btn {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--brand);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: var(--font);
+      padding: 0;
+    }
+
+    .resend-btn:disabled { color: var(--muted); cursor: not-allowed; }
+    .resend-timer { font-size: 13px; color: var(--muted); }
+
+    /* ── Chat layout ──────────────────────────────────────────── */
+    .chat-root {
+      display: flex;
+      flex-direction: column;
+      height: 100dvh;
+      background: var(--paper);
+    }
+
+    .chat-system-bubble {
+      align-self: center;
+      margin: 8px auto;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #5b4030;
+      background: linear-gradient(135deg, #fff5e1 0%, #fde1ca 100%);
+      border: 1px solid rgba(132, 26, 45, 0.12);
+      border-radius: 999px;
+      box-shadow: 0 1px 4px rgba(132, 26, 45, 0.08);
+      max-width: fit-content;
+    }
+    .chat-system-bubble::before {
+      content: '';
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #2ea043;
+      box-shadow: 0 0 0 3px rgba(46,160,67,0.18);
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+
+    .chat-topbar {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 0 20px;
+      height: 64px;
+      background: #fff;
+      border-bottom: 1px solid var(--line);
+      box-shadow: 0 2px 12px rgba(54,28,14,0.06);
+    }
+
+    .chat-topbar__avatar {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--brand) 0%, var(--brand-soft) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .chat-topbar__avatar svg { color: #fff; }
+
+    .chat-topbar__info { flex: 1; min-width: 0; }
+
+    .chat-topbar__name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .chat-topbar__status {
+      font-size: 12px;
+      color: #22c55e;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .chat-topbar__status::before {
+      content: '';
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #22c55e;
+      display: inline-block;
+    }
+
+    .chat-topbar__badge {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      background: var(--gold-soft);
+      color: #7a5c1e;
+      padding: 4px 10px;
+      flex-shrink: 0;
+    }
+
+    .chat-thread {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overscroll-behavior: contain;
+    }
+
+    /* message bubbles */
+    .msg {
+      display: flex;
+      flex-direction: column;
+      max-width: 82%;
+      animation: msgIn 0.22s ease;
+    }
+
+    @keyframes msgIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .msg--user { align-self: flex-end; align-items: flex-end; }
+    .msg--assistant { align-self: flex-start; align-items: flex-start; }
+
+    .msg__bubble {
+      padding: 12px 16px;
+      font-size: 14.5px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .msg--user .msg__bubble {
+      background: linear-gradient(135deg, var(--brand) 0%, #a82840 100%);
+      color: #fff;
+    }
+
+    .msg--assistant .msg__bubble {
+      background: #fff;
+      border: 1px solid var(--line);
+      color: var(--ink);
+      box-shadow: 0 2px 8px rgba(54,28,14,0.06);
+    }
+
+    .msg__time {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 4px;
+      padding: 0 2px;
+    }
+
+    /* typing indicator */
+    .typing-bubble {
+      align-self: flex-start;
+      background: #fff;
+      border: 1px solid var(--line);
+      padding: 14px 18px;
+      display: flex;
+      gap: 5px;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(54,28,14,0.06);
+    }
+
+    .typing-bubble span {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--muted);
+      animation: typingDot 1.2s infinite;
+    }
+
+    .typing-bubble span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-bubble span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typingDot {
+      0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+      30%            { opacity: 1;   transform: translateY(-4px); }
+    }
+
+    /* quick chips */
+    .chat-chips {
+      flex-shrink: 0;
+      padding: 10px 16px 4px;
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: none; /* Firefox */
+      border-top: 1px solid var(--line);
+      background: rgba(255,250,243,0.95);
+    }
+
+    .chat-chips::-webkit-scrollbar { display: none; }
+
+    .chip {
+      flex-shrink: 0;
+      padding: 8px 14px;
+      border: 1.5px solid var(--brand);
+      background: transparent;
+      color: var(--brand);
+      font-family: var(--font);
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s, color 0.15s;
+      border-radius: 0;
+    }
+
+    .chip:hover { background: var(--brand); color: #fff; }
+
+    /* composer */
+    .chat-composer {
+      flex-shrink: 0;
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+      background: #fff;
+      border-top: 1px solid var(--line);
+    }
+
+    .chat-composer textarea {
+      flex: 1;
+      border: 1.5px solid var(--line);
+      background: var(--paper);
+      padding: 11px 14px;
+      font-family: var(--font);
+      font-size: 14.5px;
+      color: var(--ink);
+      resize: none;
+      outline: none;
+      line-height: 1.5;
+      max-height: 120px;
+      overflow-y: auto;
+      transition: border-color 0.18s;
+      border-radius: 0;
+      -webkit-appearance: none;
+    }
+
+    .chat-composer textarea:focus { border-color: var(--brand); }
+    .chat-composer textarea::placeholder { color: #b8a89a; }
+
+    .send-btn {
+      width: 44px;
+      height: 44px;
+      background: var(--brand);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.18s;
+      border-radius: 0;
+    }
+
+    .send-btn:hover:not(:disabled) { background: var(--brand-deep); }
+    .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .send-btn svg { color: #fff; }
+
+    /* welcome message */
+    .chat-welcome {
+      align-self: center;
+      text-align: center;
+      padding: 32px 24px;
+      max-width: 320px;
+    }
+
+    .chat-welcome__icon {
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(135deg, var(--brand) 0%, var(--brand-soft) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+    }
+
+    .chat-welcome__title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--ink);
+      margin-bottom: 8px;
+    }
+
+    .chat-welcome__sub {
+      font-size: 13.5px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    /* ── Staff message bubble ─────────────────────────────────── */
+    .msg--staff { align-self: flex-start; align-items: flex-start; }
+
+    .msg--staff .msg__label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #1d4ed8;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .msg--staff .msg__label::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #22c55e;
+      display: inline-block;
+    }
+
+    .msg--staff .msg__bubble {
+      background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%);
+      color: #fff;
+      border: none;
+      box-shadow: 0 2px 8px rgba(29,78,216,0.25);
+    }
+
+    /* staff online indicator in topbar */
+    .staff-online-badge {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      background: #dcfce7;
+      color: #166534;
+      padding: 4px 10px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .staff-online-badge::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #22c55e;
+      animation: pulse 1.8s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* ── Escalation banner ────────────────────────────────────── */
+    .escalate-banner {
+      margin: 4px 0 0;
+      background: #fffbeb;
+      border: 1.5px solid #f59e0b;
+      padding: 14px 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      animation: msgIn 0.22s ease;
+    }
+
+    .escalate-banner__icon {
+      flex-shrink: 0;
+      width: 32px;
+      height: 32px;
+      background: #f59e0b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+    }
+
+    .escalate-banner__body { flex: 1; }
+
+    .escalate-banner__title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #92400e;
+      margin-bottom: 4px;
+    }
+
+    .escalate-banner__sub {
+      font-size: 12.5px;
+      color: #a16207;
+      margin-bottom: 10px;
+      line-height: 1.5;
+    }
+
+    .escalate-banner__btn {
+      padding: 8px 16px;
+      background: var(--brand);
+      color: #fff;
+      font-family: var(--font);
+      font-size: 12.5px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      letter-spacing: 0.02em;
+      transition: background 0.15s;
+      border-radius: 0;
+    }
+
+    .escalate-banner__btn:hover { background: var(--brand-deep); }
+
+    /* ── Escalation modal ─────────────────────────────────────── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(25, 20, 18, 0.55);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 999;
+      padding: 0;
+    }
+
+    @media (min-width: 480px) {
+      .modal-overlay {
+        align-items: center;
+        padding: 24px 16px;
+      }
+    }
+
+    .modal-card {
+      width: 100%;
+      max-width: 480px;
+      background: #fff;
+      padding: 28px 28px calc(28px + env(safe-area-inset-bottom));
+      box-shadow: 0 -8px 40px rgba(54,28,14,0.18);
+    }
+
+    @media (min-width: 480px) {
+      .modal-card { padding: 32px 36px; }
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--ink);
+      letter-spacing: -0.02em;
+    }
+
+    .modal-close {
+      width: 32px;
+      height: 32px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+
+    .modal-close:hover { color: var(--ink); }
+
+    .modal-sub {
+      font-size: 13.5px;
+      color: var(--muted);
+      margin-bottom: 20px;
+      line-height: 1.55;
+    }
+
+    .modal-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .modal-textarea {
+      width: 100%;
+      border: 1.5px solid var(--line);
+      background: var(--paper);
+      padding: 12px 14px;
+      font-family: var(--font);
+      font-size: 14.5px;
+      color: var(--ink);
+      resize: vertical;
+      min-height: 110px;
+      outline: none;
+      transition: border-color 0.18s;
+      border-radius: 0;
+      line-height: 1.5;
+      -webkit-appearance: none;
+    }
+
+    .modal-textarea:focus { border-color: var(--brand); }
+    .modal-textarea::placeholder { color: #b8a89a; }
+
+    .modal-error {
+      font-size: 13px;
+      color: #b91c1c;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      padding: 10px 14px;
+      margin-top: 12px;
+      display: none;
+    }
+
+    .modal-error.visible { display: block; }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .modal-btn-cancel {
+      flex: 1;
+      padding: 13px;
+      background: var(--paper-alt);
+      border: 1px solid var(--line);
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      border-radius: 0;
+    }
+
+    .modal-btn-cancel:hover { background: var(--line); }
+
+    .modal-btn-submit {
+      flex: 2;
+      padding: 13px;
+      background: var(--brand);
+      color: #fff;
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      letter-spacing: 0.02em;
+      transition: background 0.15s;
+      border-radius: 0;
+    }
+
+    .modal-btn-submit:hover:not(:disabled) { background: var(--brand-deep); }
+    .modal-btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── Ticket confirmation card ─────────────────────────────── */
+    .ticket-card {
+      background: #f0fdf4;
+      border: 1.5px solid #86efac;
+      padding: 16px;
+      margin-top: 4px;
+      animation: msgIn 0.22s ease;
+    }
+
+    .ticket-card__title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #166534;
+      margin-bottom: 6px;
+    }
+
+    .ticket-card__id {
+      font-size: 15px;
+      font-weight: 800;
+      color: #15803d;
+      letter-spacing: 0.04em;
+      margin-bottom: 6px;
+      word-break: break-all;
+    }
+
+    .ticket-card__sub {
+      font-size: 12.5px;
+      color: #166534;
+      line-height: 1.5;
+    }
+
+    /* utility */
+    .hidden { display: none !important; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+
+    @media (max-width: 480px) {
+      .auth-card { padding: 32px 24px 28px; }
+      .chat-topbar { padding: 0 14px; }
+      .chat-thread { padding: 16px 12px; }
+      .chat-composer { padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Screen 1: Email ──────────────────────────────────────── -->
+<div id="screen-email" class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <img src="/assets/images/eac-emblem.png" alt="EAC Cavite">
+      <div class="auth-logo__text">
+        <strong>OSA Transaction Guide</strong>
+        <span>EAC Cavite · Student Affairs</span>
+      </div>
+    </div>
+    <h1 class="auth-title">Chat with OSA</h1>
+    <p class="auth-sub">Enter your student email to get started. We'll send a one-time code to verify it's you.</p>
+
+    <label class="auth-label" for="inp-fullname">Full Name</label>
+    <input class="auth-input" type="text" id="inp-fullname" placeholder="Juan Dela Cruz" autocomplete="name" inputmode="text">
+
+    <label class="auth-label" for="inp-email" style="margin-top:14px">Student Email</label>
+    <input class="auth-input" type="email" id="inp-email" placeholder="yourname@gmail.com" autocomplete="email" inputmode="email">
+    <p class="auth-hint">Testing mode: any valid email address is accepted.</p>
+
+    <div class="auth-error" id="email-error"></div>
+    <button type="button" class="auth-btn" id="btn-send-otp">Send Verification Code</button>
+  </div>
+</div>
+
+<!-- ── Screen 2: OTP ────────────────────────────────────────── -->
+<div id="screen-otp" class="auth-wrap hidden">
+  <div class="auth-card">
+    <button class="auth-back" id="btn-back-email" type="button">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Back
+    </button>
+    <div class="auth-logo">
+      <img src="/assets/images/eac-emblem.png" alt="EAC Cavite">
+      <div class="auth-logo__text">
+        <strong>Verify Your Email</strong>
+        <span>One-Time Code</span>
+      </div>
+    </div>
+    <h1 class="auth-title">Enter the code</h1>
+    <p class="auth-sub" id="otp-sent-label">We sent a 6-digit code to your email.</p>
+
+    <label class="auth-label">6-Digit Code</label>
+    <div class="otp-row" id="otp-boxes"></div>
+
+    <div class="resend-row">
+      <button type="button" class="resend-btn" id="btn-resend" disabled>Resend code</button>
+      <span class="resend-timer" id="resend-timer"></span>
+    </div>
+
+    <div class="auth-error" id="otp-error"></div>
+    <button type="button" class="auth-btn" id="btn-verify-otp">Verify &amp; Continue</button>
+  </div>
+</div>
+
+<!-- ── Screen 3: Chat ───────────────────────────────────────── -->
+<div id="screen-chat" class="chat-root hidden">
+  <div class="chat-topbar">
+    <div class="chat-topbar__avatar">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    </div>
+    <div class="chat-topbar__info">
+      <div class="chat-topbar__name" id="topbar-name">OSA Assistant</div>
+      <div class="chat-topbar__status">Online</div>
+    </div>
+    <div class="chat-topbar__badge">OSA AI</div>
+  </div>
+
+  <div class="chat-thread" id="chat-thread" role="log" aria-live="polite">
+    <div class="chat-welcome" id="chat-welcome">
+      <div class="chat-welcome__icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      </div>
+      <div class="chat-welcome__title" id="welcome-name">Hi there!</div>
+      <div class="chat-welcome__sub">I'm your OSA Transaction Guide. Ask me about scholarships, Good Moral Certificates, Lost & Found, appointments, and more.</div>
+    </div>
+  </div>
+
+  <div class="chat-chips" id="chat-chips">
+    <button type="button" class="chip" data-prompt="How do I apply for a scholarship?">Scholarship</button>
+    <button type="button" class="chip" data-prompt="How can I request a Good Moral Certificate?">Good Moral</button>
+    <button type="button" class="chip" data-prompt="I need help with Lost and Found claim.">Lost &amp; Found</button>
+    <button type="button" class="chip" data-prompt="How do I schedule an appointment with OSA?">Appointment</button>
+    <button type="button" class="chip" data-prompt="What are the current OSA announcements?">Announcements</button>
+  </div>
+
+  <div class="chat-composer">
+    <label class="sr-only" for="chat-input">Message</label>
+    <textarea id="chat-input" rows="1" placeholder="Ask OSA anything…" autocomplete="off"></textarea>
+    <button type="button" class="send-btn" id="chat-send" aria-label="Send" disabled>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ── Escalation modal ──────────────────────────────────────── -->
+<div id="modal-escalate" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">Escalate to OSA Staff</div>
+      <button type="button" class="modal-close" id="modal-close" aria-label="Close">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <p class="modal-sub">Describe your concern below. An OSA staff member will review it and respond via this chat. You'll receive a Case ID to track your request.</p>
+    <label class="modal-label" for="escalate-concern">Your Concern</label>
+    <textarea class="modal-textarea" id="escalate-concern" placeholder="Please describe your concern in detail…" maxlength="1000"></textarea>
+    <div class="modal-error" id="escalate-error"></div>
+    <div class="modal-actions">
+      <button type="button" class="modal-btn-cancel" id="modal-cancel">Cancel</button>
+      <button type="button" class="modal-btn-submit" id="modal-submit">Submit to OSA Staff</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ── Config ────────────────────────────────────────────────── */
+  function resolveApiBase() {
+    var configured = String(window.__OSA_API_BASE__ || '').trim().replace(/\/+$/, '');
+    if (configured) return configured;
+
+    var port = String((window.__OSA_API_PORT__ != null && window.__OSA_API_PORT__ !== '') ? window.__OSA_API_PORT__ : '8787');
+    var loc = window.location;
+    var host = String((loc && loc.hostname) || '').toLowerCase();
+    var origin = (loc && loc.origin) ? loc.origin : '';
+    var staticDevPorts = { '3000': 1, '4173': 1, '5000': 1, '5173': 1, '5500': 1, '5501': 1, '8888': 1 };
+
+    if (!loc || loc.protocol === 'file:') return 'http://127.0.0.1:' + port;
+    if (host === 'localhost' || host === '127.0.0.1' || host === '::1' || host === '[::1]') {
+      return 'http://127.0.0.1:' + port;
+    }
+    if (loc.port && loc.port !== port && staticDevPorts[loc.port]) {
+      return loc.protocol + '//' + host + ':' + port;
+    }
+    return origin || ('http://127.0.0.1:' + port);
+  }
+
+  var API = resolveApiBase() + '/api/v1';
+  var DOMAIN = String(window.__OSA_ALLOWED_EMAIL_DOMAIN__ || '').trim().toLowerCase();
+  var RESEND_COOLDOWN = 30;
+
+  /* ── State ─────────────────────────────────────────────────── */
+  var SESSION_TTL_MS = 5 * 60 * 1000; // OTP required every 5 minutes
+
+  function lsGet(key) { try { return localStorage.getItem(key); } catch(_) { return null; } }
+  function lsSet(key, val) { try { localStorage.setItem(key, val); } catch(_) {} }
+  function lsDel(key) { try { localStorage.removeItem(key); } catch(_) {} }
+
+  function clearStoredSession() {
+    lsDel('osaChatSessionId');
+    lsDel('osaChatName');
+    lsDel('osaChatSessionTs');
+  }
+
+  function loadSession() {
+    var id = lsGet('osaChatSessionId');
+    var name = lsGet('osaChatName');
+    var ts = Number(lsGet('osaChatSessionTs') || 0);
+    if (id && name && ts && (Date.now() - ts) < SESSION_TTL_MS) {
+      return { sessionId: id, studentName: name };
+    }
+    clearStoredSession();
+    return { sessionId: '', studentName: '' };
+  }
+
+  var saved = loadSession();
+  var state = {
+    email: '',
+    fullName: '',
+    sessionId: saved.sessionId,
+    studentName: saved.studentName,
+    resendTimer: null,
+    resendSeconds: 0,
+    busy: false,
+  };
+
+  /* ── DOM refs ──────────────────────────────────────────────── */
+  var $ = function (id) { return document.getElementById(id); };
+  var screenEmail  = $('screen-email');
+  var screenOtp    = $('screen-otp');
+  var screenChat   = $('screen-chat');
+  var inpEmail     = $('inp-email');
+  var inpFullName  = $('inp-fullname');
+  var btnSendOtp   = $('btn-send-otp');
+  var emailError   = $('email-error');
+  var btnBackEmail = $('btn-back-email');
+  var otpSentLabel = $('otp-sent-label');
+  var otpBoxesWrap = $('otp-boxes');
+  var btnResend    = $('btn-resend');
+  var resendTimer  = $('resend-timer');
+  var otpError     = $('otp-error');
+  var btnVerify    = $('btn-verify-otp');
+  var topbarName      = $('topbar-name');
+  var welcomeName     = $('welcome-name');
+  var chatThread      = $('chat-thread');
+  var chatInput       = $('chat-input');
+  var chatSend        = $('chat-send');
+  var chatChips       = $('chat-chips');
+  var modalEscalate   = $('modal-escalate');
+  var modalClose      = $('modal-close');
+  var modalCancel     = $('modal-cancel');
+  var modalSubmit     = $('modal-submit');
+  var escalateConcern = $('escalate-concern');
+  var escalateError   = $('escalate-error');
+
+  /* ── OTP inputs ────────────────────────────────────────────── */
+  var otpInputs = [];
+  (function buildOtpBoxes() {
+    for (var i = 0; i < 6; i++) {
+      var inp = document.createElement('input');
+      inp.type = 'text';
+      inp.inputMode = 'numeric';
+      inp.maxLength = 1;
+      inp.pattern = '[0-9]';
+      inp.className = 'otp-input';
+      inp.setAttribute('aria-label', 'Digit ' + (i + 1));
+      inp.autocomplete = 'one-time-code';
+      otpBoxesWrap.appendChild(inp);
+      otpInputs.push(inp);
+    }
+    wireOtpInputs();
+  })();
+
+  function wireOtpInputs() {
+    otpInputs.forEach(function (inp, idx) {
+      inp.addEventListener('input', function (e) {
+        var val = e.target.value.replace(/\D/g, '');
+        e.target.value = val.slice(0, 1);
+        if (val && idx < 5) otpInputs[idx + 1].focus();
+      });
+      inp.addEventListener('keydown', function (e) {
+        if (e.key === 'Backspace' && !inp.value && idx > 0) {
+          otpInputs[idx - 1].focus();
+          otpInputs[idx - 1].value = '';
+        }
+        if (e.key === 'Enter') verifyOtp();
+      });
+      inp.addEventListener('paste', function (e) {
+        e.preventDefault();
+        var text = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').slice(0, 6);
+        text.split('').forEach(function (ch, i) {
+          if (otpInputs[i]) otpInputs[i].value = ch;
+        });
+        if (otpInputs[Math.min(text.length, 5)]) otpInputs[Math.min(text.length, 5)].focus();
+      });
+    });
+  }
+
+  function getOtpValue() {
+    return otpInputs.map(function (i) { return i.value; }).join('');
+  }
+
+  function clearOtpInputs() {
+    otpInputs.forEach(function (i) { i.value = ''; });
+    otpInputs[0].focus();
+  }
+
+  /* ── Screen helpers ────────────────────────────────────────── */
+  function show(el) { el.classList.remove('hidden'); }
+  function hide(el) { el.classList.add('hidden'); }
+
+  function showError(el, msg) {
+    el.textContent = msg;
+    el.classList.add('visible');
+  }
+
+  function clearError(el) { el.classList.remove('visible'); }
+
+  /* ── Resend cooldown ───────────────────────────────────────── */
+  function startResendCooldown(seconds) {
+    state.resendSeconds = seconds || RESEND_COOLDOWN;
+    btnResend.disabled = true;
+    tick();
+    state.resendTimer = setInterval(tick, 1000);
+
+    function tick() {
+      if (state.resendSeconds <= 0) {
+        clearInterval(state.resendTimer);
+        resendTimer.textContent = '';
+        btnResend.disabled = false;
+        return;
+      }
+      resendTimer.textContent = 'Resend in ' + state.resendSeconds + 's';
+      state.resendSeconds--;
+    }
+  }
+
+  /* ── Step 1: Send OTP ──────────────────────────────────────── */
+  function sendOtp(email, fullName) {
+    if (state.busy) return;
+    state.busy = true;
+    btnSendOtp.disabled = true;
+    btnSendOtp.textContent = 'Sending…';
+    clearError(emailError);
+
+    fetch(API + '/otp/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email }),
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        state.busy = false;
+        btnSendOtp.disabled = false;
+        btnSendOtp.textContent = 'Send Verification Code';
+
+        if (!data.success) {
+          showError(emailError, data.message || 'Failed to send code.');
+          return;
+        }
+
+        state.email = email;
+        state.fullName = fullName;
+        otpSentLabel.textContent = 'We sent a 6-digit code to ' + email + '. Check your inbox.';
+        clearOtpInputs();
+        startResendCooldown(data.cooldownSeconds || RESEND_COOLDOWN);
+        hide(screenEmail);
+        show(screenOtp);
+        setTimeout(function () { otpInputs[0].focus(); }, 80);
+      })
+      .catch(function () {
+        state.busy = false;
+        btnSendOtp.disabled = false;
+        btnSendOtp.textContent = 'Send Verification Code';
+        showError(emailError, 'Network error. Please try again.');
+      });
+  }
+
+  btnSendOtp.addEventListener('click', function () {
+    var fullName = String(inpFullName && inpFullName.value || '').trim();
+    var email = inpEmail.value.trim().toLowerCase();
+    if (!fullName || fullName.length < 2) {
+      showError(emailError, 'Enter your full name.');
+      return;
+    }
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      showError(emailError, 'Enter a valid email address.');
+      return;
+    }
+    if (DOMAIN && DOMAIN !== '*' && !email.endsWith('@' + DOMAIN)) {
+      showError(emailError, 'Only @' + DOMAIN + ' addresses are accepted.');
+      return;
+    }
+    sendOtp(email, fullName);
+  });
+
+  inpEmail.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') btnSendOtp.click();
+  });
+
+  btnBackEmail.addEventListener('click', function () {
+    hide(screenOtp);
+    show(screenEmail);
+    clearError(otpError);
+  });
+
+  btnResend.addEventListener('click', function () {
+    if (!state.email) return;
+    clearError(otpError);
+    clearOtpInputs();
+    sendOtp(state.email);
+    hide(screenOtp);
+    hide(screenEmail);
+    setTimeout(function () { show(screenOtp); }, 50);
+  });
+
+  /* ── Step 2: Verify OTP ────────────────────────────────────── */
+  function verifyOtp() {
+    if (state.busy) return;
+    var otp = getOtpValue();
+    if (otp.length < 6) {
+      showError(otpError, 'Enter the full 6-digit code.');
+      return;
+    }
+    state.busy = true;
+    btnVerify.disabled = true;
+    btnVerify.textContent = 'Verifying…';
+    clearError(otpError);
+
+    fetch(API + '/otp/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: state.email, otp: otp }),
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (!data.success || !data.chat_token) {
+          state.busy = false;
+          btnVerify.disabled = false;
+          btnVerify.textContent = 'Verify & Continue';
+          showError(otpError, data.message || 'Verification failed.');
+          return;
+        }
+        createChatSession(data.chat_token, data.email || state.email, state.fullName);
+      })
+      .catch(function () {
+        state.busy = false;
+        btnVerify.disabled = false;
+        btnVerify.textContent = 'Verify & Continue';
+        showError(otpError, 'Network error. Please try again.');
+      });
+  }
+
+  btnVerify.addEventListener('click', verifyOtp);
+
+  /* ── Step 3: Create chat session ───────────────────────────── */
+  function createChatSession(token, email, fullName) {
+    fetch(API + '/chat/session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: token, email: email, student_name: String(fullName || '').trim() }),
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        state.busy = false;
+        btnVerify.disabled = false;
+        btnVerify.textContent = 'Verify & Continue';
+
+        if (!data.success) {
+          showError(otpError, data.message || 'Failed to start session.');
+          return;
+        }
+
+        state.sessionId = data.session_id;
+        state.studentName = data.student_name;
+        lsSet('osaChatSessionId', state.sessionId);
+        lsSet('osaChatName', state.studentName);
+        lsSet('osaChatSessionTs', String(Date.now()));
+
+        enterChat();
+      })
+      .catch(function () {
+        state.busy = false;
+        btnVerify.disabled = false;
+        btnVerify.textContent = 'Verify & Continue';
+        showError(otpError, 'Network error. Please try again.');
+      });
+  }
+
+  /* ── SSE: receive real-time staff messages ─────────────────── */
+  var sseConn = null;
+
+  function startSSE() {
+    if (sseConn) { sseConn.close(); sseConn = null; }
+    if (!state.sessionId) return;
+
+    var url = API + '/chat/stream/' + encodeURIComponent(state.sessionId);
+    try {
+      sseConn = new EventSource(url);
+    } catch (_) { return; }
+
+    sseConn.onmessage = function (e) {
+      try {
+        var payload = JSON.parse(e.data);
+        if (payload.type === 'staff_joined') {
+          var joinText = String(payload.content || ('OSA Staff ' + (payload.staff_name || '') + ' has joined the chat.'));
+          var sys = document.createElement('div');
+          sys.className = 'chat-system-bubble';
+          sys.textContent = joinText;
+          chatThread.appendChild(sys);
+          chatThread.scrollTop = chatThread.scrollHeight;
+          showStaffOnlineBadge(payload.staff_name);
+          return;
+        }
+        if (payload.type === 'staff_message') {
+          appendMessage('assistant', payload.content, payload.timestamp);
+          showStaffOnlineBadge(payload.staff_name);
+        }
+      } catch (_) {}
+    };
+
+    sseConn.onerror = function () {
+      // EventSource auto-reconnects; clear badge on disconnect
+      hideStaffOnlineBadge();
+    };
+  }
+
+  var staffBadgeEl = null;
+  var staffBadgeTimer = null;
+
+  function showStaffOnlineBadge(staffName) {
+    var topbar = document.querySelector('.chat-topbar');
+    if (!staffBadgeEl) {
+      staffBadgeEl = document.createElement('div');
+      staffBadgeEl.className = 'staff-online-badge';
+      topbar.appendChild(staffBadgeEl);
+    }
+    staffBadgeEl.textContent = staffName || 'OSA Staff';
+    clearTimeout(staffBadgeTimer);
+    staffBadgeTimer = setTimeout(hideStaffOnlineBadge, 5 * 60 * 1000);
+  }
+
+  function hideStaffOnlineBadge() {
+    if (staffBadgeEl) { staffBadgeEl.remove(); staffBadgeEl = null; }
+    clearTimeout(staffBadgeTimer);
+  }
+
+  /* ── Chat screen ───────────────────────────────────────────── */
+  function enterChat() {
+    var firstName = state.studentName.split(' ')[0];
+    topbarName.textContent = state.studentName;
+    welcomeName.textContent = 'Hi, ' + firstName + '!';
+    hide(screenEmail);
+    hide(screenOtp);
+    show(screenChat);
+    chatInput.focus();
+    chatInput.dispatchEvent(new Event('input'));
+    startSSE();
+  }
+
+  function expireSessionToOtp(reasonText) {
+    if (sseConn) { sseConn.close(); sseConn = null; }
+    state.sessionId = '';
+    state.studentName = '';
+    clearStoredSession();
+    chatThread.innerHTML = '';
+    hide(screenChat);
+    hide(screenOtp);
+    show(screenEmail);
+    if (reasonText) showError(emailError, reasonText);
+    if (inpEmail) inpEmail.focus();
+  }
+
+  function fmtTime(d) {
+    d = d || new Date();
+    var h = d.getHours(), m = d.getMinutes();
+    var ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    return h + ':' + (m < 10 ? '0' : '') + m + ' ' + ampm;
+  }
+
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function renderAssistantText(raw) {
+    var safe = escapeHtml(String(raw || '')).replace(/\r\n/g, '\n');
+    function inlineFmt(s) {
+      return s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    }
+    var lines = safe.split('\n');
+    var html = '';
+    var inList = false;
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i].trim();
+      if (!line) {
+        if (inList) { html += '</ul>'; inList = false; }
+        continue;
+      }
+      var bullet = line.match(/^(?:[\-\*])\s+(.+)/);
+      if (bullet) {
+        if (!inList) { html += '<ul style="margin:0.35rem 0 0.35rem 1rem;padding:0">'; inList = true; }
+        html += '<li style="margin:0.18rem 0">' + inlineFmt(bullet[1]) + '</li>';
+      } else {
+        if (inList) { html += '</ul>'; inList = false; }
+        html += '<p style="margin:0 0 0.35rem 0">' + inlineFmt(line) + '</p>';
+      }
+    }
+    if (inList) html += '</ul>';
+    if (!html) html = '<p style="margin:0">...</p>';
+    return html;
+  }
+
+  var STAFF_PREFIX = '[OSA Staff ·';
+
+  function parseStaffMessage(text) {
+    // Format: "[OSA Staff · Name]\n\nBody"
+    if (!text.startsWith(STAFF_PREFIX)) return null;
+    var closeBracket = text.indexOf(']');
+    if (closeBracket < 0) return null;
+    var staffName = text.slice(STAFF_PREFIX.length, closeBracket).trim();
+    var body = text.slice(closeBracket + 1).replace(/^\n+/, '');
+    return { staffName: staffName, body: body };
+  }
+
+  function appendMessage(role, text, time) {
+    var welcome = $('chat-welcome');
+    if (welcome) welcome.remove();
+
+    // Detect staff messages (stored as assistant role with special prefix)
+    var staffInfo = (role === 'assistant') ? parseStaffMessage(text) : null;
+    var cssRole = staffInfo ? 'staff' : role;
+
+    var div = document.createElement('div');
+    div.className = 'msg msg--' + cssRole;
+
+    if (staffInfo) {
+      var label = document.createElement('div');
+      label.className = 'msg__label';
+      label.textContent = staffInfo.staffName;
+      div.appendChild(label);
+    }
+
+    var bubble = document.createElement('div');
+    bubble.className = 'msg__bubble';
+    if (role === 'assistant') {
+      bubble.innerHTML = renderAssistantText(staffInfo ? staffInfo.body : text);
+    } else {
+      bubble.textContent = staffInfo ? staffInfo.body : text;
+    }
+
+    var ts = document.createElement('div');
+    ts.className = 'msg__time';
+    ts.textContent = fmtTime(time ? new Date(time) : null);
+
+    div.appendChild(bubble);
+    div.appendChild(ts);
+    chatThread.appendChild(div);
+    chatThread.scrollTop = chatThread.scrollHeight;
+    return div;
+  }
+
+  function showTyping() {
+    var div = document.createElement('div');
+    div.className = 'typing-bubble';
+    div.id = 'typing-indicator';
+    for (var i = 0; i < 3; i++) {
+      var s = document.createElement('span');
+      div.appendChild(s);
+    }
+    chatThread.appendChild(div);
+    chatThread.scrollTop = chatThread.scrollHeight;
+  }
+
+  function removeTyping() {
+    var el = $('typing-indicator');
+    if (el) el.remove();
+  }
+
+  function showEscalateBanner() {
+    var banner = document.createElement('div');
+    banner.className = 'escalate-banner';
+    banner.innerHTML =
+      '<div class="escalate-banner__icon">' +
+        '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>' +
+      '</div>' +
+      '<div class="escalate-banner__body">' +
+        '<div class="escalate-banner__title">Need more help?</div>' +
+        '<div class="escalate-banner__sub">If your concern needs personal attention from OSA staff, you can submit a support ticket.</div>' +
+        '<button type="button" class="escalate-banner__btn" id="btn-open-escalate">Talk to OSA Staff</button>' +
+      '</div>';
+    chatThread.appendChild(banner);
+    chatThread.scrollTop = chatThread.scrollHeight;
+
+    var btn = document.getElementById('btn-open-escalate');
+    if (btn) btn.addEventListener('click', openEscalateModal);
+  }
+
+  function openEscalateModal() {
+    escalateConcern.value = '';
+    escalateError.classList.remove('visible');
+    modalSubmit.disabled = false;
+    modalSubmit.textContent = 'Submit to OSA Staff';
+    show(modalEscalate);
+    setTimeout(function () { escalateConcern.focus(); }, 80);
+  }
+
+  function closeEscalateModal() {
+    hide(modalEscalate);
+  }
+
+  function submitEscalation() {
+    var concern = escalateConcern.value.trim();
+    if (!concern) {
+      escalateError.textContent = 'Please describe your concern before submitting.';
+      escalateError.classList.add('visible');
+      return;
+    }
+    if (concern.length < 10) {
+      escalateError.textContent = 'Please provide more detail (at least 10 characters).';
+      escalateError.classList.add('visible');
+      return;
+    }
+
+    escalateError.classList.remove('visible');
+    modalSubmit.disabled = true;
+    modalSubmit.textContent = 'Submitting…';
+
+    fetch(API + '/chat/escalate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session_id: state.sessionId, concern: concern }),
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        closeEscalateModal();
+        if (!data.success) {
+          if (data.code === 'SESSION_EXPIRED') {
+            expireSessionToOtp(data.message || 'Session expired after 5 minutes. Please verify a new OTP.');
+            return;
+          }
+          appendMessage('assistant', 'Failed to submit ticket: ' + (data.message || 'Unknown error.'));
+          return;
+        }
+        showTicketConfirmation(data.case_id);
+      })
+      .catch(function () {
+        modalSubmit.disabled = false;
+        modalSubmit.textContent = 'Submit to OSA Staff';
+        escalateError.textContent = 'Network error. Please try again.';
+        escalateError.classList.add('visible');
+      });
+  }
+
+  function showTicketConfirmation(caseId) {
+    var card = document.createElement('div');
+    card.className = 'ticket-card';
+    card.innerHTML =
+      '<div class="ticket-card__title">Ticket Submitted Successfully</div>' +
+      '<div class="ticket-card__id">' + escapeHtml(caseId) + '</div>' +
+      '<div class="ticket-card__sub">Your concern has been forwarded to OSA staff. Keep this Case ID for your reference. A staff member will respond here once your ticket is reviewed.</div>';
+    chatThread.appendChild(card);
+    chatThread.scrollTop = chatThread.scrollHeight;
+  }
+
+  modalClose.addEventListener('click', closeEscalateModal);
+  modalCancel.addEventListener('click', closeEscalateModal);
+  modalSubmit.addEventListener('click', submitEscalation);
+
+  modalEscalate.addEventListener('click', function (e) {
+    if (e.target === modalEscalate) closeEscalateModal();
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !modalEscalate.classList.contains('hidden')) {
+      closeEscalateModal();
+    }
+  });
+
+  escalateConcern.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) submitEscalation();
+  });
+
+  function sendMessage(text) {
+    if (!text || state.busy) return;
+    var ts = Number(lsGet('osaChatSessionTs') || 0);
+    if (!state.sessionId || !ts || (Date.now() - ts) >= SESSION_TTL_MS) {
+      expireSessionToOtp('Session expired after 5 minutes. Please request and verify a new OTP code.');
+      return;
+    }
+
+    state.busy = true;
+    chatSend.disabled = true;
+    chatInput.value = '';
+    chatInput.style.height = '';
+
+    appendMessage('user', text);
+    showTyping();
+
+    fetch(API + '/chat/message', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session_id: state.sessionId, message: text }),
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        state.busy = false;
+        chatSend.disabled = false;
+        removeTyping();
+
+        if (!data.success) {
+          if (data.code === 'SESSION_EXPIRED') {
+            expireSessionToOtp(data.message || 'Session expired after 5 minutes. Please verify a new OTP.');
+            return;
+          }
+          appendMessage('assistant', 'Sorry, something went wrong. Please try again.');
+          return;
+        }
+        appendMessage('assistant', data.reply);
+        if (data.auto_escalated && data.case_id) {
+          appendMessage('assistant', 'Auto-escalated to OSA staff. Case ID: **' + data.case_id + '**.');
+        }
+        if (data.suggest_escalation) showEscalateBanner();
+      })
+      .catch(function () {
+        state.busy = false;
+        chatSend.disabled = false;
+        removeTyping();
+        appendMessage('assistant', 'Network error. Please check your connection and try again.');
+      });
+  }
+
+  chatSend.addEventListener('click', function () {
+    sendMessage(chatInput.value.trim());
+  });
+
+  chatInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage(chatInput.value.trim());
+    }
+  });
+
+  chatInput.addEventListener('input', function () {
+    chatSend.disabled = !chatInput.value.trim() || state.busy;
+    chatInput.style.height = 'auto';
+    chatInput.style.height = Math.min(chatInput.scrollHeight, 120) + 'px';
+  });
+
+  chatChips.addEventListener('click', function (e) {
+    var chip = e.target.closest('.chip');
+    if (!chip) return;
+    var prompt = chip.dataset.prompt;
+    if (prompt) {
+      chatInput.value = prompt;
+      chatInput.dispatchEvent(new Event('input'));
+      sendMessage(prompt);
+    }
+  });
+
+  /* ── Resume existing session ───────────────────────────────── */
+  if (state.sessionId && state.studentName) {
+    fetch(API + '/chat/session/' + state.sessionId + '/messages')
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (!data.success) {
+          clearStoredSession();
+          state.sessionId = '';
+          state.studentName = '';
+          if (data.code === 'SESSION_EXPIRED') {
+            showError(emailError, data.message || 'Session expired after 5 minutes. Please verify again.');
+          }
+          return;
+        }
+        enterChat();
+        if (data.messages && data.messages.length) {
+          data.messages.forEach(function (m) {
+            appendMessage(m.role, m.content, m.created_at);
+          });
+        }
+      })
+      .catch(function () {
+        clearStoredSession();
+        state.sessionId = '';
+        state.studentName = '';
+      });
+  }
+})();
+</script>
+</body>
+</html>

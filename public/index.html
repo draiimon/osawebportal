@@ -99,7 +99,7 @@
     </style>
     <script>
         (function () {
-            fetch("./preview.html", { cache: "no-store" })
+            fetch("/preview", { cache: "no-store" })
                 .then(function (response) {
                     if (!response.ok) throw new Error("Failed to load home page.");
                     return response.text();
@@ -114,7 +114,7 @@
                 })
                 .catch(function () {
                     document.body.innerHTML =
-                        'Unable to load Home page. <a href="/preview.html">Open Home</a>.';
+                        'Unable to load Home page. <a href="/">Open Home</a>.';
                 });
         })();
     </script>
@@ -129,7 +129,7 @@
         <div class="osa-loader__bar"><span></span></div>
     </div>
     <noscript>
-        JavaScript is required to open the portal. <a href="/preview.html">Open Home</a>.
+        JavaScript is required to open the portal. <a href="/">Open Home</a>.
     </noscript>
 </body>
 </html>

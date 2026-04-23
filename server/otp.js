@@ -1,0 +1,325 @@
+const crypto = require("crypto");
+const db = require("./db");
+
+const OTP_EXPIRY_MS = 5 * 60 * 1000;
+const RESEND_COOLDOWN_MS = 30 * 1000;
+const MAX_VERIFY_ATTEMPTS = 5;
+const MAX_OTP_SENDS_PER_DAY = Math.max(1, Number(process.env.MAX_OTP_SENDS_PER_DAY || 5));
+const BREVO_URL = "https://api.brevo.com/v3/smtp/email";
+
+function getAllowedDomain() {
+  return String(process.env.OSA_ALLOWED_EMAIL_DOMAIN || "").trim().toLowerCase();
+}
+
+function getApiKey() {
+  return String(process.env.Brevo_API_KEY || "").trim();
+}
+
+function normalizeEmail(raw) {
+  return String(raw || "")
+    .trim()
+    .toLowerCase();
+}
+
+function isAllowedStudentEmail(email) {
+  const domain = getAllowedDomain();
+  if (!domain || domain === "*") return true;
+  const at = email.lastIndexOf("@");
+  if (at < 1) return false;
+  return email.slice(at + 1) === domain;
+}
+
+function hashOtp(email, code) {
+  const pepper = process.env.OTP_PEPPER || "dev-only-pepper-change-me";
+  return crypto.createHmac("sha256", pepper).update(`${email}:${code}`).digest("hex");
+}
+
+function generateSixDigitOtp() {
+  return String(crypto.randomInt(0, 1_000_000)).padStart(6, "0");
+}
+
+async function deleteExpiredForEmail(email) {
+  await db.query(`DELETE FROM email_otp_codes WHERE email = $1 AND expires_at < NOW()`, [email]);
+}
+
+// Returns { used, limit, allowed }. The quota row is created lazily; we only
+// bump it AFTER a successful send so a failed-send does not consume a slot.
+async function getDailyOtpQuota(email) {
+  const result = await db.query(
+    `SELECT count FROM email_otp_daily_quota WHERE email = $1 AND day = CURRENT_DATE`,
+    [email]
+  );
+  const used = result.rows.length ? Number(result.rows[0].count) : 0;
+  return { used, limit: MAX_OTP_SENDS_PER_DAY, allowed: used < MAX_OTP_SENDS_PER_DAY };
+}
+
+async function incrementDailyOtpQuota(email) {
+  await db.query(
+    `INSERT INTO email_otp_daily_quota (email, day, count)
+     VALUES ($1, CURRENT_DATE, 1)
+     ON CONFLICT (email, day) DO UPDATE SET count = email_otp_daily_quota.count + 1`,
+    [email]
+  );
+}
+
+async function sendBrevoEmail(toEmail, otp) {
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    throw new Error("Brevo API key is not configured.");
+  }
+
+  const senderEmail = String(process.env.BREVO_SENDER_EMAIL || "").trim();
+  if (!senderEmail) {
+    throw new Error("BREVO_SENDER_EMAIL is not configured.");
+  }
+
+  const senderName = String(process.env.BREVO_SENDER_NAME || "OSA System").trim() || "OSA System";
+
+  const body = {
+    sender: { name: senderName, email: senderEmail },
+    to: [{ email: toEmail }],
+    subject: "OTP Verification",
+    htmlContent:
+      `<p style="font-family:system-ui,sans-serif;font-size:16px;line-height:1.5">` +
+      `Your one-time code is:</p>` +
+      `<p style="font-family:system-ui,sans-serif;font-size:28px;font-weight:700;letter-spacing:0.08em;margin:16px 0">` +
+      `${otp}</p>` +
+      `<p style="font-family:system-ui,sans-serif;font-size:14px;color:#555">This code expires in 5 minutes. If you did not request it, you can ignore this email.</p>`,
+  };
+
+  const res = await fetch(BREVO_URL, {
+    method: "POST",
+    headers: {
+      accept: "application/json",
+      "Content-Type": "application/json",
+      "api-key": apiKey,
+    },
+    body: JSON.stringify(body),
+  });
+
+  const text = await res.text();
+  let json = null;
+  try {
+    json = text ? JSON.parse(text) : null;
+  } catch (_e) {
+    json = null;
+  }
+
+  if (!res.ok) {
+    const msg = (json && (json.message || json.error)) || text || `Brevo HTTP ${res.status}`;
+    throw new Error(msg);
+  }
+
+  return json;
+}
+
+function registerOtpRoutes(app, apiPrefix) {
+  const { otpSendLimiter, otpVerifyLimiter } = app.locals.limiters || {};
+
+  app.post(`${apiPrefix}/otp/send`, ...[otpSendLimiter].filter(Boolean), async (req, res) => {
+    const email = normalizeEmail(req.body && req.body.email);
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ success: false, message: "Valid email is required." });
+    }
+    if (!isAllowedStudentEmail(email)) {
+      const dom = getAllowedDomain();
+      return res.status(400).json({
+        success: false,
+        message:
+          `Secure chat is limited to official EAC Cavite student emails (@${dom}). ` +
+          `If you are a visitor or not eligible for campus email, please visit the OSA office during posted hours or see https://www.eac.edu.ph/osa/ for official information.`,
+      });
+    }
+
+    try {
+      await deleteExpiredForEmail(email);
+
+      // Daily cap: reject the 6th+ send in a calendar day.
+      const quota = await getDailyOtpQuota(email);
+      if (!quota.allowed) {
+        return res.status(429).json({
+          success: false,
+          code: "OTP_DAILY_LIMIT",
+          message:
+            `You've already requested ${quota.used} verification codes today ` +
+            `(max ${quota.limit}). For your security, please try again tomorrow.`,
+          dailyLimit: quota.limit,
+          dailyUsed: quota.used,
+        });
+      }
+
+      const existing = await db.query(
+        `SELECT last_sent_at FROM email_otp_codes WHERE email = $1 AND expires_at >= NOW()`,
+        [email]
+      );
+
+      if (existing.rows.length) {
+        const lastSent = existing.rows[0].last_sent_at;
+        const elapsed = Date.now() - new Date(lastSent).getTime();
+        if (elapsed < RESEND_COOLDOWN_MS) {
+          const retryAfterSeconds = Math.ceil((RESEND_COOLDOWN_MS - elapsed) / 1000);
+          return res.status(429).json({
+            success: false,
+            message: `Please wait ${retryAfterSeconds}s before requesting another code.`,
+            retryAfterSeconds,
+            cooldownSeconds: Math.ceil(RESEND_COOLDOWN_MS / 1000),
+          });
+        }
+      }
+
+      const otp = generateSixDigitOtp();
+      const codeHash = hashOtp(email, otp);
+      const expiresAt = new Date(Date.now() + OTP_EXPIRY_MS);
+
+      await db.query(
+        `INSERT INTO email_otp_codes (email, code_hash, expires_at, last_sent_at, verify_attempts)
+         VALUES ($1, $2, $3, NOW(), 0)
+         ON CONFLICT (email) DO UPDATE SET
+           code_hash = EXCLUDED.code_hash,
+           expires_at = EXCLUDED.expires_at,
+           last_sent_at = NOW(),
+           verify_attempts = 0`,
+        [email, codeHash, expiresAt]
+      );
+
+      try {
+        await sendBrevoEmail(email, otp);
+      } catch (sendErr) {
+        await db.query(`DELETE FROM email_otp_codes WHERE email = $1`, [email]);
+        // eslint-disable-next-line no-console
+        console.error("[otp-send:brevo]", sendErr && (sendErr.stack || sendErr.message || sendErr));
+        return res.status(502).json({
+          success: false,
+          message: "Could not send email right now. Please try again.",
+        });
+      }
+
+      // Only consume a daily quota slot on a confirmed send.
+      await incrementDailyOtpQuota(email);
+      const updatedQuota = await getDailyOtpQuota(email);
+
+      return res.json({
+        success: true,
+        message: "Verification code sent.",
+        cooldownSeconds: Math.ceil(RESEND_COOLDOWN_MS / 1000),
+        dailyLimit: updatedQuota.limit,
+        dailyUsed: updatedQuota.used,
+        dailyRemaining: Math.max(0, updatedQuota.limit - updatedQuota.used),
+      });
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error("[otp-send]", error && (error.stack || error.message || error));
+      return res.status(500).json({
+        success: false,
+        message: "Could not send verification code. Please try again.",
+      });
+    }
+  });
+
+  app.post(`${apiPrefix}/otp/verify`, ...[otpVerifyLimiter].filter(Boolean), async (req, res) => {
+    const email = normalizeEmail(req.body && req.body.email);
+    const otpRaw = String(req.body && req.body.otp ? req.body.otp : "").trim();
+    const otp = otpRaw.replace(/\D/g, "");
+
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ success: false, message: "Valid email is required." });
+    }
+    if (!isAllowedStudentEmail(email)) {
+      const dom = getAllowedDomain();
+      return res.status(400).json({
+        success: false,
+        message:
+          `Secure chat requires an official @${dom} student email. ` +
+          `Visitors should use the public OSA website (https://www.eac.edu.ph/osa/) and visit the office during business hours.`,
+      });
+    }
+    if (!/^\d{6}$/.test(otp)) {
+      return res.status(400).json({ success: false, message: "Enter the 6-digit code from your email." });
+    }
+
+    try {
+      await deleteExpiredForEmail(email);
+
+      const rowResult = await db.query(
+        `SELECT code_hash, expires_at, verify_attempts FROM email_otp_codes WHERE email = $1`,
+        [email]
+      );
+
+      if (!rowResult.rows.length) {
+        return res.status(400).json({
+          success: false,
+          message: "No active code for this email. Request a new code.",
+        });
+      }
+
+      const row = rowResult.rows[0];
+      if (new Date(row.expires_at).getTime() < Date.now()) {
+        await db.query(`DELETE FROM email_otp_codes WHERE email = $1`, [email]);
+        return res.status(400).json({
+          success: false,
+          message: "That code has expired. Request a new one.",
+        });
+      }
+
+      if (Number(row.verify_attempts) >= MAX_VERIFY_ATTEMPTS) {
+        await db.query(`DELETE FROM email_otp_codes WHERE email = $1`, [email]);
+        return res.status(400).json({
+          success: false,
+          message: "Too many attempts. Request a new code.",
+        });
+      }
+
+      const expectedHash = row.code_hash;
+      const actualHash = hashOtp(email, otp);
+
+      const a = Buffer.from(expectedHash, "hex");
+      const b = Buffer.from(actualHash, "hex");
+      const match =
+        a.length === b.length && a.length > 0 && crypto.timingSafeEqual(a, b);
+
+      if (!match) {
+        const upd = await db.query(
+          `UPDATE email_otp_codes SET verify_attempts = verify_attempts + 1 WHERE email = $1 RETURNING verify_attempts`,
+          [email]
+        );
+        const attempts = Number(upd.rows[0].verify_attempts);
+        if (attempts >= MAX_VERIFY_ATTEMPTS) {
+          await db.query(`DELETE FROM email_otp_codes WHERE email = $1`, [email]);
+          return res.status(400).json({
+            success: false,
+            message: "Too many attempts. Request a new code.",
+          });
+        }
+        return res.status(400).json({
+          success: false,
+          message: "Incorrect code. Try again.",
+        });
+      }
+
+      await db.query(`DELETE FROM email_otp_codes WHERE email = $1`, [email]);
+
+      const chatToken = crypto.randomUUID();
+      await db.query(
+        `INSERT INTO chat_auth_tokens (token, email, expires_at) VALUES ($1, $2, NOW() + INTERVAL '5 minutes')`,
+        [chatToken, email]
+      );
+
+      return res.json({
+        success: true,
+        verified: true,
+        message: "Email verified.",
+        chat_token: chatToken,
+        email,
+      });
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error("[otp-verify]", error && (error.stack || error.message || error));
+      return res.status(500).json({
+        success: false,
+        message: "Verification failed. Please try again.",
+      });
+    }
+  });
+}
+
+module.exports = { registerOtpRoutes };

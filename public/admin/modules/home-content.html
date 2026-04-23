@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Home Content · OSA Admin</title>
+  <link rel="icon" type="image/png" href="/assets/images/eac-emblem.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/admin/admin-shell.css?v=20260423j">
+  <style>
+    .section-tabs {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+      border-bottom: 2px solid var(--line);
+    }
+    .section-tab {
+      padding: 9px 16px;
+      min-height: 38px;
+      font: inherit;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--muted);
+      background: none;
+      border: none;
+      cursor: pointer;
+      position: relative;
+      transition: color 160ms;
+      white-space: nowrap;
+      border-radius: 2px 2px 0 0;
+    }
+    .section-tab:hover { color: var(--brand); background: rgba(132,26,45,0.04); }
+    .section-tab.active { color: var(--brand); background: rgba(132,26,45,0.06); }
+    .section-tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--brand);
+    }
+    .section-panel { display: none; }
+    .section-panel.active { display: block; }
+
+    .helper-note {
+      margin-bottom: 16px;
+      padding: 13px 15px;
+      background: rgba(132,26,45,0.05);
+      border: 1px solid rgba(132,26,45,0.1);
+      color: var(--ink-2);
+      font-size: 0.82rem;
+      line-height: 1.55;
+      border-radius: 2px;
+    }
+
+    .stack-list {
+      display: grid;
+      gap: 12px;
+    }
+    .editor-card {
+      padding: 16px;
+      border: 1px solid var(--line);
+      background: rgba(255,252,248,0.95);
+      border-radius: 2px;
+      display: grid;
+      gap: 12px;
+    }
+    .editor-card__head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 0;
+    }
+    .editor-card__tag {
+      font-size: 0.62rem;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--brand);
+    }
+    .editor-card__title {
+      font-family: var(--font-body);
+      font-size: 0.96rem;
+      font-weight: 800;
+      line-height: 1.3;
+      color: var(--ink);
+    }
+    .subtitles-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .subtitle-row {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 10px;
+      align-items: center;
+    }
+    .subtitle-index {
+      width: 28px;
+      height: 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(132,26,45,0.08);
+      color: var(--brand);
+      font-size: 0.72rem;
+      font-weight: 800;
+      border-radius: 50%;
+    }
+
+    .repeater-grid {
+      display: grid;
+      gap: 12px;
+    }
+    .slide-item,
+    .service-item,
+    .form-item {
+      padding: 16px;
+      border: 1px solid var(--line);
+      background: rgba(255,252,248,0.95);
+      border-radius: 2px;
+      display: grid;
+      gap: 12px;
+    }
+    .slide-item__head,
+    .service-item__head,
+    .form-item__head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 0;
+    }
+    .slide-item__label,
+    .service-item__label,
+    .form-item__label {
+      font-size: 0.62rem;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--brand);
+    }
+    .row-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .guide-items {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .guide-item {
+      padding: 12px;
+      border: 1px dashed rgba(132,26,45,0.18);
+      background: rgba(255,255,255,0.55);
+      border-radius: 2px;
+      display: grid;
+      gap: 10px;
+    }
+    .service-media {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 180px;
+      gap: 14px;
+      align-items: start;
+    }
+    .service-preview {
+      min-height: 138px;
+      background:
+        linear-gradient(135deg, rgba(132,26,45,0.08), rgba(199,154,73,0.12)),
+        linear-gradient(rgba(132,26,45,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(132,26,45,0.03) 1px, transparent 1px);
+      background-size: auto, 18px 18px, 18px 18px;
+      border: 1px solid rgba(132,26,45,0.08);
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: cover;
+      border-radius: 2px;
+    }
+    .upload-box {
+      display: grid;
+      gap: 10px;
+      padding: 12px;
+      border: 1px dashed rgba(132,26,45,0.2);
+      background: rgba(255,255,255,0.7);
+      border-radius: 2px;
+    }
+    .upload-box input[type="file"] { width: 100%; }
+    .muted-inline {
+      font-size: 0.76rem;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+    @media (max-width: 900px) {
+      .service-media {
+        grid-template-columns: 1fr;
+      }
+    }
+    @media (max-width: 600px) {
+      .section-tab { padding: 8px 12px; font-size: 0.76rem; }
+      .subtitle-row { grid-template-columns: 1fr; }
+      .subtitle-index { display: none; }
+    }
+  </style>
+</head>
+<body>
+<div class="admin-page" id="admin-page">
+
+  <nav class="admin-nav" id="admin-nav">
+    <button class="nav-hamburger" id="nav-hamburger" aria-label="Open navigation menu" aria-expanded="false">
+      <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+    <a class="admin-nav__brand" href="/admin/dashboard">
+      <img class="admin-nav__logo" src="/assets/images/eac-emblem.png" alt="EAC" onerror="this.style.display='none'">
+      <div class="admin-nav__title"><strong>EAC Cavite</strong><span>OSA Admin Panel</span></div>
+    </a>
+    <div class="admin-nav__sep"></div>
+    <div class="admin-nav__links">
+      <a class="nav-link" href="/admin/dashboard"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</a>
+      <a class="nav-link" href="/admin/modules/announcements"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Announcements<span class="nav-badge" data-nav-badge="ann" style="display:none">0</span></a>
+      <a class="nav-link" href="/admin/modules/lost-found"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Lost &amp; Found<span class="nav-badge" data-nav-badge="lf" style="display:none">0</span></a>
+      <a class="nav-link active" href="/admin/modules/home-content"><svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home Content</a>
+      <a class="nav-link" href="/admin/modules/about"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>About Page</a>
+      <a class="nav-link" href="/admin/modules/chat-support"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Chat Support<span class="nav-badge" data-nav-badge="chat" style="display:none">0</span></a>
+      <a class="nav-link" href="/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Live Portal</a>
+    </div>
+    <div class="admin-nav__right">
+      <div class="admin-avatar" data-admin-initials>AD</div>
+      <div class="admin-name-wrap"><strong data-admin-name>Administrator</strong><span data-admin-email></span></div>
+      <button class="btn-logout" data-logout type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Log Out</span></button>
+    </div>
+  </nav>
+
+  <div class="admin-util-bar" id="admin-util-bar">
+    <div class="util-left">
+      <span class="util-page-title">Home Content</span>
+      <div class="util-breadcrumb"><span>Admin</span><span class="sep">›</span><span>Edit Home Page</span></div>
+    </div>
+    <div class="util-right">
+      <div class="util-datetime">
+        <span class="util-datetime__date" id="dt-date"></span>
+        <span class="util-datetime__sep">·</span>
+        <span class="util-datetime__time" id="dt-time"></span>
+        <span class="util-datetime__ph">PST</span>
+      </div>
+      <a class="util-portal-link" href="/" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        View Home
+      </a>
+    </div>
+  </div>
+
+  <div class="admin-drawer" id="admin-drawer" role="dialog" aria-modal="true" aria-label="Navigation">
+    <div class="drawer-backdrop" id="drawer-backdrop"></div>
+    <div class="drawer-panel">
+      <div class="drawer-header">
+        <div class="drawer-brand"><img src="/assets/images/eac-emblem.png" alt="EAC" onerror="this.style.display='none'"><div class="drawer-brand-text"><strong>EAC Cavite</strong><span>OSA Admin Panel</span></div></div>
+        <button class="drawer-close" id="drawer-close" aria-label="Close menu"><svg viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="M6 6 18 18"/></svg></button>
+      </div>
+      <nav class="drawer-nav">
+        <span class="drawer-section-label">Overview</span>
+        <a class="drawer-nav-item" href="/admin/dashboard"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</a>
+        <span class="drawer-section-label">Content</span>
+        <a class="drawer-nav-item" href="/admin/modules/announcements"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Announcements<span class="nav-badge" data-nav-badge="ann" style="display:none">0</span></a>
+        <a class="drawer-nav-item" href="/admin/modules/lost-found"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Lost &amp; Found<span class="nav-badge" data-nav-badge="lf" style="display:none">0</span></a>
+        <a class="drawer-nav-item active" href="/admin/modules/home-content"><svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home Content</a>
+        <a class="drawer-nav-item" href="/admin/modules/about"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>About Page</a>
+        <a class="drawer-nav-item" href="/admin/modules/chat-support"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Chat Support<span class="nav-badge" data-nav-badge="chat" style="display:none">0</span></a>
+        <span class="drawer-section-label">Portal</span>
+        <a class="drawer-nav-item" href="/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>View Live Portal</a>
+      </nav>
+      <div class="drawer-footer">
+        <div class="drawer-profile"><div class="admin-avatar" data-admin-initials>AD</div><div class="drawer-profile-text"><strong data-admin-name>Administrator</strong><span data-admin-email></span></div></div>
+        <button class="drawer-logout" data-logout type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Log Out</button>
+      </div>
+    </div>
+  </div>
+
+  <main class="admin-main">
+    <div class="page-header">
+      <div>
+        <div class="page-header__eyebrow">Content Management</div>
+        <h1>Edit Home Page</h1>
+        <p>Control the exact hero copy, guide slides, OSA services, and manual/forms block used by the live homepage.</p>
+      </div>
+      <div class="page-header__actions">
+        <button class="btn btn-primary" id="save-all-btn">
+          <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Save All Changes
+        </button>
+        <a class="btn btn-ghost" href="/" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          Preview Live Home
+        </a>
+      </div>
+    </div>
+
+    <div class="section-tabs">
+      <button class="section-tab active" data-tab="hero">Hero</button>
+      <button class="section-tab" data-tab="guides">Guide Slides</button>
+      <button class="section-tab" data-tab="services">OSA Services</button>
+      <button class="section-tab" data-tab="manual">Manual &amp; Forms</button>
+    </div>
+
+    <div class="section-panel active" id="panel-hero">
+      <div class="panel">
+        <div class="panel-head"><h2>Hero Copy</h2></div>
+        <div class="panel-body">
+          <div class="helper-note">This controls the main homepage title and the rotating subtitle lines under it. The action buttons and shell branding remain aligned with the public portal theme.</div>
+          <div class="form-grid">
+            <div class="field">
+              <label for="hero-title">Main Title</label>
+              <input type="text" id="hero-title" placeholder="OSA Transaction Guide Portal">
+            </div>
+          </div>
+          <div class="subtitles-list" id="hero-subtitles-list"></div>
+        </div>
+        <div class="panel-foot">
+          <button class="btn btn-primary" id="save-hero-btn">
+            <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Save Hero
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-panel" id="panel-guides">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Guide Slides</h2>
+          <button class="btn btn-primary btn-sm" id="add-slide-btn">
+            <svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+            Add Guide Slide
+          </button>
+        </div>
+        <div class="panel-body">
+          <div class="helper-note">These are the rotating cards beside the hero. Keep three items per slide so the public layout stays balanced.</div>
+          <div class="repeater-grid" id="slides-list"></div>
+        </div>
+        <div class="panel-foot">
+          <button class="btn btn-primary" id="save-slides-btn">
+            <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Save Guide Slides
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-panel" id="panel-services">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>OSA Services Cards</h2>
+          <button class="btn btn-primary btn-sm" id="add-service-btn">
+            <svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+            Add OSA Service Card
+          </button>
+        </div>
+        <div class="panel-body">
+          <div class="helper-note">These feed the spinning OSA service cards on the homepage. You can keep the original service copy and optionally replace the visual with a real uploaded image or image URL.</div>
+          <div class="repeater-grid" id="services-list"></div>
+        </div>
+        <div class="panel-foot">
+          <button class="btn btn-primary" id="save-services-btn">
+            <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Save Services
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-panel" id="panel-manual">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Student Manual &amp; Forms</h2>
+          <button class="btn btn-primary btn-sm" id="add-form-btn">
+            <svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+            Add Form Link
+          </button>
+        </div>
+        <div class="panel-body">
+          <div class="helper-note">This section powers the highlighted student manual and the downloadable forms block lower on the homepage.</div>
+          <div class="editor-card">
+            <div class="editor-card__head">
+              <div>
+                <div class="editor-card__tag">Primary Reference</div>
+                <div class="editor-card__title">Manual Card</div>
+              </div>
+            </div>
+            <div class="form-grid">
+              <div class="field">
+                <label for="manual-title">Manual Title</label>
+                <input type="text" id="manual-title" placeholder="EAC-C Student Manual">
+              </div>
+              <div class="field">
+                <label for="manual-link">Manual Link</label>
+                <input type="url" id="manual-link" placeholder="https://...">
+              </div>
+              <div class="field">
+                <label for="manual-description">Manual Description</label>
+                <textarea id="manual-description" placeholder="Description shown on the homepage"></textarea>
+              </div>
+              <div class="field">
+                <label for="manual-cover">Manual Cover Image URL</label>
+                <input type="url" id="manual-cover" placeholder="/assets/images/student-manual-cover-2021.png">
+              </div>
+            </div>
+          </div>
+          <div style="height:16px"></div>
+          <div class="stack-list" id="forms-list"></div>
+        </div>
+        <div class="panel-foot">
+          <button class="btn btn-primary" id="save-manual-btn">
+            <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Save Manual &amp; Forms
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="/admin/admin-shell.js?v=20260423j"></script>
+<script>
+  const DB = 'osaHomeContent';
+  const DEFAULTS = {
+    hero: {
+      title: 'OSA Transaction Guide Portal',
+      subtitles: [
+        'Access OSA services, forms, and student support in one easy portal.',
+        'Clear student guidance for requirements, forms, and OSA procedures.',
+        'Follow verified steps so transactions are quicker and easier to complete.',
+        'Use one portal to navigate OSA processes with confidence.',
+        'Student-first access to OSA support, updates, and service information.'
+      ]
+    },
+    slides: [
+      {
+        kicker: 'Chat Guide',
+        title: 'Start with Ask OSA.',
+        subtitle: 'Get guided support fast.',
+        items: [
+          { heading: 'Open the live assistant', desc: 'Launch Ask OSA from the bottom-right button and type your concern naturally for instant guidance.' },
+          { heading: 'Verify when needed', desc: 'Protected actions like claims, appointments, and escalations can trigger secure student-email verification.' },
+          { heading: 'Continue the flow', desc: 'Stay inside the chat to receive the next step, required links, and any OTP prompt for sensitive requests.' }
+        ]
+      },
+      {
+        kicker: 'Announcement Guide',
+        title: 'Stay updated fast.',
+        subtitle: 'Check posted notices clearly.',
+        items: [
+          { heading: 'Browse all OSA posts', desc: 'See advisories, schedules, reminders, and event updates together in one organized announcement page.' },
+          { heading: 'Open the full bulletin', desc: 'View the complete announcement, attached images, and context before acting on any school update.' },
+          { heading: 'Search what matters', desc: 'Use titles, dates, categories, or keywords to find the exact posting you need faster.' }
+        ]
+      },
+      {
+        kicker: 'Lost & Found Guide',
+        title: 'Review items first.',
+        subtitle: 'Claim them the right way.',
+        items: [
+          { heading: 'Inspect the listing', desc: 'Check the item photos, category, and description to confirm the posted entry matches your property.' },
+          { heading: 'Keep the item number', desc: 'Note the Lost & Found reference code before opening Ask OSA so the verification flow moves faster.' },
+          { heading: 'Complete the claim flow', desc: 'Follow the guided chat process for proof-of-ownership checks and any OTP step required for restricted requests.' }
+        ]
+      }
+    ],
+    services: [
+      { title: 'Student Conduct and Discipline', desc: 'OSA attends to student conduct and discipline in line with college policies—consistent with the OSA mandate on student life and welfare.', image: '' },
+      { title: 'Lost & Found', desc: 'Coordinates logging and release of found items reported on campus through OSA, so students have a single office to report or claim property.', image: '' },
+      { title: 'ID Processing', desc: 'School ID services for new students, replacement, and updates are processed through OSA following campus procedures and posted requirements.', image: '' },
+      { title: 'Scholarship Applications and Inquiries', desc: 'Listed under official OSA services: assistance with scholarship applications and inquiries, including requirements and schedules published by the institution.', image: '' },
+      { title: 'Issuance of Good Moral Character Certificate', desc: 'OSA processes requests for Good Moral Character certificates (and related clearance documentation) according to published procedures and release schedules.', image: '' },
+      { title: 'ISO and PACUCOA Accreditation', desc: 'Student-affairs support tied to institutional quality assurance and accreditation (e.g., ISO, PACUCOA) is coordinated through OSA as the liaison for student-facing requirements.', image: '' },
+      { title: 'Learner Activity Program (LAAP)', desc: 'OSA supports co-curricular and student activities under LAAP—aligning programs with institutional guidelines and student organization rules.', image: '' }
+    ],
+    manual: {
+      title: 'EAC-C Student Manual',
+      description: 'Central handbook for student rights, responsibilities, and academic norms. Open the PDF for full text; use Ask OSA for guided interpretation and service-specific questions.',
+      link: 'https://drive.google.com/file/d/1Sk4s2GnO7SGkEaDnmXNBqjZP1a10Y9qR/view?usp=sharing',
+      cover: './assets/images/student-manual-cover-2021.png'
+    },
+    forms: [
+      { title: 'Scholarship Application', link: 'https://www.eac.edu.ph/wp-content/uploads/2021/08/QF-OSA-010-07.15.2021-Rev.01-Scholarship-Application-OSA-FORMS-2021-2.doc' },
+      { title: 'Incident Report Form', link: 'https://www.eac.edu.ph/wp-content/uploads/2021/08/QF-OSA-012-07.15.2021-Rev.01-Incident-Report.doc' },
+      { title: 'Academic Leave Form', link: 'https://www.eac.edu.ph/wp-content/uploads/2021/08/QF-OSA-013-07.15.2021-Rev.0Academic-Leave-of-Absence-Application-Form.doc' }
+    ]
+  };
+
+  const getData = () => adminDB.get(DB) || {};
+  const mergeData = () => {
+    const saved = getData();
+    return {
+      hero: Object.assign({}, DEFAULTS.hero, saved.hero || {}),
+      slides: Array.isArray(saved.slides) && saved.slides.length ? saved.slides : DEFAULTS.slides,
+      services: Array.isArray(saved.services) && saved.services.length ? saved.services : DEFAULTS.services,
+      manual: Object.assign({}, DEFAULTS.manual, saved.manual || {}),
+      forms: Array.isArray(saved.forms) && saved.forms.length ? saved.forms : DEFAULTS.forms
+    };
+  };
+  const persistData = (data) => {
+    adminDB.set(DB, data);
+    fetch('/api/admin/home-content/save.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    }).catch(() => {});
+  };
+
+  let slidesState = [];
+  let servicesState = [];
+  let formsState = [];
+
+  document.querySelectorAll('.section-tab').forEach((tab) => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.section-tab').forEach((item) => item.classList.remove('active'));
+      document.querySelectorAll('.section-panel').forEach((panel) => panel.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+    });
+  });
+
+  function renderHeroPanel(hero) {
+    document.getElementById('hero-title').value = hero.title || '';
+    const list = document.getElementById('hero-subtitles-list');
+    const subtitles = Array.isArray(hero.subtitles) && hero.subtitles.length ? hero.subtitles : DEFAULTS.hero.subtitles;
+    list.innerHTML = subtitles.map((item, index) => `
+      <div class="subtitle-row">
+        <span class="subtitle-index">${index + 1}</span>
+        <div class="field">
+          <label for="hero-subtitle-${index}">Rotating Subtitle ${index + 1}</label>
+          <input type="text" id="hero-subtitle-${index}" class="hero-subtitle-input" value="${escapeHtml(item || '')}">
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function renderSlides(slides) {
+    slidesState = slides.map((slide) => ({
+      kicker: slide.kicker || '',
+      title: slide.title || '',
+      subtitle: slide.subtitle || '',
+      items: Array.isArray(slide.items) && slide.items.length
+        ? slide.items.slice(0, 3).map((item) => ({ heading: item.heading || '', desc: item.desc || '' }))
+        : [{ heading: '', desc: '' }, { heading: '', desc: '' }, { heading: '', desc: '' }]
+    }));
+    const list = document.getElementById('slides-list');
+    list.innerHTML = slidesState.map((slide, slideIndex) => {
+      const items = slide.items;
+      return `
+        <div class="slide-item" data-slide-index="${slideIndex}">
+          <div class="slide-item__head">
+            <div>
+              <div class="slide-item__label">Guide Slide ${slideIndex + 1}</div>
+              <div class="editor-card__title">${escapeHtml(slide.kicker || 'Guide Slide')}</div>
+            </div>
+            <div class="row-actions">
+              <button class="btn btn-danger btn-sm" type="button" onclick="removeSlide(${slideIndex})">Delete</button>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="field">
+              <label>Kicker</label>
+              <input type="text" class="slide-kicker" value="${escapeHtml(slide.kicker || '')}">
+            </div>
+            <div class="field">
+              <label>Title</label>
+              <input type="text" class="slide-title" value="${escapeHtml(slide.title || '')}">
+            </div>
+          </div>
+          <div class="field">
+            <label>Subtitle</label>
+            <input type="text" class="slide-subtitle" value="${escapeHtml(slide.subtitle || '')}">
+          </div>
+          <div class="guide-items">
+            ${items.slice(0, 3).map((item, itemIndex) => `
+              <div class="guide-item">
+                <div class="slide-item__label" style="margin-bottom:8px">Guide Point ${itemIndex + 1}</div>
+                <div class="field">
+                  <label>Heading</label>
+                  <input type="text" class="guide-heading" value="${escapeHtml(item.heading || '')}">
+                </div>
+                <div class="field">
+                  <label>Description</label>
+                  <textarea class="guide-desc">${escapeHtml(item.desc || '')}</textarea>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function renderServices(services) {
+    servicesState = services.map((service) => ({
+      title: service.title || '',
+      desc: service.desc || '',
+      image: service.image || ''
+    }));
+    const list = document.getElementById('services-list');
+    list.innerHTML = servicesState.map((service, index) => `
+      <div class="service-item" data-service-index="${index}">
+        <div class="service-item__head">
+          <div>
+            <div class="service-item__label">Service Card ${index + 1}</div>
+            <div class="editor-card__title">${escapeHtml(service.title || 'OSA Service')}</div>
+          </div>
+          <div class="row-actions">
+            <button class="btn btn-danger btn-sm" type="button" onclick="removeService(${index})">Delete</button>
+          </div>
+        </div>
+        <div class="service-media">
+          <div>
+            <div class="field">
+              <label>Service Title</label>
+              <input type="text" class="service-title" value="${escapeHtml(service.title || '')}">
+            </div>
+            <div class="field">
+              <label>Service Description</label>
+              <textarea class="service-desc">${escapeHtml(service.desc || '')}</textarea>
+            </div>
+            <div class="field">
+              <label>Image URL</label>
+              <input type="url" class="service-image" value="${escapeHtml(service.image || '')}" placeholder="https://...">
+            </div>
+          </div>
+          <div class="upload-box">
+            <div class="service-preview"${service.image ? ` style="background-image:url('${escapeAttr(service.image)}')"` : ''}></div>
+            <input type="file" class="service-upload" accept="image/*">
+            <div class="muted-inline">Upload replaces the card visual in local admin data. Leave blank if you want the default gradient art only.</div>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function renderManualForms(manual, forms) {
+    document.getElementById('manual-title').value = manual.title || '';
+    document.getElementById('manual-link').value = manual.link || '';
+    document.getElementById('manual-description').value = manual.description || '';
+    document.getElementById('manual-cover').value = manual.cover || '';
+    formsState = forms.map((form) => ({
+      title: form.title || '',
+      link: form.link || ''
+    }));
+    const list = document.getElementById('forms-list');
+    list.innerHTML = formsState.map((form, index) => `
+      <div class="form-item" data-form-index="${index}">
+        <div class="form-item__head">
+          <div>
+            <div class="form-item__label">Form Link ${index + 1}</div>
+            <div class="editor-card__title">${escapeHtml(form.title || 'Downloadable Form')}</div>
+          </div>
+          <div class="row-actions">
+            <button class="btn btn-danger btn-sm" type="button" onclick="removeForm(${index})">Delete</button>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label>Label</label>
+            <input type="text" class="form-title" value="${escapeHtml(form.title || '')}">
+          </div>
+          <div class="field">
+            <label>File Link</label>
+            <input type="url" class="form-link" value="${escapeHtml(form.link || '')}">
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function collectHero() {
+    const subtitles = Array.from(document.querySelectorAll('.hero-subtitle-input')).map((input) => input.value.trim()).filter(Boolean);
+    return {
+      title: document.getElementById('hero-title').value.trim(),
+      subtitles: subtitles.length ? subtitles : DEFAULTS.hero.subtitles
+    };
+  }
+
+  function collectSlides() {
+    return Array.from(document.querySelectorAll('.slide-item')).map((slide) => ({
+      kicker: slide.querySelector('.slide-kicker').value.trim(),
+      title: slide.querySelector('.slide-title').value.trim(),
+      subtitle: slide.querySelector('.slide-subtitle').value.trim(),
+      items: Array.from(slide.querySelectorAll('.guide-item')).map((item) => ({
+        heading: item.querySelector('.guide-heading').value.trim(),
+        desc: item.querySelector('.guide-desc').value.trim()
+      }))
+    }));
+  }
+
+  function collectServices() {
+    return Array.from(document.querySelectorAll('.service-item')).map((service) => ({
+      title: service.querySelector('.service-title').value.trim(),
+      desc: service.querySelector('.service-desc').value.trim(),
+      image: service.querySelector('.service-image').value.trim()
+    }));
+  }
+
+  function collectManual() {
+    return {
+      title: document.getElementById('manual-title').value.trim(),
+      description: document.getElementById('manual-description').value.trim(),
+      link: document.getElementById('manual-link').value.trim(),
+      cover: document.getElementById('manual-cover').value.trim()
+    };
+  }
+
+  function collectForms() {
+    return Array.from(document.querySelectorAll('.form-item')).map((form) => ({
+      title: form.querySelector('.form-title').value.trim(),
+      link: form.querySelector('.form-link').value.trim()
+    }));
+  }
+
+  function buildPayload() {
+    return {
+      hero: collectHero(),
+      slides: collectSlides(),
+      services: collectServices(),
+      manual: collectManual(),
+      forms: collectForms()
+    };
+  }
+
+  function loadAll() {
+    const data = mergeData();
+    renderHeroPanel(data.hero);
+    renderSlides(data.slides);
+    renderServices(data.services);
+    renderManualForms(data.manual, data.forms);
+  }
+
+  window.removeSlide = (index) => {
+    slidesState.splice(index, 1);
+    renderSlides(slidesState);
+  };
+
+  window.removeService = (index) => {
+    servicesState.splice(index, 1);
+    renderServices(servicesState);
+  };
+
+  window.removeForm = (index) => {
+    formsState.splice(index, 1);
+    renderManualForms(collectManual(), formsState);
+  };
+
+  function saveSection(section) {
+    const payload = buildPayload();
+    persistData(payload);
+    showToast(section + ' saved!', 'success');
+  }
+
+  document.getElementById('save-hero-btn').addEventListener('click', () => saveSection('Hero content'));
+  document.getElementById('save-slides-btn').addEventListener('click', () => saveSection('Guide slides'));
+  document.getElementById('save-services-btn').addEventListener('click', () => saveSection('OSA services'));
+  document.getElementById('save-manual-btn').addEventListener('click', () => saveSection('Manual and forms'));
+  document.getElementById('add-slide-btn').addEventListener('click', () => {
+    slidesState.push({
+      kicker: 'New Guide',
+      title: 'New slide title.',
+      subtitle: 'New slide subtitle.',
+      items: [{ heading: '', desc: '' }, { heading: '', desc: '' }, { heading: '', desc: '' }]
+    });
+    renderSlides(slidesState);
+  });
+  document.getElementById('add-service-btn').addEventListener('click', () => {
+    servicesState.push({ title: 'New OSA Service', desc: '', image: '' });
+    renderServices(servicesState);
+  });
+  document.getElementById('add-form-btn').addEventListener('click', () => {
+    formsState.push({ title: 'New Form Link', link: '' });
+    renderManualForms(collectManual(), formsState);
+  });
+  document.getElementById('save-all-btn').addEventListener('click', () => {
+    persistData(buildPayload());
+    showToast('Homepage content saved!', 'success');
+  });
+
+  document.addEventListener('input', (event) => {
+    if (event.target.classList.contains('service-image')) {
+      const wrap = event.target.closest('.service-item');
+      const preview = wrap ? wrap.querySelector('.service-preview') : null;
+      if (preview) {
+        preview.style.backgroundImage = event.target.value.trim() ? `url("${event.target.value.trim()}")` : 'none';
+      }
+    }
+  });
+
+  document.addEventListener('change', (event) => {
+    if (!event.target.classList.contains('service-upload')) return;
+    const file = event.target.files && event.target.files[0];
+    const wrap = event.target.closest('.service-item');
+    if (!file || !wrap) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const value = typeof reader.result === 'string' ? reader.result : '';
+      wrap.querySelector('.service-image').value = value;
+      wrap.querySelector('.service-preview').style.backgroundImage = value ? `url("${value}")` : 'none';
+    };
+    reader.readAsDataURL(file);
+  });
+
+  function escapeHtml(value) {
+    return String(value || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function escapeAttr(value) {
+    return String(value || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  loadAll();
+</script>
+</body>
+</html>

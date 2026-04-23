@@ -26,11 +26,11 @@ This document lists all database-related work added to this repo for integrating
 - `package.json`
   - Added dependencies: `express`, `pg`, `cors`, `dotenv`
   - Added script: `api:start`
-- `public/announcements/index.html`
+- `public/announcements`
   - Added API client script include
   - Added `hydrateAnnouncementsFromApi()` to load API data first
   - Kept local storage + static data as fallback
-- `public/lost-and-found/index.html`
+- `public/lost-and-found`
   - Added API client script include
   - Added `hydrateLostFoundFromApi()` to load API data first
   - Kept local storage + static data as fallback
@@ -105,7 +105,7 @@ Base prefix: `/api/v1`
 
 ### Announcements page
 
-`public/announcements/index.html` now:
+`public/announcements` now:
 
 1. loads existing local data
 2. tries API fetch (`OSAApiClient.loadAnnouncements()`)
@@ -114,7 +114,7 @@ Base prefix: `/api/v1`
 
 ### Lost & Found page
 
-`public/lost-and-found/index.html` now:
+`public/lost-and-found` now:
 
 1. loads existing local data
 2. tries API fetch (`OSAApiClient.loadLostFoundItems()`)

@@ -12,9 +12,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="/css/osa-design.css?v=40">
-    <link rel="stylesheet" href="/css/osa-ai.css?v=39">
-    <script src="/assets/js/portal-shell.js?v=42" defer></script>
-    <script src="/assets/js/osa-chat-loader.js?v=37" defer></script>
+    <link rel="stylesheet" href="/css/osa-ai.css?v=45">
+    <script src="/assets/js/portal-shell.js?v=44" defer></script>
+    <script src="/assets/js/osa-chat-loader.js?v=64" defer></script>
     <script src="/assets/js/osa-api-client.js?v=2" defer></script>
 
     <style>
@@ -1199,7 +1199,7 @@
             }
 
             .lb-nav-next {
-                right: 4px;
+                right: 48px;
             }
         }
 
@@ -1330,13 +1330,7 @@
 
             <!-- ── Toolbar ── -->
             <div class="lf-toolbar" data-animate="reveal">
-                <div class="lf-filters" id="lf-filters">
-                    <button class="lf-chip active" data-filter="all">All Items</button>
-                    <button class="lf-chip" data-filter="wallet">Wallet</button>
-                    <button class="lf-chip" data-filter="bag">Bag</button>
-                    <button class="lf-chip" data-filter="electronics">Electronics</button>
-                    <button class="lf-chip" data-filter="personal item">Personal Item</button>
-                </div>
+                <div class="lf-filters" id="lf-filters"></div>
                 <div class="lf-search-wrap">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
                         stroke-linecap="round" stroke-linejoin="round">
@@ -1428,70 +1422,7 @@
         /* ════════════════════════════════════════
            DATA
         ════════════════════════════════════════ */
-        var ITEMS = [
-            {
-                itemNumber: "LF-1001", date: "April 18, 2025", status: "Unclaimed",
-                title: "Black Leather Wallet", tag: "Wallet",
-                caption: "Recovered near the student lounge on the ground floor. No name or ID found inside. Contains some cards and a small amount of cash.",
-                images: ["https://images.unsplash.com/photo-1627123424574-724758594e93?w=700&q=80"]
-            },
-            {
-                itemNumber: "LF-1002", date: "April 19, 2025", status: "Unclaimed",
-                title: "Black Backpack", tag: "Bag",
-                caption: "Found inside the library, second floor near the reference section. No name tag attached. Contains notebooks and a pencil case.",
-                images: [
-                    "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=700&q=80",
-                    "https://images.unsplash.com/photo-1622560480654-d96214fdc887?w=700&q=80"
-                ]
-            },
-            {
-                itemNumber: "LF-1003", date: "April 20, 2025", status: "Unclaimed",
-                title: "iPhone 13 — Space Gray", tag: "Electronics",
-                caption: "Left in Room 301 after afternoon class. Screen has a small crack on the upper right corner. Bring valid school ID to claim.",
-                images: [
-                    "https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?w=700&q=80",
-                    "https://images.unsplash.com/photo-1605236453806-6ff36851218e?w=700&q=80",
-                    "https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=700&q=80"
-                ]
-            },
-            {
-                itemNumber: "LF-1004", date: "April 21, 2025", status: "Claimed",
-                title: "Stainless Steel Tumbler", tag: "Personal Item",
-                caption: "Found at the canteen area near Table 7. Dark gray with a school logo sticker. Bring receipt or proof of purchase to claim.",
-                images: ["https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=700&q=80"]
-            },
-            {
-                itemNumber: "LF-1005", date: "April 22, 2025", status: "Unclaimed",
-                title: "Blue Water Bottle", tag: "Personal Item",
-                caption: "Recovered at the gymnasium after PE class. No markings found on the item. Blue with a white cap and a small dent on the side.",
-                images: ["https://images.unsplash.com/photo-1559839914-17aae19cec71?w=700&q=80"]
-            },
-            {
-                itemNumber: "LF-1006", date: "April 22, 2025", status: "Unclaimed",
-                title: "Eyeglasses — Brown Case", tag: "Personal Item",
-                caption: "Left at the registrar's waiting area. Brown hard case with prescription lenses inside. No brand markings visible.",
-                images: ["https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=700&q=80"]
-            }
-        ];
-
-        // Merge any admin-saved items from localStorage
-        try {
-            var saved = JSON.parse(localStorage.getItem('osaLostFound') || '[]');
-            if (Array.isArray(saved) && saved.length) {
-                ITEMS = saved.map(function (s) {
-                    return {
-                        itemNumber: s.itemNumber || s.refNo || 'LF-???',
-                        date: s.date || s.postedAt || '',
-                        time: s.time || '',
-                        status: s.status || 'Unclaimed',
-                        title: s.title || s.itemName || 'Recovered Item',
-                        tag: s.tag || 'Personal Item',
-                        caption: s.caption || s.details || '',
-                        images: s.images || (s.imageUrl ? [s.imageUrl] : [])
-                    };
-                }).concat(ITEMS);
-            }
-        } catch (e) { }
+        var ITEMS = [];
 
         function hydrateLostFoundFromApi() {
             if (!window.OSAApiClient || typeof window.OSAApiClient.loadLostFoundItems !== 'function') {
@@ -1514,7 +1445,7 @@
                     });
                 })
                 .catch(function () {
-                    // Fallback to localStorage/default seed when API is unavailable.
+                    ITEMS = [];
                 });
         }
 
@@ -1523,6 +1454,36 @@
         ════════════════════════════════════════ */
         var currentFilter = 'all';
         var currentSearch = '';
+
+        function getAvailableTags() {
+            var seen = Object.create(null);
+            var tags = [];
+            ITEMS.forEach(function (item) {
+                var tag = String((item && item.tag) || '').trim();
+                if (!tag) return;
+                var key = tag.toLowerCase();
+                if (seen[key]) return;
+                seen[key] = true;
+                tags.push(tag);
+            });
+            tags.sort(function (a, b) { return a.localeCompare(b); });
+            return tags;
+        }
+
+        function renderFilterChips() {
+            var wrap = document.getElementById('lf-filters');
+            if (!wrap) return;
+            var tags = getAvailableTags();
+            var validFilters = ['all'].concat(tags.map(function (t) { return t.toLowerCase(); }));
+            if (validFilters.indexOf(currentFilter) === -1) currentFilter = 'all';
+
+            var html = '<button class="lf-chip' + (currentFilter === 'all' ? ' active' : '') + '" data-filter="all">All Items</button>';
+            html += tags.map(function (tag) {
+                var key = tag.toLowerCase();
+                return '<button class="lf-chip' + (currentFilter === key ? ' active' : '') + '" data-filter="' + key + '">' + tag + '</button>';
+            }).join('');
+            wrap.innerHTML = html;
+        }
 
         function getFiltered() {
             return ITEMS.filter(function (item) {
@@ -1906,8 +1867,11 @@
         });
 
         // Initial render
-        hydrateLostFoundFromApi().finally(function () {
-            renderGrid();
+        window.addEventListener('DOMContentLoaded', function () {
+            hydrateLostFoundFromApi().finally(function () {
+                renderFilterChips();
+                renderGrid();
+            });
         });
     </script>
 </body>

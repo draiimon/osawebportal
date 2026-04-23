@@ -72,3 +72,31 @@ VALUES
 ON CONFLICT (page_name, content_key) DO UPDATE
 SET content_value = EXCLUDED.content_value,
     updated_at = NOW();
+
+-- Tier 2: sample Student Manual / policy chunks (edit and expand in production; see admin/DB)
+INSERT INTO student_manual_chunks (section_title, chunk_text, keywords)
+VALUES
+(
+  'Conduct and discipline',
+  'Reports on misconduct are evaluated through designated student-affairs protocols. Serious cases may involve documentation, conferences, and sanctions aligned with institutional policy. Students may seek guidance from OSA on filing or responding to reports.',
+  ARRAY['conduct', 'discipline', 'misconduct', 'sanction', 'behavior', 'violation']::TEXT[]
+),
+(
+  'Student organizations',
+  'Recognized campus organizations coordinate with OSA on recognition, adviser requirements, activity guidelines, and annual reports. Officers should verify posting deadlines and clearance steps before major events.',
+  ARRAY['organization', 'org', 'club', 'society', 'recognition', 'student', 'officer']::TEXT[]
+),
+(
+  'OSA transactions (general)',
+  'OSA facilitates non-academic student life services including scholarships, certificates, Lost & Found coordination, IDs (as posted), guidance on forms, and referrals related to student welfare. Fees, timelines, and requirements follow official postings at the Cavite campus.',
+  ARRAY['osa', 'office', 'transaction', 'certificate', 'scholarship', 'appointment', 'forms']::TEXT[]
+),
+(
+  'Student handbook reference',
+  'Always refer to the official Student Handbook / Manual for authoritative rules on enrollment, uniforms (if applicable), attendance tied to student life policies, and campus norms. When the manual conflicts with rumor, defer to official text or staff confirmation.',
+  ARRAY['manual', 'handbook', 'policy', 'rules', 'enrollment', 'campus']::TEXT[]
+)
+ON CONFLICT (section_title) DO UPDATE SET
+  chunk_text = EXCLUDED.chunk_text,
+  keywords = EXCLUDED.keywords,
+  updated_at = NOW();

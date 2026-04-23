@@ -1,0 +1,206 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  STUDENT
+  ADMIN
+}
+
+enum ConversationStatus {
+  ACTIVE
+  ESCALATED
+  CLOSED
+}
+
+enum MessageSender {
+  USER
+  BOT
+  ADMIN
+}
+
+enum MessageTier {
+  FAQ
+  RAG
+  ADMIN
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  RESCHEDULED
+  CANCELLED
+}
+
+enum LostFoundItemStatus {
+  UNCLAIMED
+  CLAIMED
+  DISPOSED
+}
+
+enum LostFoundClaimStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum AnnouncementType {
+  GENERAL
+  ID_AVAILABILITY
+  SCHEDULE_CHANGE
+}
+
+model users {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email          String    @unique
+  name           String
+  password_hash  String?
+  role           UserRole
+  is_verified    Boolean   @default(false)
+  otp            String?
+  otp_expires    DateTime?
+  created_at     DateTime  @default(now())
+
+  conversations      conversations[]
+  tickets            tickets[]
+  appointments       appointments[]
+  lost_found_posts   lost_found_items[]   @relation("lost_found_posted_by")
+  lost_found_claims  lost_found_claims[]  @relation("lost_found_claimed_by")
+  announcements      announcements[]      @relation("announcements_posted_by")
+}
+
+model faqs {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  question   String
+  answer     String
+  category   String
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model documents {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title      String
+  content    String
+  // pgvector keeps dimensions at DB migration level (vector(1536)).
+  embedding  Unsupported("vector")
+  source     String
+  created_at DateTime @default(now())
+}
+
+model conversations {
+  id         String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id    String             @db.Uuid
+  started_at DateTime           @default(now())
+  status     ConversationStatus @default(ACTIVE)
+
+  user       users      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  messages   messages[]
+  tickets    tickets[]
+}
+
+model messages {
+  id              String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  conversation_id String       @db.Uuid
+  sender          MessageSender
+  content         String
+  tier_used       MessageTier
+  created_at      DateTime     @default(now())
+
+  conversation conversations @relation(fields: [conversation_id], references: [id], onDelete: Cascade)
+}
+
+model tickets {
+  id              String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  case_id         String      @unique
+  user_id         String      @db.Uuid
+  conversation_id String      @db.Uuid
+  subject         String
+  description     String
+  status          TicketStatus @default(OPEN)
+  admin_reply     String?
+  created_at      DateTime    @default(now())
+  updated_at      DateTime    @updatedAt
+
+  user           users         @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  conversation   conversations @relation(fields: [conversation_id], references: [id], onDelete: Cascade)
+  appointments   appointments[]
+}
+
+model appointments {
+  id              String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id         String            @db.Uuid
+  ticket_id       String?           @db.Uuid
+  preferred_date  DateTime
+  confirmed_date  DateTime?
+  purpose         String
+  status          AppointmentStatus @default(PENDING)
+  admin_notes     String?
+  created_at      DateTime          @default(now())
+
+  user   users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  ticket tickets? @relation(fields: [ticket_id], references: [id], onDelete: SetNull)
+}
+
+model lost_found_items {
+  id             String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  posted_by      String              @db.Uuid
+  item_name      String
+  description    String
+  found_location String
+  found_date     DateTime            @db.Date
+  image_url      String?
+  status         LostFoundItemStatus @default(UNCLAIMED)
+  created_at     DateTime            @default(now())
+
+  admin_posted_by users              @relation("lost_found_posted_by", fields: [posted_by], references: [id], onDelete: Cascade)
+  claims          lost_found_claims[]
+}
+
+model lost_found_claims {
+  id                String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  item_id           String               @db.Uuid
+  claimant_id       String               @db.Uuid
+  claim_description String
+  status            LostFoundClaimStatus @default(PENDING)
+  created_at        DateTime             @default(now())
+
+  item      lost_found_items @relation(fields: [item_id], references: [id], onDelete: Cascade)
+  claimant  users            @relation("lost_found_claimed_by", fields: [claimant_id], references: [id], onDelete: Cascade)
+}
+
+model announcements {
+  id         String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title      String
+  content    String
+  type       AnnouncementType @default(GENERAL)
+  posted_by  String           @db.Uuid
+  is_active  Boolean          @default(true)
+  created_at DateTime         @default(now())
+
+  admin_posted_by users @relation("announcements_posted_by", fields: [posted_by], references: [id], onDelete: Cascade)
+}
+
+model osa_services {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name            String
+  description     String
+  requirements    String[]
+  fees            String
+  processing_time String
+  office_location String
+  steps           Json
+  is_active       Boolean  @default(true)
+}

@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Lost &amp; Found · OSA Admin</title>
+  <link rel="icon" type="image/png" href="/assets/images/eac-emblem.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/admin/admin-shell.css?v=20260423j">
+  <style>
+    #lf-modal-title {
+      font-family: var(--font-body);
+      font-weight: 800;
+      letter-spacing: 0.01em;
+      font-size: 1.06rem;
+    }
+
+    /* Item grid cards */
+    .item-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 14px;
+    }
+    .item-card {
+      background: linear-gradient(180deg, rgba(255,253,249,0.98), rgba(255,248,240,0.94));
+      border: 1px solid var(--line);
+      border-top: 3px solid var(--brand);
+      overflow: hidden;
+      transition: transform 180ms, box-shadow 180ms;
+      border-radius: 2px;
+      box-shadow: var(--shadow-sm);
+    }
+    .item-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
+    .item-card.gold  { border-top-color: var(--gold); }
+
+    .item-thumb {
+      height: 148px;
+      background: rgba(132,26,45,0.05);
+      overflow: hidden; position: relative;
+    }
+    .item-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .item-thumb .no-img {
+      display: flex; align-items: center; justify-content: center;
+      width: 100%; height: 100%;
+      font-size: 2.2rem; opacity: 0.28;
+    }
+    .item-thumb .status-badge {
+      position: absolute; top: 8px; right: 8px;
+    }
+
+    .item-body { padding: 12px 14px; }
+    .item-body strong { display: block; font-size: 0.88rem; color: var(--ink); margin-bottom: 4px; font-weight: 700; line-height: 1.3; }
+    .item-body span   { font-size: 0.74rem; color: var(--muted); display: block; }
+    .item-body .item-num { font-size: 0.65rem; font-weight: 800; letter-spacing: 0.1em; color: var(--brand); text-transform: uppercase; margin-top: 4px; }
+
+    .item-foot {
+      padding: 10px 14px;
+      border-top: 1px solid var(--line);
+      display: flex; gap: 6px; align-items: center; flex-wrap: wrap;
+    }
+
+    /* View toggle */
+    .view-toggle { display: flex; gap: 4px; margin-left: auto; }
+    .view-toggle button {
+      width: 34px; height: 34px;
+      border: 1px solid var(--line); background: transparent;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--muted); transition: all 160ms; border-radius: 2px;
+    }
+    .view-toggle button.active { background: var(--brand); border-color: var(--brand); color: #fff; }
+    .view-toggle button svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
+
+    /* List view */
+    .item-list-view { display: none; }
+    .item-list-view.active { display: block; }
+    .item-grid-view.hidden { display: none; }
+
+    /* Mobile: always card view */
+    @media (max-width: 600px) {
+      .item-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+      .item-thumb { height: 120px; }
+      .view-toggle { display: none; }
+    }
+    @media (max-width: 380px) {
+      .item-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="admin-page" id="admin-page">
+
+  <!-- NAV -->
+  <nav class="admin-nav" id="admin-nav">
+    <button class="nav-hamburger" id="nav-hamburger" aria-label="Open navigation menu" aria-expanded="false">
+      <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+    <a class="admin-nav__brand" href="/admin/dashboard">
+      <img class="admin-nav__logo" src="/assets/images/eac-emblem.png" alt="EAC" onerror="this.style.display='none'">
+      <div class="admin-nav__title"><strong>EAC Cavite</strong><span>OSA Admin Panel</span></div>
+    </a>
+    <div class="admin-nav__sep"></div>
+    <div class="admin-nav__links">
+      <a class="nav-link" href="/admin/dashboard"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</a>
+      <a class="nav-link" href="/admin/modules/announcements"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Announcements<span class="nav-badge" data-nav-badge="ann" style="display:none">0</span></a>
+      <a class="nav-link active" href="/admin/modules/lost-found"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Lost &amp; Found<span class="nav-badge" data-nav-badge="lf" style="display:none">0</span></a>
+      <a class="nav-link" href="/admin/modules/home-content"><svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home Content</a>
+      <a class="nav-link" href="/admin/modules/about"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>About Page</a>
+      <a class="nav-link" href="/admin/modules/chat-support"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Chat Support<span class="nav-badge" data-nav-badge="chat" style="display:none">0</span></a>
+      <a class="nav-link" href="/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Live Portal</a>
+    </div>
+    <div class="admin-nav__right">
+      <div class="admin-avatar" data-admin-initials>AD</div>
+      <div class="admin-name-wrap"><strong data-admin-name>Administrator</strong><span data-admin-email></span></div>
+      <button class="btn-logout" data-logout type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Log Out</span></button>
+    </div>
+  </nav>
+
+  <!-- UTIL BAR -->
+  <div class="admin-util-bar" id="admin-util-bar">
+    <div class="util-left">
+      <span class="util-page-title">Lost &amp; Found</span>
+      <div class="util-breadcrumb"><span>Admin</span><span class="sep">›</span><span>Manage Items</span></div>
+    </div>
+    <div class="util-right">
+      <div class="util-datetime">
+        <span class="util-datetime__date" id="dt-date"></span>
+        <span class="util-datetime__sep">·</span>
+        <span class="util-datetime__time" id="dt-time"></span>
+        <span class="util-datetime__ph">PST</span>
+      </div>
+      <a class="util-portal-link" href="/lost-found" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Live Page
+      </a>
+    </div>
+  </div>
+
+  <!-- DRAWER -->
+  <div class="admin-drawer" id="admin-drawer" role="dialog" aria-modal="true" aria-label="Navigation">
+    <div class="drawer-backdrop" id="drawer-backdrop"></div>
+    <div class="drawer-panel">
+      <div class="drawer-header">
+        <div class="drawer-brand"><img src="/assets/images/eac-emblem.png" alt="EAC" onerror="this.style.display='none'"><div class="drawer-brand-text"><strong>EAC Cavite</strong><span>OSA Admin Panel</span></div></div>
+        <button class="drawer-close" id="drawer-close" aria-label="Close menu"><svg viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="M6 6 18 18"/></svg></button>
+      </div>
+      <nav class="drawer-nav">
+        <span class="drawer-section-label">Overview</span>
+        <a class="drawer-nav-item" href="/admin/dashboard"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</a>
+        <span class="drawer-section-label">Content</span>
+        <a class="drawer-nav-item" href="/admin/modules/announcements"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Announcements<span class="nav-badge" data-nav-badge="ann" style="display:none">0</span></a>
+        <a class="drawer-nav-item active" href="/admin/modules/lost-found"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Lost &amp; Found<span class="nav-badge" data-nav-badge="lf" style="display:none">0</span></a>
+        <a class="drawer-nav-item" href="/admin/modules/home-content"><svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home Content</a>
+        <a class="drawer-nav-item" href="/admin/modules/about"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>About Page</a>
+        <a class="drawer-nav-item" href="/admin/modules/chat-support"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Chat Support<span class="nav-badge" data-nav-badge="chat" style="display:none">0</span></a>
+        <span class="drawer-section-label">Portal</span>
+        <a class="drawer-nav-item" href="/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>View Live Portal</a>
+      </nav>
+      <div class="drawer-footer">
+        <div class="drawer-profile"><div class="admin-avatar" data-admin-initials>AD</div><div class="drawer-profile-text"><strong data-admin-name>Administrator</strong><span data-admin-email></span></div></div>
+        <button class="drawer-logout" data-logout type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Log Out</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <main class="admin-main">
+
+    <div class="page-header">
+      <div>
+        <div class="page-header__eyebrow">Content Management</div>
+        <h1>Lost &amp; Found Registry</h1>
+        <p>Log, update, and manage all lost and found items on campus.</p>
+      </div>
+      <div class="page-header__actions">
+        <button class="btn btn-primary" data-modal-open="lf-modal">
+          <svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          Add Item
+        </button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row" style="grid-template-columns:repeat(4,1fr)">
+      <div class="stat-card"><div class="stat-card__label">Total Items</div><div class="stat-card__value" id="s-total">0</div><div class="stat-card__sub">On record</div></div>
+      <div class="stat-card gold"><div class="stat-card__label">Unclaimed</div><div class="stat-card__value" id="s-unclaimed">0</div><div class="stat-card__sub">Awaiting pickup</div></div>
+      <div class="stat-card"><div class="stat-card__label">Claimed</div><div class="stat-card__value" id="s-claimed">0</div><div class="stat-card__sub">Returned</div></div>
+      <div class="stat-card gold"><div class="stat-card__label">Categories</div><div class="stat-card__value" id="s-cats">0</div><div class="stat-card__sub">Item types</div></div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="search-input-wrap">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="search" id="lf-search" placeholder="Search items…">
+      </div>
+       <select class="filter-select" id="lf-filter-status" aria-label="Filter by status" title="Filter by status">
+        <option value="">All Status</option>
+        <option>Unclaimed</option><option>Claimed</option>
+      </select>
+       <select class="filter-select" id="lf-filter-cat" aria-label="Filter by category" title="Filter by category">
+        <option value="">All Categories</option>
+        <option>Electronics</option><option>Clothing</option><option>Documents</option>
+        <option>Accessories</option><option>Books</option><option>Bags</option><option>Other</option>
+      </select>
+      <div class="view-toggle" style="margin-left:auto">
+        <button id="view-grid" class="active" aria-label="Grid view" title="Grid view">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        </button>
+        <button id="view-list" aria-label="List view" title="List view">
+          <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Grid view -->
+    <div id="lf-grid-view">
+      <div class="item-grid" id="lf-grid"></div>
+    </div>
+
+    <!-- List view -->
+    <div id="lf-list-view" style="display:none">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Item List</h2>
+          <span id="lf-count" style="font-size:0.74rem;color:var(--muted)"></span>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Item</th><th>Category</th><th>Item No.</th><th>Date Found</th><th>Description</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="lf-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ADD/EDIT MODAL -->
+<div class="modal-backdrop" id="lf-modal">
+  <div class="modal modal-lg">
+    <div class="modal-head">
+      <h2 id="lf-modal-title">Add Lost &amp; Found Item</h2>
+       <button class="modal-close" data-modal-close="lf-modal" aria-label="Close modal" title="Close modal"><svg viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="M6 6 18 18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-row">
+          <div class="field">
+            <label for="lf-title">Item Name <span style="color:var(--brand)">*</span></label>
+            <input type="text" id="lf-title" placeholder="e.g., Black iPhone 14">
+          </div>
+          <div class="field">
+            <label for="lf-item-number">Item Number</label>
+            <input type="text" id="lf-item-number" placeholder="Auto-generated if blank">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label for="lf-category">Category</label>
+            <select id="lf-category">
+              <option value="">Select category</option>
+              <option>Wallet</option><option>Bag</option><option>Electronics</option>
+              <option>Personal Item</option><option>Documents</option><option>Accessories</option>
+              <option>Books</option><option>Clothing</option><option>Other</option>
+            </select>
+            <input type="text" id="lf-category-custom" placeholder="Type custom category" style="display:none;margin-top:8px">
+          </div>
+          <div class="field">
+            <label for="lf-status">Status</label>
+            <select id="lf-status">
+              <option value="Unclaimed">Unclaimed</option>
+              <option value="Claimed">Claimed</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label for="lf-date">Date Found</label>
+            <input type="date" id="lf-date">
+          </div>
+          <div class="field">
+            <label for="lf-location">Location Found</label>
+            <input type="text" id="lf-location" placeholder="e.g., Room 305, Canteen">
+          </div>
+        </div>
+        <div class="field">
+          <label for="lf-description">Description</label>
+          <textarea id="lf-description" placeholder="Color, brand, distinguishing features…"></textarea>
+        </div>
+        <div class="field">
+          <label>Photos <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+          <div class="upload-zone">
+             <input type="file" id="lf-images" multiple accept="image/*" aria-label="Upload images" title="Upload images">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(132,26,45,0.38)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 8px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <strong>Click or drag to upload photos</strong>
+            <p>PNG, JPG, WEBP — multiple allowed</p>
+          </div>
+          <div class="img-preview-strip" id="lf-img-preview"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-modal-close="lf-modal">Cancel</button>
+      <button class="btn btn-primary" id="lf-save-btn">
+        <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Save Item
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="/admin/admin-shell.js?v=20260423k"></script>
+<script>
+  let editId = null;
+  let currentView = 'grid';
+  let lostFoundState = [];
+  const baseCategories = ['Wallet','Bag','Electronics','Personal Item','Documents','Accessories','Books','Clothing','Other'];
+
+  const getData = () => lostFoundState;
+  const saveData = (arr) => { lostFoundState = Array.isArray(arr) ? arr : []; };
+
+  function normalizeCategory(value) {
+    const raw = String(value || '').trim();
+    return raw || 'Other';
+  }
+
+  function syncCategoryCustomUI() {
+    const categorySelect = document.getElementById('lf-category');
+    const customInput = document.getElementById('lf-category-custom');
+    const isOther = String(categorySelect.value || '').toLowerCase() === 'other';
+    customInput.style.display = isOther ? '' : 'none';
+    if (!isOther) customInput.value = '';
+  }
+
+  function selectedCategoryValue() {
+    const categorySelect = document.getElementById('lf-category');
+    const customInput = document.getElementById('lf-category-custom');
+    const selected = normalizeCategory(categorySelect.value);
+    if (selected.toLowerCase() !== 'other') return selected;
+    const custom = normalizeCategory(customInput.value);
+    return custom.toLowerCase() === 'other' ? 'Other' : custom;
+  }
+
+  function refreshCategoryFilters() {
+    const filterSelect = document.getElementById('lf-filter-cat');
+    const current = filterSelect.value;
+    const categories = [...new Set(getData().map(i => normalizeCategory(i.category)).filter(Boolean))];
+    const merged = [...new Set([...baseCategories, ...categories])];
+    filterSelect.innerHTML = '<option value=\"\">All Categories</option>' + merged.map(c => `<option>${c}</option>`).join('');
+    filterSelect.value = merged.includes(current) ? current : '';
+  }
+
+  async function loadFromDb() {
+    const response = await adminApi.get('/admin/lost-found');
+    saveData(Array.isArray(response.data) ? response.data : []);
+  }
+
+  async function migrateLegacyLocalData() {
+    const doneKey = 'osaMigratedLostFoundV1';
+    if (sessionStorage.getItem(doneKey) === '1') return;
+    let legacy = [];
+    try {
+      legacy = JSON.parse(localStorage.getItem('osaLostFound') || '[]');
+    } catch (_error) {
+      legacy = [];
+    }
+    if (!Array.isArray(legacy) || !legacy.length) {
+      sessionStorage.setItem(doneKey, '1');
+      return;
+    }
+    await adminApi.post('/admin/sync-local', { announcements: [], lostFound: legacy });
+    try { localStorage.removeItem('osaLostFound'); } catch (_error) {}
+    sessionStorage.setItem(doneKey, '1');
+  }
+
+  function renderAll() {
+    const search = document.getElementById('lf-search').value.toLowerCase().trim();
+    const stF    = document.getElementById('lf-filter-status').value;
+    const catF   = document.getElementById('lf-filter-cat').value;
+
+    let items = getData();
+    if (search) items = items.filter(i => (i.title+' '+i.description+' '+i.category+' '+i.itemNumber).toLowerCase().includes(search));
+    if (stF)    items = items.filter(i => i.status === stF);
+    if (catF)   items = items.filter(i => i.category === catF);
+
+    const all = getData();
+    refreshCategoryFilters();
+    document.getElementById('s-total').textContent    = all.length;
+    document.getElementById('s-unclaimed').textContent = all.filter(i => i.status === 'Unclaimed').length;
+    document.getElementById('s-claimed').textContent   = all.filter(i => i.status === 'Claimed').length;
+    document.getElementById('s-cats').textContent      = [...new Set(all.map(i => i.category).filter(Boolean))].length;
+    if (document.getElementById('lf-count')) document.getElementById('lf-count').textContent = `${items.length} items`;
+
+    renderGrid(items);
+    renderTable(items);
+  }
+
+  function renderGrid(items) {
+    const el = document.getElementById('lf-grid');
+    if (!items.length) {
+      el.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px 20px;color:var(--muted);font-size:0.86rem">No items found. <a href="#" onclick="openNewModal();return false" style="color:var(--brand);font-weight:700">Add one →</a></div>`;
+      return;
+    }
+    el.innerHTML = items.map(item => `
+      <div class="item-card ${item.status === 'Claimed' ? 'gold' : ''}">
+        <div class="item-thumb">
+          ${item.images && item.images[0]
+            ? `<img src="${item.images[0]}" alt="${item.title}" loading="lazy">`
+            : `<div class="no-img">📦</div>`
+          }
+          <span class="status-badge pill ${item.status === 'Claimed' ? 'pill-claimed' : 'pill-unclaimed'}">${item.status || 'Unclaimed'}</span>
+        </div>
+        <div class="item-body">
+          <strong>${item.title || 'Unnamed item'}</strong>
+          <span>${item.category || 'Other'}</span>
+          <span style="font-size:0.72rem;line-height:1.45;margin-top:3px">${item.description || 'No description provided.'}</span>
+          <span class="item-num">${item.itemNumber || ''}</span>
+        </div>
+        <div class="item-foot">
+          <span style="font-size:0.72rem;color:var(--muted);flex:1">${item.date || '—'}</span>
+          <button class="btn btn-ghost btn-sm" onclick="editItem('${item.id}')">Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteItem('${item.id}')">Del</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function renderTable(items) {
+    const tbody = document.getElementById('lf-tbody');
+    if (!tbody) return;
+    if (!items.length) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--muted);font-size:0.86rem">No items found.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = items.map(item => `
+      <tr>
+        <td><div style="font-weight:700;font-size:0.84rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.title || '—'}</div></td>
+        <td><span class="pill pill-active">${item.category || 'Other'}</span></td>
+        <td style="font-size:0.78rem;color:var(--muted);white-space:nowrap">${item.itemNumber || '—'}</td>
+        <td style="font-size:0.8rem;color:var(--muted);white-space:nowrap">${item.date || '—'}</td>
+        <td style="font-size:0.8rem;color:var(--muted);max-width:220px">${item.description || '—'}</td>
+        <td><span class="pill ${item.status === 'Claimed' ? 'pill-claimed' : 'pill-unclaimed'}">${item.status || 'Unclaimed'}</span></td>
+        <td>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn btn-ghost btn-sm" onclick="editItem('${item.id}')">Edit</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteItem('${item.id}')">Delete</button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function openNewModal() {
+    editId = null;
+    document.getElementById('lf-modal-title').textContent = 'Add Lost & Found Item';
+    document.getElementById('lf-title').value       = '';
+    document.getElementById('lf-item-number').value = '';
+    document.getElementById('lf-category').value    = '';
+    document.getElementById('lf-category-custom').value = '';
+    document.getElementById('lf-status').value      = 'Unclaimed';
+    document.getElementById('lf-date').value        = new Date().toISOString().split('T')[0];
+    document.getElementById('lf-location').value    = '';
+    document.getElementById('lf-description').value = '';
+    document.getElementById('lf-img-preview').innerHTML = '';
+    syncCategoryCustomUI();
+    openModal('lf-modal');
+  }
+
+  document.querySelector('[data-modal-open="lf-modal"]').addEventListener('click', openNewModal);
+
+  window.editItem = (id) => {
+    const item = getData().find(x => String(x.id) === String(id));
+    if (!item) return;
+    editId = id;
+    document.getElementById('lf-modal-title').textContent = 'Edit Item';
+    document.getElementById('lf-title').value       = item.title       || '';
+    document.getElementById('lf-item-number').value = item.itemNumber  || '';
+    const categorySelect = document.getElementById('lf-category');
+    const customInput = document.getElementById('lf-category-custom');
+    const itemCategory = normalizeCategory(item.category);
+    const isKnown = baseCategories.map(c => c.toLowerCase()).includes(itemCategory.toLowerCase());
+    categorySelect.value = isKnown ? itemCategory : 'Other';
+    customInput.value = isKnown ? '' : itemCategory;
+    syncCategoryCustomUI();
+    document.getElementById('lf-status').value      = item.status      || 'Unclaimed';
+    document.getElementById('lf-date').value        = item.date        || '';
+    document.getElementById('lf-location').value    = '';
+    document.getElementById('lf-description').value = item.description || '';
+    document.getElementById('lf-img-preview').innerHTML = '';
+    openModal('lf-modal');
+  };
+
+  document.getElementById('lf-save-btn').addEventListener('click', async () => {
+    const title = document.getElementById('lf-title').value.trim();
+    if (!title) { showToast('Item name is required.', 'error'); return; }
+
+    const imageInput  = document.getElementById('lf-images');
+    const storedFiles = imageInput._getFiles ? imageInput._getFiles() : [];
+    const itemNum     = document.getElementById('lf-item-number').value.trim()
+                        || 'LF-' + Date.now().toString().slice(-6);
+
+    const payload = {
+      title,
+      itemNumber:  itemNum,
+      category:    selectedCategoryValue(),
+      status:      document.getElementById('lf-status').value,
+      date:        document.getElementById('lf-date').value,
+      location:    document.getElementById('lf-location').value.trim(),
+      description: document.getElementById('lf-description').value.trim(),
+      images:      storedFiles.map(f => f.src),
+      updatedAt:   new Date().toISOString()
+    };
+
+    try {
+      const result = await adminApi.post('/admin/lost-found/upsert', { ...payload, id: editId || '' });
+      const saved = result && result.data ? result.data : null;
+      if (!saved) throw new Error('Invalid server response');
+      const arr = getData().slice();
+      const idx = arr.findIndex(i => String(i.id) === String(saved.id));
+      if (idx > -1) arr[idx] = saved;
+      else arr.unshift(saved);
+      saveData(arr);
+      closeModal('lf-modal');
+      renderAll();
+      showToast(editId ? 'Item updated!' : 'Item added!', 'success');
+    } catch (error) {
+      showToast(error.message || 'Could not save item.', 'error');
+    }
+  });
+
+  window.deleteItem = (id) => {
+    const item = getData().find(x => String(x.id) === String(id));
+    confirmDelete(`Delete "${item?.title}"? This cannot be undone.`, async () => {
+      try {
+        await adminApi.post('/admin/lost-found/delete', { id });
+        saveData(getData().filter(x => String(x.id) !== String(id)));
+        showToast('Item deleted.', 'warning');
+        renderAll();
+      } catch (error) {
+        showToast(error.message || 'Could not delete item.', 'error');
+      }
+    });
+  };
+
+  // View toggle
+  document.getElementById('view-grid').addEventListener('click', () => {
+    currentView = 'grid';
+    document.getElementById('lf-grid-view').style.display = '';
+    document.getElementById('lf-list-view').style.display = 'none';
+    document.getElementById('view-grid').classList.add('active');
+    document.getElementById('view-list').classList.remove('active');
+  });
+  document.getElementById('view-list').addEventListener('click', () => {
+    currentView = 'list';
+    document.getElementById('lf-grid-view').style.display = 'none';
+    document.getElementById('lf-list-view').style.display = '';
+    document.getElementById('view-list').classList.add('active');
+    document.getElementById('view-grid').classList.remove('active');
+    renderAll();
+  });
+
+  ['lf-search','lf-filter-status','lf-filter-cat'].forEach(id => {
+    document.getElementById(id).addEventListener('input',  renderAll);
+    document.getElementById(id).addEventListener('change', renderAll);
+  });
+  document.getElementById('lf-category').addEventListener('change', syncCategoryCustomUI);
+
+  initImageUpload('lf-images', 'lf-img-preview');
+  (async () => {
+    showToast('Loading Lost & Found from database…', 'info', 1000);
+    try {
+      await migrateLegacyLocalData();
+      await loadFromDb();
+      renderAll();
+    } catch (_error) {
+      showToast('Could not load Lost & Found from DB.', 'error');
+      renderAll();
+    }
+  })();
+</script>
+</body>
+</html>

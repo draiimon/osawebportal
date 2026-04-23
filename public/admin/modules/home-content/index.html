@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loading...</title>
+  <script>
+    (function () {
+      fetch("/admin/modules/home-content.html", { cache: "no-store" })
+        .then(function (response) {
+          if (!response.ok) throw new Error("Failed to load page.");
+          return response.text();
+        })
+        .then(function (html) {
+          document.open();
+          document.write(html);
+          document.close();
+        })
+        .catch(function () {
+          document.body.innerHTML = 'Unable to load page. <a href="/admin/modules/home-content.html">Open fallback</a>.';
+        });
+    })();
+  </script>
+</head>
+<body></body>
+</html>

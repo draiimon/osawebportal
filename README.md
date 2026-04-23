@@ -1,8 +1,6 @@
 # OSA Transaction Guide Portal
 
-Frontend-only static build for the Office of Student Affairs (EAC Cavite) transaction guide portal. No backend, no database.
-
-This repo now also includes an optional Node API scaffold for PostgreSQL integration in `server/`.
+OSA portal with a live Node/Express API, PostgreSQL integration, and an in-progress React migration workspace.
 
 ## Performance (static site)
 
@@ -14,11 +12,11 @@ This project is **plain HTML/CSS/JS** (not React/Next.js). That keeps payloads s
 - **Optional minification** — `npm run minify` emits `*.min.css` / `*.min.js` next to sources; use `*.min.js` loaders and bump links in HTML for production, or wire your host’s build step.
 - **CDN / caching** — Put `public/` behind any CDN (Cloudflare, Netlify, Vercel static, S3+CloudFront). Example Netlify cache hints live in `public/_headers`.
 
-A future **Next.js/React** migration would be a separate product decision (SSR, route-based code splitting, image pipeline), not a drop-in rename.
+A React + Tailwind + shadcn-compatible workspace now exists in `frontend/` and can run side-by-side with the existing portal UI.
 
 ## Run locally
 
-From the project root:
+### Legacy portal (current UI)
 
 ```powershell
 cd public
@@ -26,6 +24,26 @@ python -m http.server 8000
 ```
 
 Then open `http://localhost:8000/` in your browser.
+
+### API server
+
+```powershell
+cd "path\to\OSA Transaction Guide Portal"
+npm install
+npm run api:start
+```
+
+API base is `http://localhost:8787/api/v1`.
+
+### React migration workspace
+
+```powershell
+cd "path\to\OSA Transaction Guide Portal\frontend"
+npm install
+npm run dev
+```
+
+Runs on `http://localhost:5173`.
 
 ## Structure
 
@@ -38,10 +56,10 @@ public/
 │   ├── osa-ai.css                 # chat widget
 │   └── *.min.css                  # optional: `npm run minify`
 ├── assets/images/                 # EAC emblem, photos, manual cover
-├── announcements/index.html       # /announcements
-├── lost-and-found/index.html      # /lost-and-found
-├── appointments/index.html        # /appointments
-└── about-portal/index.html        # /about-portal
+├── announcements       # /announcements
+├── lost-and-found      # /lost-and-found
+├── appointments        # /appointments
+└── about-portal        # /about-portal
 ```
 
 ## Optional: minified assets (production)
@@ -56,9 +74,10 @@ This writes `public/css/*.min.css` and `public/assets/js/*.min.js`. Point your H
 
 ## Notes
 
-- Data for announcements and lost-and-found is read from `localStorage` keys `osaAnnouncements` and `osaLostFound` on each page. No server calls.
-- The chatbot/OTP flow is simulated client-side for the frontend demo.
-- Backend (Laravel/Node/DB/API) is intentionally not included yet.
+- Legacy pages still work and keep existing CSS/visual behavior.
+- New API auth endpoints: `/api/v1/auth/register`, `/api/v1/auth/login`, `/api/v1/auth/me`.
+- New realtime namespace: `/ws/chat` (Socket.io).
+- Prisma schema for thesis tables is in `prisma/schema.prisma` (PostgreSQL + pgvector).
 
 ## Docs
 

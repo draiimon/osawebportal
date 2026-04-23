@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <title>About Page · OSA Admin</title>
+  <link rel="icon" type="image/png" href="/assets/images/eac-emblem.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/admin/admin-shell.css?v=20260423j">
+  <style>
+    .about-tabs {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+      border-bottom: 2px solid var(--line);
+    }
+    .about-tab {
+      padding: 9px 16px;
+      min-height: 38px;
+      font: inherit;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--muted);
+      background: none;
+      border: none;
+      cursor: pointer;
+      position: relative;
+      transition: color 160ms;
+      white-space: nowrap;
+      border-radius: 2px 2px 0 0;
+    }
+    .about-tab:hover { color: var(--brand); background: rgba(132,26,45,0.04); }
+    .about-tab.active { color: var(--brand); background: rgba(132,26,45,0.06); }
+    .about-tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--brand);
+    }
+    .about-panel { display: none; }
+    .about-panel.active { display: block; }
+
+    .helper-note {
+      margin-bottom: 16px;
+      padding: 13px 15px;
+      background: rgba(132,26,45,0.05);
+      border: 1px solid rgba(132,26,45,0.1);
+      color: var(--ink-2);
+      font-size: 0.82rem;
+      line-height: 1.55;
+      border-radius: 2px;
+    }
+    .line-grid {
+      display: grid;
+      gap: 12px;
+    }
+    .line-card {
+      padding: 16px;
+      border: 1px solid var(--line);
+      background: rgba(255,252,248,0.95);
+      border-radius: 2px;
+      display: grid;
+      gap: 12px;
+    }
+    .line-card__head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 0;
+    }
+    .line-card__label {
+      font-size: 0.62rem;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--brand);
+    }
+    .line-card__title {
+      font-family: var(--font-body);
+      font-size: 0.74rem;
+      font-weight: 600;
+      line-height: 1.45;
+      color: var(--muted);
+    }
+    .row-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .list-entry {
+      padding: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.62);
+      border-radius: 2px;
+    }
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      background: rgba(255,252,248,0.95);
+      border-radius: 2px;
+      margin: 16px 0;
+    }
+    .toggle-copy strong {
+      display: block;
+      font-size: 0.88rem;
+      color: var(--ink);
+      margin-bottom: 3px;
+    }
+    .toggle-copy span {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .switch {
+      position: relative;
+      display: inline-flex;
+      width: 52px;
+      height: 30px;
+      flex-shrink: 0;
+    }
+    .switch input {
+      position: absolute;
+      opacity: 0;
+      inset: 0;
+      cursor: pointer;
+    }
+    .switch-track {
+      width: 100%;
+      height: 100%;
+      border-radius: 999px;
+      background: rgba(113, 91, 76, 0.22);
+      border: 1px solid rgba(113, 91, 76, 0.15);
+      transition: background 180ms ease, border-color 180ms ease;
+    }
+    .switch-track::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+      transition: transform 180ms ease;
+    }
+    .switch input:checked + .switch-track {
+      background: rgba(132,26,45,0.82);
+      border-color: rgba(132,26,45,0.88);
+    }
+    .switch input:checked + .switch-track::after {
+      transform: translateX(22px);
+    }
+    .advanced-block {
+      margin-top: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.52);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .advanced-block summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 14px 16px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--brand);
+      background: rgba(132,26,45,0.04);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .advanced-block summary::-webkit-details-marker { display: none; }
+    .advanced-block summary::after {
+      content: '+';
+      font-size: 1rem;
+      line-height: 1;
+    }
+    .advanced-block[open] summary::after {
+      content: '−';
+    }
+    .advanced-block__body {
+      padding: 16px;
+    }
+
+    @media (max-width: 600px) {
+      .about-tab { padding: 8px 12px; font-size: 0.76rem; }
+      .toggle-row {
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="admin-page" id="admin-page">
+
+  <nav class="admin-nav" id="admin-nav">
+    <button class="nav-hamburger" id="nav-hamburger" aria-label="Open navigation menu" aria-expanded="false">
+      <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+    <a class="admin-nav__brand" href="/admin/dashboard">
+      <img class="admin-nav__logo" src="/assets/images/eac-emblem.png" alt="EAC" onerror="this.style.display='none'">
+      <div class="admin-nav__title"><strong>EAC Cavite</strong><span>OSA Admin Panel</span></div>
+    </a>
+    <div class="admin-nav__sep"></div>
+    <div class="admin-nav__links">
+      <a class="nav-link" href="/admin/dashboard"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</a>
+      <a class="nav-link" href="/admin/modules/announcements"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Announcements<span class="nav-badge" data-nav-badge="ann" style="display:none">0</span></a>
+      <a class="nav-link" href="/admin/modules/lost-found"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Lost &amp; Found<span class="nav-badge" data-nav-badge="lf" style="display:none">0</span></a>
+      <a class="nav-link" href="/admin/modules/home-content"><svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home Content</a>
+      <a class="nav-link active" href="/admin/modules/about"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>About Page</a>
+      <a class="nav-link" href="/admin/modules/chat-support"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Chat Support<span class="nav-badge" data-nav-badge="chat" style="display:none">0</span></a>
+      <a class="nav-link" href="/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Live Portal</a>
+    </div>
+    <div class="admin-nav__right">
+      <div class="admin-avatar" data-admin-initials>AD</div>
+      <div class="admin-name-wrap"><strong data-admin-name>Administrator</strong><span data-admin-email></span></div>
+      <button class="btn-logout" data-logout type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Log Out</span></button>
+    </div>
+  </nav>
+
+  <div class="admin-util-bar" id="admin-util-bar">
+    <div class="util-left">
+      <span class="util-page-title">About Page</span>
+      <div class="util-breadcrumb"><span>Admin</span><span class="sep">›</span><span>Edit About Page</span></div>
+    </div>
+    <div class="util-right">
+      <div class="util-datetime">
+        <span class="util-datetime__date" id="dt-date"></span>
+        <span class="util-datetime__sep">·</span>
+        <span class="util-datetime__time" id="dt-time"></span>
+        <span class="util-datetime__ph">PST</span>
+      </div>
+      <a class="util-portal-link" href="/about-portal" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        View About
+      </a>
+    </div>
+  </div>
+
+  <div class="admin-drawer" id="admin-drawer" role="dialog" aria-modal="true" aria-label="Navigation">
+    <div class="drawer-backdrop" id="drawer-backdrop"></div>
+    <div class="drawer-panel">
+      <div class="drawer-header">
+        <div class="drawer-brand"><img src="/assets/images/eac-emblem.png" alt="EAC" onerror="this.style.display='none'"><div class="drawer-brand-text"><strong>EAC Cavite</strong><span>OSA Admin Panel</span></div></div>
+        <button class="drawer-close" id="drawer-close" aria-label="Close menu"><svg viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="M6 6 18 18"/></svg></button>
+      </div>
+      <nav class="drawer-nav">
+        <span class="drawer-section-label">Overview</span>
+        <a class="drawer-nav-item" href="/admin/dashboard"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</a>
+        <span class="drawer-section-label">Content</span>
+        <a class="drawer-nav-item" href="/admin/modules/announcements"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Announcements<span class="nav-badge" data-nav-badge="ann" style="display:none">0</span></a>
+        <a class="drawer-nav-item" href="/admin/modules/lost-found"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Lost &amp; Found<span class="nav-badge" data-nav-badge="lf" style="display:none">0</span></a>
+        <a class="drawer-nav-item" href="/admin/modules/home-content"><svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home Content</a>
+        <a class="drawer-nav-item active" href="/admin/modules/about"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>About Page</a>
+        <a class="drawer-nav-item" href="/admin/modules/chat-support"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Chat Support<span class="nav-badge" data-nav-badge="chat" style="display:none">0</span></a>
+        <span class="drawer-section-label">Portal</span>
+        <a class="drawer-nav-item" href="/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>View Live Portal</a>
+      </nav>
+      <div class="drawer-footer">
+        <div class="drawer-profile"><div class="admin-avatar" data-admin-initials>AD</div><div class="drawer-profile-text"><strong data-admin-name>Administrator</strong><span data-admin-email></span></div></div>
+        <button class="drawer-logout" data-logout type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Log Out</button>
+      </div>
+    </div>
+  </div>
+
+  <main class="admin-main">
+    <div class="page-header">
+      <div>
+        <div class="page-header__eyebrow">Content Management</div>
+        <h1>Edit About Page</h1>
+        <p>Manage the exact portal introduction, institutional text, OSA summary, contact details, and file links shown on the public About page.</p>
+      </div>
+      <div class="page-header__actions">
+        <button class="btn btn-primary" id="save-all-btn">
+          <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Save All Changes
+        </button>
+      </div>
+    </div>
+
+    <div class="about-tabs">
+      <button class="about-tab active" data-tab="portal">Portal Intro</button>
+      <button class="about-tab" data-tab="institution">Institutional Copy</button>
+      <button class="about-tab" data-tab="osa">OSA Summary</button>
+      <button class="about-tab" data-tab="contact">Contact &amp; Files</button>
+    </div>
+
+    <div class="about-panel active" id="panel-portal">
+      <div class="panel">
+        <div class="panel-head"><h2>Portal Introduction</h2></div>
+        <div class="panel-body">
+          <div class="helper-note">This controls the top block of the public About page. Use line breaks in the title if you want the same stacked heading look as the live page.</div>
+          <div class="form-grid">
+            <div class="field">
+              <label for="portal-title">Portal Title</label>
+              <textarea id="portal-title" placeholder="OSA Transaction&#10;Guide Portal"></textarea>
+            </div>
+            <div class="field">
+              <label for="portal-desc">Portal Description</label>
+              <textarea id="portal-desc" placeholder="Portal introduction shown under the heading"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="panel-foot">
+          <button class="btn btn-primary" id="save-portal-btn">
+            <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Save Portal Intro
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="about-panel" id="panel-institution">
+      <div class="panel">
+        <div class="panel-head"><h2>Institutional Copy</h2></div>
+        <div class="panel-body">
+          <div class="helper-note">These fields feed the Emilio Aguinaldo College section, including the official mission, vision, philosophy, and core values presentation.</div>
+          <div class="form-grid">
+            <div class="field">
+              <label for="school-name">Institution Name</label>
+              <input type="text" id="school-name" placeholder="Emilio Aguinaldo College">
+            </div>
+            <div class="field">
+              <label for="college-link">About EAC Link</label>
+              <input type="url" id="college-link" placeholder="https://www.eac.edu.ph/about-eac/">
+            </div>
+            <div class="field">
+              <label for="institutional-intro">Institutional Intro</label>
+              <textarea id="institutional-intro" placeholder="Mission, vision, and philosophy are stated as published on the College website."></textarea>
+            </div>
+            <div class="field">
+              <label for="eac-source-note">Source Note</label>
+              <textarea id="eac-source-note" placeholder="Source: Content above is taken from the official About EAC page..."></textarea>
+            </div>
+          </div>
+          <div class="field">
+            <label for="mission">Mission</label>
+            <textarea id="mission"></textarea>
+          </div>
+          <div class="field">
+            <label for="vision">Vision</label>
+            <textarea id="vision"></textarea>
+          </div>
+          <div class="field">
+            <label for="philosophy">Philosophy</label>
+            <textarea id="philosophy"></textarea>
+          </div>
+          <div class="field">
+            <label for="core-values-text">Core Values Text</label>
+            <textarea id="core-values-text" placeholder="As stated on the institutional site: Virtue, Excellence, and Service."></textarea>
+          </div>
+        </div>
+        <div class="panel-foot">
+          <button class="btn btn-primary" id="save-institution-btn">
+            <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Save Institutional Copy
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="about-panel" id="panel-osa">
+      <div class="panel">
+        <div class="panel-head"><h2>OSA Summary &amp; Lists</h2></div>
+        <div class="panel-body">
+          <div class="helper-note">This controls the Cavite-focused OSA section, including the duties and functions list plus the core services offered block.</div>
+          <div class="form-grid">
+            <div class="field">
+              <label for="osa-summary">OSA Summary</label>
+              <textarea id="osa-summary"></textarea>
+            </div>
+            <div class="field">
+              <label for="osa-services-desc">OSA Services Description</label>
+              <textarea id="osa-services-desc"></textarea>
+            </div>
+          </div>
+          <div class="line-grid">
+            <div class="line-card">
+              <div class="line-card__head">
+                <div>
+                  <div class="line-card__label">Duties and Functions</div>
+                  <div class="line-card__title">One item per line</div>
+                </div>
+              </div>
+              <div class="field">
+                <label for="duties-text">Duties List</label>
+                <textarea id="duties-text" placeholder="Acts as the link between EAC administration and the student body."></textarea>
+              </div>
+            </div>
+            <div class="line-card">
+              <div class="line-card__head">
+                <div>
+                  <div class="line-card__label">Core Services Offered</div>
+                  <div class="line-card__title">One item per line</div>
+                </div>
+              </div>
+              <div class="field">
+                <label for="services-text">Services List</label>
+                <textarea id="services-text" placeholder="Student Orientation"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="panel-foot">
+          <button class="btn btn-primary" id="save-osa-btn">
+            <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Save OSA Section
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="about-panel" id="panel-contact">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Contact Details, Files, and Reference</h2>
+          <button class="btn btn-primary btn-sm" id="add-file-btn">
+            <svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+            Add File Link
+          </button>
+        </div>
+        <div class="panel-body">
+          <div class="form-grid">
+            <div class="field">
+              <label for="contact-phone">Telephone</label>
+              <input type="text" id="contact-phone" placeholder="(046) 416-43-41 local 115">
+            </div>
+            <div class="field">
+              <label for="contact-email">Email</label>
+              <input type="email" id="contact-email" placeholder="studentaffairs.cvt@eac.edu.ph">
+            </div>
+            <div class="field">
+              <label for="contact-address">Address</label>
+              <textarea id="contact-address" placeholder="Gov. D. Mangubat Ave., Brgy. Burol Main..."></textarea>
+            </div>
+          </div>
+          <div class="line-grid" id="files-list"></div>
+          <div class="toggle-row">
+            <div class="toggle-copy">
+              <strong>Show reference block on public About page</strong>
+              <span>Turn this off if your About content is already final and you no longer want the bottom reference note visible.</span>
+            </div>
+            <label class="switch" for="reference-visible">
+              <input type="checkbox" id="reference-visible">
+              <span class="switch-track" aria-hidden="true"></span>
+            </label>
+          </div>
+          <details class="advanced-block">
+            <summary>Source &amp; Reference Content</summary>
+            <div class="advanced-block__body">
+              <div class="field">
+                <label for="reference-note">Reference Note</label>
+                <textarea id="reference-note"></textarea>
+              </div>
+              <div class="field">
+                <label for="reference-link">Reference Link</label>
+                <input type="url" id="reference-link" placeholder="https://www.eac.edu.ph/osa/">
+              </div>
+            </div>
+          </details>
+        </div>
+        <div class="panel-foot">
+          <button class="btn btn-primary" id="save-contact-btn">
+            <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Save Contact &amp; Files
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="/admin/admin-shell.js?v=20260423j"></script>
+<script>
+  const DB = 'osaAboutContent';
+  const DEFAULTS = {
+    portal: {
+      title: 'OSA Transaction\nGuide Portal',
+      desc: 'The OSA Transaction Guide Portal is designed to support students in navigating Office of Student Affairs services with clarity and ease. It provides structured guidance for common transactions, along with an integrated chat assistant that offers real-time support and answers to frequently asked questions. With a focus on accessibility and efficiency, the portal ensures that students can quickly understand requirements, follow proper procedures, and complete their requests with confidence. All features are aligned with institutional standards to maintain accuracy, reliability, and a secure user experience.'
+    },
+    school: {
+      name: 'Emilio Aguinaldo College',
+      abbr: 'EAC',
+      phone: '(046) 416-43-41 local 115',
+      email: 'studentaffairs.cvt@eac.edu.ph',
+      address: 'Gov. D. Mangubat Ave., Brgy. Burol Main, City of Dasmariñas, Cavite 4114, Philippines'
+    },
+    institutionalIntro: 'Mission, vision, and philosophy are stated as published on the College website.',
+    collegeLink: 'https://www.eac.edu.ph/about-eac/',
+    mission: 'Emilio Aguinaldo College provides a learner-centered, inquiry-based, and socially relevant academic community.',
+    vision: 'Emilio Aguinaldo College envisions itself as an internationally recognized private non-sectarian academic institution rooted in the Filipino nationalist tradition that consistently pursues the advancement and welfare of humanity.',
+    philosophy: 'Emilio Aguinaldo College is a private, non-sectarian, co-educational institution of learning that fosters equal and fair opportunities of education, the total development of our students, conscious of their national identity and their role in the global community.',
+    coreValuesText: 'As stated on the institutional site: Virtue, Excellence, and Service.',
+    eacSourceNote: 'Source: Content above is taken from the official About EAC page. For the full institutional narrative, history, and updates, click the link above.',
+    osaSummary: 'The Office of Student Affairs (OSA) is an academic-support unit responsible for programs and services that develop the non-academic aspects of student life. Each school year, OSA conducts need-based and student-focused activities designed to strengthen Emilian values and life skills in alignment with institutional goals.',
+    osaServicesDesc: 'OSA administers a wide range of services that support student welfare, discipline, guidance, and co-curricular development across the Cavite campus.',
+    duties: [
+      'Acts as the link between EAC administration and the student body.',
+      'Creates opportunities for active student participation in college affairs.',
+      'Oversees student councils and organizations with guidance on leadership and development.',
+      'Coordinates with recognized organizations to ensure alignment with school rules and policies.'
+    ],
+    services: [
+      'Student Orientation',
+      'Scholarship Applications and Inquiries',
+      'Accreditation of Student Councils and Student Organizations',
+      'Student Conduct and Discipline',
+      'Student Manual Development and Review',
+      'Issuance of Clearance and Good Moral Character Certificate',
+      'Lost and Found Item Documentation'
+    ],
+    files: [
+      { title: 'EAC-C Student Manual', link: 'https://drive.google.com/file/d/1Sk4s2GnO7SGkEaDnmXNBqjZP1a10Y9qR/view?usp=sharing' },
+      { title: 'EAC-C Social Media Policy', link: 'https://www.eac.edu.ph/wp-content/uploads/2022/03/EAC-SOCIAL-MEDIA-POLICY.pdf' },
+      { title: 'EAC-C Scholarship Application', link: 'https://www.eac.edu.ph/wp-content/uploads/2021/08/QF-OSA-010-07.15.2021-Rev.01-Scholarship-Application-OSA-FORMS-2021-2.doc' },
+      { title: 'EAC-C Incident Report', link: 'https://www.eac.edu.ph/wp-content/uploads/2021/08/QF-OSA-012-07.15.2021-Rev.01-Incident-Report.doc' },
+      { title: 'EAC-C Academic Leave Application', link: 'https://www.eac.edu.ph/wp-content/uploads/2021/08/QF-OSA-013-07.15.2021-Rev.0Academic-Leave-of-Absence-Application-Form.doc' }
+    ],
+    referenceVisible: true,
+    referenceNote: 'Reference: This section summarizes official OSA information with a Cavite-campus focus. For full details, policies, and updates, visit',
+    referenceLink: 'https://www.eac.edu.ph/osa/'
+  };
+
+  const getData = () => adminDB.get(DB) || {};
+  const mergeData = () => {
+    const saved = getData();
+    return {
+      portal: Object.assign({}, DEFAULTS.portal, saved.portal || {}),
+      school: Object.assign({}, DEFAULTS.school, saved.school || {}),
+      institutionalIntro: saved.institutionalIntro || DEFAULTS.institutionalIntro,
+      collegeLink: saved.collegeLink || DEFAULTS.collegeLink,
+      mission: saved.mission || DEFAULTS.mission,
+      vision: saved.vision || DEFAULTS.vision,
+      philosophy: saved.philosophy || DEFAULTS.philosophy,
+      coreValuesText: saved.coreValuesText || DEFAULTS.coreValuesText,
+      eacSourceNote: saved.eacSourceNote || DEFAULTS.eacSourceNote,
+      osaSummary: saved.osaSummary || DEFAULTS.osaSummary,
+      osaServicesDesc: saved.osaServicesDesc || DEFAULTS.osaServicesDesc,
+      duties: Array.isArray(saved.duties) && saved.duties.length ? saved.duties : DEFAULTS.duties,
+      services: Array.isArray(saved.services) && saved.services.length ? saved.services : DEFAULTS.services,
+      files: Array.isArray(saved.files) && saved.files.length ? saved.files : DEFAULTS.files,
+      referenceVisible: typeof saved.referenceVisible === 'boolean' ? saved.referenceVisible : DEFAULTS.referenceVisible,
+      referenceNote: saved.referenceNote || DEFAULTS.referenceNote,
+      referenceLink: saved.referenceLink || DEFAULTS.referenceLink
+    };
+  };
+  const persistData = (data) => {
+    adminDB.set(DB, data);
+    fetch('/api/admin/about/save.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    }).catch(() => {});
+  };
+
+  let filesState = [];
+
+  document.querySelectorAll('.about-tab').forEach((tab) => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.about-tab').forEach((item) => item.classList.remove('active'));
+      document.querySelectorAll('.about-panel').forEach((panel) => panel.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+    });
+  });
+
+  function renderFiles(files) {
+    filesState = files.map((file) => ({
+      title: file.title || '',
+      link: file.link || ''
+    }));
+    document.getElementById('files-list').innerHTML = filesState.map((file, index) => `
+      <div class="list-entry" data-file-index="${index}">
+        <div class="line-card__head">
+          <div>
+            <div class="line-card__label">File Link ${index + 1}</div>
+            <div class="line-card__title">${escapeHtml(file.title || 'Reference File')}</div>
+          </div>
+          <div class="row-actions">
+            <button class="btn btn-danger btn-sm" type="button" onclick="removeFileEntry(${index})">Delete</button>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label>Label</label>
+            <input type="text" class="file-title" value="${escapeHtml(file.title || '')}">
+          </div>
+          <div class="field">
+            <label>Link</label>
+            <input type="url" class="file-link" value="${escapeHtml(file.link || '')}">
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function loadAll() {
+    const data = mergeData();
+    document.getElementById('portal-title').value = data.portal.title || '';
+    document.getElementById('portal-desc').value = data.portal.desc || '';
+    document.getElementById('school-name').value = data.school.name || '';
+    document.getElementById('college-link').value = data.collegeLink || '';
+    document.getElementById('institutional-intro').value = data.institutionalIntro || '';
+    document.getElementById('eac-source-note').value = data.eacSourceNote || '';
+    document.getElementById('mission').value = data.mission || '';
+    document.getElementById('vision').value = data.vision || '';
+    document.getElementById('philosophy').value = data.philosophy || '';
+    document.getElementById('core-values-text').value = data.coreValuesText || '';
+    document.getElementById('osa-summary').value = data.osaSummary || '';
+    document.getElementById('osa-services-desc').value = data.osaServicesDesc || '';
+    document.getElementById('duties-text').value = data.duties.join('\n');
+    document.getElementById('services-text').value = data.services.join('\n');
+    document.getElementById('contact-phone').value = data.school.phone || '';
+    document.getElementById('contact-email').value = data.school.email || '';
+    document.getElementById('contact-address').value = data.school.address || '';
+    document.getElementById('reference-visible').checked = data.referenceVisible !== false;
+    document.getElementById('reference-note').value = data.referenceNote || '';
+    document.getElementById('reference-link').value = data.referenceLink || '';
+    renderFiles(data.files);
+  }
+
+  function parseLines(value) {
+    return String(value || '')
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean);
+  }
+
+  function collectFiles() {
+    return Array.from(document.querySelectorAll('[data-file-index]')).map((entry) => ({
+      title: entry.querySelector('.file-title').value.trim(),
+      link: entry.querySelector('.file-link').value.trim()
+    })).filter((item) => item.title && /^https?:\/\//i.test(item.link));
+  }
+
+  window.removeFileEntry = (index) => {
+    filesState.splice(index, 1);
+    renderFiles(filesState);
+  };
+
+  function buildPayload() {
+    return {
+      portal: {
+        title: document.getElementById('portal-title').value.trim(),
+        desc: document.getElementById('portal-desc').value.trim()
+      },
+      school: {
+        name: document.getElementById('school-name').value.trim(),
+        abbr: 'EAC',
+        phone: document.getElementById('contact-phone').value.trim(),
+        email: document.getElementById('contact-email').value.trim(),
+        address: document.getElementById('contact-address').value.trim()
+      },
+      institutionalIntro: document.getElementById('institutional-intro').value.trim(),
+      collegeLink: document.getElementById('college-link').value.trim(),
+      mission: document.getElementById('mission').value.trim(),
+      vision: document.getElementById('vision').value.trim(),
+      philosophy: document.getElementById('philosophy').value.trim(),
+      coreValuesText: document.getElementById('core-values-text').value.trim(),
+      eacSourceNote: document.getElementById('eac-source-note').value.trim(),
+      osaSummary: document.getElementById('osa-summary').value.trim(),
+      osaServicesDesc: document.getElementById('osa-services-desc').value.trim(),
+      duties: parseLines(document.getElementById('duties-text').value),
+      services: parseLines(document.getElementById('services-text').value),
+      files: collectFiles(),
+      referenceVisible: document.getElementById('reference-visible').checked,
+      referenceNote: document.getElementById('reference-note').value.trim(),
+      referenceLink: document.getElementById('reference-link').value.trim()
+    };
+  }
+
+  function saveSection(label) {
+    persistData(buildPayload());
+    showToast(label + ' saved!', 'success');
+  }
+
+  document.getElementById('save-portal-btn').addEventListener('click', () => saveSection('Portal intro'));
+  document.getElementById('save-institution-btn').addEventListener('click', () => saveSection('Institutional content'));
+  document.getElementById('save-osa-btn').addEventListener('click', () => saveSection('OSA summary'));
+  document.getElementById('save-contact-btn').addEventListener('click', () => saveSection('Contact and files'));
+  document.getElementById('add-file-btn').addEventListener('click', () => {
+    filesState.push({ title: 'New File Link', link: '' });
+    renderFiles(filesState);
+  });
+  document.getElementById('save-all-btn').addEventListener('click', () => {
+    persistData(buildPayload());
+    showToast('About page content saved!', 'success');
+  });
+
+  function escapeHtml(value) {
+    return String(value || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  loadAll();
+</script>
+</body>
+</html>

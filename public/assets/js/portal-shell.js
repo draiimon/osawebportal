@@ -395,8 +395,13 @@
 
     function initOfflineCache() {
         if (!('serviceWorker' in navigator)) return;
-        if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') return;
-        navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function () {
+        // Explicitly disable SW-driven offline cache in local/dev to avoid stale
+        // pages appearing "alive" even when a port is already stopped.
+        navigator.serviceWorker.getRegistrations().then(function (registrations) {
+            registrations.forEach(function (registration) {
+                registration.unregister();
+            });
+        }).catch(function () {
             // Non-fatal: app still works without offline cache.
         });
     }
