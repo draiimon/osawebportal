@@ -31,9 +31,9 @@
 
 /* ── Panel shell ─────────────────────────────────────────── */
 [data-osa-chat-root] .osa-launcher-panel--chat-ui {
-    border: 1px solid rgba(255, 255, 255, 0.65) !important;
+    border: none !important;
     box-shadow:
-        0 28px 60px rgba(28, 12, 18, 0.24),
+        0 28px 60px rgba(28, 12, 18, 0.22),
         0 6px 18px rgba(132, 26, 45, 0.10) !important;
     background: linear-gradient(160deg,
         #fff7f0 0%,
@@ -48,7 +48,7 @@
 
 [data-osa-chat-root] .osa-launcher-panel--chat-ui::before {
     border-radius: 0 !important;
-    opacity: 0.16 !important;
+    opacity: 0.12 !important;
     filter: blur(10px) saturate(1.05) !important;
 }
 
