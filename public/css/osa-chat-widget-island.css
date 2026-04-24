@@ -273,7 +273,7 @@
             rgba(132, 26, 45, 0.05) 100%) !important;
     background-blend-mode: normal, normal;
     position: relative;
-    padding: 32px 14px 12px !important;
+    padding: 32px 14px 28px !important;
     overflow-y: auto !important;
     overflow-x: hidden !important;
     -webkit-overflow-scrolling: touch !important;
