@@ -2078,10 +2078,40 @@ function registerChatRoutes(app, apiPrefix) {
         }
         const { email, student_name } = loaded.session;
 
+        // Server-authoritative item validation. The widget previously gated this
+        // on a localStorage cache populated by the L&F page, which broke claims
+        // for students who deep-linked into the chat without first visiting the
+        // L&F page. The DB is the single source of truth.
+        const itemLookup = await db.query(
+          `SELECT item_number, title, status, is_active
+             FROM lost_found_items
+            WHERE upper(item_number) = upper($1)
+            LIMIT 1`,
+          [itemNumber]
+        );
+        if (!itemLookup.rows.length || itemLookup.rows[0].is_active === false) {
+          return res.status(404).json({
+            success: false,
+            code: "LF_ITEM_NOT_FOUND",
+            message: `Item ${itemNumber} was not found in Lost & Found. Double-check the item number on the Lost & Found page (format: LF-####).`,
+          });
+        }
+        const dbItem = itemLookup.rows[0];
+        if (String(dbItem.status || "").toLowerCase() === "claimed") {
+          return res.status(409).json({
+            success: false,
+            code: "LF_ITEM_ALREADY_CLAIMED",
+            message: `Item ${itemNumber} (${dbItem.title || "untitled"}) is already marked claimed.`,
+          });
+        }
+
+        // Trust the DB title over what the client passed.
+        const resolvedTitle = String(dbItem.title || itemTitle || "").trim().slice(0, 200);
+
         const existing = await findOpenClaimTicket(sessionId, itemNumber);
         let caseId = existing;
         const concern =
-          `Lost & Found claim — Item ${itemNumber}${itemTitle ? ` (${itemTitle})` : ""}. ` +
+          `Lost & Found claim — Item ${itemNumber}${resolvedTitle ? ` (${resolvedTitle})` : ""}. ` +
           `Student requests an OSA visit to claim this item.`;
 
         if (!caseId) {

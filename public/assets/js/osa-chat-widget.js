@@ -1724,25 +1724,18 @@
             }
 
             if (itemNumber && message.toLowerCase().indexOf('claim') >= 0) {
-                var item = getLostFoundItem(itemNumber);
-                if (!item) {
-                    appendBubble('assistant', '<p style="margin:0">Item <strong>' + itemNumber + '</strong> was not found. Check the Lost &amp; Found page item number.</p>');
-                    sendBtn.disabled = false;
-                    input.focus();
-                    return;
-                }
-                if ((item.status || '').toLowerCase() === 'claimed') {
-                    appendBubble('assistant', '<p style="margin:0">Item <strong>' + itemNumber + '</strong> is already marked claimed.</p>');
-                    sendBtn.disabled = false;
-                    input.focus();
-                    return;
-                }
+                // Server is the single source of truth for L&F item validity.
+                // The cached localStorage view (LF_KEY) is only used to enrich the
+                // outgoing payload with a title hint when available, so the OSA
+                // ticket has a friendlier label even before the server resolves
+                // the canonical title from the DB.
+                var cachedItem = getLostFoundItem(itemNumber) || {};
                 var typingClaim = showTyping('claim-submit');
                 try {
                     var claimRes = await postApi('/chat/claim', {
                         session_id: chatSessionId,
                         item_number: itemNumber,
-                        item_title: item.title || ''
+                        item_title: cachedItem.title || ''
                     });
                     var claimText = String((claimRes && claimRes.assistant_message) || '').trim();
                     if (claimText) {
@@ -1757,6 +1750,10 @@
                         expireSecureSessionLocal();
                         appendBubble('assistant', '<p style="margin:0">Your secure chat expired after 5 minutes. Please verify a new OTP code, then submit your claim again.</p>');
                         await injectOtp();
+                    } else if (err && (err.code === 'LF_ITEM_NOT_FOUND' || err.status === 404)) {
+                        appendBubble('assistant', '<p style="margin:0">' + escapeHtml(err.message || ('Item ' + itemNumber + ' was not found in Lost & Found.')) + '</p>');
+                    } else if (err && (err.code === 'LF_ITEM_ALREADY_CLAIMED' || err.status === 409)) {
+                        appendBubble('assistant', '<p style="margin:0">' + escapeHtml(err.message || ('Item ' + itemNumber + ' is already marked claimed.')) + '</p>');
                     } else {
                         appendBubble('assistant', '<p style="margin:0">Could not submit claim: ' + escapeHtml(err.message || 'Unknown error') + '</p>');
                     }
