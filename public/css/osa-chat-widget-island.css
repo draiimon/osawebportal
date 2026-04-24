@@ -525,7 +525,7 @@
     margin: 0 !important;
     flex: 0 0 auto !important;
     border: none !important;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, rgba(132, 26, 45, 0.95) 100%) !important;
+    background: linear-gradient(180deg, rgba(255, 235, 170, 0.22) 0%, rgba(132, 26, 45, 0.95) 100%) !important;
     backdrop-filter: blur(8px) saturate(1.05) !important;
     -webkit-backdrop-filter: blur(8px) saturate(1.05) !important;
     color: #fff !important;
