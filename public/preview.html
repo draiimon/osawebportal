@@ -2364,27 +2364,6 @@
             color: #000;
         }
 
-        .announcement-sneak-list {
-            margin: 10px 0 0;
-            padding-left: 16px;
-            display: grid;
-            gap: 6px;
-            font-size: 0.8rem;
-            color: #5b4d44;
-            line-height: 1.45;
-        }
-
-        .announcement-sneak-list li {
-            margin: 0;
-        }
-
-        .announcement-sneak-empty {
-            margin-top: 10px;
-            font-size: 0.78rem;
-            color: #74665a;
-            font-style: italic;
-        }
-
         /* 10. Hero subtitle rotator: minimal, clean, fast */
         .hero-subtitle-rotator {
             margin: 0;
@@ -3450,11 +3429,6 @@
                         <article class="mini-card">
                             <h3>Announcements / News</h3>
                             <p>Displays official announcements, advisories, and updates with accurate timestamps.</p>
-                            <ul class="announcement-sneak-list" id="announcement-sneak-list">
-                                <li>Preparing latest campus updates...</li>
-                            </ul>
-                            <p class="announcement-sneak-empty" id="announcement-sneak-empty">No posted announcements
-                                yet.</p>
                             <p style="margin-top:0.65rem"><a class="btn btn-neutral" href="/announcements">Open page</a>
                             </p>
                         </article>
@@ -3541,8 +3515,6 @@
             const navLinks = document.querySelectorAll("[data-nav]");
             const navLinksMobile = document.querySelectorAll("[data-nav-mobile]");
             const servicesCarousel = document.getElementById("services-carousel");
-            const announcementSneakList = document.getElementById("announcement-sneak-list");
-            const announcementSneakEmpty = document.getElementById("announcement-sneak-empty");
             const homeHeroTitle = document.getElementById("home-hero-title");
             const heroSubtitleRotator = document.getElementById("hero-subtitle-rotator");
             const heroGuideRotator = document.getElementById("hero-guide-rotator");
@@ -3765,32 +3737,6 @@
                 }
             }
 
-            const renderAnnouncementSneaks = () => {
-                if (!announcementSneakList || !announcementSneakEmpty) return;
-                const fallback = [
-                    "Watch for new advisories from OSA admin.",
-                    "Schedule updates will appear here once posted."
-                ];
-                try {
-                    const raw = localStorage.getItem("osaAnnouncements");
-                    const parsed = JSON.parse(raw || "[]");
-                    if (Array.isArray(parsed) && parsed.length > 0) {
-                        const top = parsed.slice(0, 3).map((item) => {
-                            const date = item && item.date ? item.date : "Recent";
-                            const title = item && item.title ? item.title : "Announcement";
-                            return `${date} - ${title}`;
-                        });
-                        announcementSneakList.innerHTML = top.map((text) => `<li>${text}</li>`).join("");
-                        announcementSneakEmpty.style.display = "none";
-                        return;
-                    }
-                } catch (e) {
-                    // Keep fallback content if localStorage is unavailable/invalid.
-                }
-                announcementSneakList.innerHTML = fallback.map((text) => `<li>${text}</li>`).join("");
-                announcementSneakEmpty.style.display = "";
-            };
-            renderAnnouncementSneaks();
 
             function hrefToHash(href) {
                 if (!href) return "";
