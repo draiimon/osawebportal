@@ -1832,18 +1832,21 @@
 .osa-launcher-panel--chat-ui .osa-launcher-head__close {
     color: rgba(255,255,255,0.82) !important;
     margin-right: -4px;
-    border-radius: 50% !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
     width: 32px;
     height: 32px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: background 140ms ease, color 140ms ease;
+    transition: color 140ms ease, transform 140ms ease;
 }
 
 .osa-launcher-panel--chat-ui .osa-launcher-head__close:hover {
     color: #fff !important;
-    background: rgba(255,255,255,0.14) !important;
+    background: transparent !important;
 }
 
 /* Scroll-to-bottom pill */

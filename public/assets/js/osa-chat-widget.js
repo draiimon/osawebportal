@@ -52,6 +52,9 @@
             '    </div>' +
             '    <div class="osa-ai-header__trailing">' +
             '      <span id="osa-chat-mode-badge" class="osa-ai-mode osa-ai-mode--ai">OSA</span>' +
+            '      <button type="button" class="osa-launcher-head__close" id="osa-chat-close" aria-label="Close">' +
+            '        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+            '      </button>' +
             '    </div>' +
             '  </header>' +
             '  <button type="button" class="osa-ai-scroll-bottom" id="osa-chat-scroll-bottom" aria-label="Scroll to latest" hidden>' +
