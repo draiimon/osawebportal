@@ -1038,6 +1038,67 @@
       line-height: 1.4;
     }
 
+    /* ── Toast notifications (non-blocking, themed) ─────────────── */
+    .osa-toast-stack {
+      position: fixed;
+      left: 50%;
+      bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+      transform: translateX(-50%);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      pointer-events: none;
+      max-width: calc(100vw - 24px);
+    }
+    .osa-toast {
+      pointer-events: auto;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px 16px;
+      border-radius: 14px;
+      background: #1f2937;
+      color: #fff;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1.35;
+      letter-spacing: -0.005em;
+      box-shadow: 0 12px 32px rgba(15,23,42,0.28), 0 2px 6px rgba(15,23,42,0.18);
+      min-width: 240px;
+      max-width: 420px;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.18s ease, transform 0.18s ease;
+    }
+    .osa-toast.show { opacity: 1; transform: translateY(0); }
+    .osa-toast__icon {
+      flex-shrink: 0;
+      width: 22px; height: 22px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .osa-toast__icon svg { width: 20px; height: 20px; }
+    .osa-toast__body { flex: 1; min-width: 0; }
+    .osa-toast--success { background: #064e3b; }
+    .osa-toast--success .osa-toast__icon { color: #6ee7b7; }
+    .osa-toast--danger  { background: #7f1d1d; }
+    .osa-toast--danger  .osa-toast__icon { color: #fecaca; }
+    .osa-toast--info    { background: var(--brand); }
+    .osa-toast--info    .osa-toast__icon { color: var(--gold); }
+    @media (max-width: 560px) {
+      .osa-toast {
+        font-size: 13.5px;
+        padding: 11px 14px;
+        min-width: 0;
+        width: calc(100vw - 32px);
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .osa-toast { transition: none; }
+    }
+
     /* Confirm-button color variants */
     .btn-action-confirm--success {
       background: #0f766e !important;
@@ -1371,6 +1432,11 @@
     loadMessagesDebounceTimer: null,
     cosmeticTimer: null,
     safetyNetTimer: null,
+    // Hysteresis for the green "student online" dot. The /active endpoint
+    // can briefly return false between SSE heartbeats, which made the dot
+    // flicker on every 5s poll. We require 2 consecutive "inactive" reads
+    // before hiding it, and any "active" read shows it immediately.
+    activeIndicatorMisses: 0,
   };
   var adminTicketStream = null;
   var adminStreamReconnectTimer = null;
@@ -1889,6 +1955,7 @@
   function selectTicket(t) {
     state.currentCaseId = t.case_id;
     state.currentSessionId = t.session_id;
+    state.activeIndicatorMisses = 0;
     state.currentConcern = t.concern || '';
     state.currentTicketStatus = t.status;
     state.currentTicketType = t.ticket_type || 'general';
@@ -2141,10 +2208,23 @@
 
   function refreshActiveIndicator() {
     if (!state.currentSessionId || !convoActive) return;
-    fetch(API + '/chat/session/' + encodeURIComponent(state.currentSessionId) + '/active?_ts=' + Date.now(), { cache: 'no-store' })
+    var sessionAtFetch = String(state.currentSessionId);
+    fetch(API + '/chat/session/' + encodeURIComponent(sessionAtFetch) + '/active?_ts=' + Date.now(), { cache: 'no-store' })
       .then(function (r) { return r.json(); })
       .then(function (s) {
-        convoActive.classList.toggle('hidden', !s.active);
+        // Drop late responses for a session the staff has already left.
+        if (String(state.currentSessionId || '') !== sessionAtFetch) return;
+        if (s && s.active) {
+          state.activeIndicatorMisses = 0;
+          convoActive.classList.remove('hidden');
+        } else {
+          // Require 2 consecutive misses before hiding to avoid the dot
+          // flickering between heartbeats on a 5s poll cadence.
+          state.activeIndicatorMisses = (state.activeIndicatorMisses || 0) + 1;
+          if (state.activeIndicatorMisses >= 2) {
+            convoActive.classList.add('hidden');
+          }
+        }
       })
       .catch(function () {});
   }
@@ -2302,7 +2382,7 @@
             state.busy = false;
             if (!fallbackData || !fallbackData.success) {
               if (btnEndSession) btnEndSession.disabled = false;
-              alert('Could not end session: ' + ((fallbackData && fallbackData.message) || msg || 'Unknown error'));
+              showToast('Could not end session: ' + ((fallbackData && fallbackData.message) || msg || 'Unknown error'), { variant: 'danger', duration: 4500 });
               return;
             }
             markClosedUi();
@@ -2318,7 +2398,7 @@
             state.busy = false;
             if (!fallbackData || !fallbackData.success) {
               if (btnEndSession) btnEndSession.disabled = false;
-              alert('Network error while ending session.');
+              showToast('Network error while ending session.', { variant: 'danger', duration: 4500 });
               return;
             }
             markClosedUi();
@@ -2326,7 +2406,7 @@
           .catch(function () {
             state.busy = false;
             if (btnEndSession) btnEndSession.disabled = false;
-            alert('Network error while ending session.');
+            showToast('Network error while ending session.', { variant: 'danger', duration: 4500 });
           });
       });
   }
@@ -2357,7 +2437,7 @@
         btnSend.disabled = true;
 
         if (!data.success) {
-          alert('Failed to send: ' + (data.message || 'Unknown error'));
+          showToast('Failed to send: ' + (data.message || 'Unknown error'), { variant: 'danger', duration: 4500 });
           return;
         }
 
@@ -2395,7 +2475,7 @@
         state.busy = false;
         staffInput.disabled = false;
         btnSend.disabled = false;
-        alert('Network error. Please try again.');
+        showToast('Network error. Please try again.', { variant: 'danger', duration: 4500 });
       });
   }
 
@@ -2422,7 +2502,7 @@
       if (!state.currentCaseId || state.busy) return;
       if (state.deleteInFlightCaseId && state.deleteInFlightCaseId === state.currentCaseId) return;
       if (state.currentTicketStatus !== 'resolved') {
-        alert('Only resolved tickets can be deleted.');
+        showToast('Only resolved tickets can be deleted.', { variant: 'danger', duration: 4500 });
         return;
       }
       openActionModal({
@@ -2446,7 +2526,7 @@
           state.deleteInFlightCaseId = '';
           btnDeleteTicket.disabled = false;
           if (!data.success) {
-            alert('Could not delete ticket: ' + (data.message || 'Unknown error'));
+            showToast('Could not delete ticket: ' + (data.message || 'Unknown error'), { variant: 'danger', duration: 4500 });
             return;
           }
           clearActiveConversationUi('ticket-deleted');
@@ -2456,7 +2536,7 @@
           state.busy = false;
           state.deleteInFlightCaseId = '';
           btnDeleteTicket.disabled = false;
-          alert('Network error while deleting ticket.');
+          showToast('Network error while deleting ticket.', { variant: 'danger', duration: 4500 });
         });
       });
     });
@@ -2493,7 +2573,7 @@
           state.busy = false;
           if (!data.success) {
             btnApproveAppt.disabled = false;
-            alert('Could not approve appointment: ' + (data.message || 'Unknown error'));
+            showToast('Could not approve appointment: ' + (data.message || 'Unknown error'), { variant: 'danger', duration: 4500 });
             return;
           }
           state.currentAppointmentStatus = 'approved';
@@ -2504,7 +2584,7 @@
         .catch(function () {
           state.busy = false;
           btnApproveAppt.disabled = false;
-          alert('Network error while approving appointment.');
+          showToast('Network error while approving appointment.', { variant: 'danger', duration: 4500 });
         });
       });
     });
@@ -2514,7 +2594,7 @@
     if (!state.currentCaseId || state.busy) return;
     var when = (lfApptWhen && lfApptWhen.value || '').trim();
     if (!when) {
-      alert('Choose a visit date and time.');
+      showToast('Choose a visit date and time.', { variant: 'danger', duration: 4500 });
       return;
     }
     state.busy = true;
@@ -2534,7 +2614,7 @@
         state.busy = false;
         if (!data.success) {
           btnLfSchedule.disabled = state.currentTicketStatus === 'resolved';
-          alert('Could not schedule: ' + (data.message || 'Unknown error'));
+          showToast('Could not schedule: ' + (data.message || 'Unknown error'), { variant: 'danger', duration: 4500 });
           return;
         }
         loadMessages(state.currentSessionId, state.currentConcern);
@@ -2551,7 +2631,7 @@
       .catch(function () {
         state.busy = false;
         btnLfSchedule.disabled = false;
-        alert('Network error. Please try again.');
+        showToast('Network error. Please try again.', { variant: 'danger', duration: 4500 });
       });
   });
 
@@ -2687,7 +2767,7 @@
 
   btnSubmitRes.addEventListener('click', function () {
     var reply = resolveReply.value.trim();
-    if (!reply) { alert('Please enter a staff reply.'); return; }
+    if (!reply) { showToast('Please enter a staff reply.', { variant: 'danger' }); return; }
 
     btnSubmitRes.disabled = true;
     btnSubmitRes.textContent = 'Resolving…';
@@ -2708,7 +2788,12 @@
       .then(function (r) { return r.json(); })
       .then(function (data) {
         resolveModal.classList.add('hidden');
-        if (!data.success) { alert('Error: ' + data.message); return; }
+        if (!data.success) {
+          btnSubmitRes.disabled = false;
+          btnSubmitRes.textContent = 'Resolve & Notify Student';
+          showToast('Could not resolve: ' + (data.message || 'Unknown error'), { variant: 'danger', duration: 4500 });
+          return;
+        }
 
         btnResolve.disabled = true;
         if (btnApproveAppt) btnApproveAppt.disabled = true;
@@ -2724,14 +2809,19 @@
           if (badge) { badge.className = 'ticket-status-badge resolved'; badge.textContent = 'resolved'; }
         }
 
-        alert('Ticket resolved.' + (data.promoted_to_faq ? ' Answer added to FAQ.' : ''));
+        showToast(
+          data.promoted_to_faq
+            ? 'Ticket resolved. Answer added to FAQ.'
+            : 'Ticket resolved.',
+          { variant: 'success' }
+        );
         loadTickets({ quiet: true });
         clearActiveConversationUi('ticket-resolved');
       })
       .catch(function () {
         btnSubmitRes.disabled = false;
         btnSubmitRes.textContent = 'Resolve & Notify Student';
-        alert('Network error. Please try again.');
+        showToast('Network error. Please try again.', { variant: 'danger', duration: 4500 });
       });
   });
 
@@ -2796,6 +2886,47 @@
       }
     }, 400);
   })();
+
+  /* ── Toast helper (non-blocking notifications) ──────────────────── */
+  var toastStack = null;
+  function ensureToastStack() {
+    if (toastStack && document.body.contains(toastStack)) return toastStack;
+    toastStack = document.createElement('div');
+    toastStack.className = 'osa-toast-stack';
+    toastStack.setAttribute('role', 'status');
+    toastStack.setAttribute('aria-live', 'polite');
+    document.body.appendChild(toastStack);
+    return toastStack;
+  }
+  function showToast(message, opts) {
+    opts = opts || {};
+    var variant = String(opts.variant || 'info').toLowerCase();
+    var duration = typeof opts.duration === 'number' ? opts.duration : 3200;
+    var stack = ensureToastStack();
+    var el = document.createElement('div');
+    el.className = 'osa-toast osa-toast--' + variant;
+    var iconHtml = '';
+    if (variant === 'success') {
+      iconHtml = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
+    } else if (variant === 'danger') {
+      iconHtml = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+    } else {
+      iconHtml = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
+    }
+    el.innerHTML = '<span class="osa-toast__icon" aria-hidden="true">' + iconHtml + '</span>' +
+                   '<span class="osa-toast__body"></span>';
+    el.querySelector('.osa-toast__body').textContent = String(message || '');
+    stack.appendChild(el);
+    // Force layout, then animate in.
+    void el.offsetHeight;
+    el.classList.add('show');
+    setTimeout(function () {
+      el.classList.remove('show');
+      setTimeout(function () {
+        if (el.parentNode) el.parentNode.removeChild(el);
+      }, 220);
+    }, Math.max(1200, duration));
+  }
 
   /* ── Generic action modal helper ──────────────────────────────────
      Promise-based confirmation/note prompt, replaces window.confirm()
