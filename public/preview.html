@@ -2638,7 +2638,30 @@
             position: relative;
             overflow: hidden;
             isolation: isolate;
-            background: linear-gradient(180deg, rgba(255, 252, 248, 0.96), rgba(251, 246, 238, 0.94));
+            background: linear-gradient(180deg, rgba(245, 232, 212, 0.62), rgba(238, 222, 196, 0.58));
+            box-shadow: inset 0 1px 0 rgba(132, 26, 45, 0.10), inset 0 -1px 0 rgba(132, 26, 45, 0.10);
+        }
+
+        .home-extra-surface::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 80px;
+            background: linear-gradient(180deg, transparent, rgba(132, 26, 45, 0.05));
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        #module-pages.section,
+        #services.section,
+        #manual.section {
+            border-top: 1px solid rgba(132, 26, 45, 0.16);
+        }
+
+        .home-extra-surface.section {
+            border-top: 1px solid rgba(132, 26, 45, 0.20);
         }
 
         .home-extra-surface .section-head,
