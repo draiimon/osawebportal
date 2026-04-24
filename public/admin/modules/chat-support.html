@@ -1335,6 +1335,13 @@
     state.restoreProbeInFlight = false;
     clearLastCaseId();
     convoThread.innerHTML = '';
+    // Reset differential-render bookkeeping so the next selectTicket
+    // (even of the same session) triggers a full rebuild instead of
+    // being skipped as "unchanged" while the DOM is empty.
+    state.renderedMessagesSessionId = '';
+    state.renderedMessagesCount = 0;
+    state.renderedConcernText = '';
+    state.lastMessageTs = 0;
     convoTopbar.classList.add('hidden');
     convoThread.classList.add('hidden');
     convoComposer.classList.add('hidden');
@@ -1530,6 +1537,7 @@
 
   function buildTicketCard(t) {
     var item = document.createElement('div');
+    var caseId = String(t.case_id || '');
     item.className = 'ticket-item' + (t.case_id === state.currentCaseId ? ' selected' : '');
     item.dataset.caseId = t.case_id;
     item.dataset.sessionId = t.session_id;
@@ -1537,8 +1545,12 @@
     item.dataset.studentEmail = t.student_email;
     item.dataset.concern = t.concern;
     item.dataset.status = t.status;
+    // Read the freshest ticket from the cache at click time. The card node
+    // is reused across repaints, so the closure-captured `t` would otherwise
+    // go stale (e.g. status, appointment_status, student_active flag).
     item.addEventListener('click', function () {
-      selectTicket(t);
+      var entry = state.renderedTicketsByCase && state.renderedTicketsByCase[caseId];
+      selectTicket(entry && entry.ticket ? entry.ticket : t);
     });
     return item;
   }
@@ -1590,6 +1602,12 @@
 
   function renderTickets(tickets) {
     var rendered = state.renderedTicketsByCase;
+    // If the cache is empty, the list currently holds a placeholder
+    // ("Loading…", "No tickets.", "Failed to load."). Clear it once before
+    // appending so cards don't render alongside the placeholder text.
+    if (!state.renderedTicketsOrder || state.renderedTicketsOrder.length === 0) {
+      ticketList.innerHTML = '';
+    }
     var nextOrder = [];
     var seenIds = Object.create(null);
 
@@ -1715,10 +1733,15 @@
 
   /* ── Load messages ── */
   function loadMessages(sessionId, concern) {
-    fetch(API + '/chat/session/' + encodeURIComponent(sessionId) + '/messages?_ts=' + Date.now(), { cache: 'no-store' })
+    // Snapshot the requested session so a late response from a prior
+    // selectTicket() call can't overwrite the now-current thread when the
+    // staff quickly switches tickets.
+    var sessionAtFetch = String(sessionId || '');
+    fetch(API + '/chat/session/' + encodeURIComponent(sessionAtFetch) + '/messages?_ts=' + Date.now(), { cache: 'no-store' })
       .then(function (r) { return r.json(); })
       .then(function (data) {
         if (!data.success) return;
+        if (String(state.currentSessionId || '') !== sessionAtFetch) return;
         renderMessages(data.messages, concern);
       })
       .catch(function () {});
@@ -1864,11 +1887,19 @@
     state.loadMessagesDebounceTimer = setTimeout(function () {
       state.loadMessagesDebounceTimer = null;
       if (!state.currentSessionId) return;
+      // Snapshot the session at fetch start so a late response from a
+      // previously-selected ticket can't overwrite the now-current thread.
+      var sessionAtFetch = String(state.currentSessionId);
+      var caseAtFetch = String(state.currentCaseId || '');
       var prevCount = state.renderedMessagesCount;
-      fetch(API + '/chat/session/' + encodeURIComponent(state.currentSessionId) + '/messages?_ts=' + Date.now(), { cache: 'no-store' })
+      fetch(API + '/chat/session/' + encodeURIComponent(sessionAtFetch) + '/messages?_ts=' + Date.now(), { cache: 'no-store' })
         .then(function (r) { return r.json(); })
         .then(function (data) {
           if (!data || !data.success || !Array.isArray(data.messages)) return;
+          // If the staff has switched tickets while this fetch was in
+          // flight, drop the response — it belongs to a different thread.
+          if (String(state.currentSessionId || '') !== sessionAtFetch) return;
+          if (String(state.currentCaseId || '') !== caseAtFetch) return;
           // Detect a new student bubble in the delta so we can ack as "seen".
           var sawNewStudentMsg = false;
           if (data.messages.length > prevCount) {
