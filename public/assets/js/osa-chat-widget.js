@@ -1025,8 +1025,28 @@
             return attempt(null);
         }
 
+        function getGuestConvoId() {
+            // Stable per browser tab/session so the AI can read prior turns
+            // (chatbot_conversation_memory). sessionStorage clears when the
+            // tab/window closes — matching "session-bound" memory: context-aware
+            // within the visit, fresh start on next open.
+            try {
+                var existing = sessionStorage.getItem(GUEST_CONVO_KEY);
+                if (existing) return existing;
+                var fresh = 'guest-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
+                sessionStorage.setItem(GUEST_CONVO_KEY, fresh);
+                return fresh;
+            } catch (e) {
+                return 'guest-' + Date.now();
+            }
+        }
+
+        function clearGuestConvoId() {
+            try { sessionStorage.removeItem(GUEST_CONVO_KEY); } catch (e) { }
+        }
+
         function postChatbotApi(message) {
-            var convoId = chatSessionId ? ('session-' + chatSessionId) : ('guest-' + Date.now());
+            var convoId = chatSessionId ? ('session-' + chatSessionId) : getGuestConvoId();
             return postApi('/chatbot/message', {
                 message: String(message || ''),
                 conversation_id: convoId
@@ -1077,6 +1097,9 @@
             setLS(SESSION_TS_KEY, 0);
             setLS(SESSION_EXP_KEY, '');
             setLS(VERIFIED_KEY, false);
+            // Reset guest memory id so the next guest turn starts a fresh
+            // context-aware conversation rather than inheriting OTP-era memory.
+            clearGuestConvoId();
             // Preserve visible thread by default; chat history may still be useful.
         }
 
