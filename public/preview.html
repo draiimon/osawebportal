@@ -2651,6 +2651,442 @@
                 box-shadow: none !important;
             }
         }
+
+        /* ============================================================
+           Home — extended sections (text-only, same aesthetic, no icons)
+           ============================================================ */
+        .home-extra-surface {
+            position: relative;
+            overflow: hidden;
+            isolation: isolate;
+            background: linear-gradient(180deg, rgba(255, 252, 248, 0.96), rgba(251, 246, 238, 0.94));
+        }
+
+        .home-extra-surface::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .glance-surface::before {
+            background:
+                radial-gradient(circle at 14% 18%, rgba(132, 26, 45, 0.10), transparent 48%),
+                radial-gradient(circle at 86% 8%, rgba(199, 154, 73, 0.12), transparent 50%);
+        }
+
+        .flow-surface::before {
+            background:
+                linear-gradient(180deg, rgba(132, 26, 45, 0.05), transparent 60%),
+                linear-gradient(255deg, rgba(199, 154, 73, 0.07), transparent 55%);
+        }
+
+        .faq-surface::before {
+            background: linear-gradient(135deg, rgba(255, 248, 238, 0.92) 0%, rgba(251, 243, 228, 0.88) 100%);
+        }
+
+        .where-surface::before {
+            background:
+                linear-gradient(180deg, rgba(132, 26, 45, 0.06), rgba(255, 252, 248, 0.6) 60%),
+                url("./assets/images/eac-photo.png") center / cover no-repeat;
+            opacity: 0.32;
+        }
+
+        /* ----- 1. Glance / by-the-numbers ----- */
+        .glance-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+            margin-top: 28px;
+        }
+
+        .glance-card {
+            position: relative;
+            padding: 24px 22px 22px;
+            border: 1px solid var(--line);
+            border-left: 3px solid var(--gold);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(250, 244, 234, 0.92));
+            box-shadow: 0 14px 30px rgba(50, 25, 14, 0.06);
+            overflow: hidden;
+            transition: transform 220ms ease, box-shadow 220ms ease;
+        }
+
+        .glance-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 18px 34px rgba(50, 25, 14, 0.10);
+        }
+
+        .glance-card::after {
+            content: "";
+            position: absolute;
+            inset: auto -22px -22px auto;
+            width: 92px;
+            height: 92px;
+            background: radial-gradient(circle, rgba(132, 26, 45, 0.10), transparent 65%);
+            pointer-events: none;
+        }
+
+        .glance-card .glance-number {
+            display: block;
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: clamp(2.2rem, 3.6vw, 3.1rem);
+            line-height: 1;
+            color: var(--brand);
+            letter-spacing: -0.02em;
+            margin-bottom: 10px;
+        }
+
+        .glance-card .glance-label {
+            display: block;
+            color: var(--ink);
+            font-size: 0.96rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .glance-card .glance-sub {
+            display: block;
+            color: var(--muted);
+            font-size: 0.84rem;
+            line-height: 1.55;
+        }
+
+        .glance-card.is-live .glance-label::after {
+            content: "Live";
+            display: inline-block;
+            margin-left: 8px;
+            padding: 2px 8px;
+            background: rgba(16, 124, 73, 0.14);
+            color: #10704a;
+            font-size: 0.66rem;
+            font-weight: 800;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            vertical-align: 2px;
+        }
+
+        /* ----- 2. Flow / how it works ----- */
+        .flow-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+            margin-top: 28px;
+        }
+
+        .flow-step {
+            position: relative;
+            padding: 24px 22px;
+            border: 1px solid var(--line);
+            background: var(--paper);
+            box-shadow: 0 10px 24px rgba(50, 25, 14, 0.05);
+            transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+        }
+
+        .flow-step:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 18px 32px rgba(50, 25, 14, 0.10);
+            border-color: rgba(132, 26, 45, 0.22);
+        }
+
+        .flow-step .flow-num {
+            display: block;
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 2.4rem;
+            line-height: 1;
+            color: var(--gold);
+            letter-spacing: -0.02em;
+            margin-bottom: 12px;
+        }
+
+        .flow-step h3 {
+            font-size: 1.1rem;
+            margin: 0 0 8px;
+            color: var(--ink);
+        }
+
+        .flow-step p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .flow-step .flow-meta {
+            display: inline-block;
+            margin-top: 14px;
+            padding-top: 10px;
+            border-top: 1px dashed rgba(132, 26, 45, 0.22);
+            color: var(--brand);
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+        }
+
+        /* ----- 3. FAQ ----- */
+        .faq-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+            margin-top: 28px;
+        }
+
+        .faq-item {
+            padding: 22px 24px;
+            border: 1px solid var(--line);
+            border-left: 3px solid var(--brand);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(252, 247, 240, 0.92));
+            transition: transform 200ms ease, box-shadow 200ms ease;
+        }
+
+        .faq-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 16px 30px rgba(50, 25, 14, 0.08);
+        }
+
+        .faq-item .faq-tag {
+            display: inline-block;
+            margin-bottom: 8px;
+            color: var(--brand);
+            font-size: 0.7rem;
+            font-weight: 800;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+        }
+
+        .faq-item h3 {
+            margin: 0 0 8px;
+            font-size: 1.06rem;
+            color: var(--ink);
+        }
+
+        .faq-item p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 0.9rem;
+            line-height: 1.62;
+        }
+
+        .faq-foot {
+            margin-top: 24px;
+            padding: 18px 20px;
+            border: 1px dashed rgba(132, 26, 45, 0.24);
+            background: rgba(255, 252, 246, 0.82);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .faq-foot p {
+            margin: 0;
+            color: var(--ink);
+            font-size: 0.94rem;
+        }
+
+        .faq-foot strong {
+            color: var(--brand);
+        }
+
+        /* ----- 4. Office hours & where ----- */
+        .where-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+            gap: 18px;
+            margin-top: 28px;
+        }
+
+        .where-panel {
+            padding: 28px;
+            border: 1px solid var(--line);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(250, 244, 234, 0.92));
+            box-shadow: 0 16px 32px rgba(50, 25, 14, 0.06);
+        }
+
+        .where-panel .where-eyebrow {
+            display: block;
+            margin-bottom: 6px;
+            color: var(--brand);
+            font-size: 0.7rem;
+            font-weight: 800;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+        }
+
+        .where-panel h3 {
+            margin: 0 0 10px;
+            font-size: 1.18rem;
+            color: var(--ink);
+        }
+
+        .where-panel > p {
+            margin: 0 0 16px;
+            color: var(--muted);
+            font-size: 0.9rem;
+            line-height: 1.62;
+        }
+
+        .hours-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 4px;
+            font-size: 0.92rem;
+        }
+
+        .hours-table th,
+        .hours-table td {
+            text-align: left;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(132, 26, 45, 0.12);
+            color: var(--ink);
+        }
+
+        .hours-table th {
+            width: 38%;
+            color: var(--brand);
+            font-weight: 800;
+            letter-spacing: 0.04em;
+        }
+
+        .hours-table tr:last-child th,
+        .hours-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .hours-table td.is-closed {
+            color: #b45309;
+            font-weight: 700;
+        }
+
+        .hours-table tr.is-today th,
+        .hours-table tr.is-today td {
+            background: rgba(199, 154, 73, 0.10);
+        }
+
+        .hours-now {
+            margin-top: 14px;
+            padding: 12px 14px;
+            background: rgba(16, 124, 73, 0.10);
+            border-left: 3px solid #10704a;
+            color: #064e35;
+            font-size: 0.88rem;
+            font-weight: 700;
+            letter-spacing: 0.01em;
+        }
+
+        .hours-now.is-closed {
+            background: rgba(180, 83, 9, 0.10);
+            border-left-color: #b45309;
+            color: #7c3a09;
+        }
+
+        .contact-rows {
+            display: grid;
+            gap: 0;
+        }
+
+        .contact-row {
+            display: grid;
+            grid-template-columns: 110px minmax(0, 1fr);
+            align-items: baseline;
+            gap: 14px;
+            padding: 14px 0;
+            border-bottom: 1px solid rgba(132, 26, 45, 0.10);
+        }
+
+        .contact-row:last-child {
+            border-bottom: none;
+        }
+
+        .contact-row .contact-label {
+            color: var(--brand);
+            font-size: 0.7rem;
+            font-weight: 800;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+        }
+
+        .contact-row .contact-value {
+            color: var(--ink);
+            font-size: 0.95rem;
+            line-height: 1.55;
+            word-break: break-word;
+        }
+
+        .contact-row .contact-value a {
+            color: var(--ink);
+            border-bottom: 1px solid rgba(132, 26, 45, 0.30);
+            transition: color 180ms ease, border-color 180ms ease;
+        }
+
+        .contact-row .contact-value a:hover {
+            color: var(--brand);
+            border-bottom-color: var(--brand);
+        }
+
+        /* Reveal-on-scroll (lightweight, 1 IO observer) */
+        .home-extra-reveal > * {
+            opacity: 0;
+            transform: translateY(14px);
+            transition: opacity 600ms cubic-bezier(0.22, 1, 0.36, 1), transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .home-extra-reveal.is-in > * { opacity: 1; transform: none; }
+        .home-extra-reveal.is-in > *:nth-child(2) { transition-delay: 80ms; }
+        .home-extra-reveal.is-in > *:nth-child(3) { transition-delay: 160ms; }
+        .home-extra-reveal.is-in > *:nth-child(4) { transition-delay: 240ms; }
+        .home-extra-reveal.is-in > *:nth-child(5) { transition-delay: 320ms; }
+        .home-extra-reveal.is-in > *:nth-child(6) { transition-delay: 400ms; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .home-extra-reveal > * {
+                opacity: 1;
+                transform: none;
+                transition: none;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 1120px) {
+            .glance-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .flow-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .where-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 640px) {
+            .glance-grid,
+            .flow-grid,
+            .faq-grid {
+                grid-template-columns: 1fr;
+            }
+            .contact-row { grid-template-columns: 1fr; gap: 4px; padding: 12px 0; }
+            .where-panel { padding: 20px; }
+            .faq-foot { flex-direction: column; align-items: flex-start; }
+            .faq-foot .btn { width: 100%; }
+        }
+
+        @media (prefers-color-scheme: dark) {
+            #glance.section,
+            #how-it-works.section,
+            #faq.section,
+            #where.section {
+                border-top: none !important;
+            }
+            .glance-surface,
+            .flow-surface,
+            .faq-surface,
+            .where-surface {
+                background: linear-gradient(180deg, rgba(255, 252, 248, 0.98), rgba(251, 246, 238, 0.96)) !important;
+            }
+            .glance-surface::before,
+            .flow-surface::before,
+            .faq-surface::before,
+            .where-surface::before {
+                opacity: 0.55 !important;
+            }
+        }
     </style>
 </head>
 
@@ -2747,6 +3183,39 @@
                 </div>
             </section>
 
+            <section class="section home-extra-surface glance-surface" id="glance" aria-labelledby="glance-title">
+                <div class="container shell section-shell">
+                    <div class="section-head">
+                        <div class="section-copy">
+                            <h2 id="glance-title">A Single Source of Truth for OSA</h2>
+                            <p>One organized portal that consolidates services, references, and live support — so students spend less time searching and more time studying.</p>
+                        </div>
+                    </div>
+                    <div class="glance-grid home-extra-reveal">
+                        <article class="glance-card">
+                            <span class="glance-number">07</span>
+                            <span class="glance-label">Core OSA services</span>
+                            <span class="glance-sub">Conduct, ID, scholarships, good moral, accreditation, lost &amp; found, and LAAP.</span>
+                        </article>
+                        <article class="glance-card">
+                            <span class="glance-number">03</span>
+                            <span class="glance-label">Module pages</span>
+                            <span class="glance-sub">Announcements, Lost &amp; Found, and the About Portal — each with its own dedicated hub.</span>
+                        </article>
+                        <article class="glance-card">
+                            <span class="glance-number">12+</span>
+                            <span class="glance-label">Forms &amp; references</span>
+                            <span class="glance-sub">Downloadable PDFs, the EAC-C Student Manual, and key OSA documents in one place.</span>
+                        </article>
+                        <article class="glance-card is-live">
+                            <span class="glance-number">24/7</span>
+                            <span class="glance-label">Ask OSA assistant</span>
+                            <span class="glance-sub">Verified guidance any time of day, with secure escalation when staff are needed.</span>
+                        </article>
+                    </div>
+                </div>
+            </section>
+
             <section class="section" id="services">
                 <div class="container shell section-shell services-surface">
                     <div class="section-head">
@@ -2826,6 +3295,43 @@
                 </div>
             </section>
 
+            <section class="section home-extra-surface flow-surface" id="how-it-works" aria-labelledby="flow-title">
+                <div class="container shell section-shell">
+                    <div class="section-head">
+                        <div class="section-copy">
+                            <h2 id="flow-title">From a Question to a Resolved Transaction</h2>
+                            <p>Every OSA concern follows the same predictable flow. Start with the assistant, get verified when needed, then move to the right module to finish the task.</p>
+                        </div>
+                    </div>
+                    <div class="flow-grid home-extra-reveal">
+                        <article class="flow-step">
+                            <span class="flow-num">01</span>
+                            <h3>Ask</h3>
+                            <p>Open Ask OSA and describe your concern in plain language. The assistant routes you to the matching service or document.</p>
+                            <span class="flow-meta">Takes seconds</span>
+                        </article>
+                        <article class="flow-step">
+                            <span class="flow-num">02</span>
+                            <h3>Verify</h3>
+                            <p>For sensitive actions like Lost &amp; Found claims or appointments, secure email verification confirms it is really you.</p>
+                            <span class="flow-meta">Student email</span>
+                        </article>
+                        <article class="flow-step">
+                            <span class="flow-num">03</span>
+                            <h3>Schedule</h3>
+                            <p>Book a visit when needed. Track the appointment in real time — submitted, scheduled, waiting, completed.</p>
+                            <span class="flow-meta">Live timeline</span>
+                        </article>
+                        <article class="flow-step">
+                            <span class="flow-num">04</span>
+                            <h3>Resolve</h3>
+                            <p>Walk in, finish your transaction, and close the loop. The portal keeps a record so the next request is even faster.</p>
+                            <span class="flow-meta">Closed loop</span>
+                        </article>
+                    </div>
+                </div>
+            </section>
+
             <section class="section" id="manual">
                 <div class="container shell section-shell manual-surface">
                     <div class="section-head">
@@ -2884,6 +3390,53 @@
                 </div>
             </section>
 
+            <section class="section home-extra-surface faq-surface" id="faq" aria-labelledby="faq-title">
+                <div class="container shell section-shell">
+                    <div class="section-head">
+                        <div class="section-copy">
+                            <h2 id="faq-title">Quick Answers Before You Reach Out</h2>
+                            <p>Common questions answered here. For anything not on this list, Ask OSA carries the full verified knowledge base.</p>
+                        </div>
+                    </div>
+                    <div class="faq-grid home-extra-reveal">
+                        <article class="faq-item">
+                            <span class="faq-tag">Lost &amp; Found</span>
+                            <h3>How do I claim an item I lost on campus?</h3>
+                            <p>Browse the Lost &amp; Found board, note the reference code, then open Ask OSA and start the guided claim. You will be asked for proof of ownership.</p>
+                        </article>
+                        <article class="faq-item">
+                            <span class="faq-tag">Documents</span>
+                            <h3>Where do I request a Good Moral Certificate?</h3>
+                            <p>Submit through the OSA office during posted hours. Bring your school ID and any required clearance. Ask OSA can list the latest requirements.</p>
+                        </article>
+                        <article class="faq-item">
+                            <span class="faq-tag">Scholarships</span>
+                            <h3>How can I apply for an OSA-handled scholarship?</h3>
+                            <p>Download the Scholarship Application form from the manual and forms section, prepare the listed attachments, then submit at the OSA office for review.</p>
+                        </article>
+                        <article class="faq-item">
+                            <span class="faq-tag">Conduct</span>
+                            <h3>How do I file an incident report?</h3>
+                            <p>Use the Incident Report Form in the forms section. Submit at the OSA office. Reports are reviewed under existing student conduct guidelines.</p>
+                        </article>
+                        <article class="faq-item">
+                            <span class="faq-tag">ID Processing</span>
+                            <h3>What if I lost my school ID?</h3>
+                            <p>Ask OSA for the current ID replacement steps. You will be guided through the form, the fee details, and where to claim the reprinted ID.</p>
+                        </article>
+                        <article class="faq-item">
+                            <span class="faq-tag">Activities</span>
+                            <h3>Where do student organizations register events?</h3>
+                            <p>Coordinate through OSA under the Learner Activity Program (LAAP). Ask OSA can outline the steps, required signatories, and submission window.</p>
+                        </article>
+                    </div>
+                    <div class="faq-foot">
+                        <p><strong>Did not find your answer?</strong> Open Ask OSA — it carries the full verified knowledge base and connects you to staff when needed.</p>
+                        <button class="btn btn-primary" type="button" data-chat-open aria-controls="osa-chat-widget" aria-expanded="false" style="border-radius: 0 !important;">Ask OSA</button>
+                    </div>
+                </div>
+            </section>
+
             <section class="section" id="module-pages">
                 <div class="container shell section-shell announcements-surface">
                     <div class="section-head">
@@ -2918,6 +3471,63 @@
                             <p style="margin-top:0.65rem">
                                 <a class="btn btn-neutral" href="/about-portal">About Portal</a>
                             </p>
+                        </article>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section home-extra-surface where-surface" id="where" aria-labelledby="where-title">
+                <div class="container shell section-shell">
+                    <div class="section-head">
+                        <div class="section-copy">
+                            <h2 id="where-title">Office Hours, Location, and Direct Lines</h2>
+                            <p>Plan your visit ahead. The OSA office serves walk-ins during posted hours and accepts inquiries through email and phone outside the chat.</p>
+                        </div>
+                    </div>
+                    <div class="where-grid home-extra-reveal">
+                        <article class="where-panel">
+                            <span class="where-eyebrow">Office Hours</span>
+                            <h3>Open for student transactions</h3>
+                            <p>Manila local time. Holidays and academic suspensions may affect availability — check the announcements page for short-notice updates.</p>
+                            <table class="hours-table" aria-label="Office hours">
+                                <tbody id="hours-table-body">
+                                    <tr data-day="1"><th>Monday</th><td>8:00 AM &ndash; 5:00 PM</td></tr>
+                                    <tr data-day="2"><th>Tuesday</th><td>8:00 AM &ndash; 5:00 PM</td></tr>
+                                    <tr data-day="3"><th>Wednesday</th><td>8:00 AM &ndash; 5:00 PM</td></tr>
+                                    <tr data-day="4"><th>Thursday</th><td>8:00 AM &ndash; 5:00 PM</td></tr>
+                                    <tr data-day="5"><th>Friday</th><td>8:00 AM &ndash; 5:00 PM</td></tr>
+                                    <tr data-day="6"><th>Saturday</th><td class="is-closed">Closed</td></tr>
+                                    <tr data-day="0"><th>Sunday</th><td class="is-closed">Closed</td></tr>
+                                </tbody>
+                            </table>
+                            <p class="hours-now" id="hours-now-pill">OSA opens for in-person transactions during the posted schedule.</p>
+                        </article>
+                        <article class="where-panel">
+                            <span class="where-eyebrow">Where to Find Us</span>
+                            <h3>Office of Student Affairs</h3>
+                            <p>Emilio Aguinaldo College — Cavite Campus. Look for OSA signage along the main academic corridor.</p>
+                            <div class="contact-rows">
+                                <div class="contact-row">
+                                    <span class="contact-label">Address</span>
+                                    <span class="contact-value">Gov. D. Mangubat Ave., Brgy. Burol Main, Dasmariñas, Cavite 4114, Philippines</span>
+                                </div>
+                                <div class="contact-row">
+                                    <span class="contact-label">Email</span>
+                                    <span class="contact-value"><a href="mailto:studentaffairs.cvt@eac.edu.ph">studentaffairs.cvt@eac.edu.ph</a></span>
+                                </div>
+                                <div class="contact-row">
+                                    <span class="contact-label">Phone</span>
+                                    <span class="contact-value"><a href="tel:+63464164300">(046) 416-43-00</a></span>
+                                </div>
+                                <div class="contact-row">
+                                    <span class="contact-label">Best Time</span>
+                                    <span class="contact-value">9:00 AM &ndash; 11:00 AM and 2:00 PM &ndash; 4:00 PM tend to have the shortest wait at the counter.</span>
+                                </div>
+                                <div class="contact-row">
+                                    <span class="contact-label">Anytime</span>
+                                    <span class="contact-value">Open Ask OSA from any page in the bottom-right corner — available outside office hours.</span>
+                                </div>
+                            </div>
                         </article>
                     </div>
                 </div>
@@ -3405,6 +4015,91 @@
                     if (rafId) window.cancelAnimationFrame(rafId);
                 });
             }
+
+            // Reveal-on-scroll for the home page extended sections (single IO, no extra deps)
+            (function setupHomeExtraReveal() {
+                const groups = document.querySelectorAll(".home-extra-reveal");
+                if (!groups.length) return;
+                if (!("IntersectionObserver" in window)) {
+                    groups.forEach((g) => g.classList.add("is-in"));
+                    return;
+                }
+                const io = new IntersectionObserver((entries) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add("is-in");
+                            io.unobserve(entry.target);
+                        }
+                    });
+                }, { threshold: 0.12, rootMargin: "0px 0px -8% 0px" });
+                groups.forEach((g) => io.observe(g));
+            })();
+
+            // Live "Open now / Closed" indicator for the office hours panel (Asia/Manila)
+            (function setupOfficeHoursNow() {
+                const pill = document.getElementById("hours-now-pill");
+                const tableBody = document.getElementById("hours-table-body");
+                if (!pill) return;
+                const fmt = new Intl.DateTimeFormat("en-US", {
+                    timeZone: "Asia/Manila",
+                    weekday: "short",
+                    hour: "numeric",
+                    minute: "numeric",
+                    hour12: false
+                });
+                function getManilaParts() {
+                    const parts = fmt.formatToParts(new Date());
+                    let weekday = "Mon", hour = 0, minute = 0;
+                    parts.forEach((p) => {
+                        if (p.type === "weekday") weekday = p.value;
+                        if (p.type === "hour") hour = parseInt(p.value, 10) || 0;
+                        if (p.type === "minute") minute = parseInt(p.value, 10) || 0;
+                    });
+                    const map = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+                    return { day: map[weekday] != null ? map[weekday] : new Date().getDay(), hour: hour, minute: minute };
+                }
+                function nextOpenLabel(day, minutes, openMin) {
+                    if (day >= 1 && day <= 4 && minutes >= 17 * 60) return "tomorrow at 8:00 AM";
+                    if (day >= 1 && day <= 5 && minutes < openMin) return "today at 8:00 AM";
+                    if (day === 5 && minutes >= 17 * 60) return "Monday at 8:00 AM";
+                    if (day === 6) return "Monday at 8:00 AM";
+                    if (day === 0) return "Monday at 8:00 AM";
+                    return "the next business day at 8:00 AM";
+                }
+                function update() {
+                    try {
+                        const { day, hour, minute } = getManilaParts();
+                        const minutes = hour * 60 + minute;
+                        const openMin = 8 * 60;
+                        const closeMin = 17 * 60;
+                        const isWeekday = day >= 1 && day <= 5;
+                        const isOpen = isWeekday && minutes >= openMin && minutes < closeMin;
+                        if (tableBody) {
+                            tableBody.querySelectorAll("tr").forEach((row) => {
+                                row.classList.toggle("is-today", parseInt(row.getAttribute("data-day"), 10) === day);
+                            });
+                        }
+                        if (isOpen) {
+                            const remaining = closeMin - minutes;
+                            const h = Math.floor(remaining / 60);
+                            const m = remaining % 60;
+                            let until;
+                            if (h > 0 && m > 0) until = "Closes in about " + h + "h " + m + "m";
+                            else if (h > 0) until = "Closes in about " + h + "h";
+                            else until = "Closes in about " + m + "m";
+                            pill.classList.remove("is-closed");
+                            pill.textContent = "Open now · " + until + " (Manila time)";
+                        } else {
+                            pill.classList.add("is-closed");
+                            pill.textContent = "Closed now · Opens " + nextOpenLabel(day, minutes, openMin) + " (Manila time)";
+                        }
+                    } catch (e) {
+                        // keep default text on failure
+                    }
+                }
+                update();
+                setInterval(update, 60000);
+            })();
 
             (function markAppReady() {
                 var notifyReady = function () {

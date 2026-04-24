@@ -26,6 +26,19 @@ Student-affairs portal for EAC. Plain HTML/CSS/JS frontend in `public/` paired w
 - `serve.js` (port 8001) is a legacy standalone static server kept for reference; not used by the workflow.
 - The React workspace under `frontend/` is independent and not wired into the running app.
 
+## Home page extended sections (`public/preview.html`)
+The home page has 4 extra text-only bands (no icons, same maroon/gold aesthetic):
+`#glance` (by-the-numbers strip), `#how-it-works` (4-step numbered flow),
+`#faq` (6 FAQ cards in 2-col grid + Ask OSA CTA), and `#where`
+(office hours table + contact rows). Layout uses `.home-extra-surface` +
+modifier classes (`.glance-surface`, `.flow-surface`, `.faq-surface`,
+`.where-surface`). Reveal-on-scroll is wired through a single
+IntersectionObserver against `.home-extra-reveal` containers (no extra deps).
+The `#hours-now-pill` shows a live "Open now · closes in …" or
+"Closed now · opens …" status using `Intl.DateTimeFormat` with
+`timeZone: "Asia/Manila"`; the matching weekday row gets `.is-today`
+highlighting. Hours are 8 AM – 5 PM Mon–Fri.
+
 ## Real-time chat presence (typing + seen receipts)
 Both the student widget and the staff portal exchange typing and seen receipts
 through the existing SSE infrastructure (no WebSocket layer). Endpoints in
