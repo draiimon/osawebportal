@@ -63,8 +63,8 @@
 /* ── Header: refined maroon with thin gold underline ────── */
 [data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-header {
     position: relative;
-    min-height: 52px !important;
-    padding: 8px 12px 8px 14px !important;
+    min-height: 42px !important;
+    padding: 6px 12px 6px 14px !important;
     background: linear-gradient(135deg,
         #8f1c30 0%,
         #841a2d 55%,
@@ -125,7 +125,7 @@
     gap: 8px !important;
     flex-wrap: nowrap !important;
     min-width: 0 !important;
-    margin-top: 2px !important;
+    margin-top: 0 !important;
 }
 
 [data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-header__status-line {
