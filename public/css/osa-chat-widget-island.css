@@ -102,7 +102,6 @@
 /* Title — Libre Baskerville to match the OSA portal headline style */
 [data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-header__titles strong {
     color: #fff !important;
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif !important;
     font-size: 14.5px !important;
     font-weight: 700 !important;
     letter-spacing: 0.005em !important;
