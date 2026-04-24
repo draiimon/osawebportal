@@ -722,7 +722,18 @@ app.use((req, res, next) => {
   return next();
 });
 
-app.use(express.static(publicDir));
+app.use(
+  express.static(publicDir, {
+    etag: true,
+    lastModified: true,
+    setHeaders: (res, filePath) => {
+      const ext = path.extname(filePath).toLowerCase();
+      if ([".html", ".css", ".js"].includes(ext)) {
+        res.setHeader("Cache-Control", "no-cache, must-revalidate");
+      }
+    },
+  })
+);
 
 const io = new Server(httpServer, {
   cors: {
