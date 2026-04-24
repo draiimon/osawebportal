@@ -434,53 +434,78 @@
     return j;
   }
 
-  async function deleteOne(id) {
-    if (!id) return;
-    if (!window.confirm('Delete this message permanently?')) return;
-    try {
-      var res = await deleteRequest('id=' + encodeURIComponent(id));
-      var status = document.getElementById('status-line');
-      status.textContent = 'Deleted ' + (res.deleted || 0) + ' row. Refreshing…';
-      await loadLogs();
-    } catch (err) {
-      window.alert('Delete failed: ' + (err && err.message));
-    }
+  function failToast(err) {
+    var msg = 'Delete failed: ' + (err && err.message ? err.message : 'Unknown error');
+    if (typeof window.showToast === 'function') window.showToast(msg, 'error', 5000);
+    else window.alert(msg);
+  }
+  function okToast(msg) {
+    if (typeof window.showToast === 'function') window.showToast(msg, 'success');
+  }
+  function styledConfirm(msg, onConfirm) {
+    if (typeof window.confirmDelete === 'function') return window.confirmDelete(msg, onConfirm);
+    if (window.confirm(msg.replace(/<[^>]+>/g, ''))) onConfirm();
   }
 
-  async function deleteByFilterId() {
+  function deleteOne(id) {
+    if (!id) return;
+    styledConfirm(
+      'Delete this message permanently? This cannot be undone.',
+      async function () {
+        try {
+          var res = await deleteRequest('id=' + encodeURIComponent(id));
+          document.getElementById('status-line').textContent =
+            'Deleted ' + (res.deleted || 0) + ' row. Refreshing…';
+          okToast('Message deleted.');
+          await loadLogs();
+        } catch (err) { failToast(err); }
+      }
+    );
+  }
+
+  function deleteByFilterId() {
     var guest = document.getElementById('f-source').value === 'guest';
     var filterId = String(document.getElementById('f-session').value || '').trim();
     if (!filterId) return;
     var label = guest ? 'conversation' : 'session';
-    if (!window.confirm('Delete EVERY message for this ' + label + '?\n\n' + filterId + '\n\nThis cannot be undone.')) return;
-    try {
-      var key = guest ? 'conversation_id' : 'session_id';
-      var res = await deleteRequest(key + '=' + encodeURIComponent(filterId));
-      var status = document.getElementById('status-line');
-      status.textContent = 'Deleted ' + (res.deleted || 0) + ' row(s) for that ' + label + '. Refreshing…';
-      await loadLogs();
-    } catch (err) {
-      window.alert('Delete failed: ' + (err && err.message));
-    }
+    styledConfirm(
+      'Delete <strong>every message</strong> for this ' + label +
+      '?<br><br><code style="font-size:0.78rem;color:var(--ink);background:rgba(132,26,45,0.06);padding:2px 6px;border-radius:4px;display:inline-block;max-width:100%;overflow-wrap:anywhere">' +
+      filterId + '</code><br><br>This cannot be undone.',
+      async function () {
+        try {
+          var key = guest ? 'conversation_id' : 'session_id';
+          var res = await deleteRequest(key + '=' + encodeURIComponent(filterId));
+          document.getElementById('status-line').textContent =
+            'Deleted ' + (res.deleted || 0) + ' row(s) for that ' + label + '. Refreshing…';
+          okToast('Deleted ' + (res.deleted || 0) + ' message(s).');
+          await loadLogs();
+        } catch (err) { failToast(err); }
+      }
+    );
   }
 
-  async function deleteAllShown() {
+  function deleteAllShown() {
     if (!lastRows.length) return;
-    if (!window.confirm('Delete ALL ' + lastRows.length + ' rows currently shown?\n\nThis cannot be undone.')) return;
-    var status = document.getElementById('status-line');
-    var ok = 0;
-    var fail = 0;
-    for (var i = 0; i < lastRows.length; i++) {
-      try {
-        var res = await deleteRequest('id=' + encodeURIComponent(lastRows[i].id));
-        ok += res.deleted || 0;
-      } catch (_e) {
-        fail += 1;
+    var n = lastRows.length;
+    styledConfirm(
+      'Delete <strong>ALL ' + n + ' rows</strong> currently shown?<br><br>This cannot be undone.',
+      async function () {
+        var status = document.getElementById('status-line');
+        var ok = 0, fail = 0;
+        for (var i = 0; i < lastRows.length; i++) {
+          try {
+            var res = await deleteRequest('id=' + encodeURIComponent(lastRows[i].id));
+            ok += res.deleted || 0;
+          } catch (_e) { fail += 1; }
+          status.textContent = 'Deleting… ' + (i + 1) + ' / ' + lastRows.length;
+        }
+        status.textContent = 'Deleted ' + ok + ' row(s)' + (fail ? ' (' + fail + ' failed)' : '') + '. Refreshing…';
+        if (fail) failToast(new Error(fail + ' row(s) could not be deleted'));
+        else okToast('Deleted ' + ok + ' message(s).');
+        await loadLogs();
       }
-      status.textContent = 'Deleting… ' + (i + 1) + ' / ' + lastRows.length;
-    }
-    status.textContent = 'Deleted ' + ok + ' row(s)' + (fail ? ' (' + fail + ' failed)' : '') + '. Refreshing…';
-    await loadLogs();
+    );
   }
 
   document.getElementById('f-source').addEventListener('change', function () {
