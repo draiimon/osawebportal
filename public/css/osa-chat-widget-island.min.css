@@ -1,1 +1,648 @@
-[data-osa-chat-root]{position:fixed;inset:0;z-index:2147483000;pointer-events:none;font-family:Plus Jakarta Sans,-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif}[data-osa-chat-root] .osa-launcher-fab,[data-osa-chat-root] .osa-launcher-panel{pointer-events:auto}[data-osa-chat-root] .osa-launcher-panel,[data-osa-chat-root] .osa-launcher-panel:before,[data-osa-chat-root] .osa-launcher-panel--chat-ui,[data-osa-chat-root] .osa-launcher-panel--chat-ui:before{border-radius:0!important}[data-osa-chat-root] .osa-launcher-panel--chat-ui{border:1px solid rgba(123,16,37,.14)!important;box-shadow:0 22px 44px #1c0c1238!important;background:linear-gradient(145deg,#fff4f68f,#fff8ec80 52%,#f6eeff75)!important;backdrop-filter:blur(14px) saturate(1.15)!important;-webkit-backdrop-filter:blur(14px) saturate(1.15)!important;border-radius:0!important;overflow:hidden!important;transition:all .3s cubic-bezier(.25,.8,.25,1)}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-header{position:relative;background:#7b1025!important;border-bottom:1px solid rgba(255,255,255,.08)!important;backdrop-filter:blur(10px) saturate(1.08)!important;-webkit-backdrop-filter:blur(10px) saturate(1.08)!important;box-shadow:none!important;border-radius:0!important;padding-bottom:8px!important;z-index:5!important}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-header:after{content:"";position:absolute;inset:0;background:none!important;pointer-events:none}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-header__avatar{display:none!important}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-header__titles strong,[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-header__status-line,[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-launcher-head__close{color:#fff!important}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-header__status-line{text-transform:uppercase;letter-spacing:.05em;font-size:11px;display:inline-flex!important;align-items:center!important;white-space:nowrap!important;flex:0 0 auto!important}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-header__status-line:before{background:#4ade80!important;box-shadow:0 0 8px #4ade8080!important;border-radius:999px!important}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-header__status-line.is-staff:before{background:#22c55e!important}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-header__status-line.is-staff{color:#86efac!important}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-mode{display:none!important}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-header__sub{display:flex!important;align-items:center!important;gap:8px!important;flex-wrap:nowrap!important;min-width:0!important}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-thread{background:linear-gradient(180deg,#fffbf78f,#fff7ef7a),linear-gradient(140deg,#9b223514 8%,#f472b614 44%,#eab30824)!important;background-blend-mode:normal,normal;position:relative;padding:0 16px 16px!important;overflow-x:hidden!important;overflow-y:auto!important;z-index:1!important}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-thread:before{content:"";position:absolute;inset:0;background:url(/assets/images/eac-photo.png) center/cover no-repeat;filter:blur(28px) saturate(.72);transform:scale(1.06);opacity:.22;pointer-events:none;will-change:auto}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-thread>*{position:relative;z-index:1}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-thread .osa-ai-msg:first-child{margin-top:0!important}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-thread>.osa-ai-msg:first-of-type{margin-top:0!important;padding-top:0!important}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-msg__bubble{box-shadow:0 4px 12px #0000000d!important;border-radius:16px!important;padding:12px 16px!important;transition:transform .2s ease,box-shadow .2s ease}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-msg__bubble:hover{transform:translateY(-2px);box-shadow:0 6px 16px #00000014!important}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-msg--assistant .osa-ai-msg__bubble{background:#fff!important;border:1px solid rgba(0,0,0,.06)!important;color:#1f1a17!important;border-bottom-left-radius:4px!important}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-msg--staff .osa-ai-msg__bubble{background:#edf3ff!important;border:1px solid rgba(46,92,190,.15)!important;color:#1e2a46!important;border-bottom-left-radius:4px!important}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-msg--staff .osa-ai-msg__meta{color:#2e5cbe!important;font-weight:700}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-msg__meta{display:inline-flex;align-items:center;gap:8px;margin-bottom:4px}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-msg__who{font-weight:700;letter-spacing:.02em}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-msg__time{color:#7a6e63;font-weight:500;font-size:11px;opacity:.8}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-msg--staff .osa-ai-msg__who:before{content:"";display:inline-block;width:7px;height:7px;margin-right:6px;background:#10b981;border-radius:999px!important;box-shadow:0 0 6px #10b98166}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-msg--user .osa-ai-msg__bubble{background:#9b2235!important;border:1px solid #8b1e31!important;color:#fff!important;border-bottom-right-radius:4px!important}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-msg--system .osa-ai-system{background:#00000008!important;border:0!important;color:#7b6f63!important;padding:6px 12px!important;font-size:11px;font-weight:600;letter-spacing:.02em;border-radius:12px!important;margin:8px auto!important;width:fit-content}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-system__dot{display:none!important}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-waiting{border:1px solid rgba(132,26,45,.15)!important;background:#fffc!important;backdrop-filter:blur(8px);box-shadow:0 10px 24px #841a2d14!important;border-radius:16px!important}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-waiting__titles strong,[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-waiting__elapsed{color:#7f1d34!important}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-waiting__note{color:#4e3f37!important}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-waiting__cancel{border:1px solid rgba(132,26,45,.2)!important;background:#fff!important;color:#7f1d34!important;font-weight:700;border-radius:8px!important;transition:all .2s ease}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-waiting__cancel:hover{background:#fff0f2!important}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-service-row,[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-chips-wrapper,[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-composer{background:#ffffffd9!important;backdrop-filter:blur(12px)!important;-webkit-backdrop-filter:blur(12px)!important;border-top:1px solid rgba(0,0,0,.05)!important}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-chips-wrapper{background:linear-gradient(180deg,#ffffff6b,#fffbf557)!important;backdrop-filter:blur(12px) saturate(1.08)!important;-webkit-backdrop-filter:blur(12px) saturate(1.08)!important}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-composer{padding-bottom:12px!important}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-composer__row{display:flex;align-items:stretch;gap:10px;padding:0 8px}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-service-select,[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-composer textarea{background:#fffffff2!important;border:1px solid rgba(0,0,0,.1)!important;color:#231d1a!important;border-radius:12px!important;transition:border-color .2s ease,box-shadow .2s ease}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-composer textarea:focus{border-color:#9b2235!important;box-shadow:0 0 0 3px #9b22351a!important;outline:none!important}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-composer textarea{min-height:48px!important;height:48px!important;padding:12px 16px!important;margin:0!important;box-sizing:border-box}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-chip{background:linear-gradient(180deg,#ffffffb8,#ffffff80)!important;border:1px solid rgba(255,255,255,.58)!important;color:#5f2a34!important;border-radius:999px!important;font-family:Plus Jakarta Sans,-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif!important;font-weight:600!important;box-shadow:0 6px 14px #24121814,inset 0 1px #ffffffb3;backdrop-filter:blur(10px) saturate(1.06)!important;-webkit-backdrop-filter:blur(10px) saturate(1.06)!important;transition:transform .15s ease,background-color .15s ease,color .15s ease,border-color .15s ease,box-shadow .15s ease}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-chip:hover,[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-chip:active{background:linear-gradient(180deg,#7b102538,#7b102524)!important;color:#4f1020!important;border-color:#7b102533!important;box-shadow:0 8px 18px #2412181f,inset 0 1px #ffffff73;transform:translateY(-1px)}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-btn-send{width:48px!important;height:48px!important;min-height:48px!important;margin:0!important;border:none!important;background:#9b2235!important;color:#fff!important;box-shadow:0 4px 10px #9b223533!important;border-radius:12px!important;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;transition:all .2s cubic-bezier(.4,0,.2,1)}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-btn-send svg{fill:currentColor!important;width:20px;height:20px}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-btn-send:not(:disabled):hover{background:#b1283d!important;transform:scale(1.05);box-shadow:0 6px 14px #9b22354d!important}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-btn-send:not(:disabled):active{transform:scale(.96)}[data-osa-chat-root] .osa-launcher-fab{background:#9b2235!important;border:none!important;color:#fff!important;box-shadow:0 8px 24px #9b22354d!important;border-radius:999px!important;transition:transform .3s cubic-bezier(.175,.885,.32,1.275)}[data-osa-chat-root] .osa-launcher-fab:hover{transform:scale(1.08)}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-launcher-head__close{width:28px!important;height:28px!important;min-height:28px!important;border:none!important;background:transparent!important;border-radius:0!important;display:inline-flex;align-items:center;justify-content:center;color:#fffffff2!important;transition:all .2s ease;cursor:pointer;box-shadow:none!important}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-launcher-head__close:hover{background:transparent!important;transform:scale(1.08)}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-launcher-head__close svg{display:none!important}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-launcher-head__close:before{content:"\d7";font-size:24px;line-height:1;font-weight:400;display:inline-block;transform:translateY(-1px)}[data-osa-chat-root] .osa-launcher-panel--chat-ui #osa-chat-timer{display:none!important}[data-osa-chat-root] .osa-launcher-panel--chat-ui #osa-chat-timer:not([hidden]){display:inline-flex!important;align-items:center!important;justify-content:flex-start!important;gap:4px!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;color:#ffffffe0!important;font-family:Plus Jakarta Sans,-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif!important;font-size:11px!important;font-weight:600!important;white-space:nowrap!important;line-height:1!important;min-width:fit-content!important;flex:0 0 auto!important}[data-osa-chat-root] .osa-launcher-panel--chat-ui #osa-chat-timer-text{display:inline-block!important;min-width:34px;font-variant-numeric:tabular-nums;letter-spacing:.02em}[data-osa-chat-root] .osa-launcher-panel--chat-ui #osa-chat-timer svg{display:inline-block!important;width:9px!important;height:9px!important;opacity:.7;flex:0 0 auto!important}[data-osa-chat-root] .osa-launcher-panel--chat-ui,[data-osa-chat-root] .osa-launcher-panel--chat-ui *{border-radius:0!important}[data-osa-chat-root] .osa-launcher-panel--chat-ui ::-webkit-scrollbar{width:6px}[data-osa-chat-root] .osa-launcher-panel--chat-ui ::-webkit-scrollbar-track{background:transparent}[data-osa-chat-root] .osa-launcher-panel--chat-ui ::-webkit-scrollbar-thumb{background:#00000026;border-radius:0!important}@media(max-width:900px){[data-osa-chat-root] .osa-launcher-panel--chat-ui{inset:0!important;width:100vw!important;height:100dvh!important;max-width:100vw!important;max-height:100dvh!important;border:none!important;box-shadow:none!important;border-radius:0!important}[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-header{border-radius:0!important}[data-osa-chat-root] .osa-launcher-fab{right:14px!important;bottom:calc(14px + env(safe-area-inset-bottom,0px))!important}}
+/* ═══════════════════════════════════════════════════════════════
+   Ask OSA — Widget Polish Layer (v3, 2026-04-24)
+   Sits ON TOP of osa-ai.css. Goal: refine, not override-everything.
+   - Theme aligned with main OSA portal (preview.html)
+       brand:  #841a2d  ·  brand-deep: #5c0f1d  ·  gold: #c79a49
+       paper:  #fffdf9  ·  ink: #1c1917         ·  font: Plus Jakarta Sans + Libre Baskerville
+   - Keeps the iOS-style rounded, glassy aesthetic from osa-ai.css
+   ═══════════════════════════════════════════════════════════════ */
+
+[data-osa-chat-root] {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483000;
+    pointer-events: none;
+    font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    --ask-brand: #841a2d;
+    --ask-brand-deep: #5c0f1d;
+    --ask-brand-mid: #9a1f35;
+    --ask-gold: #c79a49;
+    --ask-gold-soft: rgba(199, 154, 73, 0.18);
+    --ask-paper: #fffdf9;
+    --ask-ink: #1c1917;
+    --ask-muted: #675a4f;
+    --ask-line: rgba(90, 62, 40, 0.12);
+}
+
+[data-osa-chat-root] .osa-launcher-fab,
+[data-osa-chat-root] .osa-launcher-panel {
+    pointer-events: auto;
+}
+
+/* ── Panel shell ─────────────────────────────────────────── */
+[data-osa-chat-root] .osa-launcher-panel--chat-ui {
+    border: 1px solid rgba(255, 255, 255, 0.65) !important;
+    box-shadow:
+        0 28px 60px rgba(28, 12, 18, 0.24),
+        0 6px 18px rgba(132, 26, 45, 0.10) !important;
+    background: linear-gradient(160deg,
+        #fff7f0 0%,
+        #fdf0f3 55%,
+        #fef5e4 100%) !important;
+    border-radius: 22px !important;
+    overflow: hidden !important;
+    transition: transform 0.32s cubic-bezier(0.25, 0.85, 0.3, 1),
+                opacity 0.28s ease;
+}
+
+[data-osa-chat-root] .osa-launcher-panel--chat-ui::before {
+    border-radius: 22px !important;
+    opacity: 0.16 !important;
+    filter: blur(10px) saturate(1.05) !important;
+}
+
+/* ── Header: refined maroon with thin gold underline ────── */
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-header {
+    position: relative;
+    min-height: 60px !important;
+    padding: 10px 12px 10px 14px !important;
+    background: linear-gradient(135deg,
+        #8f1c30 0%,
+        #841a2d 55%,
+        #5c0f1d 100%) !important;
+    border-bottom: none !important;
+    border-radius: 22px 22px 0 0 !important;
+    box-shadow:
+        0 4px 16px rgba(92, 15, 29, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.10) !important;
+    z-index: 5 !important;
+}
+
+/* Thin gold accent line under the header (signature of OSA portal) */
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-header::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 2px;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(199, 154, 73, 0.8) 18%,
+        var(--ask-gold) 50%,
+        rgba(199, 154, 73, 0.8) 82%,
+        transparent 100%);
+    pointer-events: none;
+    z-index: 6;
+}
+
+/* Header avatar — a subtle glassy chat-bubble badge */
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-header__avatar {
+    width: 34px !important;
+    height: 34px !important;
+    border-radius: 11px !important;
+    border: 1px solid rgba(255, 255, 255, 0.24) !important;
+    background: rgba(255, 255, 255, 0.12) !important;
+    color: #fff !important;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.22),
+        0 2px 6px rgba(0, 0, 0, 0.18);
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-header__avatar svg {
+    width: 17px;
+    height: 17px;
+}
+
+/* Title — Libre Baskerville to match the OSA portal headline style */
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-header__titles strong {
+    color: #fff !important;
+    font-family: "Libre Baskerville", Georgia, serif !important;
+    font-size: 14.5px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.005em !important;
+    line-height: 1.15 !important;
+    display: block;
+}
+
+/* Subtitle row — status + timer */
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-header__sub {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    flex-wrap: nowrap !important;
+    min-width: 0 !important;
+    margin-top: 2px !important;
+}
+
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-header__status-line {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    font-size: 10.5px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.05em !important;
+    text-transform: uppercase !important;
+    color: rgba(255, 255, 255, 0.78) !important;
+    white-space: nowrap !important;
+    flex: 0 0 auto !important;
+}
+
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-header__status-line::before {
+    content: "" !important;
+    width: 6px !important;
+    height: 6px !important;
+    background: #4ade80 !important;
+    border-radius: 999px !important;
+    box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.22) !important;
+    flex-shrink: 0;
+}
+
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-header__status-line.is-staff {
+    color: #fde68a !important;
+}
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-header__status-line.is-staff::before {
+    background: #fbbf24 !important;
+    box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.28) !important;
+}
+
+/* Hide the redundant mode badge — title already says "Ask OSA" */
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-mode {
+    display: none !important;
+}
+
+/* Session timer — slim translucent pill */
+[data-osa-chat-root] .osa-launcher-panel--chat-ui #osa-chat-timer {
+    display: none !important;
+}
+[data-osa-chat-root] .osa-launcher-panel--chat-ui #osa-chat-timer:not([hidden]) {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    padding: 2px 8px !important;
+    border: 1px solid rgba(255, 255, 255, 0.22) !important;
+    background: rgba(255, 255, 255, 0.12) !important;
+    border-radius: 999px !important;
+    color: rgba(255, 255, 255, 0.85) !important;
+    font-family: "SF Mono", ui-monospace, Menlo, monospace !important;
+    font-size: 10.5px !important;
+    font-weight: 600 !important;
+    line-height: 1.1 !important;
+    white-space: nowrap !important;
+    flex: 0 0 auto !important;
+    box-shadow: none !important;
+}
+[data-osa-chat-root] .osa-launcher-panel--chat-ui #osa-chat-timer-text {
+    display: inline-block !important;
+    min-width: 32px;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+}
+[data-osa-chat-root] .osa-launcher-panel--chat-ui #osa-chat-timer svg {
+    display: inline-block !important;
+    width: 9px !important;
+    height: 9px !important;
+    opacity: 0.78;
+    flex: 0 0 auto !important;
+}
+
+/* ── Beautiful close button: gold-tinted glass circle with crisp × ─── */
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-launcher-head__close {
+    width: 32px !important;
+    height: 32px !important;
+    min-height: 32px !important;
+    margin-right: 0 !important;
+    padding: 0 !important;
+    border: 1px solid rgba(255, 255, 255, 0.22) !important;
+    background: rgba(255, 255, 255, 0.10) !important;
+    color: rgba(255, 255, 255, 0.92) !important;
+    border-radius: 50% !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.16),
+        0 2px 6px rgba(0, 0, 0, 0.16) !important;
+    transition:
+        transform 220ms cubic-bezier(0.25, 0.85, 0.3, 1),
+        background-color 180ms ease,
+        border-color 180ms ease,
+        box-shadow 180ms ease,
+        color 180ms ease;
+}
+
+/* Show the SVG × icon (do NOT replace with text) */
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-launcher-head__close svg {
+    display: inline-block !important;
+    width: 14px !important;
+    height: 14px !important;
+    stroke: currentColor !important;
+    fill: none !important;
+    stroke-width: 2.4 !important;
+    stroke-linecap: round !important;
+    stroke-linejoin: round !important;
+    transition: transform 220ms cubic-bezier(0.25, 0.85, 0.3, 1);
+}
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-launcher-head__close::before {
+    content: none !important;
+}
+
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-launcher-head__close:hover {
+    background: var(--ask-gold-soft) !important;
+    border-color: rgba(199, 154, 73, 0.55) !important;
+    color: #ffe9b8 !important;
+    transform: scale(1.06);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.22),
+        0 4px 12px rgba(199, 154, 73, 0.28) !important;
+}
+
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-launcher-head__close:hover svg {
+    transform: rotate(90deg);
+}
+
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-launcher-head__close:active {
+    transform: scale(0.94);
+}
+
+/* ── Thread / messages ────────────────────────────────────── */
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-thread {
+    background:
+        linear-gradient(180deg, rgba(255, 251, 247, 0.62) 0%, rgba(255, 247, 239, 0.5) 100%),
+        linear-gradient(140deg,
+            rgba(132, 26, 45, 0.06) 8%,
+            rgba(199, 154, 73, 0.10) 50%,
+            rgba(132, 26, 45, 0.05) 100%) !important;
+    background-blend-mode: normal, normal;
+    position: relative;
+    padding: 16px 14px 12px !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    z-index: 1 !important;
+}
+
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-thread::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: url('/assets/images/eac-photo.png') center/cover no-repeat;
+    filter: blur(28px) saturate(0.7);
+    transform: scale(1.06);
+    opacity: 0.18;
+    pointer-events: none;
+    will-change: auto;
+}
+
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-thread > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* Bubbles — restore the rounded iOS shape from osa-ai.css */
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-msg__bubble {
+    border-radius: 18px !important;
+    padding: 10px 14px !important;
+    font-size: 14px !important;
+    line-height: 1.52 !important;
+    box-shadow: 0 2px 8px rgba(28, 12, 18, 0.07) !important;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-msg--user .osa-ai-msg__bubble {
+    background: linear-gradient(135deg, var(--ask-brand-mid) 0%, var(--ask-brand) 100%) !important;
+    border: none !important;
+    color: #fff !important;
+    border-bottom-right-radius: 5px !important;
+    box-shadow: 0 4px 14px rgba(132, 26, 45, 0.28) !important;
+    margin-right: 4px;
+}
+
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-msg--assistant .osa-ai-msg__bubble {
+    background: rgba(255, 255, 255, 0.92) !important;
+    border: 0.5px solid rgba(255, 255, 255, 0.7) !important;
+    color: var(--ask-ink) !important;
+    border-bottom-left-radius: 5px !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+}
+
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-msg--staff .osa-ai-msg__bubble {
+    background: linear-gradient(135deg, #fff8ec 0%, #fff3da 100%) !important;
+    border: 1px solid rgba(199, 154, 73, 0.32) !important;
+    color: #4a2e10 !important;
+    border-bottom-left-radius: 5px !important;
+    box-shadow: 0 4px 14px rgba(199, 154, 73, 0.18) !important;
+}
+
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-msg--staff .osa-ai-msg__meta {
+    color: #8a5a16 !important;
+    font-weight: 700 !important;
+}
+
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-msg__meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+    color: rgba(103, 90, 79, 0.7) !important;
+    padding: 0 4px;
+    font-size: 10.5px !important;
+}
+
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-msg__who {
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-msg__time {
+    color: var(--ask-muted);
+    font-weight: 500;
+    font-size: 10.5px;
+    opacity: 0.8;
+}
+
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-msg--staff .osa-ai-msg__who::before {
+    content: "";
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    margin-right: 6px;
+    background: var(--ask-gold);
+    border-radius: 999px !important;
+    box-shadow: 0 0 6px rgba(199, 154, 73, 0.45);
+}
+
+/* System pill */
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-msg--system .osa-ai-system {
+    background: rgba(255, 255, 255, 0.6) !important;
+    border: 0.5px solid rgba(132, 26, 45, 0.12) !important;
+    color: #6b4840 !important;
+    padding: 6px 12px !important;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    border-radius: 999px !important;
+    margin: 8px auto !important;
+    width: fit-content;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-system__dot {
+    display: none !important;
+}
+
+/* Waiting / handoff card */
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-waiting {
+    border: 0.5px solid rgba(132, 26, 45, 0.16) !important;
+    background: rgba(255, 255, 255, 0.85) !important;
+    backdrop-filter: blur(14px) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+    box-shadow: 0 8px 22px rgba(132, 26, 45, 0.08) !important;
+    border-radius: 16px !important;
+}
+
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-waiting__titles strong,
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-waiting__elapsed {
+    color: var(--ask-brand-deep) !important;
+}
+
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-waiting__note {
+    color: var(--ask-muted) !important;
+}
+
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-waiting__cancel {
+    border: 1px solid rgba(132, 26, 45, 0.22) !important;
+    background: #fff !important;
+    color: var(--ask-brand-deep) !important;
+    font-weight: 700;
+    border-radius: 10px !important;
+    transition: background 0.18s ease, transform 0.18s ease;
+}
+
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-waiting__cancel:hover {
+    background: #fff0f2 !important;
+    transform: translateY(-1px);
+}
+
+/* ── Bottom bar: chips wrapper + composer ─────────────────── */
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-service-row,
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-chips-wrapper,
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-composer {
+    background: rgba(255, 255, 255, 0.78) !important;
+    backdrop-filter: blur(16px) saturate(1.1) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(1.1) !important;
+    border-top: 0.5px solid rgba(132, 26, 45, 0.08) !important;
+}
+
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-chips-wrapper {
+    padding: 8px 0 9px !important;
+}
+
+/* Quick-topic chips — keep design (user said OK) but ensure pill shape */
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-chip {
+    border-radius: 999px !important;
+    padding: 7px 14px !important;
+    font-size: 12.5px !important;
+    font-weight: 600 !important;
+    background: rgba(255, 255, 255, 0.78) !important;
+    color: var(--ask-brand) !important;
+    border: 1px solid rgba(132, 26, 45, 0.18) !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif !important;
+    transition: background 140ms ease, color 140ms ease, transform 140ms ease, box-shadow 140ms ease;
+}
+
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-chip:hover {
+    background: #fff !important;
+    box-shadow: 0 3px 10px rgba(132, 26, 45, 0.14) !important;
+    transform: translateY(-1px);
+}
+
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-chip:active {
+    background: var(--ask-brand) !important;
+    color: #fff !important;
+    border-color: transparent !important;
+    box-shadow: 0 2px 8px rgba(132, 26, 45, 0.28) !important;
+    transform: translateY(0);
+}
+
+/* Composer row — refined */
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-composer {
+    padding: 9px 12px calc(8px + env(safe-area-inset-bottom, 0px)) !important;
+    border-radius: 0 0 22px 22px !important;
+}
+
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-composer__row {
+    display: flex !important;
+    align-items: flex-end !important;
+    gap: 8px !important;
+    padding: 0 !important;
+}
+
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-composer textarea {
+    flex: 1 !important;
+    min-height: 40px !important;
+    height: 40px !important;
+    max-height: 110px !important;
+    padding: 10px 14px !important;
+    margin: 0 !important;
+    background: rgba(255, 255, 255, 0.96) !important;
+    border: 1px solid rgba(132, 26, 45, 0.14) !important;
+    color: var(--ask-ink) !important;
+    border-radius: 14px !important;
+    font-size: 14px !important;
+    line-height: 1.45 !important;
+    box-sizing: border-box;
+    transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-composer textarea:focus {
+    border-color: rgba(132, 26, 45, 0.4) !important;
+    background: #fff !important;
+    box-shadow: 0 0 0 3px rgba(132, 26, 45, 0.10) !important;
+    outline: none !important;
+}
+
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-composer textarea::placeholder {
+    color: #b0978a !important;
+}
+
+/* Send button — circular maroon (matches the FAB language) */
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-btn-send {
+    width: 40px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    margin: 0 !important;
+    flex: 0 0 auto !important;
+    border: none !important;
+    background: linear-gradient(135deg, var(--ask-brand-mid) 0%, var(--ask-brand) 100%) !important;
+    color: #fff !important;
+    border-radius: 50% !important;
+    box-shadow: 0 4px 12px rgba(132, 26, 45, 0.28) !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    transition: transform 160ms cubic-bezier(0.25, 0.85, 0.3, 1),
+                box-shadow 160ms ease,
+                background 160ms ease;
+}
+
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-btn-send svg {
+    fill: currentColor !important;
+    width: 17px !important;
+    height: 17px !important;
+}
+
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-btn-send:not(:disabled):hover {
+    transform: scale(1.06);
+    box-shadow: 0 6px 18px rgba(132, 26, 45, 0.36) !important;
+}
+
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-btn-send:not(:disabled):active {
+    transform: scale(0.94);
+}
+
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-btn-send:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Bottom hint — refined to a subtle, tasteful caption (was the ugly one) */
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-composer__hint {
+    margin: 6px 4px 0 !important;
+    padding: 0 !important;
+    font-size: 10px !important;
+    line-height: 1.45 !important;
+    font-weight: 500 !important;
+    text-align: center !important;
+    color: rgba(103, 90, 79, 0.62) !important;
+    letter-spacing: 0.01em !important;
+    background: transparent !important;
+    border: none !important;
+}
+
+/* ── FAB launcher — pill, matches main portal CTA buttons ────── */
+[data-osa-chat-root] .osa-launcher-fab {
+    background: linear-gradient(135deg, var(--ask-brand-mid) 0%, var(--ask-brand) 50%, var(--ask-brand-deep) 100%) !important;
+    border: 1px solid rgba(199, 154, 73, 0.32) !important;
+    color: #fff !important;
+    box-shadow:
+        0 8px 24px rgba(132, 26, 45, 0.32),
+        0 2px 6px rgba(132, 26, 45, 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.14) !important;
+    border-radius: 999px !important;
+    padding: 0 1.35rem !important;
+    min-height: 3rem !important;
+    font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.01em !important;
+    transition: transform 0.28s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+                box-shadow 0.22s ease;
+}
+
+[data-osa-chat-root] .osa-launcher-fab:hover {
+    transform: scale(1.06);
+    box-shadow:
+        0 12px 30px rgba(132, 26, 45, 0.4),
+        0 3px 8px rgba(132, 26, 45, 0.22),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+[data-osa-chat-root] .osa-launcher-fab:active {
+    transform: scale(0.97);
+}
+
+/* Scroll-to-bottom pill */
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-scroll-bottom {
+    border-radius: 999px !important;
+    background: rgba(255, 255, 255, 0.92) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12) !important;
+    border: 0.5px solid rgba(132, 26, 45, 0.16) !important;
+}
+
+/* Custom scrollbar (cleaner) */
+[data-osa-chat-root] .osa-launcher-panel--chat-ui ::-webkit-scrollbar {
+    width: 6px;
+}
+[data-osa-chat-root] .osa-launcher-panel--chat-ui ::-webkit-scrollbar-track {
+    background: transparent;
+}
+[data-osa-chat-root] .osa-launcher-panel--chat-ui ::-webkit-scrollbar-thumb {
+    background: rgba(132, 26, 45, 0.18);
+    border-radius: 999px;
+}
+[data-osa-chat-root] .osa-launcher-panel--chat-ui ::-webkit-scrollbar-thumb:hover {
+    background: rgba(132, 26, 45, 0.32);
+}
+
+/* ── Mobile: full-screen overlay ─────────────────────────── */
+@media (max-width: 900px) {
+    [data-osa-chat-root] .osa-launcher-panel--chat-ui {
+        inset: 0 !important;
+        width: 100vw !important;
+        height: 100dvh !important;
+        max-width: 100vw !important;
+        max-height: 100dvh !important;
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+    }
+
+    [data-osa-chat-root] .osa-launcher-panel--chat-ui::before {
+        border-radius: 0 !important;
+    }
+
+    [data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-header {
+        border-radius: 0 !important;
+        padding-top: max(12px, env(safe-area-inset-top, 0px)) !important;
+    }
+
+    [data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-composer {
+        border-radius: 0 !important;
+    }
+
+    [data-osa-chat-root] .osa-launcher-fab {
+        right: 14px !important;
+        bottom: calc(14px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+}
