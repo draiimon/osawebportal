@@ -25,49 +25,126 @@
     /* ── Welcome Banner ── */
     .welcome-banner {
       position: relative; overflow: hidden;
-      margin-bottom: 24px;
-      padding: 22px 24px 18px;
+      margin-bottom: 28px;
+      padding: 28px 32px 26px;
       min-height: 180px;
-      background: linear-gradient(180deg, #8f152d 0%, #bf243f 100%);
-      border-radius: 3px;
+      background:
+        linear-gradient(135deg, #6b0e1e 0%, #841a2d 35%, #a21b34 70%, #7a1020 100%);
+      border-radius: 14px;
       border: 1px solid rgba(255,255,255,0.14);
-      box-shadow: 0 12px 30px rgba(90,14,30,0.22);
+      box-shadow: 0 12px 30px rgba(90,14,30,0.25), 0 2px 8px rgba(0,0,0,0.08);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 32px;
+      align-items: center;
+      animation: welcomeIn 0.7s cubic-bezier(0.22,1,0.36,1) both;
+    }
+    @keyframes welcomeIn {
+      from { opacity: 0; transform: translateY(-12px); }
+      to { opacity: 1; transform: translateY(0); }
     }
     .welcome-banner::before {
       content: '';
       position: absolute; inset: -6px;
       background: url('/assets/images/eac-photo.png') center/cover no-repeat;
-      opacity: 0.07; filter: blur(3px); transform: scale(1.04);
+      opacity: 0.09; filter: blur(3px); transform: scale(1.04);
     }
     .welcome-banner::after {
       content: '';
-      position: absolute; inset: 0;
-      background: linear-gradient(135deg,
-        rgba(120,20,40,0.35) 0%,
-        rgba(170,34,58,0.22) 60%,
-        transparent 100%
-      );
+      position: absolute;
+      top: -40px; right: -40px;
+      width: 280px; height: 280px;
+      background: radial-gradient(circle, rgba(199,154,73,0.22) 0%, transparent 65%);
+      pointer-events: none;
     }
     .welcome-banner > * { position: relative; z-index: 1; }
+    .welcome-banner__content { min-width: 0; }
     .welcome-eyebrow {
       font-size: 0.62rem; font-weight: 800;
       letter-spacing: 0.2em; text-transform: uppercase;
-      color: var(--gold); margin-bottom: 8px;
+      color: var(--gold); margin-bottom: 10px;
       display: flex; align-items: center; gap: 8px;
     }
     .welcome-eyebrow::before {
-      content: ''; width: 5px; height: 5px;
+      content: ''; width: 6px; height: 6px;
       background: var(--gold); border-radius: 50%;
+      box-shadow: 0 0 8px var(--gold);
     }
     .welcome-banner h1 {
-      font-family: var(--font-body);
-      font-size: clamp(1.4rem, 3.5vw, 2rem);
-      font-weight: 800;
-      color: #fff9f2; margin-bottom: 8px; line-height: 1.18;
+      font-family: var(--font-serif);
+      font-size: clamp(1.5rem, 3.5vw, 2.1rem);
+      font-weight: 700;
+      color: #fff9f2; margin-bottom: 10px; line-height: 1.15;
+      letter-spacing: -0.01em;
     }
     .welcome-banner p {
-      font-size: 0.88rem; color: rgba(255,249,242,0.72);
-      max-width: 58ch; line-height: 1.65;
+      font-size: 0.92rem; color: rgba(255,249,242,0.78);
+      max-width: 58ch; line-height: 1.6;
+    }
+    .welcome-greeting {
+      color: rgba(255,249,242,0.9);
+      font-size: 0.82rem;
+      font-weight: 500;
+      margin-top: 14px;
+      padding-left: 14px;
+      border-left: 2px solid var(--gold);
+    }
+    /* right-side decorative status widget (no time, no icons) */
+    .welcome-widget {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+      padding: 16px 22px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 12px;
+      -webkit-backdrop-filter: blur(4px);
+      backdrop-filter: blur(4px);
+      min-width: 200px;
+    }
+    .welcome-widget__status {
+      font-family: var(--font-serif);
+      font-size: 1.1rem;
+      color: #fff;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+    .welcome-widget__status::before {
+      content: '';
+      width: 8px; height: 8px;
+      background: #4ade80;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #4ade80;
+      animation: pulseDot 2s ease-in-out infinite;
+    }
+    .welcome-widget__kicker {
+      font-size: 0.76rem;
+      color: rgba(255,249,242,0.75);
+      font-weight: 500;
+    }
+    .welcome-widget__meta {
+      font-size: 0.64rem;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold);
+      padding-top: 8px;
+      margin-top: 4px;
+      border-top: 1px solid rgba(255,255,255,0.14);
+      width: 100%;
+      text-align: right;
+    }
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(1.2); }
+    }
+    @media (max-width: 780px) {
+      .welcome-banner { grid-template-columns: 1fr; padding: 22px 20px; gap: 18px; }
+      .welcome-widget { align-items: flex-start; width: 100%; }
     }
 
     .dashboard-main .stats-row {
@@ -77,56 +154,85 @@
     }
 
     .dashboard-main .stat-card {
+      position: relative;
+      overflow: hidden;
       background: var(--hud-surface);
       border: 1px solid var(--hud-line);
-      border-top: 4px solid #a21b34;
-      box-shadow: 0 10px 20px rgba(24,18,14,0.1);
-      min-height: 150px;
-      display: grid;
-      grid-template-columns: minmax(60px, 84px) 1fr;
-      grid-template-rows: auto auto;
-      align-items: center;
-      column-gap: 16px;
-      padding: 16px 18px;
+      border-top: 3px solid #a21b34;
+      box-shadow: 0 6px 16px rgba(24,18,14,0.08);
+      border-radius: 10px;
+      min-height: 140px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 18px 20px;
+      transition: transform 220ms, box-shadow 220ms, border-top-color 220ms;
+      animation: statCardIn 0.5s cubic-bezier(0.22,1,0.36,1) both;
+    }
+    .dashboard-main .stat-card:nth-child(1) { animation-delay: 0.05s; }
+    .dashboard-main .stat-card:nth-child(2) { animation-delay: 0.1s; }
+    .dashboard-main .stat-card:nth-child(3) { animation-delay: 0.15s; }
+    .dashboard-main .stat-card:nth-child(4) { animation-delay: 0.2s; }
+    @keyframes statCardIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .dashboard-main .stat-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 14px 28px rgba(24,18,14,0.12);
+      border-top-color: #c79a49;
+    }
+    .dashboard-main .stat-card::after {
+      content: '';
+      position: absolute;
+      top: -20px; right: -20px;
+      width: 120px; height: 120px;
+      background: radial-gradient(circle, rgba(132,26,45,0.05) 0%, transparent 65%);
+      pointer-events: none;
     }
     .dashboard-main .stat-card.gold {
       background: var(--hud-surface-soft);
       border-top-color: #c79a49;
     }
+    .dashboard-main .stat-card.gold::after {
+      background: radial-gradient(circle, rgba(199,154,73,0.08) 0%, transparent 65%);
+    }
+    .dashboard-main .stat-card.gold:hover { border-top-color: #a21b34; }
     .dashboard-main .stat-card__label {
       color: #8b1e31;
-      grid-column: 2;
-      grid-row: 1;
-      text-align: center;
       font-weight: 800;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.14em;
       text-transform: uppercase;
-      font-size: 0.64rem;
+      font-size: 0.66rem;
       line-height: 1.25;
-    }
-    .dashboard-main .stat-card__value {
-      color: var(--hud-text);
-      font-weight: 800;
-      letter-spacing: 0.01em;
-      grid-column: 1;
-      grid-row: 1 / span 2;
-      text-align: left;
-      font-size: clamp(2.2rem, 4.2vw, 3rem);
-      line-height: 1;
-      min-width: 60px;
-      padding-right: 14px;
-      border-right: 1px solid rgba(132,26,45,0.18);
-      align-self: stretch;
       display: flex;
       align-items: center;
+      gap: 8px;
+    }
+    .dashboard-main .stat-card__label::before {
+      content: '';
+      width: 18px; height: 2px;
+      background: currentColor;
+      border-radius: 2px;
+      opacity: 0.6;
+    }
+    .dashboard-main .stat-card.gold .stat-card__label { color: #a07830; }
+    .dashboard-main .stat-card__value {
+      color: var(--hud-text);
+      font-family: var(--font-serif);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      font-size: clamp(2.2rem, 4vw, 2.9rem);
+      line-height: 1;
     }
     .dashboard-main .stat-card__sub {
       color: var(--hud-muted);
-      grid-column: 2;
-      grid-row: 2;
-      text-align: center;
       font-size: 0.76rem;
       line-height: 1.3;
+      font-weight: 600;
+      padding-top: 8px;
+      border-top: 1px dashed rgba(132,26,45,0.14);
     }
     .welcome-actions {
       margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;
@@ -147,11 +253,32 @@
 
     /* ── Activity feed ── */
     .activity-item {
-      display: flex; align-items: flex-start;
-      gap: 12px; padding: 12px 0;
-      border-bottom: 1px solid rgba(90,62,40,0.07);
+      display: flex; align-items: center;
+      gap: 14px; padding: 14px 4px;
+      border-bottom: 1px solid rgba(90,62,40,0.06);
+      transition: background 140ms;
+      border-radius: 6px;
     }
+    .activity-item:hover { background: rgba(132,26,45,0.02); }
     .activity-item:last-child { border-bottom: none; }
+    .activity-tag {
+      width: 52px; flex-shrink: 0;
+      padding: 4px 0;
+      text-align: center;
+      font-size: 0.6rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #8b1e31;
+      background: rgba(132,26,45,0.08);
+      border: 1px solid rgba(132,26,45,0.16);
+      border-radius: 4px;
+    }
+    .activity-tag.gold {
+      color: #a07830;
+      background: rgba(199,154,73,0.14);
+      border-color: rgba(199,154,73,0.28);
+    }
     .activity-dot {
       width: 8px; height: 8px; border-radius: 50%;
       background: var(--brand); margin-top: 5px; flex-shrink: 0;
@@ -159,11 +286,18 @@
     .activity-dot.gold  { background: var(--gold); }
     .activity-dot.green { background: #10b981; }
     .activity-text { flex: 1; min-width: 0; }
-    .activity-text strong { display: block; font-size: 0.83rem; color: var(--ink); font-weight: 700; }
+    .activity-text strong {
+      display: block; font-size: 0.84rem; color: var(--ink); font-weight: 700;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
     .activity-text span   { font-size: 0.74rem; color: var(--muted); }
     .activity-time {
-      font-size: 0.68rem; color: var(--muted); white-space: nowrap;
+      font-size: 0.7rem; color: var(--muted); white-space: nowrap;
       flex-shrink: 0; margin-left: auto;
+      padding: 3px 8px;
+      background: rgba(132,26,45,0.05);
+      border-radius: 10px;
+      font-weight: 600;
     }
 
     /* ── Quick cards ── */
@@ -173,35 +307,71 @@
       gap: 12px; margin-bottom: 28px;
     }
     .quick-card {
+      position: relative;
+      overflow: hidden;
       background: var(--hud-surface);
       border: 1px solid var(--hud-line-soft);
-      border-top: 4px solid #a21b34;
-      padding: 16px;
+      border-top: 3px solid #a21b34;
+      padding: 16px 18px;
       display: grid;
-      grid-template-columns: auto 1fr;
+      grid-template-columns: auto 1fr auto;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
       min-height: 108px;
       text-decoration: none; color: var(--hud-text);
-      transition: transform 180ms, box-shadow 180ms, border-top-color 180ms;
-      box-shadow: var(--shadow-sm);
-      border-radius: 2px;
+      transition: transform 220ms cubic-bezier(0.22,1,0.36,1), box-shadow 220ms, border-top-color 220ms;
+      box-shadow: 0 4px 10px rgba(24,18,14,0.06);
+      border-radius: 10px;
+    }
+    .quick-card::before {
+      content: '';
+      position: absolute;
+      left: 0; bottom: 0;
+      width: 0; height: 2px;
+      background: linear-gradient(90deg, #a21b34, #c79a49);
+      transition: width 280ms cubic-bezier(0.22,1,0.36,1);
     }
     .quick-card:hover {
       transform: translateY(-4px);
-      box-shadow: var(--shadow);
+      box-shadow: 0 14px 26px rgba(24,18,14,0.12);
       border-top-color: #c79a49;
     }
-    .quick-card-icon {
-      width: 42px; height: 42px;
-      background: rgba(132,26,45,0.08);
-      border: 1px solid rgba(132,26,45,0.2);
-      display: flex; align-items: center; justify-content: center;
-      color: #8b1e31; flex-shrink: 0; border-radius: 2px;
+    .quick-card:hover::before { width: 100%; }
+    .quick-card:hover .quick-card-cta {
+      background: #8b1e31;
+      color: #fff9f2;
+      border-color: #8b1e31;
     }
-    .quick-card-icon svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2.1; stroke-linecap: round; }
-    .quick-card strong { display: block; font-size: 0.9rem; font-weight: 800; line-height: 1.15; color: #3a2a24; }
-    .quick-card span   { font-size: 0.74rem; color: var(--hud-muted); display: block; margin-top: 4px; }
+    .quick-card-index {
+      width: 44px; height: 44px;
+      background: linear-gradient(135deg, rgba(132,26,45,0.08), rgba(199,154,73,0.08));
+      border: 1px solid rgba(132,26,45,0.18);
+      display: flex; align-items: center; justify-content: center;
+      color: #8b1e31; flex-shrink: 0; border-radius: 10px;
+      font-family: var(--font-serif);
+      font-weight: 700;
+      font-size: 0.95rem;
+      letter-spacing: 0.02em;
+      transition: background 200ms, transform 200ms, color 200ms;
+    }
+    .quick-card:hover .quick-card-index {
+      background: linear-gradient(135deg, rgba(132,26,45,0.18), rgba(199,154,73,0.18));
+      transform: scale(1.04);
+    }
+    .quick-card strong { display: block; font-size: 0.93rem; font-weight: 800; line-height: 1.15; color: #3a2a24; letter-spacing: -0.01em; }
+    .quick-card span   { font-size: 0.76rem; color: var(--hud-muted); display: block; margin-top: 4px; line-height: 1.35; }
+    .quick-card-cta {
+      font-size: 0.66rem;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 6px 12px;
+      border: 1px solid rgba(132,26,45,0.35);
+      color: #8b1e31;
+      border-radius: 20px;
+      transition: background 220ms, color 220ms, border-color 220ms;
+      flex-shrink: 0;
+    }
 
     /* ── Two-column layout ── */
     .dash-grid {
@@ -212,38 +382,184 @@
 
     /* unclaimed item row */
     .unclaimed-row {
-      padding: 10px 0;
-      border-bottom: 1px solid rgba(90,62,40,0.07);
+      padding: 12px 4px;
+      border-bottom: 1px solid rgba(90,62,40,0.06);
       display: flex; align-items: center; gap: 10px;
+      transition: background 140ms;
+      border-radius: 6px;
     }
+    .unclaimed-row:hover { background: rgba(199,154,73,0.06); }
     .unclaimed-row:last-child { border-bottom: none; }
     .unclaimed-row-text { flex: 1; min-width: 0; }
-    .unclaimed-row-text strong { display: block; font-size: 0.83rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .unclaimed-row-text strong { display: block; font-size: 0.84rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--hud-text); }
     .unclaimed-row-text span   { font-size: 0.72rem; color: var(--muted); }
 
+    /* ── Section label with accent ── */
     .dashboard-main .section-label {
       color: #8b1e31;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin: 8px 0 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .dashboard-main .section-label::before {
+      content: '';
+      width: 22px; height: 2px;
+      background: linear-gradient(90deg, #a21b34, #c79a49);
+      border-radius: 2px;
     }
 
     .dashboard-main .panel {
       background: var(--hud-surface);
       border: 1px solid var(--hud-line);
-      box-shadow: 0 10px 20px rgba(24,18,14,0.1);
+      box-shadow: 0 6px 16px rgba(24,18,14,0.07);
+      border-radius: 10px;
+      overflow: hidden;
+      animation: panelFadeIn 0.5s cubic-bezier(0.22,1,0.36,1) both;
     }
+    @keyframes panelFadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .dashboard-main .panel + .panel { margin-top: 16px; }
     .dashboard-main .panel::before {
       background: linear-gradient(90deg, #a21b34, #c79a49);
     }
     .dashboard-main .panel-head {
-      background: rgba(255,255,255,0.7);
+      background: linear-gradient(180deg, rgba(255,255,255,0.8), rgba(255,249,243,0.6));
       border-bottom-color: var(--hud-line-soft);
+      padding: 14px 18px;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
     }
     .dashboard-main .panel-head h2,
     .dashboard-main .panel-head h3 {
       color: var(--hud-text);
+      font-family: var(--font-serif);
+      font-weight: 700;
+      font-size: 0.98rem;
+      letter-spacing: -0.01em;
     }
+    .dashboard-main .panel-head h3 { font-size: 0.9rem; }
     .dashboard-main .panel-body {
       background: transparent;
       color: var(--hud-text);
+      padding: 14px 18px 16px;
+    }
+
+    /* System Info rows */
+    .sysinfo-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(90,62,40,0.06);
+      font-size: 0.84rem;
+    }
+    .sysinfo-row:last-child { border-bottom: none; }
+    .sysinfo-row__label {
+      color: var(--hud-muted);
+      font-weight: 600;
+      font-size: 0.8rem;
+    }
+    .sysinfo-row__value {
+      color: var(--hud-text);
+      font-weight: 700;
+      font-size: 0.82rem;
+      text-align: right;
+      max-width: 160px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .sysinfo-row__value.brand { color: #8b1e31; }
+
+    /* Panel pill + link */
+    .panel-pill {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #8b1e31;
+      background: rgba(132,26,45,0.08);
+      padding: 4px 10px;
+      border-radius: 10px;
+      letter-spacing: 0.04em;
+    }
+    .panel-link {
+      display: inline-flex;
+      align-items: center;
+      font-size: 0.7rem;
+      color: #8b1e31;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-decoration: none;
+      padding: 5px 10px;
+      border: 1px solid rgba(132,26,45,0.28);
+      border-radius: 12px;
+      transition: background 140ms, color 140ms;
+    }
+    .panel-link:hover {
+      background: #8b1e31;
+      color: #fff9f2;
+      border-color: #8b1e31;
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 32px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+    .empty-state--sm { padding: 20px 12px; }
+    .empty-state__bar {
+      width: 48px; height: 3px;
+      background: linear-gradient(90deg, #a21b34, #c79a49);
+      border-radius: 2px;
+      margin-bottom: 10px;
+    }
+    .empty-state strong {
+      font-size: 0.88rem;
+      color: var(--hud-text);
+      font-weight: 700;
+    }
+    .empty-state span {
+      font-size: 0.78rem;
+      color: var(--hud-muted);
+      max-width: 42ch;
+      line-height: 1.5;
+    }
+
+    /* Unclaimed "more items" footer */
+    .unclaimed-more {
+      font-size: 0.74rem;
+      color: #8b1e31;
+      font-weight: 700;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed rgba(132,26,45,0.18);
+      text-align: center;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 9px;
+      border-radius: 10px;
+      font-size: 0.66rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+    .pill-unclaimed {
+      background: rgba(199,154,73,0.16);
+      color: #a07830;
+      border: 1px solid rgba(199,154,73,0.28);
     }
 
     .dashboard-main .activity-item {
@@ -284,24 +600,28 @@
 
   <!-- NAV -->
   <nav class="admin-nav" id="admin-nav">
-    <button class="nav-hamburger" id="nav-hamburger" aria-label="Open navigation menu" aria-expanded="false">
-      <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-    </button>
-    <a class="admin-nav__brand" href="/admin/dashboard">
-      <img class="admin-nav__logo" src="/assets/images/eac-emblem.png" alt="EAC" onerror="this.style.display='none'">
-      <div class="admin-nav__title"><strong>EAC Cavite</strong><span>OSA Admin Panel</span></div>
-    </a>
-    <div class="admin-nav__sep"></div>
-    <div class="admin-nav__links">
-      <a class="nav-link active" href="/admin/dashboard"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</a>
-      <a class="nav-link" href="/admin/modules/announcements"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Announcements<span class="nav-badge" data-nav-badge="ann" style="display:none">0</span></a>
-      <a class="nav-link" href="/admin/modules/lost-found"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Lost &amp; Found<span class="nav-badge" data-nav-badge="lf" style="display:none">0</span></a>
-      <a class="nav-link" href="/admin/modules/home-content"><svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home Content</a>
-      <a class="nav-link" href="/admin/modules/about"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>About Page</a>
-      <a class="nav-link" href="/admin/modules/chat-support"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Chat Support<span class="nav-badge" data-nav-badge="chat" style="display:none">0</span></a>
-      <a class="nav-link" href="/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Live Portal</a>
+    <div class="admin-nav__left">
+      <button class="nav-hamburger" id="nav-hamburger" aria-label="Open navigation menu" aria-expanded="false">
+        <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <a class="admin-nav__brand" href="/admin/dashboard">
+        <img class="admin-nav__logo" src="/assets/images/eac-emblem.png" alt="EAC" onerror="this.style.display='none'">
+        <div class="admin-nav__title"><strong>EAC Cavite</strong><span>OSA Admin Panel</span></div>
+      </a>
     </div>
+
+    <div class="admin-nav__center">
+      <a class="nav-link active" href="/admin/dashboard"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</a>
+      <a class="nav-link" href="/admin/modules/announcements"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Announcements<span class="nav-badge" data-nav-badge="ann">0</span></a>
+      <a class="nav-link" href="/admin/modules/lost-found"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Lost &amp; Found<span class="nav-badge" data-nav-badge="lf">0</span></a>
+      <a class="nav-link" href="/admin/modules/chat-support"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Chat Support<span class="nav-badge" data-nav-badge="chat">0</span></a>
+    </div>
+
     <div class="admin-nav__right">
+      <a class="nav-link-quiet" href="/admin/modules/home-content" title="Home Content"><svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></a>
+      <a class="nav-link-quiet" href="/admin/modules/about" title="About Page"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></a>
+      <a class="nav-link-quiet" href="/" target="_blank" rel="noopener" title="View Live Portal"><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>
+      <div class="nav-separator"></div>
       <div class="admin-avatar" data-admin-initials>AD</div>
       <div class="admin-name-wrap"><strong data-admin-name>Administrator</strong><span data-admin-email></span></div>
       <button class="btn-logout" data-logout type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Log Out</span></button>
@@ -360,9 +680,19 @@
 
     <!-- Welcome Banner -->
     <div class="welcome-banner">
-      <div class="welcome-eyebrow">OSA Portal Administration</div>
-      <h1><span data-admin-name>Administrator</span> Dashboard</h1>
-      <p>Manage announcements, lost &amp; found items, and portal content in one place.</p>
+      <div class="welcome-banner__content">
+        <div class="welcome-eyebrow">OSA Portal Administration</div>
+        <h1>Welcome back, <span data-admin-name>Administrator</span></h1>
+        <p>Manage announcements, lost &amp; found items, and portal content — all in one place.</p>
+        <div class="welcome-greeting">
+          <span id="welcome-greeting-text">Good day! Here's your latest overview.</span>
+        </div>
+      </div>
+      <div class="welcome-widget">
+        <div class="welcome-widget__status">System Online</div>
+        <div class="welcome-widget__kicker">All services operational</div>
+        <div class="welcome-widget__meta">OSA · EAC Cavite</div>
+      </div>
     </div>
 
     <!-- Stats -->
@@ -393,20 +723,24 @@
     <div class="section-label">Quick Access</div>
     <div class="quick-grid">
       <a class="quick-card" href="/admin/modules/announcements">
-        <div class="quick-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
+        <div class="quick-card-index">01</div>
         <div><strong>Announcements</strong><span>Post &amp; manage news</span></div>
+        <div class="quick-card-cta">Open</div>
       </a>
       <a class="quick-card" href="/admin/modules/lost-found">
-        <div class="quick-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+        <div class="quick-card-index">02</div>
         <div><strong>Lost &amp; Found</strong><span>Log &amp; manage items</span></div>
+        <div class="quick-card-cta">Open</div>
       </a>
       <a class="quick-card" href="/admin/modules/home-content">
-        <div class="quick-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+        <div class="quick-card-index">03</div>
         <div><strong>Home Content</strong><span>Edit hero &amp; sections</span></div>
+        <div class="quick-card-cta">Open</div>
       </a>
       <a class="quick-card" href="/admin/modules/about">
-        <div class="quick-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+        <div class="quick-card-index">04</div>
         <div><strong>About Page</strong><span>Mission &amp; vision</span></div>
+        <div class="quick-card-cta">Open</div>
       </a>
     </div>
 
@@ -416,11 +750,15 @@
       <div class="panel">
         <div class="panel-head">
           <h2>Recent Activity</h2>
-          <span style="font-size:0.72rem;color:var(--muted)">Last 10 actions</span>
+          <span class="panel-pill">Last 10 actions</span>
         </div>
         <div class="panel-body">
           <div id="activity-feed">
-            <p style="font-size:0.84rem;color:var(--muted);padding:8px 0">No recent activity yet. Start by adding announcements or lost &amp; found items.</p>
+            <div class="empty-state">
+              <div class="empty-state__bar"></div>
+              <strong>No recent activity</strong>
+              <span>Start by adding announcements or lost &amp; found items.</span>
+            </div>
           </div>
         </div>
       </div>
@@ -430,31 +768,34 @@
         <div class="panel">
           <div class="panel-head">
             <h3>Unclaimed Items</h3>
-            <a href="/admin/modules/lost-found" style="font-size:0.72rem;color:var(--brand);font-weight:700">View all →</a>
+            <a href="/admin/modules/lost-found" class="panel-link">View all</a>
           </div>
           <div class="panel-body" id="unclaimed-panel">
-            <p style="font-size:0.83rem;color:var(--muted)">No unclaimed items on record.</p>
+            <div class="empty-state empty-state--sm">
+              <div class="empty-state__bar"></div>
+              <span>No unclaimed items on record.</span>
+            </div>
           </div>
         </div>
 
         <div class="panel">
           <div class="panel-head"><h3>System Info</h3></div>
-          <div class="panel-body" style="display:grid;gap:10px">
-            <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.82rem">
-              <span style="color:var(--muted)">Portal version</span>
-              <strong style="color:var(--brand)">v2026</strong>
+          <div class="panel-body">
+            <div class="sysinfo-row">
+              <span class="sysinfo-row__label">Portal version</span>
+              <strong class="sysinfo-row__value brand">v2026</strong>
             </div>
-            <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.82rem">
-              <span style="color:var(--muted)">Logged in as</span>
-              <strong data-admin-email style="color:var(--ink);font-size:0.78rem;text-align:right;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></strong>
+            <div class="sysinfo-row">
+              <span class="sysinfo-row__label">Logged in as</span>
+              <strong class="sysinfo-row__value" data-admin-email></strong>
             </div>
-            <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.82rem">
-              <span style="color:var(--muted)">Database</span>
-              <strong id="db-name" style="color:var(--ink)">Checking…</strong>
+            <div class="sysinfo-row">
+              <span class="sysinfo-row__label">Database</span>
+              <strong class="sysinfo-row__value" id="db-name">Checking…</strong>
             </div>
-            <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.82rem">
-              <span style="color:var(--muted)">DB Size</span>
-              <strong id="db-size" style="color:var(--ink)">Checking…</strong>
+            <div class="sysinfo-row">
+              <span class="sysinfo-row__label">DB Size</span>
+              <strong class="sysinfo-row__value" id="db-size">Checking…</strong>
             </div>
           </div>
         </div>
@@ -466,6 +807,16 @@
 <script src="/admin/admin-shell.js?v=20260424a"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+  // Greeting (time-based, once — no clock since util-bar already shows time)
+  const greetEl = document.getElementById('welcome-greeting-text');
+  if (greetEl) {
+    const h = new Date().getHours();
+    let greet = 'Good evening';
+    if (h < 12) greet = 'Good morning';
+    else if (h < 18) greet = 'Good afternoon';
+    greetEl.textContent = `${greet}! Here's your latest overview.`;
+  }
+
   const renderDashboard = (ann, lf) => {
     const unclaimed = lf.filter(i => (i.status||'').toLowerCase() === 'unclaimed');
     const claimed   = lf.filter(i => (i.status||'').toLowerCase() === 'claimed');
@@ -476,18 +827,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Activity feed
     const allEvents = [
-      ...ann.map(a => ({ label: `Announcement: "${a.title}"`, time: a.createdAt || a.date || '', dot: '' })),
-      ...lf.map(l  => ({ label: `Lost item: "${l.title}"`,    time: l.createdAt || l.date || '', dot: 'gold' }))
+      ...ann.map(a => ({ label: `Announcement: "${a.title}"`, time: a.createdAt || a.date || '', kind: 'ann' })),
+      ...lf.map(l  => ({ label: `Lost item: "${l.title}"`,    time: l.createdAt || l.date || '', kind: 'lf' }))
     ].sort((a, b) => String(b.time || '').localeCompare(String(a.time || ''))).slice(0, 10);
 
     const feedEl = document.getElementById('activity-feed');
     if (allEvents.length) {
       feedEl.innerHTML = allEvents.map(ev => `
         <div class="activity-item">
-          <div class="activity-dot ${ev.dot}"></div>
+          <div class="activity-tag ${ev.kind === 'lf' ? 'gold' : ''}">${ev.kind === 'lf' ? 'L&amp;F' : 'ANN'}</div>
           <div class="activity-text">
             <strong>${ev.label}</strong>
-            <span>${ev.dot === 'gold' ? 'Lost item recorded' : 'Announcement posted'}</span>
+            <span>${ev.kind === 'lf' ? 'Lost item recorded' : 'Announcement posted'}</span>
           </div>
           <div class="activity-time">${ev.time ? String(ev.time).split('T')[0] : '—'}</div>
         </div>
@@ -499,13 +850,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (unclaimed.length) {
       uPanel.innerHTML = unclaimed.slice(0, 5).map(item => `
         <div class="unclaimed-row">
+          <div class="activity-tag gold">L&amp;F</div>
           <div class="unclaimed-row-text">
             <strong>${item.title || 'Item'}</strong>
             <span>${item.itemNumber || ''} · ${item.date || ''}</span>
           </div>
           <span class="pill pill-unclaimed">Unclaimed</span>
         </div>
-      `).join('') + (unclaimed.length > 5 ? `<p style="font-size:0.74rem;color:var(--muted);margin-top:10px">+${unclaimed.length-5} more</p>` : '');
+      `).join('') + (unclaimed.length > 5 ? `<div class="unclaimed-more">+${unclaimed.length-5} more items</div>` : '');
     }
   };
 
@@ -526,7 +878,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }).catch(() => {
     const feedEl = document.getElementById('activity-feed');
     if (feedEl) {
-      feedEl.innerHTML = `<div class="activity-item"><div class="activity-dot"></div><div class="activity-text"><strong>Database temporarily unavailable</strong><span>Please retry in a moment.</span></div><div class="activity-time">—</div></div>`;
+      feedEl.innerHTML = `<div class="activity-item"><div class="activity-tag">ERR</div><div class="activity-text"><strong>Database temporarily unavailable</strong><span>Please retry in a moment.</span></div><div class="activity-time">—</div></div>`;
     }
     const dbNameEl = document.getElementById('db-name');
     const dbSizeEl = document.getElementById('db-size');

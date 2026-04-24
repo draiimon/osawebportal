@@ -1135,6 +1135,30 @@ input, select, textarea { font-family: var(--font-body); }
 }
 
 /* ══════════════════════════════════════════════════════════════
+   RESPONSIVE — MID-WIDTH ≤1200px  (hide low-priority nav items)
+   ══════════════════════════════════════════════════════════════ */
+@media (max-width: 1200px) {
+  /* Hide non-critical nav items so badge-critical ones (Chat Support) stay visible.
+     All items remain accessible via the hamburger drawer. */
+  .admin-nav__links .nav-link[href="/admin/modules/home-content"],
+  .admin-nav__links .nav-link[href="/admin/modules/about"],
+  .admin-nav__links .nav-link[href="/"][target="_blank"] { display: none; }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   RESPONSIVE — MID-WIDTH ≤1024px
+   ══════════════════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  .nav-link { padding: 0 10px; font-size: 0.76rem; }
+  .nav-link svg { width: 13px; height: 13px; }
+  .nav-badge { font-size: 0.55rem; min-width: 16px; height: 16px; padding: 0 4px; }
+  .admin-util-bar { display: none; }
+  .admin-nav__right .admin-name-wrap { display: none; }
+  .btn-logout span { display: none; }
+  .btn-logout { padding: 0 10px; }
+}
+
+/* ══════════════════════════════════════════════════════════════
    RESPONSIVE — TABLET ≤900px
    ══════════════════════════════════════════════════════════════ */
 @media (max-width: 900px) {

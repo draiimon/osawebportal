@@ -1,5 +1,5 @@
-const CACHE_VERSION = "osa-static-v1.0.13";
-const RUNTIME_CACHE = "osa-runtime-v1.0.13";
+const CACHE_VERSION = "osa-static-v1.0.14";
+const RUNTIME_CACHE = "osa-runtime-v1.0.14";
 
 const PRECACHE_URLS = [
   "/",
@@ -14,8 +14,8 @@ const PRECACHE_URLS = [
   "/css/osa-ai.css?v=46",
   "/assets/js/portal-shell.js?v=44",
   "/assets/js/osa-api-client.js?v=2",
-  "/assets/js/osa-chat-loader.js?v=70",
-  "/assets/js/osa-chat-widget.js?v=75",
+  "/assets/js/osa-chat-loader.js?v=71",
+  "/assets/js/osa-chat-widget.js?v=76",
   "/assets/images/eac-emblem.png",
 ];
 

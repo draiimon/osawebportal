@@ -2461,238 +2461,6 @@ function registerChatRoutes(app, apiPrefix) {
     }
   });
 
-  // ── Visit-status timeline helpers ──────────────────────────────
-  // The widget shows a 4-stage timeline: Submitted → Scheduled → Waiting at OSA
-  // → Completed. State is derived from existing fields plus arrived_at /
-  // visit_completed_at so we never carry stale enums.
-  function deriveVisitState(t) {
-    if (!t) return "submitted";
-    if (t.visit_completed_at || String(t.status || "") === "resolved") return "completed";
-    if (t.arrived_at) return "waiting";
-    if (String(t.appointment_status || "") === "approved" && t.appointment_datetime) return "scheduled";
-    return "submitted";
-  }
-
-  // Queue position for a single ticket among everyone currently waiting at OSA
-  // today (arrived but not yet completed/resolved). Returns 0 if not in queue.
-  async function computeQueuePosition(caseId) {
-    const r = await db.query(
-      `WITH me AS (
-         SELECT arrived_at FROM escalation_tickets
-          WHERE case_id = $1 AND arrived_at IS NOT NULL
-            AND visit_completed_at IS NULL AND status <> 'resolved'
-       )
-       SELECT
-         (SELECT COUNT(*) FROM escalation_tickets t, me
-            WHERE t.arrived_at IS NOT NULL
-              AND t.visit_completed_at IS NULL
-              AND t.status <> 'resolved'
-              AND t.arrived_at::date = me.arrived_at::date
-              AND t.arrived_at <= me.arrived_at) AS position,
-         (SELECT COUNT(*) FROM escalation_tickets t
-            WHERE t.arrived_at IS NOT NULL
-              AND t.visit_completed_at IS NULL
-              AND t.status <> 'resolved'
-              AND t.arrived_at::date = (SELECT arrived_at FROM me)::date) AS total`,
-      [caseId]
-    );
-    if (!r.rows.length) return { position: 0, total: 0 };
-    return {
-      position: Number(r.rows[0].position) || 0,
-      total: Number(r.rows[0].total) || 0,
-    };
-  }
-
-  // After arrive/complete, recompute queue positions for everyone still waiting
-  // today and push the updated number to each via SSE so they always see the
-  // accurate live count.
-  async function broadcastQueuePositions() {
-    try {
-      const r = await db.query(
-        `SELECT case_id, session_id, arrived_at FROM escalation_tickets
-          WHERE arrived_at IS NOT NULL
-            AND visit_completed_at IS NULL
-            AND status <> 'resolved'
-            AND arrived_at::date = CURRENT_DATE
-          ORDER BY arrived_at ASC`
-      );
-      const total = r.rows.length;
-      r.rows.forEach((row, idx) => {
-        const pos = idx + 1;
-        if (row.session_id) {
-          pushToSession(row.session_id, {
-            type: "visit_status",
-            case_id: row.case_id,
-            visit_state: "waiting",
-            queue_position: pos,
-            queue_total: total,
-            timestamp: new Date().toISOString(),
-          });
-        }
-      });
-    } catch (e) {
-      // eslint-disable-next-line no-console
-      console.warn("[visit] broadcast failed:", e?.message || e);
-    }
-  }
-
-  // Student: tap "I'm here at OSA". Requires an approved appointment on an
-  // active ticket attached to the calling session.
-  app.post(`${apiPrefix}/chat/visit/arrive`, async (req, res) => {
-    const sessionId = String((req.body && req.body.session_id) || "").trim();
-    const caseId = String((req.body && req.body.case_id) || "").trim();
-    if (!sessionId || !caseId) {
-      return res.status(400).json({ success: false, message: "session_id and case_id are required." });
-    }
-    try {
-      const found = await db.query(
-        `SELECT case_id, session_id, status, appointment_status, appointment_datetime,
-                arrived_at, visit_completed_at, student_name
-           FROM escalation_tickets
-          WHERE case_id = $1 AND session_id = $2`,
-        [caseId, sessionId]
-      );
-      if (!found.rows.length) {
-        return res.status(404).json({ success: false, message: "Ticket not found for this session.", code: "TICKET_NOT_FOUND" });
-      }
-      const t = found.rows[0];
-      if (String(t.appointment_status || "") !== "approved") {
-        return res.status(409).json({ success: false, message: "Appointment not yet approved.", code: "APPT_NOT_APPROVED" });
-      }
-      if (t.visit_completed_at || String(t.status || "") === "resolved") {
-        return res.status(409).json({ success: false, message: "Visit already completed.", code: "VISIT_ALREADY_DONE" });
-      }
-      if (!t.arrived_at) {
-        await db.query(
-          `UPDATE escalation_tickets SET arrived_at = NOW(), updated_at = NOW() WHERE case_id = $1`,
-          [caseId]
-        );
-      }
-      const queue = await computeQueuePosition(caseId);
-      const arrivalSysMsg =
-        `Student arrived at OSA · Case ID: ${caseId}` +
-        (queue.position ? ` · Queue position: #${queue.position} of ${queue.total}` : "");
-      try {
-        await db.query(
-          `INSERT INTO chat_messages (session_id, role, content) VALUES ($1, 'assistant', $2)`,
-          [sessionId, arrivalSysMsg]
-        );
-      } catch (_) {}
-      pushToAdminTickets({
-        type: "ticket_arrived",
-        case_id: caseId,
-        student_name: t.student_name,
-        queue_position: queue.position,
-        queue_total: queue.total,
-        timestamp: new Date().toISOString(),
-      });
-      // Push updated positions to everyone (this student gets their own too).
-      broadcastQueuePositions().catch(() => {});
-      return res.json({
-        success: true,
-        case_id: caseId,
-        visit_state: "waiting",
-        arrived_at: new Date().toISOString(),
-        queue_position: queue.position,
-        queue_total: queue.total,
-      });
-    } catch (error) {
-      return genericError(res, "chat", error);
-    }
-  });
-
-  // Student or admin: get current visit state for a ticket. Used by the widget
-  // to refresh after reload and by the admin panel to render badges.
-  app.get(`${apiPrefix}/chat/visit/status`, async (req, res) => {
-    const caseId = String((req.query && req.query.case_id) || "").trim();
-    if (!caseId) return res.status(400).json({ success: false, message: "case_id is required." });
-    try {
-      const r = await db.query(
-        `SELECT case_id, status, appointment_status, appointment_datetime,
-                appointment_location, arrived_at, visit_completed_at
-           FROM escalation_tickets
-          WHERE case_id = $1`,
-        [caseId]
-      );
-      if (!r.rows.length) return res.status(404).json({ success: false, message: "Ticket not found." });
-      const t = r.rows[0];
-      const visit_state = deriveVisitState(t);
-      let queue_position = 0;
-      let queue_total = 0;
-      if (visit_state === "waiting") {
-        const q = await computeQueuePosition(caseId);
-        queue_position = q.position;
-        queue_total = q.total;
-      }
-      return res.json({
-        success: true,
-        case_id: caseId,
-        visit_state,
-        appointment_status: t.appointment_status,
-        appointment_datetime: t.appointment_datetime,
-        appointment_location: t.appointment_location,
-        arrived_at: t.arrived_at,
-        visit_completed_at: t.visit_completed_at,
-        queue_position,
-        queue_total,
-      });
-    } catch (error) {
-      return genericError(res, "chat", error);
-    }
-  });
-
-  // Admin: mark visit completed (advances timeline to "completed" without
-  // requiring a full Resolve). Optional auto-resolve via ?resolve=1.
-  app.post(`${apiPrefix}/chat/tickets/:caseId/complete-visit`, requireAdminKey, async (req, res) => {
-    const caseId = String((req.params && req.params.caseId) || "").trim();
-    const staffName = String((req.body && req.body.staff_name) || "OSA Staff").trim();
-    if (!caseId) return res.status(400).json({ success: false, message: "caseId is required." });
-    try {
-      const r = await db.query(
-        `UPDATE escalation_tickets
-            SET visit_completed_at = COALESCE(visit_completed_at, NOW()),
-                updated_at = NOW()
-          WHERE case_id = $1
-            AND status <> 'resolved'
-        RETURNING session_id, student_name, visit_completed_at`,
-        [caseId]
-      );
-      if (!r.rows.length) {
-        return res.status(404).json({ success: false, message: "Ticket not found or already resolved." });
-      }
-      const row = r.rows[0];
-      const msg =
-        `[OSA Staff · ${staffName}]\n\n` +
-        `Visit completed for Case ID: ${caseId}.\n` +
-        `Salamat sa pagbisita! If you need anything else, feel free to send a new message.`;
-      try {
-        await db.query(
-          `INSERT INTO chat_messages (session_id, role, content) VALUES ($1, 'assistant', $2)`,
-          [row.session_id, msg]
-        );
-      } catch (_) {}
-      pushToSession(row.session_id, {
-        type: "visit_status",
-        case_id: caseId,
-        visit_state: "completed",
-        visit_completed_at: row.visit_completed_at,
-        timestamp: new Date().toISOString(),
-      });
-      pushToAdminTickets({
-        type: "ticket_updated",
-        case_id: caseId,
-        visit_state: "completed",
-        visit_completed_at: row.visit_completed_at,
-        timestamp: new Date().toISOString(),
-      });
-      // Bump remaining waiters' queue numbers.
-      broadcastQueuePositions().catch(() => {});
-      return res.json({ success: true, case_id: caseId, visit_state: "completed", visit_completed_at: row.visit_completed_at });
-    } catch (error) {
-      return genericError(res, "chat", error);
-    }
-  });
-
   // ── Admin: Resolve ticket + optional self-learning ───────────
   app.put(`${apiPrefix}/chat/tickets/:caseId/resolve`, requireAdminKey, async (req, res) => {
     const caseId = String((req.params && req.params.caseId) || "").trim();
@@ -2702,8 +2470,11 @@ function registerChatRoutes(app, apiPrefix) {
     const faqAnswer = String((req.body && req.body.faq_answer) || staffReply).trim();
     const faqCategory = String((req.body && req.body.faq_category) || "General").trim();
 
-    if (!caseId || !staffReply) {
-      return res.status(400).json({ success: false, message: "case_id and staff_reply are required." });
+    if (!caseId) {
+      return res.status(400).json({ success: false, message: "case_id is required." });
+    }
+    if (promoteToFaq && !staffReply) {
+      return res.status(400).json({ success: false, message: "staff_reply is required when promoting to FAQ." });
     }
 
     try {
@@ -2713,7 +2484,7 @@ function registerChatRoutes(app, apiPrefix) {
              faq_question = $3, faq_answer = $4, faq_category = $5, updated_at = NOW()
          WHERE case_id = $6
          RETURNING session_id, student_email, student_name`,
-        [staffReply, promoteToFaq, faqQuestion || null, faqAnswer || null, faqCategory, caseId]
+        [staffReply || null, promoteToFaq, faqQuestion || null, faqAnswer || null, faqCategory, caseId]
       );
 
       if (!ticketResult.rows.length) {
@@ -2721,17 +2492,21 @@ function registerChatRoutes(app, apiPrefix) {
       }
 
       const { session_id, student_name } = ticketResult.rows[0];
-      const firstName = student_name.split(" ")[0];
+      const firstName = (student_name || "").split(" ")[0] || "there";
 
-      // Add staff reply to chat history
-      const staffMsg =
-        `[OSA Staff Reply — Case ${caseId}]\n\n` +
-        `Hi ${firstName}, here is the response to your concern:\n\n${staffReply}`;
+      // Staff reply is optional. Only prepend a personalized reply bubble when
+      // staff actually wrote something; otherwise just end the session cleanly.
+      const staffMsg = staffReply
+        ? `[OSA Staff Reply — Case ${caseId}]\n\n` +
+          `Hi ${firstName}, here is the response to your concern:\n\n${staffReply}`
+        : '';
 
-      await db.query(
-        `INSERT INTO chat_messages (session_id, role, content) VALUES ($1, 'assistant', $2)`,
-        [session_id, staffMsg]
-      );
+      if (staffMsg) {
+        await db.query(
+          `INSERT INTO chat_messages (session_id, role, content) VALUES ($1, 'assistant', $2)`,
+          [session_id, staffMsg]
+        );
+      }
 
       // Resolving a ticket also ends the live support session for the student.
       // Persist a closing system note so both the student widget and the admin
@@ -2832,18 +2607,31 @@ function registerChatRoutes(app, apiPrefix) {
         [caseId]
       );
       if (!result.rows.length) return res.status(404).json({ success: false, message: "Ticket not found." });
-      return res.json({ success: true, ticket: result.rows[0] });
+      const ticket = result.rows[0];
+      const status = String(ticket.status || "").toLowerCase();
+      const appointmentStatus = String(ticket.appointment_status || "").toLowerCase();
+      const effectiveStatus =
+        status !== "resolved" && appointmentStatus === "approved"
+          ? "approved"
+          : status;
+      return res.json({
+        success: true,
+        ticket: {
+          ...ticket,
+          effective_status: effectiveStatus,
+        },
+      });
     } catch (error) {
       return genericError(res, "chat", error);
     }
   });
 
-  // Admin: List tickets (supports active statuses + approved appointments queue)
+  // Admin: List tickets
   app.get(`${apiPrefix}/chat/tickets`, requireAdminKey, async (req, res) => {
     const status = String((req.query && req.query.status) || "open").trim().toLowerCase();
     const searchQ = String((req.query && req.query.q) || "").trim().toLowerCase();
 
-    const allowed = { open: 1, in_progress: 1, resolved: 1, approved: 1, waiting: 1 };
+    const allowed = { open: 1, in_progress: 1, resolved: 1, approved: 1 };
     const normalizedStatus = allowed[status] ? status : "open";
 
     const where = [];
@@ -2851,10 +2639,7 @@ function registerChatRoutes(app, apiPrefix) {
     let p = 1;
 
     if (normalizedStatus === "approved") {
-      where.push(`t.appointment_status = 'approved' AND t.arrived_at IS NULL AND t.visit_completed_at IS NULL AND t.status <> 'resolved'`);
-    } else if (normalizedStatus === "waiting") {
-      // Students who tapped "I'm here at OSA" but haven't been marked completed.
-      where.push(`t.arrived_at IS NOT NULL AND t.visit_completed_at IS NULL AND t.status <> 'resolved'`);
+      where.push(`t.appointment_status = 'approved' AND t.status <> 'resolved'`);
     } else {
       where.push(`t.status = $${p++}`);
       vals.push(normalizedStatus);
@@ -2892,24 +2677,8 @@ function registerChatRoutes(app, apiPrefix) {
            t.created_at ASC`,
         vals
       );
-      // Compute today's queue snapshot once, used to attach a queue_position
-      // to any ticket currently waiting at OSA.
-      const queueSnap = await db.query(
-        `SELECT case_id, ROW_NUMBER() OVER (ORDER BY arrived_at ASC) AS pos,
-                COUNT(*) OVER () AS total
-           FROM escalation_tickets
-          WHERE arrived_at IS NOT NULL
-            AND visit_completed_at IS NULL
-            AND status <> 'resolved'
-            AND arrived_at::date = CURRENT_DATE`
-      );
-      const queueMap = new Map();
-      queueSnap.rows.forEach((q) => queueMap.set(q.case_id, { position: Number(q.pos), total: Number(q.total) }));
       let tickets = result.rows.map((t) => ({
         ...t,
-        visit_state: deriveVisitState(t),
-        queue_position: (queueMap.get(t.case_id) || {}).position || 0,
-        queue_total: (queueMap.get(t.case_id) || {}).total || 0,
         is_student_active: !!(sseClients.get(t.session_id) && sseClients.get(t.session_id).size > 0),
         needs_end_session_prompt: (() => {
           if (t.status !== "in_progress" || !t.last_staff_at) return false;

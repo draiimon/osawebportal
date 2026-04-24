@@ -9,369 +9,512 @@
   <link rel="icon" type="image/png" href="/assets/images/eac-emblem.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="preload" href="/css/osa-design.css?v=40" as="style">
-  <link rel="stylesheet" href="/css/osa-design.css?v=40">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
       --brand:      #841a2d;
       --brand-deep: #5c0f1d;
+      --brand-mid:  #a21b34;
       --gold:       #c79a49;
+      --gold-light: #e8c47a;
       --gold-deep:  #a07830;
       --ink:        #1c1917;
       --muted:      #675a4f;
       --paper:      #fffdf9;
       --line:       rgba(90,62,40,0.12);
+      --line-soft:  rgba(90,62,40,0.07);
     }
 
     html { height: 100%; -webkit-font-smoothing: antialiased; }
 
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
-      background:
-        radial-gradient(ellipse at 14% 18%, rgba(132,26,45,0.11), transparent 48%),
-        radial-gradient(ellipse at 86% 82%, rgba(199,154,73,0.09), transparent 52%),
-        linear-gradient(170deg, #fff9f2 0%, #fdf6ec 100%);
       min-height: 100vh;
-      position: relative;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       overflow-x: hidden;
     }
 
-    body::after {
-      content: '';
-      position: fixed;
-      bottom: -80px; right: -80px;
-      width: 440px; height: 440px;
-      background: url('/assets/images/eac-emblem.png') center/contain no-repeat;
-      opacity: 0.038; pointer-events: none; z-index: 0;
-    }
-
-    /* ── Layout ── */
-    .login-page {
-      position: relative; z-index: 1;
-      display: grid;
-      place-items: center;
-      min-height: calc(100vh - 72px);
-      padding: 28px 16px 48px;
-    }
-
-    .page { position: relative; z-index: 1; }
-
-    .login-admin-nav {
-      min-height: 72px;
-      width: 100%;
-      background: linear-gradient(180deg, #7b1025 0%, #a21b34 100%);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+    /* ─── LEFT PANEL ─── */
+    .hero-panel {
+      position: relative;
+      background: linear-gradient(155deg, #6b0e1e 0%, #841a2d 40%, #9e2035 70%, #7a1020 100%);
       display: flex;
-      align-items: center;
+      flex-direction: column;
       justify-content: space-between;
-      gap: 12px;
-      padding: 10px clamp(14px, 3vw, 30px);
-      color: #fffaf3;
+      padding: clamp(32px, 5vw, 60px);
+      overflow: hidden;
+      min-height: 100vh;
     }
-    .login-admin-brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      min-width: 0;
+
+    /* background orbs */
+    .hero-panel::before {
+      content: '';
+      position: absolute;
+      top: -120px; right: -120px;
+      width: 480px; height: 480px;
+      background: radial-gradient(circle, rgba(199,154,73,0.22) 0%, transparent 65%);
+      pointer-events: none;
     }
-    .login-admin-brand img {
-      width: 34px;
-      height: 34px;
+    .hero-panel::after {
+      content: '';
+      position: absolute;
+      bottom: -80px; left: -80px;
+      width: 360px; height: 360px;
+      background: radial-gradient(circle, rgba(255,255,255,0.07) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    /* watermark emblem */
+    .hero-watermark {
+      position: absolute;
+      bottom: -60px; right: -60px;
+      width: 420px; height: 420px;
+      background: url('/assets/images/eac-emblem.png') center/contain no-repeat;
+      opacity: 0.06;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .hero-top {
+      position: relative; z-index: 1;
+      display: flex; align-items: center; gap: 12px;
+      animation: slideDown 0.6s ease-out;
+    }
+    .hero-top img {
+      width: 40px; height: 40px;
       object-fit: contain;
-      flex-shrink: 0;
+      filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));
     }
-    .login-admin-brand-text {
-      display: grid;
-      gap: 2px;
-      line-height: 1.15;
-    }
-    .login-admin-brand-text strong {
-      font-size: 0.85rem;
+    .hero-top-text strong {
+      display: block;
+      color: #fff;
+      font-size: 0.88rem;
       font-weight: 800;
       letter-spacing: 0.02em;
+      line-height: 1.2;
     }
-    .login-admin-brand-text span {
-      font-size: 0.63rem;
-      letter-spacing: 0.1em;
+    .hero-top-text span {
+      color: rgba(255,236,200,0.72);
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: rgba(255, 236, 210, 0.86);
-      font-weight: 700;
     }
-    .login-admin-links {
+
+    .hero-body {
+      position: relative; z-index: 1;
+      flex: 1;
       display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
+      flex-direction: column;
+      justify-content: center;
+      padding: 40px 0;
+      animation: fadeInUp 0.8s ease-out 0.2s both;
     }
-    .login-admin-link {
-      min-height: 34px;
-      padding: 0 12px;
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      background: rgba(255, 255, 255, 0.08);
-      color: rgba(255, 246, 233, 0.86);
-      font-size: 0.72rem;
-      font-weight: 700;
-      display: inline-flex;
+
+    .hero-badge {
+      display: none;
+    }
+
+    .hero-title {
+      font-family: 'Libre Baskerville', serif;
+      font-size: clamp(2rem, 3.5vw, 2.9rem);
+      color: #fff;
+      line-height: 1.1;
+      margin-bottom: 18px;
+      letter-spacing: -0.01em;
+    }
+    .hero-title em {
+      font-style: normal;
+      color: var(--gold-light);
+    }
+
+    .hero-desc {
+      color: rgba(255,246,233,0.72);
+      font-size: 0.9rem;
+      line-height: 1.7;
+      max-width: 340px;
+      margin-bottom: 36px;
+    }
+
+
+    .hero-bottom {
+      position: relative; z-index: 1;
+      animation: slideUp 0.6s ease-out 0.4s both;
+    }
+    .hero-bottom-divider {
+      height: 1px;
+      background: rgba(255,255,255,0.1);
+      margin-bottom: 16px;
+    }
+    .hero-bottom p {
+      font-size: 0.68rem;
+      color: rgba(255,246,233,0.42);
+      font-weight: 500;
+      letter-spacing: 0.04em;
+    }
+
+    /* ─── RIGHT PANEL ─── */
+    .login-panel {
+      background:
+        radial-gradient(ellipse at 10% 10%, rgba(132,26,45,0.06), transparent 50%),
+        radial-gradient(ellipse at 90% 90%, rgba(199,154,73,0.07), transparent 50%),
+        linear-gradient(170deg, #fff9f2 0%, #fdf6ec 100%);
+      display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      cursor: not-allowed;
+      padding: clamp(24px, 5vw, 60px) clamp(24px, 6vw, 80px);
+      position: relative;
+      min-height: 100vh;
+    }
+
+    .login-panel::after {
+      content: '';
+      position: fixed;
+      bottom: -60px; right: -60px;
+      width: 320px; height: 320px;
+      background: url('/assets/images/eac-emblem.png') center/contain no-repeat;
+      opacity: 0.03;
       pointer-events: none;
-      -webkit-user-select: none;
-      user-select: none;
-      opacity: 0.88;
-      border-radius: 2px;
-      text-decoration: none;
+      z-index: 0;
     }
 
     .login-wrap {
       position: relative; z-index: 1;
-      width: 100%; max-width: 420px;
-      animation: panelIn 0.65s cubic-bezier(0.22,1,0.36,1) both;
+      width: 100%; max-width: 400px;
+      animation: panelIn 0.7s cubic-bezier(0.22,1,0.36,1) both;
     }
 
     @keyframes panelIn {
-      from { opacity: 0; transform: translateY(24px) scale(0.97); }
+      from { opacity: 0; transform: translateY(28px) scale(0.97); }
       to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .login-header {
+      margin-bottom: 32px;
+    }
+    .login-header-eyebrow {
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--brand);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .login-header-eyebrow::before {
+      content: '';
+      width: 20px; height: 2px;
+      background: var(--gold);
+      border-radius: 2px;
+    }
+    .login-header h1 {
+      font-family: 'Libre Baskerville', serif;
+      font-size: clamp(1.6rem, 2.5vw, 2rem);
+      color: var(--ink);
+      line-height: 1.15;
+      margin-bottom: 8px;
+    }
+    .login-header p {
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.6;
     }
 
     /* ── Card ── */
     .login-card {
-      background: rgba(255,253,249,0.94);
+      background: rgba(255,253,249,0.95);
       border: 1px solid var(--line);
-      border-top: 4px solid var(--brand);
+      border-top: 3px solid var(--gold);
       box-shadow:
-        0 2px 4px rgba(54,29,16,0.04),
-        0 22px 52px rgba(54,29,16,0.12),
-        0 0 0 1px rgba(255,255,255,0.6) inset;
-      padding: 38px 34px 30px;
+        0 2px 4px rgba(54,29,16,0.03),
+        0 20px 48px rgba(54,29,16,0.1),
+        0 0 0 1px rgba(255,255,255,0.7) inset;
+      padding: 32px 30px 28px;
       -webkit-backdrop-filter: blur(8px);
       backdrop-filter: blur(8px);
-      border-radius: 3px;
-    }
-
-    .login-emblem {
-      display: flex; align-items: center; gap: 14px;
-      margin-bottom: 26px; padding-bottom: 18px;
-      border-bottom: 1px solid var(--line);
-    }
-    .login-emblem img {
-      width: 44px; height: 44px;
-      object-fit: contain; flex-shrink: 0;
-    }
-    .login-emblem-text strong {
-      display: block;
-      font-family: 'Libre Baskerville', serif;
-      font-size: 0.98rem; color: var(--ink); line-height: 1.22;
-    }
-    .login-emblem-text span {
-      font-size: 0.68rem; color: var(--brand);
-      font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
-    }
-
-    h1 {
-      font-family: 'Libre Baskerville', serif;
-      font-size: 1.52rem; color: var(--ink);
-      line-height: 1.15; margin-bottom: 6px;
-    }
-    .login-sub {
-      font-size: 0.84rem; color: var(--muted);
-      margin-bottom: 26px; line-height: 1.55;
+      border-radius: 4px;
     }
 
     /* ── Form ── */
-    .field { display: grid; gap: 6px; margin-bottom: 15px; }
+    .field { display: grid; gap: 7px; margin-bottom: 16px; }
     .field label {
-      font-size: 0.72rem; font-weight: 800;
-      color: var(--brand-deep); letter-spacing: 0.08em; text-transform: uppercase;
+      font-size: 0.7rem; font-weight: 800;
+      color: var(--brand-deep); letter-spacing: 0.1em; text-transform: uppercase;
     }
     .field-wrap { position: relative; }
     .field-wrap > svg {
-      position: absolute; left: 13px; top: 50%;
+      position: absolute; left: 14px; top: 50%;
       transform: translateY(-50%);
       color: var(--muted); pointer-events: none;
-      width: 16px; height: 16px;
+      width: 15px; height: 15px;
       stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round;
     }
     .field input {
-      width: 100%; min-height: 48px;
-      padding: 0 14px 0 42px;
-      border: 1px solid rgba(90,62,40,0.18); background: #fff;
+      width: 100%; min-height: 50px;
+      padding: 0 14px 0 44px;
+      border: 1.5px solid rgba(90,62,40,0.15); background: #fff;
       color: var(--ink); font: inherit; font-size: 0.92rem;
       transition: border-color 180ms, box-shadow 180ms;
-      outline: none; border-radius: 2px;
+      outline: none; border-radius: 3px;
     }
-    #password { padding-right: 48px; }
+    #password { padding-right: 50px; }
     .field input:focus {
-      border-color: rgba(132,26,45,0.32);
-      box-shadow: 0 0 0 4px rgba(132,26,45,0.08);
+      border-color: rgba(132,26,45,0.3);
+      box-shadow: 0 0 0 4px rgba(132,26,45,0.07);
     }
-    .field input::placeholder { color: rgba(103,90,79,0.52); }
+    .field input::placeholder { color: rgba(103,90,79,0.42); }
 
     .pw-toggle {
       position: absolute; right: 10px; top: 50%;
       transform: translateY(-50%);
       background: none; border: none; cursor: pointer;
       color: var(--muted); padding: 0;
-      width: 30px; height: 30px;
+      width: 32px; height: 32px;
       display: flex; justify-content: center; align-items: center;
       transition: color 160ms; border-radius: 4px;
     }
     .pw-toggle:hover { color: var(--brand); }
-    .pw-toggle svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
+    .pw-toggle svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
+
+    /* Divider */
+    .form-divider {
+      height: 1px;
+      background: var(--line-soft);
+      margin: 4px 0 20px;
+    }
 
     /* Error */
     .error-msg {
-      display: none; align-items: center; gap: 8px;
-      margin-bottom: 16px; padding: 12px 14px;
-      background: rgba(132,26,45,0.06);
-      border: 1px solid rgba(132,26,45,0.18);
+      display: none; align-items: center; gap: 9px;
+      margin-bottom: 16px; padding: 11px 14px;
+      background: rgba(132,26,45,0.05);
+      border: 1px solid rgba(132,26,45,0.16);
       border-left: 3px solid var(--brand);
-      font-size: 0.82rem; color: var(--brand-deep);
-      font-weight: 600; border-radius: 2px;
+      font-size: 0.8rem; color: var(--brand-deep);
+      font-weight: 600; border-radius: 3px;
+      animation: shakeIn 0.35s ease;
     }
     .error-msg.visible { display: flex; }
+    @keyframes shakeIn {
+      0%,100% { transform: translateX(0); }
+      20%,60%  { transform: translateX(-5px); }
+      40%,80%  { transform: translateX(5px); }
+    }
 
     /* Submit */
     .btn-login {
-      width: 100%; min-height: 50px;
-      background: var(--brand); color: #fff;
+      width: 100%; min-height: 52px;
+      background: linear-gradient(135deg, var(--brand) 0%, var(--brand-mid) 100%);
+      color: #fff;
       border: none; font: inherit;
-      font-size: 0.9rem; font-weight: 800; letter-spacing: 0.04em;
+      font-size: 0.88rem; font-weight: 800; letter-spacing: 0.05em;
       cursor: pointer;
-      transition: background 200ms, transform 180ms, box-shadow 200ms;
-      margin-top: 6px;
-      box-shadow: 0 8px 26px rgba(132,26,45,0.28);
+      transition: all 200ms;
+      margin-top: 8px;
+      box-shadow: 0 6px 20px rgba(132,26,45,0.3), 0 2px 6px rgba(132,26,45,0.2);
       display: flex; align-items: center; justify-content: center; gap: 8px;
-      border-radius: 2px;
+      border-radius: 3px;
+      position: relative;
+      overflow: hidden;
     }
-    .btn-login:hover { background: var(--brand-deep); transform: translateY(-2px); box-shadow: 0 12px 32px rgba(132,26,45,0.36); }
-    .btn-login:active { transform: translateY(0); }
-    .btn-login.loading { pointer-events: none; opacity: 0.72; }
+    .btn-login::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .btn-login:hover {
+      background: linear-gradient(135deg, var(--brand-deep) 0%, var(--brand) 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 28px rgba(132,26,45,0.38), 0 4px 8px rgba(132,26,45,0.22);
+    }
+    .btn-login:active { transform: translateY(0); box-shadow: 0 4px 12px rgba(132,26,45,0.24); }
+    .btn-login.loading { pointer-events: none; opacity: 0.75; }
+    .btn-login svg {
+      width: 16px; height: 16px;
+      stroke: currentColor; fill: none; stroke-width: 2.5; stroke-linecap: round;
+    }
 
-    .login-footer {
-      margin-top: 20px; padding-top: 16px;
-      border-top: 1px solid var(--line);
+    .login-card-footer {
+      margin-top: 18px;
       display: flex; align-items: center; justify-content: space-between;
       flex-wrap: wrap; gap: 8px;
     }
-    .login-footer span { font-size: 0.7rem; color: rgba(103,90,79,0.58); }
-    .login-footer a { font-size: 0.7rem; color: var(--brand); font-weight: 700; }
-    .login-footer a:hover { text-decoration: underline; }
+    .login-card-footer span { font-size: 0.68rem; color: rgba(103,90,79,0.5); }
+    .login-card-footer a {
+      font-size: 0.7rem; color: var(--brand); font-weight: 700;
+      text-decoration: none;
+      display: flex; align-items: center; gap: 4px;
+      transition: color 160ms;
+    }
+    .login-card-footer a:hover { color: var(--brand-deep); text-decoration: underline; }
+    .login-card-footer a svg {
+      width: 12px; height: 12px;
+      stroke: currentColor; fill: none; stroke-width: 2.5; stroke-linecap: round;
+    }
 
     /* Spinner */
     .spinner {
-      width: 16px; height: 16px;
+      width: 17px; height: 17px;
       border: 2.5px solid rgba(255,255,255,0.3);
       border-top-color: #fff;
       border-radius: 50%;
-      animation: spin 0.7s linear infinite;
+      animation: spin 0.65s linear infinite;
       display: none;
     }
     .btn-login.loading .spinner { display: block; }
-    .btn-login.loading .btn-text { display: none; }
+    .btn-login.loading .btn-text,
+    .btn-login.loading .btn-icon { display: none; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* Standalone login (no portal navbar) */
-    .login-standalone-header {
-      display: flex; align-items: center; justify-content: center;
-      padding: 18px 16px 0;
-      margin-bottom: -8px;
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 860px) {
+      body { grid-template-columns: 1fr; }
+      .hero-panel { display: none; }
+      .login-panel { min-height: 100vh; padding: 40px 24px; }
+      .login-wrap { max-width: 420px; }
     }
 
-    @media (max-width: 480px) {
-      .login-admin-nav { align-items: flex-start; padding-top: 11px; padding-bottom: 11px; }
-      .login-admin-links { width: 100%; justify-content: flex-start; }
-      .login-admin-link { min-height: 30px; font-size: 0.68rem; padding: 0 10px; }
-      .login-card { padding: 26px 20px 22px; }
-      h1 { font-size: 1.32rem; }
+    @media (max-width: 600px) {
+      .login-panel { padding: 32px 16px; }
+      .login-header-eyebrow { font-size: 0.64rem; }
+      .login-header h1 { font-size: 1.6rem; margin-bottom: 6px; }
+      .login-header p { font-size: 0.8rem; }
+      .login-card { padding: 24px 16px 20px; }
+      .field { margin-bottom: 14px; }
+      .field label { font-size: 0.68rem; }
+      .field input { min-height: 46px; font-size: 0.88rem; }
+      .btn-login { min-height: 48px; font-size: 0.84rem; }
+      .form-divider { margin: 3px 0 18px; }
+    }
+
+    @media (max-width: 360px) {
+      .login-panel { padding: 24px 12px; }
+      .login-wrap { max-width: 100%; }
+      .login-header h1 { font-size: 1.4rem; }
+      .login-card { padding: 20px 14px 16px; }
+      .field input { padding: 0 12px 0 40px; font-size: 0.84rem; }
+      .btn-login { font-size: 0.8rem; gap: 6px; }
+      .login-card-footer { font-size: 0.65rem; gap: 4px; }
     }
   </style>
 </head>
 <body>
-  <div class="page">
-    <nav class="login-admin-nav" aria-label="Admin navigation preview">
-      <div class="login-admin-brand">
-        <img src="/assets/images/eac-emblem.png" alt="EAC" onerror="this.style.display='none'">
-        <div class="login-admin-brand-text">
-          <strong>EAC Cavite</strong>
-          <span>OSA Admin Panel</span>
+
+  <!-- LEFT: HERO PANEL -->
+  <aside class="hero-panel" aria-hidden="true">
+    <div class="hero-watermark"></div>
+
+    <div class="hero-top">
+      <img src="/assets/images/eac-emblem.png" alt="EAC">
+      <div class="hero-top-text">
+        <strong>Emilio Aguinaldo College</strong>
+        <span>OSA Admin Panel</span>
+      </div>
+    </div>
+
+    <div class="hero-body">
+      <span class="hero-badge">Restricted Access</span>
+      <h2 class="hero-title">Manage the<br><em>OSA Portal</em><br>with ease.</h2>
+      <p class="hero-desc">
+        Manage the portal with full administrative control and oversight.
+      </p>
+    </div>
+
+    <div class="hero-bottom">
+      <div class="hero-bottom-divider"></div>
+      <p>EAC Cavite · Office of Student Affairs · Authorized Personnel Only</p>
+    </div>
+  </aside>
+
+  <!-- RIGHT: LOGIN PANEL -->
+  <main class="login-panel">
+    <div class="login-wrap">
+      <div class="login-header">
+        <div class="login-header-eyebrow">Admin Portal</div>
+        <h1>Welcome back</h1>
+        <p>Sign in to manage the OSA Transaction Guide Portal.</p>
+      </div>
+
+      <div class="login-card">
+        <div class="error-msg" id="error-msg" role="alert">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span id="error-text">Invalid credentials. Please try again.</span>
+        </div>
+
+        <form id="login-form" novalidate>
+          <div class="field">
+            <label for="email">Email Address</label>
+            <div class="field-wrap">
+              <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+              <input type="email" id="email" name="email" placeholder="admin@eac.edu.ph" autocomplete="email" required>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="password">Password</label>
+            <div class="field-wrap">
+              <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <input type="password" id="password" name="password" placeholder="••••••••" autocomplete="current-password" required>
+              <button type="button" class="pw-toggle" id="pw-toggle" aria-label="Toggle password visibility">
+                <svg id="eye-icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-divider"></div>
+
+          <button type="submit" class="btn-login" id="login-btn">
+            <span class="btn-icon">
+              <svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+            </span>
+            <span class="btn-text">Sign In to Dashboard</span>
+            <span class="spinner"></span>
+          </button>
+        </form>
+
+        <div class="login-card-footer">
+          <span>EAC OSA staff only</span>
+          <a href="/">
+            <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+            Back to Portal
+          </a>
         </div>
       </div>
-      <div class="login-admin-links" aria-disabled="true">
-        <span class="login-admin-link">Dashboard</span>
-        <span class="login-admin-link">Announcements</span>
-        <span class="login-admin-link">Lost &amp; Found</span>
-        <span class="login-admin-link">Home Content</span>
-        <span class="login-admin-link">About</span>
-      </div>
-    </nav>
-    <main class="login-page">
-      <div class="login-wrap">
-        <div class="login-card">
-          <div class="login-emblem">
-            <img src="/assets/images/eac-emblem.png" alt="EAC Cavite emblem" onerror="this.style.display='none'">
-            <div class="login-emblem-text">
-              <strong>Emilio Aguinaldo College</strong>
-              <span>OSA Portal · Admin Access</span>
-            </div>
-          </div>
-
-          <h1>Welcome back</h1>
-          <p class="login-sub">Sign in to manage the OSA Transaction Guide Portal.</p>
-
-          <div class="error-msg" id="error-msg" role="alert">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            <span id="error-text">Invalid credentials. Please try again.</span>
-          </div>
-
-          <form id="login-form" novalidate>
-            <div class="field">
-              <label for="email">Email Address</label>
-              <div class="field-wrap">
-                <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-                <input type="email" id="email" name="email" placeholder="admin@eac.edu.ph" autocomplete="email" required>
-              </div>
-            </div>
-            <div class="field">
-              <label for="password">Password</label>
-              <div class="field-wrap">
-                <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                <input type="password" id="password" name="password" placeholder="••••••••" autocomplete="current-password" required>
-                <button type="button" class="pw-toggle" id="pw-toggle" aria-label="Toggle password visibility">
-                  <svg id="eye-icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                </button>
-              </div>
-            </div>
-
-            <button type="submit" class="btn-login" id="login-btn">
-              <span class="btn-text">Sign In to Dashboard</span>
-              <span class="spinner"></span>
-            </button>
-          </form>
-
-          <div class="login-footer">
-            <span>EAC OSA staff only</span>
-            <a href="/">← Back to Portal</a>
-          </div>
-        </div>
-      </div>
-    </main>
-  </div>
+    </div>
+  </main>
 
   <script>
     if (sessionStorage.getItem('osa_admin_token')) {
       window.location.replace('/admin/dashboard');
     }
 
-    const form    = document.getElementById('login-form');
-    const btn     = document.getElementById('login-btn');
-    const errBox  = document.getElementById('error-msg');
-    const errTxt  = document.getElementById('error-text');
-    const pwInput = document.getElementById('password');
+    const form     = document.getElementById('login-form');
+    const btn      = document.getElementById('login-btn');
+    const errBox   = document.getElementById('error-msg');
+    const errTxt   = document.getElementById('error-text');
+    const pwInput  = document.getElementById('password');
     const pwToggle = document.getElementById('pw-toggle');
 
     pwToggle.addEventListener('click', () => {

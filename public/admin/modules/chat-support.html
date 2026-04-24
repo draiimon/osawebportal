@@ -1181,7 +1181,6 @@
           <button type="button" class="status-tab active" data-status="open">Open</button>
           <button type="button" class="status-tab" data-status="in_progress">In Progress</button>
           <button type="button" class="status-tab" data-status="approved">Approved</button>
-          <button type="button" class="status-tab" data-status="waiting">Waiting at OSA</button>
           <button type="button" class="status-tab" data-status="resolved">Resolved</button>
         </div>
         <div style="padding:10px 12px;border-bottom:1px solid var(--line);background:#fff">
@@ -1227,7 +1226,6 @@
                  (both close the live chat) and confused staff. The Resolve flow
                  already ends the session when the staff submits the resolution. -->
             <button type="button" class="btn-resolve hidden" id="btn-end-session" style="background:#9f1239" hidden>End Session</button>
-            <button type="button" class="btn-resolve hidden" id="btn-complete-visit" style="background:#7e22ce"><span class="btn-label-full">Mark Visit Completed</span><span class="btn-label-short">Done</span></button>
             <button type="button" class="btn-resolve" id="btn-resolve-ticket"><span class="btn-label-full">Resolve Ticket</span><span class="btn-label-short">Resolve</span></button>
             <button type="button" class="btn-resolve hidden" id="btn-delete-ticket" style="background:#7f1d1d"><span class="btn-label-full">Delete Ticket</span><span class="btn-label-short">Delete</span></button>
           </div>
@@ -1284,10 +1282,10 @@
 <div id="resolve-modal" class="modal-bg hidden" role="dialog" aria-modal="true" aria-labelledby="resolve-title">
   <div class="modal-box">
     <h3 id="resolve-title">Resolve Ticket</h3>
-    <p>Write your final reply to the student. Optionally promote it to the FAQ knowledge base for future self-service.</p>
+    <p>Optionally write a final reply to the student or promote an answer to the FAQ knowledge base. All fields are optional.</p>
     <div class="field-group">
-      <label for="resolve-reply">Staff Reply *</label>
-      <textarea id="resolve-reply" placeholder="Enter your resolution message for the student…"></textarea>
+      <label for="resolve-reply">Staff Reply <span style="font-weight:400;color:var(--muted);">(optional)</span></label>
+      <textarea id="resolve-reply" placeholder="Enter your resolution message for the student… (optional)"></textarea>
     </div>
     <div class="field-group">
       <label for="resolve-category">Category</label>
@@ -1484,7 +1482,6 @@
   var btnEndSession  = document.getElementById('btn-end-session');
   var btnResolve     = document.getElementById('btn-resolve-ticket');
   var btnDeleteTicket= document.getElementById('btn-delete-ticket');
-  var btnCompleteVisit = document.getElementById('btn-complete-visit');
   var btnRefresh     = document.getElementById('btn-refresh');
   var btnBack        = document.getElementById('btn-back');
   var ticketSearch   = document.getElementById('ticket-search');
@@ -1587,14 +1584,10 @@
   }
 
   function statusBadgeLabel(t) {
-    if (t.arrived_at && !t.visit_completed_at && String(t.status || '') !== 'resolved') {
-      return t.queue_position ? ('waiting · #' + t.queue_position) : 'waiting at OSA';
-    }
     if (String(t.appointment_status || '').toLowerCase() === 'approved') return 'approved';
     return String(t.status || '').replace('_', ' ');
   }
   function statusBadgeClass(t) {
-    if (t.arrived_at && !t.visit_completed_at && String(t.status || '') !== 'resolved') return 'waiting';
     if (String(t.appointment_status || '').toLowerCase() === 'approved') return 'approved';
     return String(t.status || 'open');
   }
@@ -1700,9 +1693,9 @@
         state.restoreProbeInFlight = false;
         state.restoredLastCaseAttempted = true;
         if (!d || !d.success || !d.ticket) return;
-        var targetStatus = String((d.ticket.status) || '').toLowerCase();
+        var targetStatus = String((d.ticket.effective_status || d.ticket.status) || '').toLowerCase();
         if (!targetStatus || targetStatus === state.currentStatus) return;
-        if (targetStatus !== 'open' && targetStatus !== 'in_progress' && targetStatus !== 'resolved') return;
+        if (targetStatus !== 'open' && targetStatus !== 'in_progress' && targetStatus !== 'resolved' && targetStatus !== 'approved') return;
         setStatusTab(targetStatus, 'restore-last-viewed-case', rememberedCaseId);
       });
   }
@@ -1904,13 +1897,6 @@
     var endPrompt = t.needs_end_session_prompt
       ? '<div class="ticket-item__time" style="margin-top:6px;color:#b45309;font-weight:700">Idle live chat. Type <code>/end session</code> to close.</div>'
       : '';
-    // Highlight waiting students with arrival time + queue position so staff
-    // can pull them up in arrival order.
-    var arrivedRow = (t.arrived_at && !t.visit_completed_at && t.status !== 'resolved')
-      ? '<div class="ticket-item__time" style="margin-top:6px;color:#7e22ce;font-weight:700">Arrived ' + fmtDate(t.arrived_at) +
-        (t.queue_position ? ' · Queue #' + t.queue_position + ' of ' + t.queue_total : '') + '</div>'
-      : '';
-
     item.innerHTML =
       '<div class="ticket-item__head">' +
         '<div class="ticket-item__name">' + activeDot + escapeHtml(t.student_name) + lfBadge + '</div>' +
@@ -1919,7 +1905,6 @@
       '<div class="ticket-item__case">' + escapeHtml(t.case_id) + '</div>' +
       '<div class="ticket-item__concern">' + escapeHtml(t.concern) + '</div>' +
       '<div class="ticket-item__time" style="margin-top:5px">' + fmtDate(t.created_at) + '</div>' +
-      arrivedRow +
       endPrompt;
   }
 
@@ -2027,12 +2012,6 @@
     if (btnApproveAppt) btnApproveAppt.disabled = t.status === 'resolved' || String(t.appointment_status || '').toLowerCase() === 'approved';
     if (btnEndSession) btnEndSession.disabled = t.status === 'resolved';
     if (btnDeleteTicket) btnDeleteTicket.classList.toggle('hidden', t.status !== 'resolved');
-    if (btnCompleteVisit) {
-      var canCompleteVisit = !!(t.arrived_at && !t.visit_completed_at && t.status !== 'resolved');
-      btnCompleteVisit.classList.toggle('hidden', !canCompleteVisit);
-      btnCompleteVisit.disabled = !canCompleteVisit;
-    }
-
     // Show panels
     convoEmpty.classList.add('hidden');
     convoTopbar.classList.remove('hidden');
@@ -2481,22 +2460,16 @@
           return;
         }
 
+        // Don't append optimistically — the SSE ticket_updated event fires
+        // a debounced loadMessagesSoon() which fetches the just-stored row and
+        // renders it via the differential render. Optimistic append racing
+        // with that fetch is what caused the "double bubble" on Enter.
         if (data.session_closed) {
-          // Append the end-session message to thread immediately
-          var endContent = '[OSA Staff · ' + staffName() + ']\n\n' + text;
-          appendMsg('assistant', endContent, new Date().toISOString(), true);
-          // Keep the differential render bookkeeping in sync with the
-          // optimistic local append, so the next SSE-triggered fetch sees
-          // count parity and no-ops instead of duplicating the bubble.
-          state.renderedMessagesCount += 1;
+          loadMessages(state.currentSessionId, state.currentConcern);
           markClosedUi();
           return;
         }
-
-        // Immediately append own message
-        var msgContent = '[OSA Staff · ' + staffName() + ']\n\n' + text;
-        appendMsg('assistant', msgContent, new Date().toISOString(), true);
-        state.renderedMessagesCount += 1;
+        loadMessages(state.currentSessionId, state.currentConcern);
 
         // Update ticket to in_progress in list
         var item = ticketList.querySelector('[data-case-id="' + state.currentCaseId + '"]');
@@ -2625,46 +2598,6 @@
           state.busy = false;
           btnApproveAppt.disabled = false;
           showToast('Network error while approving appointment.', { variant: 'danger', duration: 4500 });
-        });
-      });
-    });
-  }
-
-  if (btnCompleteVisit) {
-    btnCompleteVisit.addEventListener('click', function () {
-      if (!state.currentCaseId || state.busy) return;
-      openActionModal({
-        variant: 'success',
-        title: 'Mark visit as completed?',
-        message: 'This advances the student\u2019s visit timeline to "Completed" and notifies them in chat. The ticket stays open so you can still resolve it formally afterwards.',
-        confirmText: 'Mark Completed',
-        cancelText: 'Cancel',
-      }).then(function (result) {
-        if (!result) return;
-        state.busy = true;
-        btnCompleteVisit.disabled = true;
-        fetch(API + '/chat/tickets/' + encodeURIComponent(state.currentCaseId) + '/complete-visit', {
-          method: 'POST',
-          headers: apiHeaders(),
-          body: JSON.stringify({ staff_name: staffName() }),
-        })
-        .then(function (r) { return r.json(); })
-        .then(function (data) {
-          state.busy = false;
-          if (!data.success) {
-            btnCompleteVisit.disabled = false;
-            showToast('Could not mark visit completed: ' + (data.message || 'Unknown error'), { variant: 'danger', duration: 4500 });
-            return;
-          }
-          btnCompleteVisit.classList.add('hidden');
-          loadMessages(state.currentSessionId, state.currentConcern);
-          loadTickets({ quiet: true });
-          showToast('Visit marked as completed.', { variant: 'success', duration: 2400 });
-        })
-        .catch(function () {
-          state.busy = false;
-          btnCompleteVisit.disabled = false;
-          showToast('Network error while marking visit completed.', { variant: 'danger', duration: 4500 });
         });
       });
     });
@@ -2847,14 +2780,18 @@
 
   btnSubmitRes.addEventListener('click', function () {
     var reply = resolveReply.value.trim();
-    if (!reply) { showToast('Please enter a staff reply.', { variant: 'danger' }); return; }
+    var wantsFaq = promoteFaq.checked;
+    if (wantsFaq && !reply) {
+      showToast('To promote to FAQ, a reply is required as the answer.', { variant: 'danger' });
+      return;
+    }
 
     btnSubmitRes.disabled = true;
     btnSubmitRes.textContent = 'Resolving…';
 
     var body = {
       staff_reply: reply,
-      promote_to_faq: promoteFaq.checked,
+      promote_to_faq: wantsFaq,
       faq_question: faqQuestion.value.trim(),
       faq_answer: reply,
       faq_category: resolveCategory.value,
