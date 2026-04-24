@@ -39,3 +39,13 @@ Per-message status (queued → sent → delivered → seen) is rendered as small
 checkmarks under user bubbles in `public/assets/js/osa-chat-widget.js` and
 persisted in the `osaChatThread` localStorage record. Cache-bust pins:
 loader `v=70`, widget `v=70`, `osa-ai.css?v=46`, island css `v=17`.
+
+## Admin Chat Support page (`/admin/modules/chat-support`)
+Full-bleed, mobile-first redesign lives in the inline `<style>` block of
+`public/admin/modules/chat-support.html`. The standard `.page-header` is
+hidden inside this module (`.admin-main--chat-support > .page-header { display: none; }`)
+so the two-pane layout (`.chat-support-wrap`) fills `calc(100dvh - var(--shell-top))`.
+JS hooks (IDs and class names like `.ticket-item`, `.cmsg`, `.convo-topbar`,
+`.btn-resolve`, `.btn-send-staff`, etc.) are unchanged — only visual styles,
+spacing, touch targets, and breakpoints were updated. Modal becomes a
+bottom-sheet on phones (≤ 560px), composer respects `env(safe-area-inset-bottom)`.
