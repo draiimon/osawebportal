@@ -503,6 +503,8 @@
             fab.classList.add('is-hidden');
             setTriggerState(true);
             lockPageScroll();
+            // Ack any pending staff messages as seen now that the widget is visible.
+            try { notifySeen(); } catch (_) {}
             var headerBrand = widget.querySelector('.osa-ai-header__brand');
             if (headerBrand && !document.getElementById('osa-gap-debug-probe')) {
                 var probe = document.createElement('small');
@@ -553,14 +555,39 @@
             return h + ':' + (m < 10 ? '0' + m : m) + ' ' + ampm;
         }
 
+        // ── Per-message status (sent/delivered/seen) ──────────────────
+        // Status is tracked client-side and persisted in the thread record,
+        // and rendered as small check marks under user bubbles only.
+        var STATUS_RANK = { queued: 0, sent: 1, delivered: 2, seen: 3 };
+        function statusBadgeHtml(status) {
+            var s = String(status || 'queued');
+            var label = s.charAt(0).toUpperCase() + s.slice(1);
+            var glyph = '\u00b7'; // queued: dot
+            if (s === 'sent') glyph = '\u2713';                 // single check
+            else if (s === 'delivered') glyph = '\u2713\u2713'; // double check
+            else if (s === 'seen') glyph = '\u2713\u2713';      // double check (accent via class)
+            return '<span class="osa-msg-status osa-msg-status--' + s + '" title="' + label + '">' + glyph + '</span>';
+        }
+
+        function osaGenMsgId() {
+            return 'm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+        }
+
         function renderBubble(role, html, opts) {
             var metaLabel = (opts && opts.metaLabel) || (role === 'user' ? 'You' : 'Assistant');
             var metaTime = formatMetaTime(opts && opts.ts);
             var row = document.createElement('div');
             row.className = 'osa-ai-msg osa-ai-msg--' + (role === 'user' ? 'user' : 'assistant');
             if (opts && opts.rowClass) row.className += ' ' + opts.rowClass;
+            var msgId = (opts && opts.clientId) ? String(opts.clientId) : '';
+            if (msgId) row.setAttribute('data-osa-msg-id', msgId);
+            var statusHtml = '';
+            if (role === 'user') {
+                var initialStatus = (opts && opts.status) ? String(opts.status) : 'queued';
+                statusHtml = statusBadgeHtml(initialStatus);
+            }
             row.innerHTML = '<div><div class="osa-ai-msg__bubble">' + html +
-                '</div><div class="osa-ai-msg__meta"><span class="osa-ai-msg__who">' + metaLabel + '</span><span class="osa-ai-msg__time">' + metaTime + '</span></div></div>';
+                '</div><div class="osa-ai-msg__meta"><span class="osa-ai-msg__who">' + metaLabel + '</span><span class="osa-ai-msg__time">' + metaTime + '</span>' + statusHtml + '</div></div>';
             thread.appendChild(row);
             revealRow(row);
             scrollThread();
@@ -568,21 +595,88 @@
         }
 
         function appendBubble(role, html, opts) {
+            opts = opts || {};
+            if (role === 'user' && !opts.clientId) {
+                opts.clientId = osaGenMsgId();
+                if (!opts.status) opts.status = 'queued';
+            }
             renderBubble(role, html, opts);
             if (role === 'assistant') {
                 debugLayoutSnapshot('appendBubble:assistant', 'H2');
             }
-            if (!opts || opts.persist !== false) {
+            if (opts.persist !== false) {
                 var arr = getLS(THREAD_KEY, []);
                 if (!Array.isArray(arr)) arr = [];
                 arr.push({
                     role: role,
                     html: html,
                     t: Date.now(),
-                    metaLabel: opts && opts.metaLabel ? String(opts.metaLabel) : '',
-                    rowClass: opts && opts.rowClass ? String(opts.rowClass) : ''
+                    metaLabel: opts.metaLabel ? String(opts.metaLabel) : '',
+                    rowClass: opts.rowClass ? String(opts.rowClass) : '',
+                    clientId: opts.clientId || '',
+                    status: role === 'user' ? (opts.status || 'queued') : ''
                 });
                 setLS(THREAD_KEY, arr.slice(-80));
+            }
+            return opts.clientId || '';
+        }
+
+        function setBubbleStatus(clientId, nextStatus) {
+            if (!clientId || !nextStatus) return;
+            var row = thread.querySelector('[data-osa-msg-id="' + clientId + '"]');
+            if (row) {
+                var current = '';
+                var existing = row.querySelector('.osa-msg-status');
+                if (existing) {
+                    var cls = existing.className || '';
+                    var m = cls.match(/osa-msg-status--(\w+)/);
+                    if (m) current = m[1];
+                }
+                if (current && STATUS_RANK[current] >= STATUS_RANK[nextStatus]) return;
+                if (existing) {
+                    existing.outerHTML = statusBadgeHtml(nextStatus);
+                } else {
+                    var meta = row.querySelector('.osa-ai-msg__meta');
+                    if (meta) meta.insertAdjacentHTML('beforeend', statusBadgeHtml(nextStatus));
+                }
+            }
+            var arr = getLS(THREAD_KEY, []);
+            if (Array.isArray(arr)) {
+                for (var i = arr.length - 1; i >= 0; i--) {
+                    if (arr[i].clientId === clientId) {
+                        var prev = arr[i].status || 'queued';
+                        if (STATUS_RANK[nextStatus] > STATUS_RANK[prev]) {
+                            arr[i].status = nextStatus;
+                            setLS(THREAD_KEY, arr);
+                        }
+                        break;
+                    }
+                }
+            }
+            if (window.__OSA_CHAT_DEBUG__) {
+                try { console.debug('[osa-chat] status', clientId, '->', nextStatus); } catch (_) {}
+            }
+            if (nextStatus === 'seen') {
+                try {
+                    window.dispatchEvent(new CustomEvent('osa:message_seen', { detail: { clientId: clientId } }));
+                } catch (_) {}
+            }
+        }
+
+        function markAllUserBubblesAtLeast(nextStatus) {
+            var rank = STATUS_RANK[nextStatus] || 0;
+            var rows = thread.querySelectorAll('.osa-ai-msg--user[data-osa-msg-id]');
+            for (var i = 0; i < rows.length; i++) {
+                var existing = rows[i].querySelector('.osa-msg-status');
+                var cur = '';
+                if (existing) {
+                    var cls = existing.className || '';
+                    var m = cls.match(/osa-msg-status--(\w+)/);
+                    if (m) cur = m[1];
+                }
+                if (!cur || (STATUS_RANK[cur] || 0) < rank) {
+                    setBubbleStatus(rows[i].getAttribute('data-osa-msg-id'), nextStatus);
+                }
             }
         }
 
@@ -619,9 +713,103 @@
                     renderSystemBubble(plain);
                     return;
                 }
-                renderBubble(m.role, m.html, { ts: m.t, metaLabel: m.metaLabel || undefined, rowClass: m.rowClass || undefined });
+                renderBubble(m.role, m.html, {
+                    ts: m.t,
+                    metaLabel: m.metaLabel || undefined,
+                    rowClass: m.rowClass || undefined,
+                    clientId: m.clientId || undefined,
+                    status: m.role === 'user' ? (m.status || 'sent') : undefined
+                });
             });
             debugLayoutSnapshot('restoreThread:end', 'H4');
+        }
+
+        // ── Presence: typing + seen receipts ─────────────────────────
+        // Throttled POSTs to ephemeral SSE-fanout endpoints so the staff
+        // portal can render "Student is typing…" and so the student can
+        // ack staff messages as seen.
+        var presenceTypingTimer = null;
+        var presenceLastTypingAt = 0;
+        var presenceLastTypingState = null; // 'start' | 'stop'
+        var staffTypingPillNode = null;
+        var staffTypingPillHideTimer = null;
+
+        function presenceFetch(path, body) {
+            var bases = getApiBases();
+            if (!bases.length) return Promise.resolve(null);
+            var url = bases[0] + '/api/v1' + path;
+            return fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body || {}),
+                credentials: 'same-origin'
+            }).then(function (r) { return r.ok ? r.json().catch(function () { return null; }) : null; })
+              .catch(function () { return null; });
+        }
+
+        function notifyTypingNow(stopped) {
+            if (!chatSessionId) return;
+            var nowState = stopped ? 'stop' : 'start';
+            if (presenceLastTypingState === nowState && (Date.now() - presenceLastTypingAt) < 2000) return;
+            presenceLastTypingState = nowState;
+            presenceLastTypingAt = Date.now();
+            if (window.__OSA_CHAT_DEBUG__) {
+                try { console.debug('[osa-chat] typing:' + nowState); } catch (_) {}
+            }
+            try {
+                window.dispatchEvent(new CustomEvent('osa:typing_' + (stopped ? 'stop' : 'start'), { detail: { sessionId: chatSessionId } }));
+            } catch (_) {}
+            presenceFetch('/chat/typing', { session_id: chatSessionId, stopped: !!stopped });
+        }
+
+        function notifyTyping() {
+            if (!chatSessionId) return;
+            // Edge-throttle: if we recently emitted "start", skip another POST until 2s pass.
+            if (presenceLastTypingState !== 'start' || (Date.now() - presenceLastTypingAt) > 1800) {
+                notifyTypingNow(false);
+            }
+            // Auto-emit "stop" after 1.5s of silence.
+            if (presenceTypingTimer) {
+                window.clearTimeout(presenceTypingTimer);
+                presenceTypingTimer = null;
+            }
+            presenceTypingTimer = window.setTimeout(function () {
+                presenceTypingTimer = null;
+                notifyTypingNow(true);
+            }, 1500);
+        }
+
+        function notifySeen() {
+            if (!chatSessionId) return;
+            if (window.__OSA_CHAT_DEBUG__) {
+                try { console.debug('[osa-chat] seen:ack'); } catch (_) {}
+            }
+            presenceFetch('/chat/seen', { session_id: chatSessionId });
+        }
+
+        function showStaffTypingPill() {
+            if (!staffTypingPillNode) {
+                staffTypingPillNode = document.createElement('div');
+                staffTypingPillNode.className = 'osa-staff-typing-pill';
+                staffTypingPillNode.setAttribute('aria-live', 'polite');
+                staffTypingPillNode.innerHTML = '<span class="osa-staff-typing-pill__dots"><span></span><span></span><span></span></span><span class="osa-staff-typing-pill__text">OSA Staff is typing\u2026</span>';
+                thread.appendChild(staffTypingPillNode);
+            } else if (staffTypingPillNode.parentNode !== thread) {
+                thread.appendChild(staffTypingPillNode);
+            }
+            scrollThread();
+            if (staffTypingPillHideTimer) { window.clearTimeout(staffTypingPillHideTimer); }
+            staffTypingPillHideTimer = window.setTimeout(hideStaffTypingPill, 4000);
+        }
+
+        function hideStaffTypingPill() {
+            if (staffTypingPillHideTimer) {
+                window.clearTimeout(staffTypingPillHideTimer);
+                staffTypingPillHideTimer = null;
+            }
+            if (staffTypingPillNode && staffTypingPillNode.parentNode) {
+                staffTypingPillNode.parentNode.removeChild(staffTypingPillNode);
+            }
         }
 
         var delay = function (ms) { return new Promise(function (r) { window.setTimeout(r, reducedMotion ? 0 : ms); }); };
@@ -1047,9 +1235,26 @@
                 try { payload = JSON.parse(e.data); } catch (_) { return; }
                 if (!payload || typeof payload !== 'object') return;
 
+                if (payload.type === 'staff_typing') {
+                    if (window.__OSA_CHAT_DEBUG__) { try { console.debug('[osa-chat] sse:staff_typing'); } catch (_) {} }
+                    showStaffTypingPill();
+                    return;
+                }
+                if (payload.type === 'staff_typing_stop') {
+                    if (window.__OSA_CHAT_DEBUG__) { try { console.debug('[osa-chat] sse:staff_typing_stop'); } catch (_) {} }
+                    hideStaffTypingPill();
+                    return;
+                }
+                if (payload.type === 'staff_seen') {
+                    if (window.__OSA_CHAT_DEBUG__) { try { console.debug('[osa-chat] sse:staff_seen'); } catch (_) {} }
+                    markAllUserBubblesAtLeast('seen');
+                    return;
+                }
+
                 if (payload.type === 'staff_joined') {
                     clearWaitingBanner();
                     setMode('staff');
+                    hideStaffTypingPill();
                     var joinText = parseStaffJoinText(payload.content, payload.staff_name);
                     renderSystemBubble(joinText);
                     // Persist so it survives reloads like other bubbles.
@@ -1063,9 +1268,16 @@
                 if (payload.type === 'staff_message') {
                     clearWaitingBanner();
                     setMode('staff');
+                    hideStaffTypingPill();
+                    // Staff just sent a reply — they obviously read what we sent.
+                    markAllUserBubblesAtLeast('seen');
                     var parsedStaff = parseStaffMessage(payload.content, payload);
                     if (parsedStaff.text) {
                         appendBubble('assistant', renderAssistantText(parsedStaff.text), { rowClass: 'osa-ai-msg--staff', metaLabel: 'OSA Staff' });
+                    }
+                    // If the widget is open, ack the new staff message as seen too.
+                    if (widget.classList.contains('is-open')) {
+                        try { notifySeen(); } catch (_) {}
                     }
 
                     if (payload.appointment_approved) {
@@ -1464,9 +1676,17 @@
             var message = input.value.trim();
             if (!message) return;
             lastEscalationDraft = message;
-            appendBubble('user', '<p style="margin:0">' + escapeHtml(message) + '</p>');
+            var lastUserClientId = appendBubble('user', '<p style="margin:0">' + escapeHtml(message) + '</p>');
             input.value = '';
             sendBtn.disabled = true;
+            // Stop the typing indicator on the staff side immediately on send,
+            // and optimistically transition queued → sent → delivered so the
+            // checkmarks animate naturally even before any reply lands.
+            try { notifyTypingNow(true); } catch (_) {}
+            if (lastUserClientId) {
+                setBubbleStatus(lastUserClientId, 'sent');
+                window.setTimeout(function () { setBubbleStatus(lastUserClientId, 'delivered'); }, 260);
+            }
 
             var email = (emailStore.value || '').trim();
             var itemNumber = parseItemNumber(message);
@@ -1571,6 +1791,15 @@
                     try {
                         var chatApiStartMs = Date.now();
                         var payload = await postApi('/chat/message', { session_id: chatSessionId, message: message });
+
+                        // The AI tier has read our message and is replying; in
+                        // human-mode the message is queued for staff and only
+                        // reaches `delivered` until staff_seen arrives via SSE.
+                        if (payload && !payload.human_mode) {
+                            markAllUserBubblesAtLeast('seen');
+                        } else if (payload && payload.human_mode && lastUserClientId) {
+                            setBubbleStatus(lastUserClientId, 'delivered');
+                        }
 
                         // Refresh the session-expiry countdown (server returns a
                         // fresh `session_expires_at` on every successful reply).
@@ -1734,7 +1963,16 @@
             }
         });
         input.addEventListener('input', function () {
-            sendBtn.disabled = !String(input.value || '').trim();
+            var hasText = !!String(input.value || '').trim();
+            sendBtn.disabled = !hasText;
+            if (hasText) {
+                try { notifyTyping(); } catch (_) {}
+            } else {
+                try { notifyTypingNow(true); } catch (_) {}
+            }
+        });
+        input.addEventListener('blur', function () {
+            try { notifyTypingNow(true); } catch (_) {}
         });
 
         // Global click handler: triggers and outside-click minimization

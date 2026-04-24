@@ -2756,6 +2756,135 @@ function registerChatRoutes(app, apiPrefix) {
     }
   });
 
+  // ── Real-time presence: typing + seen receipts ─────────────────
+  // These are ephemeral signals that fan out via the existing SSE
+  // streams (per-session for students, admin stream for staff).
+  // They never touch the database — clients throttle/debounce.
+
+  // Student → admin: "I am typing" / "I stopped typing"
+  app.post(`${apiPrefix}/chat/typing`, async (req, res) => {
+    const sessionId = String((req.body && req.body.session_id) || "").trim();
+    const stopped = !!(req.body && req.body.stopped);
+    if (!sessionId || !isValidSessionId(sessionId)) {
+      return res.status(400).json({ success: false, message: "Invalid session_id." });
+    }
+    try {
+      const loaded = await loadSessionRow(sessionId);
+      if (!loaded.found || loaded.expired) {
+        return res.status(401).json({ success: false, message: "Session not active." });
+      }
+      let caseId = "";
+      try {
+        const t = await db.query(
+          `SELECT case_id FROM escalation_tickets
+           WHERE session_id = $1 AND status IN ('open','in_progress')
+           ORDER BY created_at DESC LIMIT 1`,
+          [sessionId]
+        );
+        if (t.rows.length) caseId = String(t.rows[0].case_id || "");
+      } catch (_) {}
+      pushToAdminTickets({
+        type: stopped ? "student_typing_stop" : "student_typing",
+        session_id: sessionId,
+        case_id: caseId || null,
+        timestamp: new Date().toISOString(),
+      });
+      return res.json({ success: true });
+    } catch (error) {
+      return genericError(res, "chat", error);
+    }
+  });
+
+  // Student → admin: "I have seen staff messages up to now"
+  app.post(`${apiPrefix}/chat/seen`, async (req, res) => {
+    const sessionId = String((req.body && req.body.session_id) || "").trim();
+    if (!sessionId || !isValidSessionId(sessionId)) {
+      return res.status(400).json({ success: false, message: "Invalid session_id." });
+    }
+    try {
+      const loaded = await loadSessionRow(sessionId);
+      if (!loaded.found || loaded.expired) {
+        return res.status(401).json({ success: false, message: "Session not active." });
+      }
+      let caseId = "";
+      try {
+        const t = await db.query(
+          `SELECT case_id FROM escalation_tickets
+           WHERE session_id = $1 AND status IN ('open','in_progress')
+           ORDER BY created_at DESC LIMIT 1`,
+          [sessionId]
+        );
+        if (t.rows.length) caseId = String(t.rows[0].case_id || "");
+      } catch (_) {}
+      pushToAdminTickets({
+        type: "student_seen",
+        session_id: sessionId,
+        case_id: caseId || null,
+        timestamp: new Date().toISOString(),
+      });
+      return res.json({ success: true });
+    } catch (error) {
+      return genericError(res, "chat", error);
+    }
+  });
+
+  // Staff → student: "I am typing"
+  app.post(`${apiPrefix}/chat/tickets/:caseId/staff-typing`, requireAdminKey, async (req, res) => {
+    const caseId = String((req.params && req.params.caseId) || "").trim();
+    const staffName = String((req.body && req.body.staff_name) || "OSA Staff").trim();
+    const stopped = !!(req.body && req.body.stopped);
+    if (!caseId) {
+      return res.status(400).json({ success: false, message: "caseId is required." });
+    }
+    try {
+      const t = await db.query(
+        `SELECT session_id FROM escalation_tickets WHERE case_id = $1`,
+        [caseId]
+      );
+      if (!t.rows.length) {
+        return res.status(404).json({ success: false, message: "Ticket not found." });
+      }
+      const sessionId = t.rows[0].session_id;
+      const delivered = pushToSession(sessionId, {
+        type: stopped ? "staff_typing_stop" : "staff_typing",
+        case_id: caseId,
+        staff_name: staffName,
+        timestamp: new Date().toISOString(),
+      });
+      return res.json({ success: true, delivered });
+    } catch (error) {
+      return genericError(res, "chat", error);
+    }
+  });
+
+  // Staff → student: "I have seen your messages up to now"
+  app.post(`${apiPrefix}/chat/tickets/:caseId/staff-seen`, requireAdminKey, async (req, res) => {
+    const caseId = String((req.params && req.params.caseId) || "").trim();
+    const staffName = String((req.body && req.body.staff_name) || "OSA Staff").trim();
+    if (!caseId) {
+      return res.status(400).json({ success: false, message: "caseId is required." });
+    }
+    try {
+      const t = await db.query(
+        `SELECT session_id FROM escalation_tickets WHERE case_id = $1`,
+        [caseId]
+      );
+      if (!t.rows.length) {
+        return res.status(404).json({ success: false, message: "Ticket not found." });
+      }
+      const sessionId = t.rows[0].session_id;
+      const delivered = pushToSession(sessionId, {
+        type: "staff_seen",
+        case_id: caseId,
+        staff_name: staffName,
+        timestamp: new Date().toISOString(),
+      });
+      return res.json({ success: true, delivered });
+    } catch (error) {
+      return genericError(res, "chat", error);
+    }
+  });
+
   // Get session messages
   app.get(`${apiPrefix}/chat/session/:sessionId/messages`, async (req, res) => {
     const sessionId = String((req.params && req.params.sessionId) || "").trim();

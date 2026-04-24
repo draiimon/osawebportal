@@ -25,3 +25,17 @@ Student-affairs portal for EAC. Plain HTML/CSS/JS frontend in `public/` paired w
 ## Notes
 - `serve.js` (port 8001) is a legacy standalone static server kept for reference; not used by the workflow.
 - The React workspace under `frontend/` is independent and not wired into the running app.
+
+## Real-time chat presence (typing + seen receipts)
+Both the student widget and the staff portal exchange typing and seen receipts
+through the existing SSE infrastructure (no WebSocket layer). Endpoints in
+`server/chat.js`:
+- `POST /api/v1/chat/typing` — student → admin SSE (fans out `student_typing` / `student_typing_stop`)
+- `POST /api/v1/chat/seen` — student → admin SSE (`student_seen`)
+- `POST /api/v1/chat/tickets/:caseId/staff-typing` (admin auth) — staff → per-session SSE (`staff_typing` / `staff_typing_stop`)
+- `POST /api/v1/chat/tickets/:caseId/staff-seen` (admin auth) — staff → per-session SSE (`staff_seen`)
+
+Per-message status (queued → sent → delivered → seen) is rendered as small
+checkmarks under user bubbles in `public/assets/js/osa-chat-widget.js` and
+persisted in the `osaChatThread` localStorage record. Cache-bust pins:
+loader `v=70`, widget `v=70`, `osa-ai.css?v=46`, island css `v=17`.
