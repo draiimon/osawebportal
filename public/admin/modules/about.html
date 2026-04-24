@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/admin/admin-shell.css?v=20260423j">
+  <link rel="stylesheet" href="/admin/admin-shell.css?v=20260424a">
   <style>
     .about-tabs {
       display: flex;
@@ -488,7 +488,7 @@
   </main>
 </div>
 
-<script src="/admin/admin-shell.js?v=20260423j"></script>
+<script src="/admin/admin-shell.js?v=20260424a"></script>
 <script>
   const DB = 'osaAboutContent';
   const DEFAULTS = {
@@ -539,7 +539,86 @@
     referenceLink: 'https://www.eac.edu.ph/osa/'
   };
 
-  const getData = () => adminDB.get(DB) || {};
+  let remoteState = {};
+
+  function parseMaybeJson(value) {
+    const text = String(value || '').trim();
+    if (!text) return null;
+    if (!((text.startsWith('{') && text.endsWith('}')) || (text.startsWith('[') && text.endsWith(']')))) {
+      return null;
+    }
+    try {
+      return JSON.parse(text);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function normalizeRemoteData(raw) {
+    const data = raw && typeof raw === 'object' ? raw : {};
+    return {
+      portal: parseMaybeJson(data.portal) || {
+        title: data.hero_title || '',
+        desc: data.hero_lead || ''
+      },
+      school: parseMaybeJson(data.school) || {},
+      institutionalIntro: data.institutionalIntro || data.eac_lead || '',
+      collegeLink: data.collegeLink || '',
+      mission: data.mission || '',
+      vision: data.vision || '',
+      philosophy: data.philosophy || '',
+      coreValuesText: data.coreValuesText || '',
+      eacSourceNote: data.eacSourceNote || '',
+      osaSummary: data.osaSummary || data.osa_lead || '',
+      osaServicesDesc: data.osaServicesDesc || '',
+      duties: Array.isArray(parseMaybeJson(data.duties)) ? parseMaybeJson(data.duties) : [],
+      services: Array.isArray(parseMaybeJson(data.services)) ? parseMaybeJson(data.services) : [],
+      files: Array.isArray(parseMaybeJson(data.files)) ? parseMaybeJson(data.files) : [],
+      referenceVisible: String(data.referenceVisible || '').trim() ? String(data.referenceVisible).trim().toLowerCase() === 'true' : undefined,
+      referenceNote: data.referenceNote || '',
+      referenceLink: data.referenceLink || ''
+    };
+  }
+
+  function toApiContent(data) {
+    return {
+      portal: JSON.stringify(data.portal || {}),
+      school: JSON.stringify(data.school || {}),
+      institutionalIntro: data.institutionalIntro || '',
+      collegeLink: data.collegeLink || '',
+      mission: data.mission || '',
+      vision: data.vision || '',
+      philosophy: data.philosophy || '',
+      coreValuesText: data.coreValuesText || '',
+      eacSourceNote: data.eacSourceNote || '',
+      osaSummary: data.osaSummary || '',
+      osaServicesDesc: data.osaServicesDesc || '',
+      duties: JSON.stringify(Array.isArray(data.duties) ? data.duties : []),
+      services: JSON.stringify(Array.isArray(data.services) ? data.services : []),
+      files: JSON.stringify(Array.isArray(data.files) ? data.files : []),
+      referenceVisible: String(data.referenceVisible !== false),
+      referenceNote: data.referenceNote || '',
+      referenceLink: data.referenceLink || '',
+      hero_title: (data.portal && data.portal.title) || '',
+      hero_lead: (data.portal && data.portal.desc) || '',
+      eac_heading: (data.school && data.school.name) || '',
+      eac_lead: data.institutionalIntro || '',
+      osa_lead: data.osaSummary || ''
+    };
+  }
+
+  async function fetchRemoteData() {
+    try {
+      const response = await fetch('/api/v1/content/about', { cache: 'no-store' });
+      if (!response.ok) return;
+      const payload = await response.json();
+      if (!payload || payload.success !== true) return;
+      remoteState = normalizeRemoteData(payload.data || {});
+      loadAll();
+    } catch (e) {}
+  }
+
+  const getData = () => Object.assign({}, remoteState || {}, adminDB.get(DB) || {});
   const mergeData = () => {
     const saved = getData();
     return {
@@ -563,7 +642,13 @@
     };
   };
   const persistData = (data) => {
+    remoteState = data;
     adminDB.set(DB, data);
+    fetch('/api/v1/content/about', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: toApiContent(data) })
+    }).catch(() => {});
     fetch('/api/admin/about/save.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -714,6 +799,7 @@
   }
 
   loadAll();
+  fetchRemoteData();
 </script>
 </body>
 </html>

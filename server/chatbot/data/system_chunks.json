@@ -1,0 +1,367 @@
+[
+  {
+    "chunk_id": "SYS-001",
+    "topic": "What the OSA Transaction Guide Portal is",
+    "article": "System Overview",
+    "section": "About this Portal",
+    "keywords": ["osa", "portal", "about", "system", "transaction guide", "chatbot", "what is this", "how does this work", "purpose"],
+    "bot_routing": "When the user asks what this portal is, what it does, or what system they are using.",
+    "source": "OSA Portal System Documentation",
+    "content": "OSA TRANSACTION GUIDE PORTAL — PURPOSE:\nThis is the official online assistance portal of the Office of Student Affairs (OSA) at Emilio Aguinaldo College (EAC) Cavite. It is a web-based system that lets students get answers to OSA-related questions, view announcements, check the Lost and Found registry, request appointments with OSA staff, and escalate concerns to a human officer — all from a single interface.\n\nSCOPE:\n- Source of truth for campus policies is the EAC Student Manual (stored in the portal's knowledge base and retrieved per question).\n- Live data (announcements, lost-and-found items, services) is maintained by OSA admin staff through the admin panel and is always up to date.\n- The portal does NOT replace registrar, cashier, or admissions systems — it is specifically the OSA service channel.\n\nWHO CAN USE IT:\nAny bona fide EAC-Cavite student with a valid campus email can use the portal. Email OTP verification is required before initiating a chat or requesting a service."
+  },
+  {
+    "chunk_id": "SYS-002",
+    "topic": "How the 3-tier AI chatbot works",
+    "article": "System Overview",
+    "section": "Chatbot Architecture",
+    "keywords": ["chatbot", "ai", "tier 1", "tier 2", "tier 3", "faq", "rag", "escalation", "how chatbot works", "how does the bot work", "staff support"],
+    "bot_routing": "When the user asks how the chatbot works, how it answers, or what the different support tiers are.",
+    "source": "OSA Portal System Documentation",
+    "content": "OSA CHATBOT — 3-TIER SUPPORT FLOW:\n\nTIER 1 — FREQUENTLY ASKED QUESTIONS (FAQ):\n- Fast, deterministic answers sourced from a curated FAQ database maintained by OSA staff.\n- Matches by keywords; returns the approved FAQ answer directly.\n- Grows over time: when a ticket is resolved and marked as a good general answer, staff can promote it into the FAQ (continuous learning).\n\nTIER 2 — RETRIEVAL-AUGMENTED GENERATION (RAG):\n- If no FAQ matches, the bot performs a semantic search (Gemini embeddings + vector similarity) against the EAC Student Manual and the system knowledge base.\n- The top relevant sections are injected into the prompt, and a large language model (Gemini with Groq fallback) composes a grounded answer strictly from the retrieved sources.\n- If retrieval finds nothing relevant, the bot replies exactly: 'No relevant information found in the knowledge base.'\n- If retrieval confidence is low, the bot says 'I have insufficient data to answer that accurately' and offers escalation.\n\nTIER 3 — HUMAN ESCALATION:\n- For complex, sensitive, or uncovered concerns, the user can ask for staff help (e.g., 'talk to staff', 'human support') or request an appointment.\n- The system opens a ticket with a Case ID, emails OSA, and switches the chat into live human-support mode.\n- Staff reply directly in the same chat; students do not need to leave or email separately.\n\nGROUNDING RULE: The bot only answers from retrieved sources. It does not make up requirements, fees, deadlines, or policies."
+  },
+  {
+    "chunk_id": "SYS-003",
+    "topic": "How to request an appointment via chat",
+    "article": "System Features",
+    "section": "Appointments",
+    "keywords": ["appointment", "schedule", "book", "meeting", "visit osa", "reschedule", "appointment flow", "schedule osa", "appointment case"],
+    "bot_routing": "When the user wants to book, schedule, reschedule, or check how appointments work.",
+    "source": "OSA Portal System Documentation",
+    "content": "REQUESTING AN APPOINTMENT:\nAppointments are created directly inside this chat. Students should NOT email or call OSA to book — the chat handles it end-to-end.\n\nSTEPS:\n1. Tell the chatbot you want an appointment (e.g., 'I want to schedule a meeting' or tap the Appointment chip).\n2. The bot will ask for three things:\n   a) Purpose of the visit\n   b) Preferred weekday\n   c) Preferred time window (Morning or Afternoon)\n3. After all three are provided, the bot escalates the request to OSA staff.\n4. The system creates an appointment ticket with a unique Case ID (e.g., OSA-xxxxxx), saves the request in the database, and notifies OSA via email.\n5. OSA staff review the slot and either approve or reschedule. Confirmation appears in the same chat.\n6. Once approved, the chat shows '✅ Appointment Approved for Case ID [ID]' along with the final schedule.\n\nRULES:\n- Only ONE pending appointment per student per day (to prevent queue spam).\n- The student must be OTP-verified before requesting.\n- Cancellation or reschedule can be requested by replying in the same chat."
+  },
+  {
+    "chunk_id": "SYS-004",
+    "topic": "How to claim a Lost and Found item via chat",
+    "article": "System Features",
+    "section": "Lost and Found",
+    "keywords": ["lost and found", "lf", "claim", "lost item", "found item", "lf-", "claimed", "unclaimed", "missing item", "turned in"],
+    "bot_routing": "When the user asks about lost items, found items, how to claim, or whether an LF item is still available.",
+    "source": "OSA Portal System Documentation",
+    "content": "LOST AND FOUND:\nThe OSA maintains a live Lost and Found registry. Items turned in to OSA are posted with a unique item number in the format 'LF-NNNNNN' (e.g., LF-1025). Items are stored at the OSA office until claimed.\n\nCHECKING STATUS:\nThe bot has access to the live Lost and Found database. Ask directly (e.g., 'Is LF-1025 claimed?' or 'What lost items are currently available?'). The bot can report whether a specific item is:\n- UNCLAIMED — still at OSA, waiting for the owner\n- CLAIMED — already picked up by the owner\n- PENDING CLAIM — a claim has been submitted but not yet verified by staff\n\nCLAIMING AN ITEM:\n1. Identify the specific LF item number.\n2. In this chat, say you want to claim the item (e.g., 'I want to claim LF-1025') or use the Claim button.\n3. The bot will escalate to staff and create a claim ticket with a Case ID.\n4. OSA staff will verify ownership (ID check, description match, etc.).\n5. After verification, the student is instructed to visit the OSA office during operating hours to physically collect the item.\n6. The item's status is updated to CLAIMED once picked up.\n\nThe bot cannot hand over items — all physical handover happens at the OSA office with a staff member."
+  },
+  {
+    "chunk_id": "SYS-005",
+    "topic": "Account access, OTP verification, and chat session lifecycle",
+    "article": "System Overview",
+    "section": "Authentication & Session",
+    "keywords": ["otp", "email verification", "login", "session", "timeout", "expired", "verify email", "email otp", "session ttl", "logout"],
+    "bot_routing": "When the user asks about logging in, OTP codes, email verification, session expiration, or account access.",
+    "source": "OSA Portal System Documentation",
+    "content": "ACCOUNT ACCESS & SESSION:\nThe portal uses EMAIL OTP verification — no password. Students receive a one-time code by email and enter it to verify identity.\n\nOTP RULES:\n- OTP codes expire after a short window (typically 5 minutes).\n- Rate limit: up to 3 code requests per email every 15 minutes (prevents spam).\n- Rate limit: up to 10 verification attempts per 15 minutes.\n- Daily quota per email applies to prevent abuse.\n\nCHAT SESSION:\n- A verified chat session stays active for about 10 minutes of idle time (the server refreshes 'last active' on every message, so active conversations do not expire).\n- When the session idle-expires, the student is prompted to verify again to continue.\n- Each session is tied to the student's email and name so the chat history and tickets stay linked to the right account.\n\nNAME PRIVACY:\nThe bot uses the name the student entered during OTP verification. It does NOT guess a real name from the email username. If the wrong name is shown, the student can re-verify and supply the correct name."
+  },
+  {
+    "chunk_id": "SYS-006",
+    "topic": "What happens after escalation to OSA staff",
+    "article": "System Features",
+    "section": "Staff Escalation",
+    "keywords": ["escalation", "staff", "human support", "case id", "ticket", "osa staff", "live agent", "pause ai", "staff chat"],
+    "bot_routing": "When the user asks what happens after escalation, how human support works, or about ticket/case IDs.",
+    "source": "OSA Portal System Documentation",
+    "content": "AFTER ESCALATION TO STAFF:\n1. The bot opens an escalation ticket in the database with a unique Case ID (format OSA-xxxxxx).\n2. The ticket records the student's name, email, concern, and full chat transcript.\n3. OSA is notified by email automatically.\n4. The chat switches into 'human-support mode' — the AI pauses and the student waits for a staff reply inside the same chat.\n5. If no staff reply within 5 minutes, the system sends OSA a follow-up reminder email.\n6. OSA staff reply directly in the same chat window through the admin panel. Students see the reply in real time.\n7. Staff can close the session when resolved. If the ticket is marked 'promote to FAQ,' the Q&A is added to the FAQ bank so future students get instant answers (continuous learning).\n8. One resolved support case per day per session is allowed; follow-ups must be emailed to OSA directly."
+  },
+  {
+    "chunk_id": "SYS-007",
+    "topic": "Services and features the portal offers",
+    "article": "System Overview",
+    "section": "Feature List",
+    "keywords": ["features", "services offered", "what can i do", "portal features", "capabilities", "what does this portal do", "functions", "dashboard", "homepage", "about portal", "cards", "modules", "manual and forms"],
+    "bot_routing": "When the user asks what the portal can do, what features exist, or what services are available.",
+    "source": "OSA Portal System Documentation",
+    "content": "OSA TRANSACTION GUIDE PORTAL — FEATURE SUMMARY:\n- The portal is the official OSA service channel for EAC Cavite.\n- Public-facing sections may include the Home dashboard, Announcements page, Lost and Found page, About page, Student Manual and forms links, and the Ask OSA chat assistant.\n- The exact wording, cards, guide slides, manual links, and downloadable forms shown on the Home and About pages depend on the current page content managed by OSA.\n- Announcements and Lost and Found listings are live data maintained by OSA staff.\n- The chat assistant can answer grounded questions from the Student Manual and portal knowledge base, and can also surface live announcements and Lost and Found entries.\n- OTP-secured chat is used for protected actions such as claims, appointments, and staff escalation.\n- The admin panel exists for staff-side management of announcements, Lost and Found, page content, chat support, and the knowledge base, but it is not a student-facing dashboard feature.\n\nBOUNDARY:\n- The portal is specifically for OSA-related guidance and services.\n- Registrar records, cashier transactions, admissions processing, and clinic workflows remain under their respective offices and systems."
+  },
+  {
+    "chunk_id": "SYS-008",
+    "topic": "How admin staff manage portal content and the knowledge base",
+    "article": "System Overview",
+    "section": "Admin & Knowledge Base Management",
+    "keywords": ["admin panel", "admin", "manage content", "knowledge base", "rag", "who updates", "who manages", "staff admin", "cms"],
+    "bot_routing": "When the user asks who updates content, how the portal is managed, or how the knowledge base stays accurate.",
+    "source": "OSA Portal System Documentation",
+    "content": "STAFF-SIDE ADMINISTRATION:\nOSA staff use a separate admin panel (not accessible to students) to keep the portal current:\n\n- ANNOUNCEMENTS — create, edit, publish, or unpublish OSA advisories.\n- LOST AND FOUND — register new turned-in items, update status, approve or reject claims.\n- HOME CONTENT / ABOUT PAGE — edit hero text, intro, contact info, and other public-facing copy.\n- CHAT SUPPORT — live ticket queue; reply to students inside the chat; end sessions when resolved; promote good resolutions into the FAQ bank.\n- KNOWLEDGE BASE (RAG MANAGER) — add, edit, deactivate, or re-embed the knowledge chunks the AI uses as its source of truth. The admin can also run test searches to validate retrieval quality before students see changes.\n\nALL CONTENT ON THE PORTAL IS EDITABLE BY STAFF — no deployment or code change is needed to update announcements, L&F items, FAQ, or the student-manual knowledge base. This keeps the bot's answers aligned with current OSA policy."
+  },
+  {
+    "chunk_id": "SYS-009",
+    "topic": "EAC Cavite Office Hours, Cashier Hours, and Peak Transaction Times",
+    "article": "Campus Operations",
+    "section": "Office Hours and Transaction Schedules",
+    "keywords": [
+      "office hours", "open", "close", "cashier hours", "osa hours", "operating hours",
+      "business hours", "peak hours", "cut-off", "payment", "when open", "what time",
+      "lunch break", "available", "saan", "anong oras", "bukas", "pila", "queue",
+      "mabilis", "cashier eac", "osa open", "saturday", "sunday", "weekdays",
+      "transaction hours", "payment cut-off", "when to pay", "paying tuition",
+      "cashier schedule", "osa schedule", "office schedule"
+    ],
+    "bot_routing": "When the user asks about what time offices open or close, cashier hours, OSA availability, payment cut-off times, or peak transaction hours at EAC Cavite.",
+    "source": "EAC Cavite Campus Operations",
+    "content": "EAC CAVITE — OFFICE HOURS AND TRANSACTION SCHEDULES:\n\nOSA (OFFICE OF STUDENT AFFAIRS):\n- Operating Days: Monday to Friday only (no Saturday or Sunday operations)\n- Operating Hours: 8:00 AM to 5:00 PM\n- Lunch Break: 12:00 PM to 1:00 PM (limited transactions during this window)\n- Contact: studentaffairs.cvt@eac.edu.ph | Tel loc 115\n- Public campus address shown on the portal: Gov. D. Mangubat Ave., Brgy. Burol Main, City of Dasmariñas, Cavite 4114, Philippines\n\nCASHIER'S OFFICE:\n- Operating Days: Monday to Friday\n- Operating Hours: 8:00 AM to 5:00 PM\n- Payment Cut-Off Time: 4:30 PM (transactions after this time may not be processed same day)\n- Online Payment: cashier.cavite@eac.edu.ph (for online payment inquiries)\n- Note: Payments made after cut-off are recorded on the next business day.\n\nPEAK TRANSACTION HOURS (HIGH QUEUE PERIODS):\n- Morning Rush: 8:00 AM to 10:00 AM — highest queue at cashier and OSA\n- Afternoon Rush: 1:00 PM to 3:00 PM — second busiest period after lunch break\n- AVOID PEAK: For faster service, transact between 10:00 AM and 12:00 PM or after 3:00 PM.\n- Enrollment Period (June–July and November–December): Expect significantly longer queues at all offices. Plan ahead.\n- Start of semester weeks: All offices experience maximum volume — arrive early.\n\nGENERAL CAMPUS HOURS:\n- School Days: Monday to Friday (classes and administrative services)\n- Saturday: Limited operations only for authorized activities (check OSA announcements)\n- Sunday: No administrative services available\n- Holidays: All offices closed on official government and school holidays\n\nTIPS FOR FAST TRANSACTIONS:\n1. Prepare all required documents before going to the office.\n2. For cashier payments, bring the exact amount or have your student number ready.\n3. For OSA transactions, check the portal announcements for any schedule changes.\n4. Use this portal's chat to resolve questions before making the trip to campus."
+  },
+  {
+    "chunk_id": "SYS-011",
+    "topic": "Student Clearance Process — Steps, Requirements, and Common Issues",
+    "article": "Campus Operations",
+    "section": "Student Clearance Process",
+    "keywords": [
+      "clearance", "student clearance", "clearance form", "how to get clearance",
+      "clearance process", "clearance requirements", "clearance steps", "clear",
+      "pending clearance", "hold clearance", "clearance not approved", "di ma clear",
+      "bakit pending clearance", "clearance before graduation", "clearance before enrollment",
+      "osa clearance", "cashier clearance", "library clearance", "registrar clearance",
+      "clearance offices", "who clears first", "osa or cashier first", "clearance order",
+      "online clearance", "clearance approval", "automatic clearance", "clearance lost form"
+    ],
+    "bot_routing": "When the user asks about how to get clearance, why their clearance is pending, what offices are involved, or the order of clearance steps.",
+    "source": "EAC Cavite Student Affairs Operations",
+    "content": "EAC CAVITE — STUDENT CLEARANCE PROCESS:\n\nWHAT IS CLEARANCE:\nStudent clearance is a multi-office process that certifies a student has settled all obligations (financial, library, laboratory, disciplinary) with the school. It is required before graduation, transfer, leave of absence, or certain document requests.\n\nCLEARANCE FLOW — ORDER OF OFFICES:\n1. CASHIER / ACCOUNTING OFFICE — Settle all outstanding tuition fees and miscellaneous balances first. Clearance from other offices will NOT be approved if you have unpaid balances.\n2. LIBRARY — Return all borrowed books and pay overdue fines.\n3. LABORATORY / DEPARTMENT — Return laboratory equipment and settle any lab-related obligations.\n4. DEAN'S OFFICE — Department-level clearance.\n5. REGISTRAR'S OFFICE — Academic records clearance.\n6. OFFICE OF STUDENT AFFAIRS (OSA) — Final clearance approving all student obligations are settled.\n\nIMPORTANT: The Cashier must be cleared FIRST before OSA will approve your clearance.\n\nWHY IS MY CLEARANCE PENDING:\n- Outstanding balance at the Cashier (most common reason).\n- Unreturned library books or unpaid library fines.\n- Pending disciplinary case at OSA.\n- Missing or incomplete submission of clearance form.\n- OSA processing queue — high-volume periods (enrollment, graduation) cause delays.\n\nHOLD CLEARANCE:\n- A hold may be placed on your clearance if you have an active disciplinary case, unpaid fines, or pending requirements.\n- Contact OSA directly (studentaffairs.cvt@eac.edu.ph | Tel loc 115) to clarify the specific hold reason.\n\nONLINE VS WALK-IN:\n- Physical clearance forms must be secured at the Registrar's Office.\n- Walk-in clearance processing is the standard method at EAC Cavite.\n- Inquire at OSA or Registrar for any updated online clearance procedures.\n\nHOW LONG DOES CLEARANCE TAKE:\n- Standard processing: 3–5 working days after all offices have signed off.\n- Peak periods (enrollment, graduation): 5–10 working days.\n- Rush processing is not guaranteed — plan ahead.\n\nIF CLEARANCE FORM IS LOST:\n- Request a new clearance form at the Registrar's Office.\n- Restart the signing process from the beginning."
+  },
+  {
+    "chunk_id": "SYS-012",
+    "topic": "Payment Methods, Rules, GCash, Proxy Payment, Installment, and Receipts",
+    "article": "Campus Operations",
+    "section": "Payment Methods and Cashier Rules",
+    "keywords": [
+      "gcash", "payment method", "online payment", "how to pay", "payment options",
+      "installment", "installment payment", "partial payment", "down payment",
+      "proxy payment", "ibang tao magbayad", "someone else pay", "payment by proxy",
+      "receipt", "official receipt", "how to get receipt", "payment receipt",
+      "payment not reflected", "di pa reflected", "payment verification",
+      "late payment", "penalty", "payment deadline", "overdue payment",
+      "tuition payment", "fee payment", "cashier payment", "payment cut-off",
+      "bayad", "magbayad", "pabayad", "katiwala magbayad"
+    ],
+    "bot_routing": "When the user asks about payment methods (GCash, online, in-person), whether someone else can pay for them, installment options, receipts, or unprocessed payments.",
+    "source": "EAC Cavite Cashier Operations",
+    "content": "EAC CAVITE — PAYMENT METHODS AND CASHIER RULES:\n\nACCEPTED PAYMENT METHODS:\n- Over-the-counter (in-person) cash payment at the Cashier's Office.\n- Online bank transfer / e-wallet: Check with the Cashier's Office (cashier.cavite@eac.edu.ph) for the current list of accepted digital payment channels. GCash and online banking availability may vary — confirm with the Cashier directly before using.\n\nCAN SOMEONE ELSE PAY FOR ME (PROXY PAYMENT):\n- A family member or representative may pay on a student's behalf at the Cashier's window.\n- The representative must bring the student's ID number and the exact payment amount.\n- The official receipt will be issued under the student's name.\n- Confirm the specific proxy policy with the Cashier's Office as it may change per semester.\n\nINSTALLMENT AND PARTIAL PAYMENT:\n- EAC Cavite allows tuition fee installments. The standard down payment is required upon enrollment.\n- Subsequent installments follow the schedule provided by the Accounting/Cashier's Office.\n- Partial payments are accepted but the student must comply with the installment schedule to avoid hold status.\n- Confirm the exact installment breakdown and deadlines with the Accounting Office each semester.\n\nPAYMENT CUT-OFF:\n- Official payment cut-off time at the Cashier is 4:30 PM on weekdays.\n- Payments after cut-off are recorded on the next business day.\n- Avoid paying close to cut-off during peak periods — queues may cause delays.\n\nRECEIPTS AND PAYMENT VERIFICATION:\n- An official receipt is issued at the Cashier's window upon payment.\n- For online payments, email the proof of payment to cashier.cavite@eac.edu.ph for manual posting.\n- Payment reflection in the system typically takes 1–3 working days for online transactions.\n- If payment is not reflected after 3 working days, bring your official receipt to the Cashier's Office for verification.\n\nLATE PAYMENT:\n- Late payments may incur a penalty or surcharge per the school's policies.\n- Check with the Accounting/Cashier's Office for the current late payment penalty schedule.\n- A student with an outstanding balance may be placed on hold for enrollment, clearance, or document requests."
+  },
+  {
+    "chunk_id": "SYS-013",
+    "topic": "Document Requests — Good Moral Certificate, Processing Times, Fees, and Requirements",
+    "article": "Campus Operations",
+    "section": "Document Requests and Processing",
+    "keywords": [
+      "good moral", "good moral certificate", "certificate of good moral",
+      "document request", "student records", "transcript", "tor",
+      "processing time", "how many days", "ilang araw", "ilang days processing",
+      "rush release", "rush document", "urgent release",
+      "certificate requirements", "document requirements", "what do i need",
+      "may bayad ba certificate", "fee for certificate", "cost of documents",
+      "not enrolled document", "kahit di enrolled", "former student",
+      "duplicate certificate", "replacement certificate", "lost certificate",
+      "osa certificate", "who issues certificate", "where to get certificate",
+      "school certification", "enrollment certification"
+    ],
+    "bot_routing": "When the user asks how to get a Good Moral Certificate, how long document processing takes, fees, or what documents they can request from OSA or the Registrar.",
+    "source": "EAC Cavite Student Affairs and Registrar Operations",
+    "content": "EAC CAVITE — DOCUMENT REQUESTS AND PROCESSING:\n\nGOOD MORAL CERTIFICATE:\n- Issued by the OFFICE OF STUDENT AFFAIRS (OSA).\n- Who can request: currently enrolled students and recent graduates.\n- Requirements: Valid student ID (or student number), completely signed clearance (for separating students), and a request letter or form from OSA.\n- Processing Time: 3–5 working days from submission of complete requirements.\n- Fee: Confirm the current fee with OSA (studentaffairs.cvt@eac.edu.ph | Tel loc 115) — fees may be updated each academic year.\n- Rush Release: Rush processing is evaluated on a case-by-case basis. Approach OSA and explain the urgency — it is not guaranteed.\n\nOTHER DOCUMENTS (FROM THE REGISTRAR'S OFFICE):\n- Transcript of Records (TOR), Certification of Enrollment, True Copy of Grades, Diploma: requested at the REGISTRAR'S OFFICE.\n- Processing Time: 3–7 working days for standard requests. TOR and Diploma may take longer.\n- Requirements typically include: completed clearance, official receipt of payment for the document fee, and a valid student ID.\n- Former (non-enrolled) students: may still request documents by presenting a valid ID and proof of previous enrollment. Confirm with the Registrar's Office.\n\nCAN NON-ENROLLED STUDENTS GET DOCUMENTS:\n- Former EAC-Cavite students may request documents (TOR, certifications, Good Moral) by visiting the respective office (OSA or Registrar) with valid identification.\n- Clearance may still be required depending on the document type.\n\nDUPLICATE OR REPLACEMENT CERTIFICATES:\n- Lost or damaged certificates can be replaced by filing a request with the issuing office (OSA for Good Moral, Registrar for academic records).\n- A written request or affidavit of loss may be required.\n- Standard processing times apply.\n\nRUSH RELEASE:\n- Not all documents can be rushed. Approach the issuing office early and explain the reason.\n- Providing evidence of urgency (e.g., deadline letter from the requesting institution) may help.\n\nWHERE TO REQUEST:\n- Good Moral Certificate: OSA Office — studentaffairs.cvt@eac.edu.ph | Tel loc 115\n- Academic Records (TOR, Grades, Enrollment Cert): REGISTRAR'S OFFICE\n- Certificates for employment, graduate school, board exams: REGISTRAR'S OFFICE"
+  },
+  {
+    "chunk_id": "SYS-014",
+    "topic": "Portal Pages, Navigation, and Useful Links within the OSA Portal",
+    "article": "System Overview",
+    "section": "Portal Navigation and Pages",
+    "keywords": [
+      "portal pages", "links", "where to find", "navigation", "sections",
+      "announcements page", "lost and found page", "about portal", "portal home",
+      "where is announcements", "link for announcements", "link for lost and found",
+      "portal sections", "how to navigate", "portal link", "page link",
+      "what pages are there", "portal features list", "where to check",
+      "check announcements", "check lost and found", "view announcements",
+      "view lost items", "portal menu", "main menu"
+    ],
+    "bot_routing": "When the user asks about portal pages, where to find specific sections, or requests links to portal features.",
+    "source": "OSA Portal System Documentation",
+    "content": "OSA TRANSACTION GUIDE PORTAL — PAGES AND NAVIGATION:\n\nThe OSA Transaction Guide Portal has the following main sections that students can access:\n\n1. HOME PAGE (/)\n   - Introduction to the portal and OSA services.\n   - Featured announcements from OSA.\n   - Quick access to all portal features.\n\n2. ANNOUNCEMENTS (/announcements)\n   - Live feed of all OSA advisories, schedules, event notices, and urgent reminders.\n   - Updated in real time by OSA staff.\n   - To view all announcements: navigate to the /announcements section of this portal.\n\n3. LOST AND FOUND (/lost-and-found)\n   - Live registry of all items turned in to OSA with current status (Unclaimed / Claimed / Pending Claim).\n   - Students can check item status directly on this page.\n   - To see if your item is listed: go to the /lost-and-found section of this portal.\n\n4. ABOUT THE PORTAL (/about-portal)\n   - Information about OSA, the portal's purpose, contact details, and FAQs.\n   - Includes OSA office location and contact information.\n\n5. CHAT SUPPORT (OTP-verified students only)\n   - Accessible from the main navigation after email OTP verification.\n   - Use this for live AI assistance, appointment requests, and staff escalation.\n\nHOW TO USE THE PORTAL:\n- No registration required for public pages (Announcements, Lost and Found, About).\n- For Chat Support and appointment requests, verify your campus email with OTP.\n- The Admin Panel is restricted to OSA staff only.\n\nFOR SPECIFIC NEEDS:\n- Latest school advisories → /announcements page\n- Lost item status → /lost-and-found page  \n- OSA contact info → /about-portal page or ask this chatbot directly\n- File a concern or request appointment → use Chat Support (OTP required)"
+  },
+  {
+    "chunk_id": "SYS-015",
+    "topic": "EAC Cavite Library Policies — Borrowing, Fines, Hours, and Services",
+    "article": "Campus Operations",
+    "section": "Library Services and Policies",
+    "keywords": [
+      "library", "library hours", "borrow", "borrowing", "library books", "return books",
+      "overdue", "library fines", "library fine", "library rules", "reading room",
+      "library services", "eac library", "library schedule", "library clearance",
+      "Filipiniana", "thesis", "library card", "library membership", "library pass",
+      "sanggunian", "librarian", "pwede mag borrow", "san ang library"
+    ],
+    "bot_routing": "When the user asks about the EAC Cavite library — borrowing books, fines, hours, returning books, or library clearance.",
+    "source": "EAC Cavite Campus Services",
+    "content": "EAC CAVITE — LIBRARY SERVICES AND POLICIES:\n\nLIBRARY HOURS:\n- Monday to Friday: 7:30 AM to 8:00 PM (during regular school days)\n- Saturday: Limited library access — check the library notice board or portal announcements for current Saturday hours.\n- The library observes the same holidays as the rest of the campus.\n\nBORROWING RULES:\n- Students must present their valid EAC school ID and library card to borrow materials.\n- Borrowing limit: typically 2–3 books at a time (confirm with the library for current policy).\n- Loan period: 3 days for most materials (reference books and Filipiniana may be for in-library use only).\n- Books must be returned or renewed before the due date to avoid overdue fines.\n\nOVERDUE FINES:\n- Overdue fines are charged per book per day for each day the material is late.\n- The specific fine rate is set by the library — confirm the current rate at the library desk.\n- Unpaid library fines must be settled BEFORE library clearance is issued.\n\nLIBRARY CLEARANCE:\n- Library clearance is a required step in the student clearance process.\n- To get library clearance: return all borrowed books AND pay all outstanding fines.\n- Library clearance must be secured before OSA will approve final clearance.\n\nLIBRARY SERVICES:\n- Print research materials, thesis, and dissertation collections.\n- Filipiniana section (Philippine-authored and Philippine-topic books).\n- Reading rooms and study areas are available for on-campus use.\n- Students requiring access to online databases may inquire at the library.\n\nCONTACT:\n- Visit the EAC Cavite Library in person or check with the OSA for the library's current contact details."
+  },
+  {
+    "chunk_id": "SYS-016",
+    "topic": "Student Organizations, Campus Activities, and Extra-Curricular Involvement at EAC Cavite",
+    "article": "Campus Operations",
+    "section": "Student Organizations and Campus Life",
+    "keywords": [
+      "student organization", "org", "organizations", "club", "clubs", "student council",
+      "USC", "supreme student council", "join org", "how to join org", "org membership",
+      "campus activities", "extra-curricular", "extracurricular", "campus life",
+      "student government", "leadership", "events", "school events", "org requirements",
+      "org rules", "accredited org", "recognized org", "student affairs org",
+      "student publication", "student media", "MAGDALO", "chorale", "dance troupe",
+      "theater arts", "brass band", "varsity", "sports", "student athlete"
+    ],
+    "bot_routing": "When the user asks about joining student organizations, the student council, campus clubs, school activities, or extra-curricular involvement.",
+    "source": "EAC Cavite Student Affairs",
+    "content": "EAC CAVITE — STUDENT ORGANIZATIONS AND CAMPUS LIFE:\n\nSTUDENT GOVERNANCE:\n- The SUPREME STUDENT COUNCIL (USC) is the highest student governing body at EAC Cavite.\n- Each college/department has its own Student Council representing the interests of its students.\n- USC officers are elected by the student body at the beginning of each academic year.\n\nACCREDITED STUDENT ORGANIZATIONS:\nEAC Cavite recognizes and accredits student organizations across cultural, academic, civic, and special interest categories. Common types include:\n- Academic/Professional Organizations (by department)\n- Cultural Arts: Chorale, Dance Troupe, Theater Arts, Brass Band\n- Civic and Service Organizations\n- Religious/Spiritual Organizations\n- Sports and Athletics (Varsity teams)\n- Student Publication: MAGDALO (the official EAC student newspaper)\n\nHOW TO JOIN A STUDENT ORGANIZATION:\n1. Look for recruitment drives held by organizations at the start of each semester.\n2. Attend the organization's orientation or general assembly.\n3. Submit membership requirements (varies per organization — usually includes ID, application form, and interview).\n4. Get OSA recognition/endorsement if required by the organization.\n\nSCHOLARSHIP THROUGH ORGANIZATIONS:\n- Talent-Based (Non-Academic) Scholarships are awarded to students in accredited performing arts groups (Chorale, Dance, Theater, Brass Band). Retention requires a minimum 2.75 GWA.\n- MAGDALO Scholarship: Student publication members receive 50–100% tuition coverage based on position (Editor-in-Chief = 100%).\n\nOSA AND STUDENT ORGANIZATIONS:\n- All student organizations must be accredited by OSA each academic year.\n- OSA oversees student organization activities, events, and compliance with school policies.\n- For organization recognition or concerns, visit the OSA Office (studentaffairs.cvt@eac.edu.ph | Tel loc 115).\n\nCAMPUS ACTIVITIES:\n- Major annual events include Foundation Day, intramurals, cultural shows, and department-level events.\n- Event schedules are announced through the OSA Announcements page on this portal."
+  },
+  {
+    "chunk_id": "SYS-017",
+    "topic": "Grading System Details — GWA Computation, Grade Scale, Retention, and Appeals at EAC Cavite",
+    "article": "Academic Policies",
+    "section": "Grading System and Academic Standing",
+    "keywords": [
+      "grading system", "grade scale", "how grades computed", "grade computation",
+      "gwa", "general weighted average", "gpa", "grade point average",
+      "passing grade", "failing grade", "incomplete", "inc", "5.0", "3.0",
+      "grade 1.0", "grade 2.0", "grade 3.0", "grade 4.0", "grade 5.0",
+      "INC", "OW", "official withdrawal", "UW", "unauthorized withdrawal",
+      "grade equivalents", "grade percent", "retention requirement",
+      "academic standing", "probation", "warning", "non-readmission",
+      "failing all subjects", "failed subjects", "grade inquiry", "grade appeal",
+      "how to compute gwa", "grade monitoring", "academic performance"
+    ],
+    "bot_routing": "When the user asks about the grading system, GWA computation, what grades mean, INC/OW/UW grades, or academic standing/retention.",
+    "source": "EAC Cavite Student Manual — Grading and Academic Policies",
+    "content": "EAC CAVITE — GRADING SYSTEM AND ACADEMIC POLICIES:\n\nGRADE SCALE:\n| Grade | Equivalent % | Meaning             |\n|-------|-------------|---------------------|\n| 1.0   | 99–100%     | Excellent           |\n| 1.25  | 96–98%      | Superior            |\n| 1.50  | 93–95%      | Very Good           |\n| 1.75  | 90–92%      | Good                |\n| 2.0   | 87–89%      | Satisfactory        |\n| 2.25  | 84–86%      | Above Average       |\n| 2.50  | 81–83%      | Average             |\n| 2.75  | 78–80%      | Below Average       |\n| 3.0   | 75–77%      | PASSING (minimum)   |\n| 4.0   | below 75%   | Conditional Failure |\n| 5.0   | below 75%   | FAILED              |\n\nPASSING GRADE: 3.0 is the minimum passing grade (75%). A grade of 4.0 or 5.0 means the student did not pass the subject.\n\nSPECIAL GRADE MARKS:\n- INC (Incomplete): Given when requirements are not fully met due to a valid reason. Must be completed within 1 semester or it converts to 5.0.\n- OW (Official Withdrawal): Student officially dropped the subject with Dean's approval within the allowed period. No grade recorded.\n- UW (Unauthorized Withdrawal): Student stopped attending without official approval. Automatically recorded as 5.0.\n\nGWA COMPUTATION:\nGWA = Sum of (Grade × Units) ÷ Total Units Enrolled\nExample: If a student takes 18 units with grades of 1.5, 2.0, 2.25, 2.5, 3.0 across subjects, the GWA is the weighted average accounting for each subject's unit value.\n\nACADEMIC STANDING AND RETENTION:\n- WARNING: Student failed fewer than 25% of total enrolled units.\n- ACADEMIC PROBATION: Student failed 25% to 65% of enrolled units.\n- NON-READMISSION: Student failed more than 65% of enrolled units, OR failed the professional licensure board exam three times.\n\nGRADE INQUIRY AND APPEALS:\n- Before final grading is posted: Approach your Program Adviser or School Dean.\n- After final grading: Approach the School Dean or VP for Academic Affairs.\n- Grades can only be changed through official academic processes — not by the OSA. OSA handles discipline concerns; the Registrar/Dean handles grade concerns."
+  },
+  {
+    "chunk_id": "SYS-018",
+    "topic": "Campus Facilities — Computer Labs, OLTD/Brightspace, Health Clinic, and Student Lounge at EAC Cavite",
+    "article": "Campus Operations",
+    "section": "Campus Facilities and Services",
+    "keywords": [
+      "computer lab", "computer laboratory", "lab", "labs", "computer room",
+      "brightspace", "LMS", "online learning", "OLTD", "e-learning", "canvas",
+      "online class", "zoom", "synchronous", "asynchronous", "online subject",
+      "health clinic", "medical clinic", "clinic", "school nurse", "doctor",
+      "dental clinic", "medical exam", "physical exam", "health services",
+      "student lounge", "canteen", "cafeteria", "campus facilities",
+      "library", "chapel", "gym", "gymnasium", "sports facility",
+      "IT support", "technical support", "network", "wifi", "internet",
+      "campus map", "where is", "building", "room", "location"
+    ],
+    "bot_routing": "When the user asks about campus facilities, the computer lab, clinic, Brightspace/OLTD, canteen, gym, or any physical location or service on campus.",
+    "source": "EAC Cavite Campus Services",
+    "content": "EAC CAVITE — CAMPUS FACILITIES AND SERVICES:\n\nCOMPUTER LABORATORIES:\n- Computer labs are available for students enrolled in subjects requiring computer use.\n- Access is typically scheduled per class — check with your subject teacher or the lab monitor.\n- Bring your school ID for lab access.\n- For IT support or technical concerns: itsupport@eac.edu.ph\n\nONLINE LEARNING (BRIGHTSPACE / OLTD):\n- Brightspace is EAC's official Learning Management System (LMS) for online and blended classes.\n- All students with online/hybrid subjects must access Brightspace for modules, assignments, and quizzes.\n- For Brightspace login issues, technical errors, or account access: oltd@eac.edu.ph\n- Academic integrity rules (attendance, academic honesty) apply equally in online classes.\n- Classes follow both synchronous (live sessions via video call) and asynchronous (self-paced modules) formats.\n\nHEALTH AND MEDICAL CLINIC:\n- The EAC Cavite Medical-Dental Clinic provides basic health and first aid services for students.\n- Entrance physical exam and periodic health exams are required for all enrolled students.\n- Students with communicable diseases must secure medical clearance before returning to campus.\n- Mental health and wellness consultations may also be available — inquire at the clinic or OSA.\n- For health concerns not addressed on campus, the clinic may provide referrals.\n\nCAMPUS LOCATION:\n- Public Cavite campus address shown on the portal: Gov. D. Mangubat Ave., Brgy. Burol Main, City of Dasmariñas, Cavite 4114, Philippines.\n- Trunkline: (+046) 416-4341 to 42\n- Website: http://www.eac.edu.ph/cavite\n\nOTHER FACILITIES:\n- Canteen / Cafeteria: Food services available on campus during school hours.\n- Chapel: Available for spiritual activities and meditation.\n- Gymnasium: Used for Physical Education classes, intramurals, and school events.\n- Library: See the Library Services section for full details.\n\nCLAYGO POLICY:\nAll campus facilities follow the CLAYGO (Clean As You Go) policy. Students are responsible for keeping shared spaces clean. Violations may be treated as minor offenses."
+  },
+  {
+    "chunk_id": "SYS-019",
+    "topic": "Clearance Edge Cases — Lost Receipt, Proxy Clearance, Reversal, Withdrawal, System Downtime, Emergency Bypass, and Multi-Semester Violations",
+    "article": "Campus Operations",
+    "section": "Clearance Edge Cases and Special Situations",
+    "keywords": [
+      "lost receipt", "nawala receipt", "no receipt", "missing receipt", "proof of payment lost",
+      "proxy clearance", "someone else clearance", "process clearance for me", "representative clearance",
+      "clearance reversed", "reverse clearance", "undo clearance", "clearance cancelled",
+      "withdrawal clearance", "dropped enrollment clearance", "leave of absence clearance",
+      "system down clearance", "offline clearance", "manual clearance", "system maintenance clearance",
+      "emergency clearance", "bypass cashier clearance", "exception clearance",
+      "multiple violations", "violations previous semester", "old violation clearance",
+      "clearance reuse", "reuse clearance", "same clearance next semester",
+      "combine clearance", "multiple pending clearance", "clearance not updated",
+      "system says cleared but not cleared", "cleared in system pending osa",
+      "partial payment clearance", "installment and clearance", "partial bayad clearance",
+      "cashier override osa", "cashier overrule osa", "cashier authority clearance",
+      "registrar disagrees osa", "registrar conflict osa", "who has authority clearance",
+      "jurisdictional conflict offices", "registrar osa conflict"
+    ],
+    "bot_routing": "When the user asks about unusual clearance scenarios: lost receipt, proxy clearance, clearance reversal, enrollment withdrawal, system downtime, emergency bypasses, reusing clearance, multi-semester violations, combining multiple clearances, whether Cashier can override OSA, or what happens when the Registrar and OSA disagree.",
+    "source": "EAC Cavite Student Affairs Operations",
+    "content": "EAC CAVITE — CLEARANCE EDGE CASES AND SPECIAL SITUATIONS:\n\nLOST OFFICIAL RECEIPT (Proof of Payment):\n- If you lost your official receipt, visit the CASHIER'S OFFICE and present your student ID and student number.\n- The Cashier can verify payment records in the system and issue a duplicate or certified copy of the receipt.\n- Do not attempt clearance without receipt verification — OSA cannot override a missing Cashier confirmation.\n- For online payments: email cashier.cavite@eac.edu.ph with your payment details (amount, date, transaction reference) to request a re-posting.\n\nPROXY CLEARANCE (Someone Processing Clearance on Your Behalf):\n- A representative (parent, guardian, or authorized family member) may assist with the PHYSICAL submission of forms.\n- However, certain clearance steps — especially those involving OSA review or disciplinary assessment — may require the student's PERSONAL APPEARANCE.\n- Proxy clearance is not a blanket option: the representative cannot sign forms that require the student's own signature or attend a disciplinary hearing on the student's behalf.\n- Confirm which specific steps allow representation by contacting OSA: studentaffairs.cvt@eac.edu.ph | Tel loc 115.\n\nCLEARANCE REVERSAL OR CANCELLATION:\n- Once OSA has issued final clearance, it can only be reversed or placed on hold if a new obligation arises (e.g., a disciplinary case filed after clearance was issued, a discovered unpaid balance).\n- Clearance reversal requires a formal action by OSA or the Registrar's Office — it does not happen automatically.\n- If your clearance was unexpectedly reversed, contact OSA immediately for the specific reason: studentaffairs.cvt@eac.edu.ph | Tel loc 115.\n\nENROLLMENT WITHDRAWAL AND CLEARANCE:\n- If a student officially withdraws enrollment (Leave of Absence or Transfer), a clearance process is still required.\n- All financial obligations must be settled at the Cashier before any clearance or releasing of documents.\n- A withdrawing student follows the same clearance order: Cashier → Library → Lab → Dean → Registrar → OSA.\n- Contact the Registrar's Office for the official withdrawal and clearance forms.\n\nSYSTEM DOWNTIME / MANUAL CLEARANCE:\n- EAC Cavite uses a computer-based clearance tracking system. During system downtime or maintenance, the Registrar's Office and OSA may issue or accept manual clearance forms as a temporary measure.\n- Manual clearance must still be validated once the system is restored — it is NOT automatically converted without verification.\n- In case of system downtime, proceed to the REGISTRAR'S OFFICE in person to confirm the process for that day.\n\nEMERGENCY CLEARANCE / CASHIER BYPASS:\n- There is NO standard procedure allowing OSA to approve clearance for students with outstanding Cashier balances, even in emergencies.\n- Emergency cases (scholarship application deadlines, graduate school requirements, board exam registration) must be escalated directly to the REGISTRAR'S OFFICE and the SCHOOL DEAN for possible special accommodation. OSA cannot unilaterally authorize a cashier bypass.\n- Document your emergency with supporting proof (official letter, deadline notice) when requesting special consideration.\n\nPARTIAL PAYMENT AND CLEARANCE ELIGIBILITY:\n- Students on an approved installment plan may begin the clearance process IF the Cashier's Office confirms that the current installment is up to date and no balance is overdue.\n- Students with overdue or missed installments will be placed on hold — clearance will NOT proceed until the outstanding installment is settled.\n- Confirm your installment status with the Cashier before initiating the clearance sequence.\n\nMULTIPLE VIOLATIONS ACROSS SEMESTERS:\n- Disciplinary records are cumulative. A student with unresolved violations from a prior semester must clear those violations with OSA before the current semester's clearance can be approved.\n- Each disciplinary case is evaluated per school policy — sanctions carry over if unresolved.\n- Contact OSA to review the status of any prior disciplinary cases: studentaffairs.cvt@eac.edu.ph | Tel loc 115.\n\nCLEARANCE REUSE:\n- Clearance is issued PER SEMESTER or PER TRANSACTION TYPE (graduation, transfer, etc.). It is NOT reusable for a subsequent semester or a different purpose.\n- A new clearance process is required each time you need clearance (e.g., end-of-semester clearance is separate from graduation clearance).\n\nCONFLICT BETWEEN SYSTEM RECORDS AND OFFICE STATUS:\n- If the system shows you as cleared but OSA or another office says you are still pending, the most likely cause is a system sync delay — records from one office have not yet propagated to the central system.\n- Wait 1–3 working days for the system to update, especially after cashier payment or online transactions.\n- If the discrepancy persists beyond 3 working days, bring your documents (receipt, clearance form) to the REGISTRAR'S OFFICE for manual verification.\n\nCOMBINING MULTIPLE PENDING CLEARANCES:\n- There is no shortcut for combining or merging multiple pending clearances into a single process.\n- Each clearance sequence must be completed fully and separately: Cashier → Library → Lab → Dean → Registrar → OSA.\n- If you have clearances pending for different purposes (e.g., end-of-semester clearance AND graduation clearance), each must be processed as a completely separate, independent sequence.\n- Attempting to overlap or merge clearance steps across different purposes is not recognized by any office and will not be accepted.\n- Plan each clearance separately and follow the complete sequence for each.\n\nCASHIER AUTHORITY VS. OSA AUTHORITY:\n- The Cashier's Office has NO authority to override, countermand, or bypass OSA decisions regarding clearance.\n- The Cashier's role is limited to certifying that all financial obligations are settled. This is a PREREQUISITE for clearance, not a substitute for OSA approval.\n- OSA is the FINAL APPROVING OFFICE for student clearance. Even if the Cashier confirms full payment, OSA must still complete its own review and sign off before clearance is issued.\n- If the Cashier and OSA give conflicting clearance statuses, resolve each separately: settle the financial issue at the Cashier, and address the OSA-specific concern (disciplinary, incomplete forms, pending case) with OSA directly.\n\nJURISDICTIONAL CONFLICT BETWEEN REGISTRAR AND OSA:\n- The REGISTRAR'S OFFICE handles academic records: enrollment records, grades, transcripts, diplomas, and academic standing.\n- The OFFICE OF STUDENT AFFAIRS (OSA) handles student discipline, student welfare, extracurricular activities, and clearance validation.\n- These are separate jurisdictions. If there is a disagreement between the Registrar and OSA regarding a student's clearance or academic standing:\n  1. Request a written explanation from BOTH offices specifying the exact issue.\n  2. Bring both documents to the SCHOOL DEAN or VICE PRESIDENT FOR ACADEMIC AFFAIRS (VPAA) for resolution.\n  3. Jurisdictional conflicts between offices are resolved at the Dean or VPAA level — the offices do not have authority to overrule each other.\n- Do not accept a verbal statement from one office that overrides the other without written confirmation."
+  },
+  {
+    "chunk_id": "SYS-010",
+    "topic": "Enrollment Period, Semester Schedule, and Academic Calendar at EAC Cavite",
+    "article": "Campus Operations",
+    "section": "Academic Calendar and Enrollment Schedule",
+    "keywords": [
+      "enrollment", "enrollment period", "when to enroll", "enrollment schedule",
+      "academic calendar", "semester", "semester start", "first semester", "second semester",
+      "summer", "summer class", "enrollment steps", "how to enroll", "enrollment date",
+      "enrollment flow", "first day of class", "when is enrollment", "pasok na ba",
+      "new student", "old student", "continuing enrollment", "subjects", "advising",
+      "enrollment requirements", "down payment", "tuition payment enrollment"
+    ],
+    "bot_routing": "When the user asks about enrollment dates, semester schedule, academic calendar, when to enroll, or enrollment steps for continuing/old students.",
+    "source": "EAC Cavite Academic Operations",
+    "content": "EAC CAVITE — ENROLLMENT PERIOD AND ACADEMIC CALENDAR:\n\nSEMESTER SCHEDULE (TYPICAL):\n- 1st Semester: Enrollment begins June; Classes start late June to early July\n- 2nd Semester: Enrollment begins November; Classes start late November to early December\n- Summer Term: Enrollment begins April; Classes start mid-April\n- Exact dates are announced per academic year — check the OSA announcements portal for official dates.\n\nENROLLMENT FLOW FOR CONTINUING/OLD STUDENTS:\nStep 1 — ASSESSMENT: Go to the Dean's Office or Enrollment Section for subject advising and assessment.\nStep 2 — PRINTING OF STUDENT LOAD: A printed list of your enrolled subjects will be provided.\nStep 3 — CASHIER / ACCOUNTING OFFICE: Pay the required down payment using your auto-generated student number.\nStep 4 — REGISTRAR'S OFFICE: Submit your enrollment form and required documents for official enrollment.\nStep 5 — CONFIRM ENROLLMENT: Enrollment is complete once the Registrar's Office processes your documents.\n\nENROLLMENT FLOW FOR FRESHMEN AND TRANSFEREES:\nStep 1 — ADMISSIONS OFFICE: Credential screening; receive your Applicant Number.\nStep 2 — GUIDANCE OFFICE: Entrance examination preparation and scheduling.\nStep 3 — ENROLLMENT SECTION / DEAN'S OFFICE: Subject advising and student load printing.\nStep 4 — CASHIER / ACCOUNTING OFFICE: Pay the required down payment.\nStep 5 — REGISTRAR'S OFFICE: Final enrollment processing.\n\nIMPORTANT REMINDERS:\n- Enroll within the published enrollment period to avoid late fees.\n- Incomplete requirements may delay or block enrollment processing.\n- Scholarships must be updated BEFORE enrollment to apply the discount.\n- Cross-enrollees must present an official permit from their home school.\n- For enrollment concerns, visit the Registrar's Office or Admissions Office directly."
+  },
+  {
+    "chunk_id": "SYS-020",
+    "topic": "Office of Student Affairs Overview, Duties, and Core Services",
+    "article": "OSA Office Profile",
+    "section": "OSA Mandate and Student Services",
+    "keywords": [
+      "office of student affairs", "osa overview", "osa duties", "osa functions",
+      "student affairs dean", "academic support unit", "non academic", "student life",
+      "student orientation", "scholarship inquiries", "good moral", "clearance",
+      "student conduct", "student manual review", "student organizations", "osa services"
+    ],
+    "bot_routing": "When the user asks what OSA is, what OSA does, who heads it, or what student services fall under OSA.",
+    "source": "EAC OSA Public Information",
+    "content": "OFFICE OF STUDENT AFFAIRS (OSA) — GENERAL OVERVIEW:\n- The Office of Student Affairs is an academic-support unit of the Institution.\n- It is responsible for the development and implementation of programs and services that focus on the non-academic aspects of student life and development on campus.\n- Every school year, OSA conducts need-based and student-focused activities intended to strengthen Emilian values and life skills in support of the Institution's Vision, Mission, and Academic Objectives.\n- The Office of Student Affairs is headed by its Dean, who is designated by the President and confirmed by the Board of Directors.\n\nDUTIES AND FUNCTIONS OF THE DEAN OF STUDENT AFFAIRS:\n- Serves as the link between the EAC Administration and the student body, including recognized student organizations and associations.\n- Provides opportunities for students' active involvement in the affairs of the College.\n- Oversees student councils and organizations and provides guidance for social, cultural, educational, community, and leadership development.\n- Coordinates with all registered and recognized student organizations to ensure that they operate in harmony with the rules promulgated by school authorities.\n\nCORE SERVICES OFFERED THROUGH OSA:\n- Student Orientation.\n- Scholarship Applications and Inquiries.\n- Accreditation of Student Councils, Professional Student Organizations, and clubs.\n- Student Conduct and Discipline.\n- Student Manual Development and Review.\n- Issuance of Clearance and Good Moral Character Certificate."
+  },
+  {
+    "chunk_id": "SYS-021",
+    "topic": "Campus-Specific OSA Contacts, Public References, and Downloadable Files",
+    "article": "OSA Office Profile",
+    "section": "Manila and Cavite Contacts and Files",
+    "keywords": [
+      "studentaffairs@eac.edu.ph", "studentaffairs.cvt@eac.edu.ph",
+      "manila campus osa", "cavite campus osa", "osa contact details",
+      "eac-m student manual 2019", "eac-m social media policy", "scholarship policy",
+      "eac-c student manual", "eac-c social media policy", "scholarship application",
+      "incident report", "academic leave of absence", "gov d mangubat", "manila tel 5535"
+    ],
+    "bot_routing": "When the user asks for OSA contact details, campus-specific OSA references, or downloadable OSA files for Manila or Cavite.",
+    "source": "EAC OSA Public Information",
+    "content": "MANILA CAMPUS — OSA CONTACT AND PUBLIC REFERENCES:\n- Telephone: (02) 8521-2710 local 5535.\n- Email: studentaffairs@eac.edu.ph.\n- Public downloadable references listed under OSA include: EAC-M Student Manual 2019, EAC-M Social Media Policy, and Scholarship Policy.\n\nCAVITE CAMPUS — OSA CONTACT AND PUBLIC REFERENCES:\n- Telephone: (046) 416-43-41 local 115.\n- Trunkline: +63 46 416-4341 to 42.\n- Email: studentaffairs.cvt@eac.edu.ph.\n- Public address shown on the portal: Gov. D. Mangubat Ave., Brgy. Burol Main, City of Dasmariñas, Cavite 4114, Philippines.\n- Public downloadable references and forms listed under OSA include: EAC-C Student Manual, EAC-C Social Media Policy, EAC-C Scholarship Application, EAC-C Incident Report, and EAC-C Academic Leave of Absence Application Form.\n\nCAMPUS LABELING NOTE:\n- Manila and Cavite may publish different manuals, scholarship policies, and forms.\n- When answering, identify the campus first whenever a rule, contact detail, or form may differ by campus."
+  },
+  {
+    "chunk_id": "SYS-022",
+    "topic": "EAC Manila Non-Academic Scholarship Policy for Varsity and Performing Groups",
+    "article": "Scholarships",
+    "section": "Manila Scholarship Policy for Recognized Groups",
+    "keywords": [
+      "manila scholarship policy", "varsity players", "cheering squad", "drummers",
+      "yaman lahi", "eac theater guild", "eac chorale", "non academic scholarship",
+      "screening tryout", "accomplished evaluation form", "sports development institute",
+      "performing arts director", "coach adviser", "summer term scholarship"
+    ],
+    "bot_routing": "When the user asks about the Manila scholarship policy for varsity, cheering squad, drummers, Yaman Lahi Dance Artist, EAC Theater Guild, or EAC Chorale.",
+    "source": "EAC Manila OSA Scholarship Policy",
+    "content": "EAC MANILA — NON-ACADEMIC SCHOLARSHIP POLICY:\n\nGROUPS COVERED:\n- Varsity Players.\n- Cheering Squad and Drummers.\n- Yaman Lahi Dance Artist.\n- EAC Theater Guild.\n- EAC Chorale.\n\nQUALIFICATION RULES:\n- Members must be bona fide EAC students.\n- Applicants must undergo screening or tryout and satisfy the standards of the chosen group.\n- Incoming first-year student-applicants must have a general weighted average of 80%.\n- Old students and transferee student-applicants must have a general weighted average of 3.00 and no grade remark of 5.00, U.W., or INC from the immediate previous semester, except summer term.\n- Qualified applicants shall pay the registration fee, physical exam fee, and entrance exam fee upon enrollment.\n\nRETENTION AND DISQUALIFICATION:\n- A scholar who obtains 5.00, U.W., or INC in any enrolled subject during the current semester is disqualified from availing of the same scholarship for the next semester.\n- Even without the scholarship, the student may remain part of the group if he or she chooses to do so.\n- If the student passes all enrolled subjects in the subsequent semester, the scholarship may again be availed upon recommendation of the coach or adviser.\n- If the scholar also qualifies for another scholarship offered by EAC, only one scholarship may be availed.\n\nSUBMISSION AND APPROVAL FLOW:\n- Recommendation or request for scholarship must be submitted two to three weeks after the midterm examinations.\n- Required attachments include the accomplished evaluation form of the adviser or coach and the final grade report.\n- For Varsity and Cheering Squad and Drummers, the approval flow is: Coach, SOI Director, Registrar, Budget, Student Affairs, President.\n- For Yaman Lahi Dance Artist, EAC Theater Guild, and EAC Chorale, the approval flow is: Adviser, Registrar, Budget, Student Affairs, President.\n\nGRANTS AND OPERATIONAL RULES:\n- Existing grants include 100% tuition fee and miscellaneous discount, 100% tuition fee discount, 75% tuition fee discount, and 50% tuition fee discount.\n- The scholarship is suspended every summer term and is granted only during regular semesters.\n- Practices must not be held during classes or examinations.\n- If performances or games are scheduled during classes or exams, the person in charge must communicate with the Deans so faculty members are informed, and make-up quizzes may be extended only to scholars with an excuse letter signed by the Deans.\n- The Sports Development Institute Director, Performing Arts Director, advisers, and coaches are responsible for making this policy known and understandable to students."
+  },
+  {
+    "chunk_id": "SYS-023",
+    "topic": "EAC Manila Academic Scholarship and Dean's List Policy Effective SY 2021-2022",
+    "article": "Scholarships",
+    "section": "Manila Academic Scholarship and Dean's List",
+    "keywords": [
+      "academic scholarship", "dean's list", "manila dean's list",
+      "effective school year 2021-2022", "100% tuition and miscellaneous",
+      "gowa 1.50", "gwa 1.75", "ow", "uw", "inc fourth week",
+      "18 academic units", "cwts", "rotc", "non transferable scholarship"
+    ],
+    "bot_routing": "When the user asks about the Manila academic scholarship or Dean's List policy effective School Year 2021-2022.",
+    "source": "EAC Manila Academic Scholarship and Dean's List Policy",
+    "content": "EAC MANILA — ACADEMIC SCHOLARSHIP AND DEAN'S LIST POLICY:\n- This policy is effective starting First Semester, School Year 2021-2022.\n- It supersedes the previous policy and reflects evaluation under distance learning and pandemic-related conditions.\n\nACADEMIC SCHOLARSHIP:\n- Benefit: 100% discount on tuition and miscellaneous fees on the following semester.\n- Qualification: the student must obtain a GWA of 1.50 and no grade lower than 2.0 in any subject during the semester under evaluation.\n- U.W. or O.W. remarks automatically disqualify the student-grantee.\n- INC remarks from the semester under evaluation that are not completed until the fourth week from the start of classes of the current semester also disqualify the student-grantee.\n- The student-grantee should enroll at least the normal load prescribed in the curriculum or not less than 18 academic units during the semester under evaluation, except summer classes with limited offerings unless summer is required by the curriculum.\n- The student-grantee must take and complete all non-academic requirements such as all Physical Education subjects and CWTS 1 and 2 or ROTC 1 and 2.\n- Only one type of scholarship may be availed during the student's stay in the College.\n- The student-grantee must abide by the rules on conduct and discipline in the EAC Student Manual and other duly promulgated College rules.\n- The scholarship is personal and non-transferable.\n- Violation of any term or condition disqualifies the student-grantee from the scholarship program.\n\nDEAN'S LIST:\n- Qualification: the student must obtain an average grade of 1.75 with no grade lower than 2.25 in any subject during the semester under evaluation.\n- Benefit: the student receives a Certificate of Dean's List only, with no tuition or miscellaneous fee discount.\n- U.W. or O.W. remarks automatically disqualify the student from the Certificate of Dean's List.\n- INC remarks not completed until the fourth week from the start of classes of the current semester disqualify the student from the Certificate of Dean's List.\n- The student should enroll at least the normal load prescribed in the curriculum or not less than 18 academic units during the semester under evaluation, subject to the same summer exception.\n- The student must also complete all required PE and CWTS or ROTC components and abide by the rules on conduct and discipline."
+  },
+  {
+    "chunk_id": "SYS-024",
+    "topic": "Current public dashboard, guide cards, OSA services cards, and module sections shown on the portal",
+    "article": "Portal Public Content",
+    "section": "Home Dashboard Snapshot",
+    "keywords": [
+      "dashboard", "homepage", "home page", "portal dashboard", "what is on the dashboard",
+      "what is on the home page", "chat guide", "announcement guide", "lost and found guide",
+      "student manual and forms", "dedicated module pages", "about portal", "open ask osa",
+      "view announcements", "lost and found board", "public pages", "service cards"
+    ],
+    "bot_routing": "When the user asks what is currently shown on the public dashboard or homepage of the OSA Transaction Guide Portal.",
+    "source": "OSA Transaction Guide Portal Public Dashboard Content",
+    "content": "CURRENT PUBLIC DASHBOARD / HOME PAGE SNAPSHOT:\n- Portal brand shown on the public pages: OSA Transaction Guide Portal — Office of Student Affairs, EAC Cavite.\n- Main student actions on the dashboard include Open Ask OSA, View Announcements, and the Chat Guide.\n\nGUIDE SECTIONS CURRENTLY SHOWN ON THE HOME PAGE:\n- Chat Guide: Start with Ask OSA, open the live assistant, verify when needed, and continue the guided flow inside the same chat.\n- Announcement Guide: browse all OSA posts, open the full bulletin, and search by title, date, category, or keyword.\n- Lost and Found Guide: inspect the listing, keep the item number, and complete the guided claim flow through chat.\n\nOSA SERVICES CARDS CURRENTLY SHOWN ON THE HOME PAGE:\n- Student Conduct and Discipline.\n- Lost and Found.\n- ID Processing.\n- Scholarship Applications and Inquiries.\n- Issuance of Good Moral Character Certificate.\n- ISO and PACUCOA Accreditation.\n- Learner Activity Program (LAAP).\n\nSTUDENT MANUAL AND FORMS BLOCK CURRENTLY SHOWN:\n- Primary reference document: EAC-C Student Manual.\n- Download links shown on the page include Scholarship Application, Incident Report Form, and Academic Leave Form.\n\nDEDICATED MODULE PAGES CURRENTLY SHOWN:\n- Announcements / News.\n- Lost and Found Board.\n- About Portal.\n\nIMPORTANT CONTEXT:\n- Announcements and Lost and Found are live data-driven sections, so the exact listings can change whenever OSA staff update them.\n- Home and About page text may also change when OSA updates the public page content."
+  }
+]

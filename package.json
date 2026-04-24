@@ -6,6 +6,10 @@
     "minify": "node scripts/minify-assets.mjs",
     "api:start": "node server/index.js",
     "db:setup": "node server/run-sql.js",
+    "rag:seed": "node server/chatbot/seed/seedRagChunks.js",
+    "rag:reembed": "node server/chatbot/seed/seedRagChunks.js --reembed",
+    "chat:log": "node scripts/recent-chat-log.js",
+    "chat:log:guest": "node scripts/recent-chat-log.js guest",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push"
   },

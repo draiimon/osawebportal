@@ -29,19 +29,20 @@
     var LF_KEY = 'osaLostFound';
     var SESSION_TTL_MS = 10 * 60 * 1000;
     var SESSION_EXP_KEY = 'osaChatSessionExpiresAt';
+    var GUEST_CONVO_KEY = 'osaChatGuestConvoId';
 
     function buildMarkup() {
         return '' +
-            '<div class="osa-launcher-panel" id="osa-chat-widget" role="dialog" aria-modal="true" aria-labelledby="osa-chat-title" aria-hidden="true">' +
+            '<div class="osa-launcher-panel osa-launcher-panel--chat-ui" id="osa-chat-widget" role="dialog" aria-modal="true" aria-labelledby="osa-chat-title" aria-hidden="true">' +
             '  <header class="osa-ai-header">' +
             '    <div class="osa-ai-header__brand">' +
             '      <div class="osa-ai-header__avatar" aria-hidden="true">' +
-            '        <span class="osa-ai-header__avatar-dot"></span>' +
+            '        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>' +
             '      </div>' +
             '      <div class="osa-ai-header__titles">' +
-            '        <strong id="osa-chat-title">OSA Assistant</strong>' +
+            '        <strong id="osa-chat-title">Ask OSA</strong>' +
             '        <div class="osa-ai-header__sub">' +
-            '          <span id="osa-chat-mode-badge" class="osa-ai-mode osa-ai-mode--ai">AI Mode</span>' +
+            '          <span class="osa-ai-header__status-line" id="osa-chat-status-line">Ready</span>' +
             '          <div class="osa-ai-session-timer" id="osa-chat-timer" hidden aria-live="polite" title="Session time remaining">' +
             '            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>' +
             '            <span id="osa-chat-timer-text">--:--</span>' +
@@ -49,47 +50,23 @@
             '        </div>' +
             '      </div>' +
             '    </div>' +
-            '    <button type="button" class="osa-launcher-head__close" id="osa-chat-close" aria-label="Close">' +
-            '      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
-            '    </button>' +
+            '    <div class="osa-ai-header__trailing">' +
+            '      <span id="osa-chat-mode-badge" class="osa-ai-mode osa-ai-mode--ai">OSA</span>' +
+            '      <button type="button" class="osa-launcher-head__close" id="osa-chat-close" aria-label="Close">' +
+            '        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+            '      </button>' +
+            '    </div>' +
             '  </header>' +
             '  <button type="button" class="osa-ai-scroll-bottom" id="osa-chat-scroll-bottom" aria-label="Scroll to latest" hidden>' +
             '    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>' +
             '  </button>' +
             '  <div class="osa-ai-thread" id="osa-chat-thread" role="log" aria-live="polite"></div>' +
-            '  <div class="osa-ai-service-row">' +
-            '    <label class="osa-ai-service-row__label" for="osa-service-topic">OSA service</label>' +
-            '    <select id="osa-service-topic" class="osa-ai-service-select" aria-label="Choose OSA service topic">' +
-            '      <option value="">Browse services…</option>' +
-            '      <option value="__visitor__">Visitor / non-EAC (information)</option>' +
-            '      <option value="I need an appointment with OSA. Please guide me on scheduling a face-to-face visit and what to bring.">Appointment</option>' +
-            '      <option value="What are OSA office hours and where is the office located at EAC Cavite?">Office hours &amp; location</option>' +
-            '      <option value="How do I apply for scholarship programs and what documents are required?">Scholarship</option>' +
-            '      <option value="I have enrollment or registration-related questions for OSA. What should I prepare?">Enrollment</option>' +
-            '      <option value="How do I request TOR, transcript of records, diploma verification, or other school documents through OSA?">TOR &amp; documents</option>' +
-            '      <option value="I need help with lost and found claim.">Lost &amp; Found</option>' +
-            '      <option value="How can I request good moral certificate and what are fees and processing time?">Good Moral</option>' +
-            '      <option value="How do I apply for or replace my student ID as posted by OSA?">Student ID</option>' +
-            '      <option value="Where do I check fees, assessment, and payment procedures for OSA-related transactions?">Fees &amp; payment</option>' +
-            '      <option value="How do I inquire about student organizations and clearance related to organizations?">Organizations</option>' +
-            '      <option value="What are important OSA policies, guidelines, or forms students should know?">Policies &amp; forms</option>' +
-            '      <option value="I need human support">Human support</option>' +
-            '    </select>' +
-            '  </div>' +
             '  <div class="osa-ai-chips-wrapper">' +
             '    <div class="osa-ai-chips" id="osa-chat-chips">' +
             '      <button type="button" class="osa-ai-chip" data-prompt="I need an appointment with OSA. Please guide me on scheduling a visit or meeting.">Appointment</button>' +
-            '      <button type="button" class="osa-ai-chip" data-prompt="What are OSA office hours and where is the office located?">OSA hours</button>' +
-            '      <button type="button" class="osa-ai-chip" data-prompt="How do I apply for scholarship programs and what are the requirements?">Scholarship</button>' +
-            '      <button type="button" class="osa-ai-chip" data-prompt="I have enrollment or registration questions. Who should I coordinate with at OSA?">Enrollment</button>' +
-            '      <button type="button" class="osa-ai-chip" data-prompt="How do I request TOR, transcript of records, diploma verification, or other school documents?">TOR &amp; documents</button>' +
             '      <button type="button" class="osa-ai-chip" data-prompt="I need help with lost and found claim.">Lost &amp; Found</button>' +
-            '      <button type="button" class="osa-ai-chip" data-prompt="How can I request good moral certificate?">Good Moral</button>' +
-            '      <button type="button" class="osa-ai-chip" data-prompt="How do I apply for a new student ID or replace a lost ID?">Student ID</button>' +
-            '      <button type="button" class="osa-ai-chip" data-prompt="Where do I check fees, assessment, and payment procedures for school transactions?">Fees &amp; payment</button>' +
-            '      <button type="button" class="osa-ai-chip" data-prompt="How do I inquire about student organizations and organization-related procedures?">Organizations</button>' +
-            '      <button type="button" class="osa-ai-chip" data-prompt="What are important OSA policies, guidelines, or forms students should know?">Policies &amp; forms</button>' +
-            '      <button type="button" class="osa-ai-chip osa-visitor-chip">Visitor info</button>' +
+            '      <button type="button" class="osa-ai-chip" data-prompt="What are the latest OSA announcements?">Announcements</button>' +
+            '      <button type="button" class="osa-ai-chip" data-prompt="I need a new OTP code for secure chat verification.">New OTP request</button>' +
             '      <button type="button" class="osa-ai-chip" data-prompt="I need human support">Human support</button>' +
             '    </div>' +
             '  </div>' +
@@ -97,7 +74,7 @@
             '    <input type="hidden" id="osa-chat-email-store" autocomplete="off">' +
             '    <div class="osa-ai-composer__row">' +
             '      <label for="osa-chat-message" class="sr-only">Message</label>' +
-            '      <textarea id="osa-chat-message" rows="1" placeholder="Aa" autocomplete="off"></textarea>' +
+            '      <textarea id="osa-chat-message" rows="1" placeholder="Ask OSA anything\u2026" autocomplete="off"></textarea>' +
             '      <button type="button" class="osa-ai-btn-send" id="osa-chat-send" aria-label="Send">' +
             '        <svg viewBox="0 0 24 24"><path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z"/></svg>' +
             '      </button>' +
@@ -195,11 +172,15 @@
         return html;
     }
 
-    async function submitEscalationFromWidget(postApi, appendBubble, sessionId, concernText) {
+    async function submitEscalationFromWidget(postApi, appendBubble, sessionId, concernText, hooks) {
         if (!sessionId) {
             appendBubble('assistant', '<p style="margin:0">Please verify your email first before escalating.</p>');
             return;
         }
+        var h = hooks || {};
+        var hookRenderWaitingBanner = typeof h.renderWaitingBanner === 'function' ? h.renderWaitingBanner : function () {};
+        var hookSetMode = typeof h.setMode === 'function' ? h.setMode : function () {};
+        var hookGetApi = typeof h.getApi === 'function' ? h.getApi : null;
 
         var concern = String(concernText || '').trim();
         if (!concern) {
@@ -209,22 +190,48 @@
 
         try {
             var result = await postApi('/chat/escalate', { session_id: sessionId, concern: concern });
+            if (result && result.appointment_locked_today) {
+                appendBubble('assistant', '<p style="margin:0">' + escapeHtml(String(result.message || result.reply || 'Your appointment case for today is already resolved. Please email OSA for follow-up.')) + '</p>');
+                return;
+            }
             var cid = result && result.case_id ? result.case_id : '';
             if (cid) {
-                renderWaitingBanner(cid, Date.now(), true);
-                setMode('staff');
+                hookRenderWaitingBanner(cid, Date.now(), true);
+                hookSetMode('staff');
             }
             var handoffHtml =
                 '<div class="osa-ai-handoff">' +
                 '<p style="margin:0 0 6px"><strong>Escalated to OSA staff.</strong></p>' +
                 (cid ? '<p style="margin:0 0 6px">Case ID: <strong>' + escapeHtml(cid) + '</strong></p>' : '') +
-                '<p style="margin:0 0 4px">Keep this chat window open — an OSA staff member will reply <strong>right here</strong> once they pick up your case. You\'ll also get an email confirmation.</p>' +
+                '<p style="margin:0 0 4px">Keep this chat window open — an OSA staff member will reply <strong>right here</strong> once they pick up your case.</p>' +
                 '<p style="margin:0;font-size:12px;color:#65574d">AI replies are paused for this case while staff handles it.</p>' +
                 '</div>';
             appendBubble('assistant', handoffHtml);
         } catch (err) {
+            // If escalation request likely succeeded but response failed to return,
+            // recover by checking active ticket state before showing a hard failure.
+            if (hookGetApi) {
+                try {
+                    var active = await hookGetApi('/chat/session/' + encodeURIComponent(sessionId) + '/ticket');
+                    if (active && active.ticket && active.ticket.case_id) {
+                        var fallbackCase = String(active.ticket.case_id || '').trim();
+                        if (fallbackCase) {
+                            hookRenderWaitingBanner(fallbackCase, Date.parse(active.ticket.created_at) || Date.now(), !!active.ticket.cancellable);
+                            hookSetMode('staff');
+                            appendBubble('assistant', '<p style="margin:0">Your escalation request is active (Case ID: <strong>' + escapeHtml(fallbackCase) + '</strong>). OSA staff will reply in this chat.</p>');
+                            return;
+                        }
+                    }
+                } catch (_) {}
+            }
             if (err && (err.code === 'SESSION_EXPIRED' || err.status === 401)) {
                 appendBubble('assistant', '<p style="margin:0">Session expired. Please verify a new OTP code, then escalate again.</p>');
+            } else if (err && String(err.code || '').toUpperCase() === 'SESSION_ALREADY_RESOLVED_TODAY') {
+                appendBubble('assistant', '<p style="margin:0">' + escapeHtml(String(err.message || 'Your support case for today is already resolved. Please email OSA for follow-up.')) + '</p>');
+            } else if (err && String(err.code || '').toUpperCase() === 'APPOINTMENT_LIMIT_DAILY') {
+                appendBubble('assistant', '<p style="margin:0">' + escapeHtml(String(err.message || 'You can only request one appointment per day. Please wait for OSA updates or email OSA for follow-up.')) + '</p>');
+            } else if (err && String(err.code || '').toUpperCase() === 'APPOINTMENT_ALREADY_RESOLVED_TODAY') {
+                appendBubble('assistant', '<p style="margin:0">' + escapeHtml(String(err.message || 'Your appointment case for today is already resolved. Please email OSA for follow-up.')) + '</p>');
             } else {
                 appendBubble('assistant', '<p style="margin:0">Failed to escalate. ' + escapeHtml(userSafeErrorHint(err)) + '</p>');
             }
@@ -289,7 +296,13 @@
         var sendBtn = document.getElementById('osa-chat-send');
         var emailStore = document.getElementById('osa-chat-email-store');
 
-        if (!widget || !fab || !thread || !input || !sendBtn) return;
+        if (!widget || !fab || !thread || !input || !sendBtn) {
+            return;
+        }
+
+        // #region agent log
+        fetch('http://127.0.0.1:7583/ingest/0b5f4c8a-4bec-4e5e-bd89-fa937b11a18b',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'48e504'},body:JSON.stringify({sessionId:'48e504',runId:'run1',hypothesisId:'H0',location:'public/assets/js/osa-chat-widget.js:init',message:'instrumented widget initialized',data:{hasWidget:!!widget,hasThread:!!thread},timestamp:Date.now()})}).catch(()=>{});
+        // #endregion
 
         emailStore.value = String(getLS(EMAIL_KEY, '') || '');
         var savedName = String(getLS(NAME_KEY, '') || '').trim();
@@ -303,13 +316,9 @@
             setLS(THREAD_SCHEMA_KEY, '2');
         }
 
-        // Auto-clear visible chat history on every page load. This prevents
-        // stale escalate buttons, old handoff cards, and prior ticket replies
-        // from being re-triggered after a refresh. Server-side message log and
-        // the escalation ticket itself are preserved — only the client view
-        // resets. Users continue protected actions via their session as long
-        // as the idle TTL hasn't elapsed.
-        setLS(THREAD_KEY, []);
+        // Keep chat history across page navigation for the same browser user.
+        // Only clear thread on explicit new-session flows (e.g., account switch
+        // via OTP verification or server-driven session expiry handling).
 
         function looksLikeEmailHandle(name) {
             if (!name) return true;
@@ -323,17 +332,11 @@
             setLS(SESSION_KEY, '');
             setLS(SESSION_TS_KEY, 0);
             setLS(VERIFIED_KEY, false);
-            setLS(THREAD_KEY, []);
+            // Do not wipe thread automatically on page load; preserve UX.
         }
 
-        if (chatSessionId && sessionTs && (Date.now() - sessionTs >= SESSION_TTL_MS)) {
-            chatSessionId = '';
-            otpVerified = false;
-            setLS(SESSION_KEY, '');
-            setLS(SESSION_TS_KEY, 0);
-            setLS(VERIFIED_KEY, false);
-            setLS(THREAD_KEY, []);
-        }
+        // Do not force local OTP reset just because time elapsed.
+        // Keep the same user session in this browser and let server auth decide.
 
         if (!otpVerified) setLS(VERIFIED_KEY, false);
         var reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -420,16 +423,114 @@
             });
         }
 
+        // Prevent underlying page scroll on mobile while chat overlay is open.
+        var pageScrollLockY = 0;
+        function isMobileViewport() {
+            return window.matchMedia && window.matchMedia('(max-width: 900px)').matches;
+        }
+        function lockPageScroll() {
+            if (!isMobileViewport()) return;
+            if (document.body.getAttribute('data-osa-scroll-locked') === '1') return;
+            pageScrollLockY = window.scrollY || window.pageYOffset || 0;
+            document.body.setAttribute('data-osa-scroll-locked', '1');
+            document.body.style.position = 'fixed';
+            document.body.style.top = '-' + pageScrollLockY + 'px';
+            document.body.style.left = '0';
+            document.body.style.right = '0';
+            document.body.style.width = '100%';
+            document.body.style.overflow = 'hidden';
+        }
+        function unlockPageScroll() {
+            if (document.body.getAttribute('data-osa-scroll-locked') !== '1') return;
+            document.body.removeAttribute('data-osa-scroll-locked');
+            document.body.style.position = '';
+            document.body.style.top = '';
+            document.body.style.left = '';
+            document.body.style.right = '';
+            document.body.style.width = '';
+            document.body.style.overflow = '';
+            window.scrollTo(0, pageScrollLockY);
+        }
+
+        function debugLayoutSnapshot(source, hypothesisId) {
+            var headerEl = widget ? widget.querySelector('.osa-ai-header') : null;
+            var firstMsgEl = thread ? thread.querySelector('.osa-ai-msg') : null;
+            var firstBubbleEl = firstMsgEl ? firstMsgEl.querySelector('.osa-ai-msg__bubble') : null;
+            var threadStyles = thread ? window.getComputedStyle(thread) : null;
+            var firstMsgStyles = firstMsgEl ? window.getComputedStyle(firstMsgEl) : null;
+            var bubbleStyles = firstBubbleEl ? window.getComputedStyle(firstBubbleEl) : null;
+            var headerRect = headerEl ? headerEl.getBoundingClientRect() : null;
+            var firstMsgRect = firstMsgEl ? firstMsgEl.getBoundingClientRect() : null;
+            var overlapPx = (headerRect && firstMsgRect) ? Math.max(0, headerRect.bottom - firstMsgRect.top) : null;
+            var snapshotData = {
+                source: source,
+                threadPaddingTop: threadStyles ? threadStyles.paddingTop : null,
+                threadOverflowY: threadStyles ? threadStyles.overflowY : null,
+                threadScrollTop: thread ? thread.scrollTop : null,
+                threadClientHeight: thread ? thread.clientHeight : null,
+                threadScrollHeight: thread ? thread.scrollHeight : null,
+                firstMsgCount: thread ? thread.querySelectorAll('.osa-ai-msg').length : 0,
+                firstMsgOffsetTop: firstMsgEl ? firstMsgEl.offsetTop : null,
+                firstMsgMarginTop: firstMsgStyles ? firstMsgStyles.marginTop : null,
+                firstMsgPaddingTop: firstMsgStyles ? firstMsgStyles.paddingTop : null,
+                bubbleMarginTop: bubbleStyles ? bubbleStyles.marginTop : null,
+                headerBottom: headerRect ? Math.round(headerRect.bottom) : null,
+                firstMsgTop: firstMsgRect ? Math.round(firstMsgRect.top) : null,
+                overlapPx: overlapPx
+            };
+            var line = 'gap=' + String(snapshotData.overlapPx) +
+                ' padTop=' + String(snapshotData.threadPaddingTop) +
+                ' firstOff=' + String(snapshotData.firstMsgOffsetTop) +
+                ' firstM=' + String(snapshotData.firstMsgMarginTop) +
+                ' sTop=' + String(snapshotData.threadScrollTop);
+            var probe = document.getElementById('osa-gap-debug-probe');
+            if (probe) probe.textContent = line;
+            var probe2 = document.getElementById('osa-gap-debug-probe-inline');
+            if (probe2) probe2.textContent = line;
+            // #region agent log
+            fetch('http://127.0.0.1:7583/ingest/0b5f4c8a-4bec-4e5e-bd89-fa937b11a18b',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'48e504'},body:JSON.stringify({sessionId:'48e504',runId:'run2',hypothesisId:hypothesisId,location:'public/assets/js/osa-chat-widget.js:debugLayoutSnapshot',message:'chat layout snapshot',data:snapshotData,timestamp:Date.now()})}).catch(()=>{});
+            // #endregion
+        }
+        var debugScrollLogCount = 0;
+        function debugLayoutOnScroll() {
+            if (debugScrollLogCount >= 6) return;
+            debugScrollLogCount += 1;
+            debugLayoutSnapshot('thread:scroll#' + debugScrollLogCount, 'H5');
+        }
+
         function openWidget() {
             widget.classList.add('is-open');
             fab.classList.add('is-hidden');
             setTriggerState(true);
+            lockPageScroll();
+            var headerBrand = widget.querySelector('.osa-ai-header__brand');
+            if (headerBrand && !document.getElementById('osa-gap-debug-probe')) {
+                var probe = document.createElement('small');
+                probe.id = 'osa-gap-debug-probe';
+                probe.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none;';
+                probe.textContent = 'gap probe init';
+                headerBrand.appendChild(probe);
+            }
+            if (thread && !document.getElementById('osa-gap-debug-probe-inline')) {
+                var probeInline = document.createElement('div');
+                probeInline.id = 'osa-gap-debug-probe-inline';
+                probeInline.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none;';
+                probeInline.textContent = 'gap probe inline init';
+                thread.appendChild(probeInline);
+            }
+            window.requestAnimationFrame(function () {
+                debugLayoutSnapshot('openWidget:raf', 'H1');
+            });
+            window.setTimeout(function () {
+                debugLayoutSnapshot('openWidget:120ms', 'H6');
+            }, 120);
             window.setTimeout(function () { input && input.focus(); }, 80);
         }
         function closeWidget() {
             widget.classList.remove('is-open');
             fab.classList.remove('is-hidden');
             setTriggerState(false);
+            unlockPageScroll();
         }
 
         function scrollThread() {
@@ -442,11 +543,24 @@
             else window.requestAnimationFrame(function () { el.classList.add('is-visible'); });
         }
 
-        function renderBubble(role, html) {
+        function formatMetaTime(ts) {
+            var d = ts ? new Date(ts) : new Date();
+            if (!d || isNaN(d.getTime())) d = new Date();
+            var h = d.getHours();
+            var m = d.getMinutes();
+            var ampm = h >= 12 ? 'PM' : 'AM';
+            h = h % 12 || 12;
+            return h + ':' + (m < 10 ? '0' + m : m) + ' ' + ampm;
+        }
+
+        function renderBubble(role, html, opts) {
+            var metaLabel = (opts && opts.metaLabel) || (role === 'user' ? 'You' : 'Assistant');
+            var metaTime = formatMetaTime(opts && opts.ts);
             var row = document.createElement('div');
             row.className = 'osa-ai-msg osa-ai-msg--' + (role === 'user' ? 'user' : 'assistant');
+            if (opts && opts.rowClass) row.className += ' ' + opts.rowClass;
             row.innerHTML = '<div><div class="osa-ai-msg__bubble">' + html +
-                '</div><div class="osa-ai-msg__meta">' + (role === 'user' ? 'You' : 'Assistant') + '</div></div>';
+                '</div><div class="osa-ai-msg__meta"><span class="osa-ai-msg__who">' + metaLabel + '</span><span class="osa-ai-msg__time">' + metaTime + '</span></div></div>';
             thread.appendChild(row);
             revealRow(row);
             scrollThread();
@@ -454,19 +568,45 @@
         }
 
         function appendBubble(role, html, opts) {
-            renderBubble(role, html);
+            renderBubble(role, html, opts);
+            if (role === 'assistant') {
+                debugLayoutSnapshot('appendBubble:assistant', 'H2');
+            }
             if (!opts || opts.persist !== false) {
                 var arr = getLS(THREAD_KEY, []);
                 if (!Array.isArray(arr)) arr = [];
-                arr.push({ role: role, html: html, t: Date.now() });
+                arr.push({
+                    role: role,
+                    html: html,
+                    t: Date.now(),
+                    metaLabel: opts && opts.metaLabel ? String(opts.metaLabel) : '',
+                    rowClass: opts && opts.rowClass ? String(opts.rowClass) : ''
+                });
                 setLS(THREAD_KEY, arr.slice(-80));
             }
         }
 
+        /** Inline escalation draft must not stack or persist in the saved thread. */
+        function removeDomEscalationDrafts() {
+            if (!thread) return;
+            thread.querySelectorAll('.osa-esc-draft-form').forEach(function (form) {
+                var row = form.closest('.osa-ai-msg');
+                if (row && row.parentNode) row.parentNode.removeChild(row);
+            });
+        }
+
         function restoreThread() {
             thread.innerHTML = '';
-            var arr = getLS(THREAD_KEY, []);
-            if (!Array.isArray(arr) || !arr.length) {
+            var raw = getLS(THREAD_KEY, []);
+            var arr = Array.isArray(raw) ? raw : [];
+            // #region agent log
+            fetch('http://127.0.0.1:7583/ingest/0b5f4c8a-4bec-4e5e-bd89-fa937b11a18b',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'48e504'},body:JSON.stringify({sessionId:'48e504',runId:'run1',hypothesisId:'H3',location:'public/assets/js/osa-chat-widget.js:restoreThread',message:'restoreThread start',data:{storedThreadCount:arr.length},timestamp:Date.now()})}).catch(()=>{});
+            // #endregion
+            arr = arr.filter(function (m) {
+                return !m.html || String(m.html).indexOf('osa-esc-draft-form') === -1;
+            });
+            setLS(THREAD_KEY, arr);
+            if (!arr.length) {
                 appendBubble('assistant',
                     '<p style="margin:0">Hello! I can help with OSA services, forms, Lost &amp; Found, and policies. How can I help today?</p>',
                     { persist: true });
@@ -479,8 +619,9 @@
                     renderSystemBubble(plain);
                     return;
                 }
-                renderBubble(m.role, m.html);
+                renderBubble(m.role, m.html, { ts: m.t, metaLabel: m.metaLabel || undefined, rowClass: m.rowClass || undefined });
             });
+            debugLayoutSnapshot('restoreThread:end', 'H4');
         }
 
         var delay = function (ms) { return new Promise(function (r) { window.setTimeout(r, reducedMotion ? 0 : ms); }); };
@@ -492,6 +633,15 @@
             thread.appendChild(typing);
             scrollThread();
             return typing;
+        }
+
+        function showTyping(reason) {
+            var node = null;
+            return node;
+        }
+
+        function hideTyping(node, reason) {
+            if (node && node.parentNode) node.parentNode.removeChild(node);
         }
 
         function isLocalHost(hostname) {
@@ -627,10 +777,40 @@
                 conversation_id: convoId
             }).then(function (payload) {
                 var body = payload && payload.data ? payload.data : payload;
-                var reply = String((body && body.response) || '').trim();
+                var reply = String((body && (body.answer || body.response)) || '').trim();
+                var escalate = !!(body && body.escalate);
+                var otpAction = !!(body && body.otp_action);
                 if (!reply) throw new Error('Empty chatbot response.');
-                return reply;
+                return { reply: reply, escalate: escalate, otpAction: otpAction };
             });
+        }
+
+        /** Renders guest /chatbot reply and optional Contact OSA card when server sets escalate. */
+        function appendGuestChatbotTurn(chatbotResult) {
+            var text = typeof chatbotResult === 'string'
+                ? chatbotResult
+                : String((chatbotResult && chatbotResult.reply) || '');
+            var esc = chatbotResult && typeof chatbotResult === 'object' ? !!chatbotResult.escalate : false;
+            var otpAction = chatbotResult && typeof chatbotResult === 'object' ? !!chatbotResult.otpAction : false;
+            if (text) appendBubble('assistant', renderAssistantText(text));
+            if (esc) {
+                appendBubble('assistant',
+                    '<details class="osa-ai-rich" open><summary>Contact OSA</summary>' +
+                    '<p style="margin:0 0 8px">This topic needs staff confirmation. Verify your campus email here to continue in secure chat.</p>' +
+                    '<div class="osa-ai-actions">' +
+                    '<button type="button" class="osa-escalate-btn" data-osa-open-otp>Verify email &amp; escalate</button>' +
+                    '</div></details>');
+            }
+            if (otpAction) {
+                appendBubble('assistant',
+                    '<details class="osa-ai-rich" open><summary>Verification</summary>' +
+                    '<p style="margin:0 0 8px">' + (otpVerified && chatSessionId
+                        ? 'Need to switch account? Request a new OTP below.'
+                        : 'Need a fresh OTP code? Open the verification card below.') + '</p>' +
+                    '<div class="osa-ai-actions">' +
+                    '<button type="button" class="osa-escalate-btn" data-osa-open-otp>Get New OTP Code</button>' +
+                    '</div></details>');
+            }
         }
 
         function expireSecureSessionLocal() {
@@ -642,7 +822,7 @@
             setLS(SESSION_TS_KEY, 0);
             setLS(SESSION_EXP_KEY, '');
             setLS(VERIFIED_KEY, false);
-            setLS(THREAD_KEY, []);
+            // Preserve visible thread by default; chat history may still be useful.
         }
 
         function createChatSession(chatToken, email, studentName) {
@@ -692,10 +872,10 @@
             timerEl.classList.toggle('is-critical', remaining > 0 && remaining <= 15 * 1000);
 
             if (remaining <= 0) {
+                // Stop the visual countdown only; do not auto-expire user locally.
+                // This prevents repetitive OTP prompts for the same signed-in user.
                 stopSessionCountdown();
-                expireSecureSessionLocal();
-                appendBubble('assistant', '<p style="margin:0">Your secure chat session has ended after 10 minutes of inactivity. Verify your email again to continue.</p>');
-                setMode('ai');
+                timerEl.hidden = true;
             }
         }
 
@@ -712,10 +892,11 @@
 
         // ── Header mode badge (Tier indicator) ────────────────────
         var modeBadgeEl = document.getElementById('osa-chat-mode-badge');
+        var statusLineEl = document.getElementById('osa-chat-status-line');
         var MODE_COPY = {
-            faq:   { label: 'Instant (FAQ)',     cls: 'osa-ai-mode--faq' },
-            ai:    { label: 'AI Assistant',      cls: 'osa-ai-mode--ai' },
-            staff: { label: 'Connected to Staff', cls: 'osa-ai-mode--staff' }
+            faq:   { label: 'Guide', cls: 'osa-ai-mode--faq' },
+            ai:    { label: 'OSA',   cls: 'osa-ai-mode--ai' },
+            staff: { label: 'Staff', cls: 'osa-ai-mode--staff' }
         };
         var currentMode = 'ai';
         function setMode(next) {
@@ -724,6 +905,10 @@
             modeBadgeEl.textContent = target.label;
             modeBadgeEl.className = 'osa-ai-mode ' + target.cls;
             currentMode = next;
+            if (statusLineEl) {
+                statusLineEl.textContent = next === 'staff' ? 'Live OSA Staff' : (next === 'faq' ? 'Guided Flow' : 'Ready');
+                statusLineEl.classList.toggle('is-staff', next === 'staff');
+            }
         }
         setMode('ai');
 
@@ -734,7 +919,10 @@
             var nearBottom = thread.scrollHeight - thread.scrollTop - thread.clientHeight < 80;
             scrollBtn.hidden = nearBottom;
         }
-        if (thread) thread.addEventListener('scroll', updateScrollBtn);
+        if (thread) thread.addEventListener('scroll', function () {
+            updateScrollBtn();
+            debugLayoutOnScroll();
+        });
         if (scrollBtn) scrollBtn.addEventListener('click', function () {
             thread.scrollTop = thread.scrollHeight;
             updateScrollBtn();
@@ -756,6 +944,77 @@
             scrollThread();
         }
 
+        function parseStaffMessage(content, payload) {
+            var raw = String(content || '').trim();
+            if (!raw) return { label: '', text: '' };
+            var staffLabel = 'OSA Staff';
+            var withName = raw.match(/^\[OSA Staff\s*[·-]\s*([^\]]+)\]\s*/i);
+            if (withName) {
+                raw = raw.slice(withName[0].length).trim();
+            }
+            raw = raw.replace(/^\[OSA Staff Reply\s*[—-]\s*Case[^\]]+\]\s*/i, '').trim();
+            raw = raw.replace(/\badmin user\b/gi, 'OSA Staff').trim();
+            return { label: staffLabel, text: raw };
+        }
+
+        function parseStaffJoinText(content, staffName) {
+            var raw = String(content || '').trim();
+            if (!raw) raw = 'OSA Staff has joined the chat.';
+            raw = raw.replace(/\badmin user\b/gi, 'OSA Staff');
+            raw = raw.replace(/\bosa staff\s+osa staff\b/gi, 'OSA Staff');
+            raw = raw.replace(/\s+/g, ' ').trim();
+            if (/has joined the chat\.?$/i.test(raw)) {
+                return 'OSA Staff has joined the chat.';
+            }
+            if (/joined the chat/i.test(raw)) {
+                return 'OSA Staff has joined the chat.';
+            }
+            return 'OSA Staff has joined the chat.';
+        }
+
+        function simplifyEscalationQuestionnaire(text, payload) {
+            var raw = String(text || '').trim();
+            if (!raw) return raw;
+            if (!(payload && payload.suggest_escalation)) return raw;
+            var asksDetailedForm =
+                /(purpose of your visit|preferred weekday|preferred time window|morning or afternoon|once i have this information)/i.test(raw);
+            if (!asksDetailedForm) return raw;
+            return [
+                'I recommend escalating this to an OSA staff member.',
+                '',
+                'Please type your concern in one clear message, then tap **Escalate to OSA Staff**.'
+            ].join('\n');
+        }
+
+        function collectEscalationRequirements(text) {
+            var raw = String(text || '').trim();
+            var lc = raw.toLowerCase();
+            var hasAppointment = hasAppointmentIntent(raw);
+            var hasLostFound = lc.indexOf('lost') >= 0 || lc.indexOf('found') >= 0 || lc.indexOf('claim') >= 0 || /\blf[-\s]?\d{3,6}\b/i.test(raw);
+            // If the student already wrote a detailed message (≥50 chars), purpose is satisfied.
+            var hasPurpose = raw.length >= 50 ||
+                /(scholar|id card|good moral|conduct|enroll|registr|claim|lost|found|appointment|schedule|complaint|human|support|staff|concern|clearance|payment|bayad|grade|gwa|suspend|violas|cheat|plagiar|disciplin|appeal|harass|bully|misconduct|expel|probation|violation|uniform|absent|tardiness|document|certificate|medical|mental|health|org|club|tuition|refund|receipt|library|fine|thesis|diploma|tor|withdrawal|leave of absence|transfer)/i.test(raw);
+            var hasDay = /(monday|mon|tuesday|tue|wednesday|wed|thursday|thu|friday|fri)/i.test(raw);
+            var hasWindow = /(morning|afternoon)/i.test(raw);
+            var hasLfDetail = /\blf[-\s]?\d{3,6}\b/i.test(raw) || raw.length >= 24;
+            var missing = [];
+
+            if (!hasPurpose) missing.push('purpose');
+            if (hasAppointment) {
+                if (!hasDay) missing.push('day');
+                if (!hasWindow) missing.push('window');
+            }
+            if (hasLostFound && !hasLfDetail) {
+                missing.push('lf_detail');
+            }
+            return {
+                isAppointment: hasAppointment,
+                isLostFound: hasLostFound,
+                missing: missing,
+                draft: raw
+            };
+        }
+
         function startSSE() {
             stopSSE();
             if (!chatSessionId) return;
@@ -775,7 +1034,7 @@
                 if (payload.type === 'staff_joined') {
                     clearWaitingBanner();
                     setMode('staff');
-                    var joinText = String(payload.content || ('OSA Staff ' + (payload.staff_name || '') + ' has joined the chat.')).trim();
+                    var joinText = parseStaffJoinText(payload.content, payload.staff_name);
                     renderSystemBubble(joinText);
                     // Persist so it survives reloads like other bubbles.
                     var arr = getLS(THREAD_KEY, []);
@@ -787,20 +1046,22 @@
 
                 if (payload.type === 'staff_message') {
                     clearWaitingBanner();
-                    var body = String(payload.content || '').trim();
-                    if (body) appendBubble('assistant', renderAssistantText(body));
+                    setMode('staff');
+                    var parsedStaff = parseStaffMessage(payload.content, payload);
+                    if (parsedStaff.text) {
+                        appendBubble('assistant', renderAssistantText(parsedStaff.text), { rowClass: 'osa-ai-msg--staff', metaLabel: 'OSA Staff' });
+                    }
 
                     if (payload.appointment_approved) {
                         setMode('staff');
                     }
 
                     if (payload.session_closed) {
-                        stopSSE();
                         setMode('ai');
                         renderSystemBubble('This support session has been closed by OSA staff. You may open a new concern anytime.');
-                        input.disabled = true;
-                        input.placeholder = 'Session closed — open a new chat to continue.';
-                        sendBtn.disabled = true;
+                        input.disabled = false;
+                        input.placeholder = 'Aa';
+                        sendBtn.disabled = !String(input.value || '').trim();
                         // Persist session-closed system message in thread
                         var arr = getLS(THREAD_KEY, []);
                         if (!Array.isArray(arr)) arr = [];
@@ -944,6 +1205,14 @@
             return text.indexOf('appointment') >= 0 || text.indexOf('schedule') >= 0 || text.indexOf('book') >= 0;
         }
 
+        function isOtpRequestIntent(message) {
+            var text = String(message || '').toLowerCase();
+            return text.indexOf('otp') >= 0 ||
+                text.indexOf('one time password') >= 0 ||
+                text.indexOf('one-time password') >= 0 ||
+                text.indexOf('verification code') >= 0;
+        }
+
         function needsProtected(message) {
             // Only trigger OTP for phrases that clearly indicate a protected action.
             // Generic words like "schedule" or "support" alone were too broad and
@@ -985,9 +1254,9 @@
                 appendBubble(
                     'assistant',
                     '<details class="osa-ai-rich" open><summary>Appointment options</summary>' +
-                    '<ul><li>Use secure chat to book preferred day/time</li><li>OSA staff will confirm schedule in-chat</li></ul>' +
+                    '<ul><li>Verify your campus email in this panel to book preferred day/time</li><li>OSA staff will confirm schedule in this same chat</li></ul>' +
                     '<div class="osa-ai-actions">' +
-                    '<a href="/chat" target="_blank" rel="noopener" class="osa-escalate-btn" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;">Open Appointment Chat</a>' +
+                    '<button type="button" class="osa-escalate-btn" data-osa-open-otp>Verify email in this chat</button>' +
                     '</div></details>'
                 );
             }
@@ -1135,8 +1404,8 @@
                         st.className = 'osa-ai-otp__status is-err';
                         return;
                     }
-                    if (digits.length !== 6) {
-                        st.textContent = 'Enter the 6-digit code.';
+                    if (digits.length < 5 || digits.length > 6) {
+                        st.textContent = 'Enter the code from your email.';
                         st.className = 'osa-ai-otp__status is-err';
                         return;
                     }
@@ -1154,6 +1423,9 @@
                             setLS(NAME_KEY, verifiedName);
                             setLS(VERIFIED_KEY, true);
                             otpVerified = true;
+                            // New OTP verification means fresh session + fresh chat.
+                            setLS(THREAD_KEY, []);
+                            restoreThread();
                             st.textContent = 'Verified.';
                             st.className = 'osa-ai-otp__status is-ok';
                             appendBubble('assistant', '<p style="margin:0">Session verified \u2014 you can continue with protected actions.</p>');
@@ -1192,17 +1464,13 @@
                 handleSend();
             }
 
-            if (chatSessionId && sessionTs && (Date.now() - sessionTs >= SESSION_TTL_MS)) {
-                expireSecureSessionLocal();
-                appendBubble('assistant', '<p style="margin:0">Your secure chat expired after 5 minutes. Please request and verify a new OTP code — your message will resend automatically.</p>');
-                injectOtp().then(resumeAfterOtp);
-                return;
-            }
+            // No local timeout gate here. Same browser user should not be
+            // forced to re-verify OTP repeatedly by frontend timers.
 
             if (!chatSessionId && !needsProtected(message)) {
                 try {
                     var guestReply = await postChatbotApi(message);
-                    appendBubble('assistant', renderAssistantText(guestReply));
+                    appendGuestChatbotTurn(guestReply);
                 } catch (_guestErr) {
                     appendLocalAssistantReply(message, true);
                 }
@@ -1237,7 +1505,7 @@
                     input.focus();
                     return;
                 }
-                var typingClaim = appendTypingIndicator();
+                var typingClaim = showTyping('claim-submit');
                 try {
                     var claimRes = await postApi('/chat/claim', {
                         session_id: chatSessionId,
@@ -1261,7 +1529,7 @@
                         appendBubble('assistant', '<p style="margin:0">Could not submit claim: ' + escapeHtml(err.message || 'Unknown error') + '</p>');
                     }
                 } finally {
-                    if (typingClaim && typingClaim.parentNode) typingClaim.remove();
+                    hideTyping(typingClaim, 'claim-submit:finally');
                 }
                 sendBtn.disabled = false;
                 input.focus();
@@ -1280,50 +1548,72 @@
             var typingAI = null;
             try {
                 if (chatSessionId) {
-                    typingAI = appendTypingIndicator();
+                    typingAI = showTyping('secure-chat-message');
                     try {
+                        var chatApiStartMs = Date.now();
                         var payload = await postApi('/chat/message', { session_id: chatSessionId, message: message });
 
                         // Refresh the session-expiry countdown (server returns a
                         // fresh `session_expires_at` on every successful reply).
-                        if (payload && payload.session_expires_at) {
+                        if (payload && payload.session_expires_at && !isOtpRequestIntent(message)) {
                             setLS(SESSION_EXP_KEY, payload.session_expires_at);
                             startSessionCountdown();
                         }
                         // Update header mode badge based on which tier answered.
                         if (payload && payload.human_mode) {
                             setMode('staff');
-                            if (payload.case_id) {
+                            var humanTicketStatus = String((payload && payload.human_ticket_status) || '').toLowerCase();
+                            if (payload.case_id && humanTicketStatus === 'open') {
                                 var startAt = waitingState.startedAt || Date.now();
                                 renderWaitingBanner(String(payload.case_id), startAt, waitingState.cancellable);
+                            } else {
+                                clearWaitingBanner();
                             }
                         }
                         else if (payload && payload.tier === 1) setMode('faq');
                         else setMode('ai');
 
                         var aiReply = String((payload && payload.reply) || '').trim();
+                        aiReply = simplifyEscalationQuestionnaire(aiReply, payload);
                         if (aiReply) {
-                            appendBubble('assistant', renderAssistantText(aiReply));
-                            if (payload && payload.auto_escalated && payload.case_id) {
+                            if (payload && (payload.appointment_locked_today || payload.escalation_blocked_resolved)) {
+                                clearWaitingBanner();
+                            }
+                            if (payload && payload.human_mode) {
+                                var parsedHuman = parseStaffMessage(aiReply, payload);
+                                if (parsedHuman.text) {
+                                    appendBubble('assistant', renderAssistantText(parsedHuman.text), { rowClass: 'osa-ai-msg--staff', metaLabel: 'OSA Staff' });
+                                }
+                            } else {
+                                appendBubble('assistant', renderAssistantText(aiReply));
+                            }
+                            if (payload && payload.auto_escalated && payload.case_id && !(payload && payload.appointment_locked_today) && !(payload && payload.escalation_blocked_resolved)) {
                                 renderWaitingBanner(String(payload.case_id), Date.now(), true);
                                 setMode('staff');
                                 appendBubble('assistant',
                                     '<div class="osa-ai-handoff">' +
                                     '<p style="margin:0 0 6px"><strong>Forwarded to OSA staff.</strong></p>' +
                                     '<p style="margin:0 0 6px">Case ID: <strong>' + escapeHtml(String(payload.case_id)) + '</strong></p>' +
-                                    '<p style="margin:0 0 4px">Keep this chat open — an OSA staff member will reply <strong>right here</strong> once they pick up your case. You\'ll also get an email confirmation.</p>' +
+                                    '<p style="margin:0 0 4px">Keep this chat open — an OSA staff member will reply <strong>right here</strong> once they pick up your case.</p>' +
                                     '<p style="margin:0;font-size:12px;color:#65574d">AI replies are paused for this case while staff handles it.</p>' +
                                     '</div>');
                             }
-                            if (payload && payload.suggest_escalation) {
+                            if (payload && (payload.suggest_escalation || payload.escalate) && !(payload && payload.human_mode) && !(payload && payload.auto_escalated)) {
                                 appendBubble('assistant',
                                     '<details class="osa-ai-rich" open><summary>Next steps</summary><ul><li>This concern may need staff review</li><li>Use this same chat to continue details</li><li>Escalate your concern to OSA staff below</li></ul><div class="osa-ai-actions"><button type="button" class="osa-escalate-btn">Escalate to OSA Staff</button></div></details>');
                             }
+                            if (payload && payload.otp_action) {
+                                appendBubble('assistant',
+                                    '<details class="osa-ai-rich" open><summary>Verification</summary><p style="margin:0 0 8px">' + (otpVerified && chatSessionId ? 'Need to switch account? Request a new OTP below.' : 'Need a fresh OTP code? Use the verification card in this chat.') + '</p><div class="osa-ai-actions"><button type="button" class="osa-escalate-btn" data-osa-open-otp>Get New OTP Code</button></div></details>',
+                                    { persist: false });
+                            }
                         } else {
-                            appendBubble('assistant', '<p style="margin:0">I did not receive a response. Please try again.</p>');
+                            if (!(payload && payload.human_mode)) {
+                                appendBubble('assistant', '<p style="margin:0">I did not receive a response. Please try again.</p>');
+                            }
                         }
                     } finally {
-                        if (typingAI && typingAI.parentNode) typingAI.remove();
+                        hideTyping(typingAI, 'secure-chat-message:finally');
                         typingAI = null;
                     }
                 } else {
@@ -1331,7 +1621,7 @@
                     await injectOtp();
                 }
             } catch (_err) {
-                if (typingAI && typingAI.parentNode) typingAI.remove();
+                hideTyping(typingAI, 'secure-chat-message:catch');
                 if (_err && (_err.code === 'SESSION_EXPIRED' || _err.status === 401)) {
                     expireSecureSessionLocal();
                     appendBubble('assistant', '<p style="margin:0">Your secure chat expired after 5 minutes. Please request and verify a new OTP code.</p>');
@@ -1348,8 +1638,8 @@
                         var liveFallbackWorked = false;
                         if (!protectedIntent) {
                             try {
-                                var chatbotReply = await postChatbotApi(message);
-                                appendBubble('assistant', renderAssistantText(chatbotReply));
+                                var chatbotRes = await postChatbotApi(message);
+                                appendGuestChatbotTurn(chatbotRes);
                                 liveFallbackWorked = true;
                             } catch (_chatbotErr) {
                                 liveFallbackWorked = false;
@@ -1359,14 +1649,14 @@
                         if (!liveFallbackWorked) {
                             if (protectedIntent && hasAppointmentIntent(message)) {
                                 try {
-                                    var apptFallbackReply = await postChatbotApi(message);
-                                    appendBubble('assistant', renderAssistantText(apptFallbackReply));
+                                    var apptFallbackRes = await postChatbotApi(message);
+                                    appendGuestChatbotTurn(apptFallbackRes);
                                     appendBubble(
                                         'assistant',
                                         '<details class="osa-ai-rich" open><summary>Appointment action</summary>' +
-                                        '<p style="margin:0 0 8px">When secure booking stabilizes, continue in this chat to submit your preferred day/time.</p>' +
+                                        '<p style="margin:0 0 8px">Continue in this chat: verify your email below, then submit your preferred day/time here.</p>' +
                                         '<div class="osa-ai-actions">' +
-                                        '<a href="/chat" target="_blank" rel="noopener" class="osa-escalate-btn" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;">Open Appointment Chat</a>' +
+                                        '<button type="button" class="osa-escalate-btn" data-osa-open-otp>Verify email in this chat</button>' +
                                         '</div></details>'
                                     );
                                     liveFallbackWorked = true;
@@ -1424,6 +1714,9 @@
                 handleSend();
             }
         });
+        input.addEventListener('input', function () {
+            sendBtn.disabled = !String(input.value || '').trim();
+        });
 
         // Global click handler: triggers and outside-click minimization
         document.addEventListener('click', function (ev) {
@@ -1441,10 +1734,63 @@
             var escBtn = ev.target && ev.target.closest && ev.target.closest('.osa-escalate-btn');
             if (escBtn && widget.contains(escBtn)) {
                 ev.preventDefault();
+                if (escBtn.getAttribute('data-osa-open-otp') != null) {
+                    var otpWrap = thread.querySelector('.osa-ai-otp');
+                    if (otpWrap) {
+                        otpWrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        var mailIn = otpWrap.querySelector('input[type="email"]');
+                        if (mailIn) mailIn.focus();
+                    } else {
+                        injectOtp();
+                    }
+                    return;
+                }
+
+                // If this click came from the inline draft form, capture textarea value first.
+                var draftWrapper = escBtn.closest('.osa-esc-draft-form');
+                if (draftWrapper) {
+                    var draftTa = draftWrapper.querySelector('.osa-esc-draft-ta');
+                    var draftVal = draftTa ? String(draftTa.value || '').trim() : '';
+                    if (draftVal) lastEscalationDraft = draftVal;
+                }
+
+                var escalationCheck = collectEscalationRequirements(lastEscalationDraft || input.value || '');
+                if (escalationCheck.missing.length) {
+                    var prefill = escapeHtml(lastEscalationDraft || '');
+                    var hintParts = [];
+                    if (escalationCheck.missing.indexOf('purpose') >= 0)
+                        hintParts.push('purpose of your concern (e.g., scholarship appeal, ID replacement, clearance issue, violation)');
+                    if (escalationCheck.missing.indexOf('day') >= 0)
+                        hintParts.push('preferred weekday (Mon–Fri)');
+                    if (escalationCheck.missing.indexOf('window') >= 0)
+                        hintParts.push('preferred time window (Morning or Afternoon)');
+                    if (escalationCheck.missing.indexOf('lf_detail') >= 0)
+                        hintParts.push('Lost &amp; Found item number or full description');
+
+                    var hintHtml = hintParts.map(function (h) { return '<li>' + h + '</li>'; }).join('');
+                    removeDomEscalationDrafts();
+                    appendBubble(
+                        'assistant',
+                        '<div class="osa-esc-draft-form">' +
+                        '<p style="margin:0 0 6px;font-weight:600">Before escalation, include:</p>' +
+                        '<ul style="margin:0 0 10px;padding-left:18px">' + hintHtml + '</ul>' +
+                        '<textarea class="osa-esc-draft-ta" rows="3" ' +
+                        'placeholder="Describe your concern in full detail (e.g., I am appealing a violation case, my student number is 20-12345, I need help with clearance…)">' +
+                        prefill + '</textarea>' +
+                        '<button class="osa-escalate-btn" style="margin-top:8px;width:100%">Submit &amp; Escalate to OSA Staff</button>' +
+                        '</div>',
+                        { persist: false }
+                    );
+                    return;
+                }
                 if (escBtn.disabled) return;
                 escBtn.disabled = true;
                 escBtn.textContent = 'Escalating…';
-                submitEscalationFromWidget(postApi, appendBubble, chatSessionId, lastEscalationDraft);
+                submitEscalationFromWidget(postApi, appendBubble, chatSessionId, lastEscalationDraft, {
+                    renderWaitingBanner: renderWaitingBanner,
+                    setMode: setMode,
+                    getApi: getApi
+                });
                 return;
             }
 
@@ -1502,28 +1848,6 @@
                 '<p style="margin:0 0 8px;">OTP-secured chat requires an official <strong>EAC Cavite student email</strong>. Visit the Office of Student Affairs during posted hours for walk-in guidance.</p>' +
                 '<p style="margin:0;"><a href="https://www.eac.edu.ph/osa/" target="_blank" rel="noopener noreferrer">Official OSA · eac.edu.ph</a></p>' +
                 '</div>';
-        }
-
-        var serviceTopicEl = document.getElementById('osa-service-topic');
-        if (serviceTopicEl) {
-            serviceTopicEl.addEventListener('change', function () {
-                var val = serviceTopicEl.value;
-                if (!val) return;
-                if (val === '__visitor__') {
-                    appendBubble('assistant', visitorAssistHtml());
-                    serviceTopicEl.value = '';
-                    openWidget();
-                    scrollThread();
-                    return;
-                }
-                input.value = val;
-                serviceTopicEl.value = '';
-                openWidget();
-                input.focus();
-                window.requestAnimationFrame(function () {
-                    handleSend();
-                });
-            });
         }
 
         // Horizontal drag-to-scroll + delegated chip clicks
@@ -1601,7 +1925,10 @@
         updateScrollBtn();
 
         // Clean up SSE on tab close so the server can drop the subscriber.
-        window.addEventListener('beforeunload', stopSSE);
+        window.addEventListener('beforeunload', function () {
+            unlockPageScroll();
+            stopSSE();
+        });
 
         // Public API for other pages / buttons
         window.OSAChat = {

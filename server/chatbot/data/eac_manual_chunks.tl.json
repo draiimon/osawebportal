@@ -1,0 +1,317 @@
+[
+  {
+    "chunk_id": "EAC-001",
+    "topic": "School Identity & Core Values",
+    "article": "Institutional Information",
+    "section": "Philosophy, Vision, Mission, Core Values",
+    "keywords": ["philosophy", "vision", "mission", "core values", "virtue", "excellence", "service", "EAC identity"],
+    "bot_routing": "Kapag tinanong ang bot tungkol sa EAC mission, vision, values, o identity ng school.",
+    "content": "Emilio Aguinaldo College (EAC-Cavite) ay isang private, non-sectarian, co-educational institution. PHILOSOPHY: Nagtataguyod ng equal at fair na oportunidad sa edukasyon at national identity. VISION: Internationally recognized autonomous academic institution rooted in nationalist tradition na patuloy na naghahanap ng advancement at welfare ng humanity. MISSION: Nagbibigay ng outcomes-based education na may relevant curricula para sa excellent research, active industry cooperation, at sustainable community extension. CORE VALUES: Virtue, Excellence, Service. EDUCATIONAL OBJECTIVES: (1) Mag-alok ng quality at relevant na edukasyon; (2) Cultivate ang intellectual, spiritual, moral, social, at physical na aspeto ng tao; (3) Ipunla ang pagmamahal sa national identity; (4) Mag-produce ng graduates na may global quality at competencies. QUALITY POLICY: Patuloy na pagpapabuti ng quality standards sa instruction, research, at community service. EAC Contact: Congressional East Ave., Burol Main, Dasmarinas City, Cavite | Tel: (046) 416-4341 to 42."
+  },
+  {
+    "chunk_id": "EAC-002",
+    "topic": "Student Classification",
+    "article": "Article 1 - General Policy on Admission and Retention",
+    "section": "Section 1 - Classification of Students",
+    "keywords": ["classification", "freshman", "sophomore", "junior", "senior", "transferee", "returnee", "cross-enrollee", "regular", "irregular", "new student", "continuing student"],
+    "bot_routing": "Kapag tinanong ang bot kung anong klaseng estudyante ang isang tao, o kung ano ang kaibahan ng transferee, returnee, cross-enrollee, atbp.",
+    "content": "Ang mga estudyante sa EAC ay naka-classify sa dalawang paraan:\n\nAYON SA YEAR LEVEL:\n- Freshman: 1st year ng curriculum o hindi pa tapos ang 1st year subjects.\n- Sophomore: Tapos na ang lahat ng 1st year prescribed subjects.\n- Junior: Tapos na ang 1st at 2nd year prescribed subjects.\n- Senior: Tapos na ang 1st, 2nd, at 3rd year prescribed subjects.\n(Para sa Dentistry at Optometry: Junior Clinicians at Senior Clinicians)\n\nAYON SA ADMISSION/ENROLLMENT:\n- New Student: Bagong graduate ng secondary curriculum.\n- Continuing Student: Dati nang nag-enroll sa EAC at bumabalik sa susunod na semester.\n- Transferee: Galing sa ibang institution, gustong mag-continue sa EAC.\n- Returnee: Nagka-leave of absence at bumabalik na mag-enroll.\n- Cross-Enrollee: Estudyante ng ibang school na mag-eenroll ng specific subject sa EAC.\n- Degree Holder: May natapos nang degree, gustong kumuha ng isa pang program.\n- Enrollee to Supplemental Subjects (Uniters): Nag-eenroll ng specific units para sa entry requirements ng ibang program.\n- Regular Student: Kumukuha ng full load ayon sa curriculum.\n- Irregular Student: Kumukuha ng mas kaunting units kaysa full load."
+  },
+  {
+    "chunk_id": "EAC-003",
+    "topic": "Freshman Admission Requirements",
+    "article": "Article 1 - General Policy on Admission and Retention",
+    "section": "Section 2.1 - Freshman Admission",
+    "keywords": ["admission", "requirements", "freshman", "new student", "application", "entrance exam", "form 138", "good moral", "birth certificate", "2x2 picture"],
+    "bot_routing": "Kapag tinanong ang bot tungkol sa mga requirements para mag-apply bilang bagong estudyante o freshman sa EAC.",
+    "content": "PROSESO PARA SA FRESHMAN ADMISSION:\n1. Pumunta sa Admissions Office para sa Application Form.\n2. Bayaran ang Entrance Exam Fee sa Cashier's Office.\n3. Kumuha ng entrance test sa Center for Counseling, Career and Student Services.\n4. Aabisuhan ng Admissions Office tungkol sa resulta at ibibigay ang Notice of Admission.\n5. Kumpleto ang requirements at bibigyan ng Admissions Slip.\n6. Ang student portfolio ay ibibigay sa Registrar's Office para sa enrollment.\n\nREQUIREMENTS PARA SA SHS GRADUATES:\na) Duly Accomplished Application Form\nb) High School Report Card o Form 138 (Original)\nc) Certificate of Good Moral Character (Original)\nd) PSA Issued Birth Certificate (photocopy)\ne) College Entrance Exam Result\nf) Physical Examination Result\ng) 4 copies ng 2x2 colored ID picture\n\nREQUIREMENTS PARA SA ALS GRADUATES:\na) Duly Accomplished Application Form\nb) ALS Certificate of Rating for Secondary Level (Original)\nc) Certificate of Passing the ALS Accreditation and Equivalency Test\nd) ALS Diploma in Secondary Education Equivalence\ne) ALS Certificate of Good Moral Character (Original)\nf) PSA Issued Birth Certificate (photocopy)\ng) College Entrance Exam Result\nh) Physical Examination Result\ni) 4 copies ng 2x2 colored ID picture"
+  },
+  {
+    "chunk_id": "EAC-004",
+    "topic": "Transferee and Returnee Admission Requirements",
+    "article": "Article 1 - General Policy on Admission and Retention",
+    "section": "Section 2.2 to 2.3 - Transferee and Returnee Admission",
+    "keywords": ["transferee", "returnee", "admission", "requirements", "transfer credentials", "good moral", "transcript of records"],
+    "bot_routing": "Kapag tinanong ang bot tungkol sa requirements para sa transferee o returnee na gustong mag-enroll sa EAC.",
+    "content": "REQUIREMENTS PARA SA TRANSFEREES AT DEGREE HOLDERS:\na) Duly Accomplished Application Form\nb) Copy of Grades o Transcript of Records (para sa evaluation)\nc) Certificate of Transfer Credential mula sa nakaraang school (Original)\nd) Certificate of Good Moral Character (Original)\ne) PSA Issued Birth Certificate (photocopy)\nf) College Entrance Exam Result\ng) Physical Examination Result\nh) PSA Marriage Certificate (para sa married female applicant)\ni) 4 copies ng 2x2 colored ID picture\n\nPROSESO: I-refer ang transferee sa Dean para sa interview at evaluation ng mga subject na natake sa dati nilang school. Bibigyan ng evaluation Referral Slip.\n\nREQUIREMENTS PARA SA RETURNEES:\na) Duly Accomplished Application Form\nb) PSA Marriage Contract (para sa married female - photocopy)\nc) Physical Examination Result\nd) 4 copies ng 2x2 ID pictures\n\nPROSESO PARA SA RETURNEES:\n1. I-check ang Accounting Office para sa any outstanding balance.\n2. I-refer sa School Dean para sa interview at recommendation.\n3. Pag-aprubahan, ibalik ang dating student number.\n4. Kumpleto ng admission requirements para sa updating.\n5. Mag-proceed sa Registrar's Office para sa enrollment."
+  },
+  {
+    "chunk_id": "EAC-005",
+    "topic": "Cross-Enrollee and Uniter Admission",
+    "article": "Article 1 - General Policy on Admission and Retention",
+    "section": "Section 2.4 to 2.5 - Cross-Enrollee and Uniter",
+    "keywords": ["cross-enrollee", "uniter", "supplemental subject", "admission requirements", "cross enrollment permit"],
+    "bot_routing": "Kapag tinanong ang bot tungkol sa pagiging cross-enrollee o uniter sa EAC.",
+    "content": "REQUIREMENTS PARA SA CROSS-ENROLLEES:\na) PSA Authenticated Birth Certificate\nb) Permit to cross enroll mula sa school of origin\nc) 1 pc 2x2 picture\n\nPROSESO: I-check ng Admissions Office ang availability ng course na gusto i-enroll, kumpleto ng form at requirements, tapos i-refer sa Registrar's Office.\n\nREQUIREMENTS PARA SA UNITERS (Supplemental Subject Enrollees):\na) Duly Accomplished Application Form\nb) Transcript of Records\nc) Certificate of Good Moral Character\nd) PSA/NSO Birth Certificate (photocopy)\ne) 4 pcs 2x2 ID picture\n\nPROSESO: Pagkatapos ng Admissions Office ay ire-refer ang uniter sa Dean para sa advising at enrollment."
+  },
+  {
+    "chunk_id": "EAC-006",
+    "topic": "Academic Retention Policy - Warning, Probation, Non-Readmission",
+    "article": "Article 1 - General Policy on Admission and Retention",
+    "section": "Section 4 - EAC Academic Retention Policy",
+    "keywords": ["retention", "warning", "probation", "non-readmission", "failing grades", "UW", "academic standing", "scholastic delinquency"],
+    "bot_routing": "Kapag tinanong ang bot tungkol sa kung ano ang mangyayari kapag bumagsak ang isang estudyante, o tungkol sa academic probation at non-readmission policy.",
+    "content": "A. WARNING:\nMag-iissue ng warning kapag ang estudyante ay nakakuha ng failing grades o UW (Unauthorized Withdrawal) sa MENOS SA 25% ng total units enrolled sa isang semester. Kailangan mag-sign ng Undertaking sa School Dean.\n\nB. PROBATION:\nMailalagay ang estudyante sa probation kapag:\n- May failing grades o UW sa 25% hanggang 65% ng total enrolled units sa isang semester.\n- Nasa WARNING status na ng dalawang magkasunod na semester.\n\nSa probation: Kailangan magdala ng magulang o guardian bago mag-enroll. Bibigyan ng limited academic load. Kailangan mag-report sa Guidance and Counseling Office. Maaaring ma-remove ang probation status kapag pumasa sa lahat ng subjects na may grade na 3.0 o mas mataas.\n\nC. NON-READMISSION:\nHindi na maaaring mag-enroll sa program sa susunod na semester kapag:\n- May failing grades o UW sa HIGIT SA 65% ng total units.\n- Bumagsak sa professional board course nang tatlong beses (3x).\n- Nasa PROBATION status nang dalawang magkasunod na semester.\n\nNOTA: Maaari pang humingi ng admission sa ibang unit/college ng EAC kahit hindi na pwedeng bumalik sa dating program. May appeal process din para sa meritorious cases."
+  },
+  {
+    "chunk_id": "EAC-007",
+    "topic": "Maximum Residency Requirement",
+    "article": "Article 1 - General Policy on Admission and Retention",
+    "section": "Section 6 - Maximum Residency",
+    "keywords": ["residency", "maximum residency", "10 years", "undergraduate", "non-degree", "program duration"],
+    "bot_routing": "Kapag tinanong ang bot kung gaano katagal ang maximum na pwedeng manatili bilang estudyante sa EAC.",
+    "content": "MAXIMUM RESIDENCY REQUIREMENT sa EAC:\n- Ang residency ay nagsisimula sa unang enrollment sa EAC.\n- Para sa UNDERGRADUATE degree programs: Hindi dapat lumampas ng 10 taon, kahit nagshift pa sa ibang degree program.\n- Para sa NON-DEGREE programs: Hindi dapat lumampas ng 4 na taon. Kung nagshift sa degree program, ang limit ay 10 taon.\n- Naaangkop ito sa lahat - regular/full-time at part-time students."
+  },
+  {
+    "chunk_id": "EAC-008",
+    "topic": "Student Rights",
+    "article": "Article 2 - General Directives",
+    "section": "Section 2 - Student Rights",
+    "keywords": ["rights", "student rights", "organize", "express", "due process", "freedom"],
+    "bot_routing": "Kapag tinanong ang bot tungkol sa mga karapatan ng mga estudyante sa EAC.",
+    "content": "Kinikilala ng EAC ang mga sumusunod na karapatan ng mga estudyante:\n2.1 Karapatang magpahayag ng concern sa kalidad ng edukasyong natatanggap nila.\n2.2 Karapatang mag-organisa ng sarili.\n2.3 Karapatang magpahayag ng sariling opinyon, basta naaayon sa social norms ng institusyon.\n2.4 Karapatang sa due process ng batas.\n\nNOTA: Ang bawat karapatan ay may katumbas na responsibilidad at limitasyon. Hindi dapat lumagpas ang pagsasagawa ng karapatan sa karapatan ng iba."
+  },
+  {
+    "chunk_id": "EAC-009",
+    "topic": "Campus Policies - Smoking, Drugs, Alcohol",
+    "article": "Article 2 - General Directives",
+    "section": "Sections 3, 4 - Smoking, Drug, and Liquor Policy",
+    "keywords": ["smoking", "drugs", "alcohol", "liquor", "vaping", "e-cigarette", "prohibited", "drug-free", "smoke-free"],
+    "bot_routing": "Kapag tinanong ang bot tungkol sa patakaran sa paninigarilyo, droga, o alak sa loob ng campus.",
+    "content": "SMOKE-FREE CAMPUS POLICY (RA 9211):\n- Ang buong campus at 100-metro radius na labas nito ay SMOKE-FREE area.\n- BAWAL ang paninigarilyo sa lahat ng anyo (regular cigarettes, e-cigarettes, tobacco products) sa loob ng lahat ng school buildings at properties.\n- Kasama rin ang EAC-owned o rented vehicles.\n- Ang Student Clinic ay nagbibigay ng smoking cessation guidance.\n- Maaaring mag-review ang School Clinic ng guidelines kapag may bagong medical research.\n\nDRUG-FREE AT LIQUOR-FREE CAMPUS:\n- Ang EAC campus ay drug-free at liquor-free.\n- Ang paggamit, pag-aari, o pamamahagi ng anumang kontroladong sangkap o alak sa loob ng campus o sa school-sponsored events ay MAJOR OFFENSE.\n- Kasama rin ang pagpunta sa campus habang nasa impluwensya ng droga o alak."
+  },
+  {
+    "chunk_id": "EAC-010",
+    "topic": "School ID Policy",
+    "article": "Article 2 - General Directives",
+    "section": "Title 2 - EAC Identification Cards",
+    "keywords": ["school ID", "identification card", "lost ID", "damaged ID", "affidavit of loss", "ID replacement", "one-day campus pass"],
+    "bot_routing": "Kapag tinanong ang bot tungkol sa school ID, pagkawala ng ID, pagreplace ng ID, o paano makapasok sa campus kung walang ID.",
+    "content": "SCHOOL ID POLICY:\n- Lahat ng naka-enroll ay bibigyan ng ID na may computer-registered student number.\n- Kailangan palaging suotin ang ID sa loob ng campus at ipakita kung hihilingin ng school authorities.\n- Valid ang ID habang naka-enroll sa EAC.\n\nPROSESO KUNG NAWALA ANG ID:\n1. Kumuha ng notarized Affidavit of Loss.\n2. Bumalik sa OSA para sa clearance.\n3. Pumunta sa Cashier's Office para sa bayad ng ID replacement/processing fee.\n4. Pumunta sa MIS Office para sa ID photo at processing.\n\nPROSESO KUNG NASIRA ANG ID:\n1. Pumunta sa MIS Department para sa pagsuri at posibleng billing.\n2. Bayaran sa Cashier's Office ang ID replacement fee.\n\nKUNG NAKALIMUTAN ANG ID:\n- Pumunta sa Security Office para sa verification ng identity at enrollment.\n- Bibigyan ng ONE-DAY CAMPUS PASS bilang temporary ID.\n- Isurrender ang campus pass sa Lobby guard bago umalis.\n\nNOTA: Ang pagbibigay ng maling impormasyon sa ID ay pananagutang ng estudyante."
+  },
+  {
+    "chunk_id": "EAC-011",
+    "topic": "School Uniform and Dress Code",
+    "article": "Article 2 - General Directives",
+    "section": "Title 3 - School Uniform",
+    "keywords": ["uniform", "dress code", "Type A uniform", "EAC red shirt", "washday", "Friday", "Monday", "Thursday", "appropriate attire", "black shoes", "hair", "earrings"],
+    "bot_routing": "Kapag tinanong ang bot tungkol sa tamang damit sa school, uniform schedule, o dress code ng EAC.",
+    "content": "EAC DRESS CODE SCHEDULE:\n- Monday-Thursday: TYPE A UNIFORM at black shoes\n- Friday (Washday): OFFICIAL EAC RED SHIRT\n- Saturday: Kapag walang red shirt, i-suot ang Type A uniform.\n\nADDITIONAL UNIFORM RULES:\n- Lab gowns, PE shirts, at NSTP shirts ay hindi uniforms - isusuot LAMANG sa tiyak na klase (lab, PE, NSTP).\n- Organization shirts: pwede lamang sa opisyal na co-curricular/extra-curricular activities na may prior approval.\n- Sa PRELIMS, MIDTERMS, at FINALS: MANDATORY ang Type A Uniform at school ID. Kahit magfall sa Friday o Saturday ang exam, kailangang suot ang Type A uniform at black shoes.\n\nHAIR AT ACCESSORIES:\n- Ang buhok ay dapat palaging maayos. BAWAL ang punk, rock, at similar hairstyles.\n- BAWAL ang unnatural, outlandish, bright, o neon na kulay ng buhok.\n- Para sa LALAKI: BAWAL ang earrings.\n- Para sa BABAE: Hindi allowed ang higit sa isang pair ng earrings o malaking dangling earrings."
+  },
+  {
+    "chunk_id": "EAC-012",
+    "topic": "Class Suspension Policy",
+    "article": "Article 2 - General Directives",
+    "section": "Title 5 - Class Suspensions",
+    "keywords": ["class suspension", "typhoon", "signal 3", "holiday", "announcement", "CALABARZON", "campus access", "suspended classes"],
+    "bot_routing": "Kapag tinanong ang bot tungkol sa class suspension, paano ita-tanggal ang klase, o ano ang patakaran kapag may bagyo.",
+    "content": "AWTOMATIKONG NASUSUPENSO ANG KLASE (walang kailangan pang announcement):\n1. Sa regular at special non-working holidays na idineklara ng Pangulo ng Pilipinas.\n2. Sa local holidays na idineklara ng Mayor ng Dasmarinas City.\n3. Kapag ang Typhoon Signal No. 3 o mas mataas ay naipahayag sa CALABARZON IV-A (EAC-Cavite) BAGO mag-8:00 AM.\n4. Kapag ang national government agencies (CHED, Office of the President, NDRRMC) ay nag-declare para sa CALABARZON IV-A BAGO mag-8:00 AM.\n5. Kapag nag-declare ang Mayor ng Dasmarinas BAGO mag-8:00 AM.\n\nPAGPAPASYA NG EAC PRESIDENT O VPAA:\n- Kapag natanggap ng government ang desisyon sa paaralan.\n- Kapag ang announcement ay pagkatapos ng 8:00 AM.\n- Kapag gusto ng school na mag-suspend ng klase nang sarili nilang desisyon.\n\nOFFICIAL ANNOUNCEMENT CHANNELS:\n- Website: http://www.eac.edu.ph/cavite\n- EAC Infocast\n- Official EAC Social Media Accounts\n- Trunkline: (+046) 416-4341 to 42\n- Postings sa EAC Activity Center, EAC Lobby, Registrar's Office, at OSA\n\nKAPAG NASUSUPENSO ANG KLASE:\n- 30 minuto pagkatapos ng announcement, hindi na papayagan ang mga estudyante na pumasok.\n- Ang mga estudyante na nasa loob ay dapat lumabas sa loob ng 1 oras.\n- Hindi allowed ang loitering; maaari lamang manatili sa EAC Lobby at Activity Center kung naghihintay na sunduin.\n- Sa extreme emergency: magtatalaga ang Security Office ng espesyal na lugar para sa extended stay.\n\nCAMPUS HOURS: Opisyal na bukas ang campus mula 6:00 AM hanggang 9:00 PM lamang."
+  },
+  {
+    "chunk_id": "EAC-013",
+    "topic": "Official Communications Policy",
+    "article": "Article 3 - Official Communications",
+    "section": "Sections 1-5",
+    "keywords": ["official communication", "letter format", "written", "ID number", "EAC email", "data privacy", "authorization letter"],
+    "bot_routing": "Kapag tinanong ang bot kung paano makipag-communicate nang opisyal sa mga opisina ng EAC.",
+    "content": "OFFICIAL COMMUNICATIONS POLICY:\n1. Lahat ng opisyal na pakikipag-ugnayan sa anumang opisina o departamento ng school ay dapat NAKASULAT gamit ang standard letter format.\n2. Kailangan ng DALAWANG kopya: isa para sa opisina, isa para sa estudyante bilang receiving copy.\n3. Ang lahat ng komunikasyon ay dapat may lagda, course at year level, at ID number ng estudyante.\n4. Para sa e-mailed communications: gamitin ang OFFICIAL EAC STUDENT EMAIL na ibinibigay ng MIS/OLTD Office.\n5. Para sa impormasyon tungkol sa akademiko o disiplina ng isang estudyante, kailangan dumaan sa:\n   - REGISTRAR'S OFFICE (para sa academic records)\n   - OFFICE OF STUDENT AFFAIRS (para sa discipline-related)\n   - Palaging may strict observance ng Data Privacy at Security.\n6. Ang sinumang gumagawa ng transaksyon para sa at sa ngalan ng isang estudyante ay kailangan mag-present ng LETTER OF AUTHORIZATION at valid ID."
+  },
+  {
+    "chunk_id": "EAC-014",
+    "topic": "EAC Merit Scholarship",
+    "article": "Article 4 - Financial Aids and Scholarships",
+    "section": "Section 1-2 - EAC Merit Scholarship",
+    "keywords": ["merit scholarship", "100% tuition", "75% tuition", "50% tuition", "25% tuition", "full scholarship", "partial scholarship", "scholarship retention", "grade requirement", "SHS graduate"],
+    "bot_routing": "Kapag tinanong ang bot tungkol sa EAC Merit Scholarship, sino ang pwedeng mag-apply, at paano ma-retain.",
+    "content": "EAC MERIT SCHOLARSHIP:\nPara sa: Fresh SHS Graduates na may academic distinctions at pumasa sa EAC screening/scholarship examinations.\nHalaga: 100% Full, 75%, 50%, o 25% Partial Tuition Fee (TF) at Miscellaneous Fee (MF) upon initial enrollment.\n\nRETENTION REQUIREMENTS:\n- Dapat pumasa sa LAHAT ng subjects.\n- Grade requirements:\n  * 100% Full: Maintain 1.50 ave. grade, walang grade na mas mababa sa 2.0.\n  * 75% Partial: Upgrade - 1.50 ave. grade, walang mas mababa sa 2.0; Retain - 1.50 ave., walang mas mababa sa 2.25.\n  * 50% at 25% Partial: Upgrade - 1.50 ave., walang mas mababa sa 2.25; Retain - 1.75 ave., walang mas mababa sa 2.25.\n\nCOOLDOWN PERIOD: Kapag hindi natugunan ang grade requirements sa Semester A, mawawala ang scholarship sa Semester B (Cooldown). Kapag natugunan ulit ang requirements sa Semester B, mababalik ang scholarship sa Semester C.\n\nMANGYAYARI SA PAGKAWALA NG SCHOLARSHIP:\n- 2 magkasunod na semester ng hindi natutugunan ang grade requirements = PERMANENT na pagkawala ng Merit Scholarship.\n- Bawal mag-combine ng Merit Scholarship sa ibang scholarship.\n- Hindi applicable ang scholarship sa summer classes.\n- Ang paglabag sa Student Manual ay maaaring magresulta sa pagkawala ng scholarship."
+  },
+  {
+    "chunk_id": "EAC-015",
+    "topic": "College Academic Scholarship",
+    "article": "Article 4 - Financial Aids and Scholarships",
+    "section": "Section 1-2 - College Academic Scholarship",
+    "keywords": ["academic scholarship", "continuing student", "50% tuition", "GWA", "1.50", "dean's list", "18 units", "normal load"],
+    "bot_routing": "Kapag tinanong ang bot tungkol sa College Academic Scholarship ng EAC para sa continuing students.",
+    "content": "COLLEGE ACADEMIC SCHOLARSHIP:\nPara sa: Continuing EAC students.\nHalaga: 50% Tuition Fee discount.\n\nPARA SA PANANATILI NG SCHOLARSHIP:\na) GWA (General Weighted Average) na hindi bababa sa 1.50, at walang grade na mas mababa sa 2.0 sa anumang subject.\nb) Dapat naka-enroll ng hindi bababa sa normal load o hindi bababa sa 18 units.\nc) Kumpletong mga non-academic requirements:\n  - Para sa incoming 3rd year: Lahat ng PE subjects sa unang 2 taon ng program.\n  - Para sa incoming 2nd year: Kumpleto na ang NSTP 1 at 2 (CWTS/LTC/ROTC).\n  - Hindi nasuspinde o may violation ng school policy.\n\nUPDATED POLICY (S.Y. 2021-2022 onward, mula sa EAC OSA website):\n- Estudyante na may GWA na 1.50 at walang grade na mas mababa sa 2.0 -> 100% discount sa TF at MF sa susunod na semester.\n- UW at/o OW remarks ay AGAD na nagdi-disqualify.\n- Ang INC marks na hindi nakumpleto sa loob ng ika-4 na linggo mula sa simula ng klase ay nagdi-disqualify.\n\nDEAN'S LIST: Estudyante na may average grade na 1.75, walang grade na mas mababa sa 2.25 -> makakatanggap ng Certificate of Dean's List (walang financial discount)."
+  },
+  {
+    "chunk_id": "EAC-016",
+    "topic": "Other Scholarship Programs - Siblings, EFACE, PWD, Government",
+    "article": "Article 4 - Financial Aids and Scholarships",
+    "section": "Sections 9-11 - Siblings, EFACE, PWD, Government Agency Scholarships",
+    "keywords": ["siblings discount", "sibling", "EFACE", "children of employees", "PWD", "persons with disability", "PNP", "BFP", "BJMP", "BI", "government agency scholarship", "parent-child discount"],
+    "bot_routing": "Kapag tinanong ang bot tungkol sa sibling discount, EFACE, PWD discount, o government scholarship.",
+    "content": "SIBLINGS DISCOUNT:\n- Para sa: Magkakapatid na parehong enrolled sa EAC sa parehong panahon.\n- Ang discount ay ibibigay sa PINAKABATANG kapatid.\n- 2nd child: 25% TF discount | 3rd child: 50% TF discount | 4th child: 75% TF discount\n- HINDI maaaring gamitin kasabay ng ibang scholarship o discount.\n- Dapat i-update ang application bawat simula ng semester.\n\nEDUCATIONAL FUND ASSISTANCE FOR CHILDREN OF EMPLOYEES (EFACE):\n- Para sa: Mga anak ng EAC, ICA, EACMC, JOPAUEN, Angel Uriel Services, at Dalisay Security Providers employees.\n- Halaga: 50% TF\n\nPARENT-CHILD DISCOUNT:\n- Para sa: Anak ng isang enrolled na magulang sa EAC.\n- Halaga: 25% TF discount (sa anak)\n\nPWD DISCOUNT (R.A. 10754):\n- Para sa: Mga learner na may permanent disability.\n- Halaga: 20% TF discount\n- Updating requirement: 1 copy ng PWD ID (front at back), Final Grade Report, at Enrollment Registration Form.\n\nGOVERNMENT AGENCY SCHOLARSHIPS (PNP, BJMP, BI, BFP):\n- Para sa: Mga anak ng government service personnel na enrolled sa EAC.\n- Halaga: 50% TF\n- Dapat ang magulang ay Regular Employee na may Salary Grade 24 o mas mababa.\n- Kailangan ng Agency Endorsement Letter at Employment Certification."
+  },
+  {
+    "chunk_id": "EAC-017",
+    "topic": "Other Scholarship Programs - PVAO, PD577, TES-UNIFAST, DBP-RISE, CHED, PLDT",
+    "article": "Article 4 - Financial Aids and Scholarships",
+    "section": "Section 1 - Matrix ng Scholarships",
+    "keywords": ["PVAO", "PD 577", "TES-UNIFAST", "UniFAST", "DBP-RISE", "CHED", "PESFA", "NISGP", "SEGEAP", "PLDT", "SMART", "Gabay Guro", "RLFI", "veteran", "military", "full scholarship"],
+    "bot_routing": "Kapag tinanong ang bot tungkol sa PVAO, PD577, UNIFAST, DBP-RISE, CHED study grants, o PLDT scholarship.",
+    "content": "PVAO SCHOLARSHIP:\n- Para sa: WW2 Veterans, PEFTOK Veterans, surviving spouse ng veteran, direct descendant ng veteran o PHILAG eligible.\n- Halaga: Payment ng school fees na hindi lalampas sa PHP 40,000 per year.\n- Retention: Dapat ma-maintain ang GWA na 2.50 o mas mataas, walang failing grade, good moral standing. Non-transferable.\n\nPD 577:\n- Para sa: Mga anak ng military personnel na namatay o naging incapacitated sa paglilingkod.\n- Halaga: 100% Full scholarship.\n- Ratio: 1 scholar bawat 2,000 enrolled students.\n\nTES-UNIFAST:\n- Para sa: Mga estudyante mula sa Listahanan 2.0 households o may documented na household income.\n- Halaga: PHP 30,000 (Full Scholars), PHP 15,000 (Partial), PHP 6,000-12,000 (Grants-in-Aid).\n\nCHED STUDY GRANTS (PESFA/NISGP/SEGEAP):\n- Halaga: 100%, 50%, o 25% TF\n- Dapat matupad ang return service requirements sa loob ng prescribed period ng degree.\n\nDBP-RISE:\n- Halaga: PHP 30,000 TF per semester + PHP 2,500 allowance\n- Kailangan regular na load, full-time study, at hindi maaaring mag-shift ng course.\n- Termination grounds: Failure sa kahit isang subject, hindi nag-enroll sa required units, paglabag sa terms.\n\nPLDT-SMART GABAY-GURO:\n- Halaga: PHP 14,000 TF per school year\n- Kailangan ng GPA na 85% o mas mataas, walang failing grade o INC.\n- May one-time probationary period ng 1 semester.\n- Kailangan pumayag na magturo sa Pilipinas para sa bilang ng taon na katumbas ng scholarship.\n\nRLFI EDUCATIONAL ASSISTANCE:\n- Halaga: PHP 25,000 TF per school year\n- Kailangan ng GWA na 2.25 per semester.\n- Allowed ang maximum 3 failed/dropped subjects; RLFI covers hanggang PHP 15,000."
+  },
+  {
+    "chunk_id": "EAC-018",
+    "topic": "Non-Academic Scholarships (Chorale, Dance, Theater, Brass Band)",
+    "article": "Article 4 - Financial Aids and Scholarships",
+    "section": "Section 3 - Non-Academic Scholarships",
+    "keywords": ["chorale", "dance troupe", "theater arts", "brass band", "talent scholarship", "non-academic scholarship", "audition", "GWA 2.75"],
+    "bot_routing": "Kapag tinanong ang bot tungkol sa talent scholarships tulad ng chorale, dance, theater, o brass band sa EAC.",
+    "content": "NON-ACADEMIC SCHOLARSHIPS (Talent-based):\nPara sa: EAC Chorale, Theater Arts, EAC Dance Troupe, at EAC Brass Band.\n(NOTA: Hindi inaalok sa oras ng quarantine para sa health at safety reasons.)\n\nPARA SA PAGING KARAPAT-DAPAT:\na) Dapat bona fide student ng EAC-Cavite.\nb) Dapat pumasa sa audition/try-out.\nc) Kailangan ng minimum 1 taon na residency sa EAC (maaaring bawasan kung inirekomenda ng talent coordinator).\nd) Para sa freshmen: GWA na hindi bababa sa 80% sa high school.\ne) Para sa transferees at old students: GWA na 2.50 o 80%, walang 5.00 o UW/INC grade.\nf) Hindi maaaring nag-aapply ng dalawang scholarship nang sabay-sabay.\ng) Submission ng Letter of Recommendation sa OSA sa loob ng 2 linggo mula sa opening ng classes.\n\nRETENTION:\n- GWA na hindi bababa sa 2.75 (76-78%), walang failing grades, walang INC remarks.\n- Isang failed subject -> PROBATIONARY STATUS.\n- Dalawa o higit pang failed subjects -> REMOVAL sa scholarship roster sa susunod na semester.\n- Ang mga failed subjects ay HINDI sakop ng scholarship - babayaran ng estudyante personally.\n- Professional conduct, attendance, at disiplina ay strictly monitored ng talent coordinators at OSA.\n- Available lamang ang scholarship sa 1st at 2nd semester (hindi sa summer)."
+  },
+  {
+    "chunk_id": "EAC-019",
+    "topic": "Student Publication Scholarship (MAGDALO)",
+    "article": "Article 4 - Financial Aids and Scholarships",
+    "section": "Section 5 - MAGDALO Scholarship",
+    "keywords": ["MAGDALO", "student publication", "scholarship", "editor in chief", "layout artist", "staff writer", "photojournalist", "editorial board"],
+    "bot_routing": "Kapag tinanong ang bot tungkol sa MAGDALO scholarship o student publication ng EAC.",
+    "content": "STUDENT PUBLICATION SCHOLARSHIP (MAGDALO):\nLahat ng MAGDALO staff ay may scholarship na commensurate sa kanilang posisyon.\n\nSCHEDULE NG SCHOLARSHIP:\n- Editor-in-Chief: 100% discount sa TF at MF\n- Associate Editor: 100% discount sa TF\n- Managing Editor, Section Editors, Chief Layout Artist, Photojournalist: 75% discount sa TF\n- Staff Writers, Asst. Photojournalist, at Asst. Layout Artist: 50% discount sa TF\n\nMGA QUALIFICATIONS:\na) Bona fide student ng EAC-Cavite.\nb) May hindi bababa sa 18 units na enrollment sa kasalukuyang semester.\nc) Good moral standing.\nd) Para sa freshmen: 80% general average, walang failing grade sa nakaraang school year. Para sa current EAC students at transferees: GWA na 2.50, walang failing grade, UW, o OW.\ne) Para sa BOE (Board of Editors) aspirants: Hindi bababa sa 1 taon na residency sa EAC at hindi bababa sa 2.00 ang average grade sa nakaraang semester.\nf) Para sa staff writers, photojournalists, at layout artists: 2.50 average sa nakaraang semester.\ng) HINDI pwedeng kasabay na miyembro ng Central Student Council Board o anumang accredited student organization (maliban kung mag-resign).\nh) Walang miyembro ng MAGDALO ang maaaring maging campaign manager ng anumang kandidato."
+  },
+  {
+    "chunk_id": "EAC-020",
+    "topic": "Student Assistantship Program and SAFE",
+    "article": "Article 4 - Financial Aids and Scholarships",
+    "section": "Sections 6-7 - SAP and SAFE",
+    "keywords": ["SAP", "student assistantship", "SAFE", "student assistance fund", "education students", "BEED", "BSED", "work", "allowance", "tuition fee discount"],
+    "bot_routing": "Kapag tinanong ang bot tungkol sa Student Assistantship Program (SAP) o Student Assistance Fund for Education (SAFE).",
+    "content": "STUDENT ASSISTANTSHIP PROGRAM (SAP):\n- Para sa: Mga financially underprivileged pero intellectually capable students.\n- Ang mga estudyante ay makatatanggap ng allowance na katumbas ng ~75% ng minimum wage sa Cavite.\n- Ang naipon na allowance sa isang semester ay ibabawas sa tuition fee.\n- Walang employer-employee relationship sa pagitan ng estudyante at ng school.\n\nSTUDENT ASSISTANCE FUND FOR EDUCATION STUDENTS (SAFE):\n- Para sa: Lahat ng bona fide students na kumukuha ng Bachelor of Elementary Education (BEED) at Bachelor in Secondary Education (BSED).\n- Matatanggap ang katumbas na TF discount pagkatapos makumpleto ang 100 oras ng serbisyo sa campus.\n\nSCHEDULE NG DISCOUNTS:\n- Freshman/2nd Year (hindi bababa sa 4 semesters sa EAC): 50% TF discount\n- 3rd Year (5th-6th Semester): 75% TF discount\n- 4th Year (7th-8th Semester): 100% TF discount"
+  },
+  {
+    "chunk_id": "EAC-021",
+    "topic": "Pioneer Discount at Scholarship Updating Requirements",
+    "article": "Article 4 - Financial Aids and Scholarships",
+    "section": "Sections 8 at 12 - Pioneer Discount at Scholarship Updating",
+    "keywords": ["pioneer discount", "new program", "50% tuition", "scholarship updating", "submission deadline", "September", "February"],
+    "bot_routing": "Kapag tinanong ang bot tungkol sa pioneer discount o kung paano i-update ang scholarship sa bawat semester.",
+    "content": "PIONEER DISCOUNT:\n- Para sa: Unang 20 freshmen na mag-eenroll sa bagong program ng EAC-Cavite.\n- Halaga: 50% TF discount sa 1st semester (August).\n- Dapat fresh high school graduate mula sa reputable private o public school.\n- Kailangan ng 85% average grade sa 4th year high school.\n- Maaaring i-extend sa susunod na semesters KUNG hindi nagshift ng course AT napanatili ang GWA na 2.0, walang grade na mas mababa sa 2.5.\n\nSCHOLARSHIP UPDATING REQUIREMENTS (bawat simula ng bagong semester):\nLahat ng scholars ay dapat mag-submit sa OSA ng mga sumusunod, depende sa scholarship type:\n\nPARA SA LAHAT (karaniwang requirements):\n- 1 copy ng Final Grade Report Form ng nakaraang semester\n- 1 copy ng pinakabagong Enrollment Registration Form\n\nADDITIONAL PARA SA SPECIFIC TYPES:\n- PD 577/PVAO: Original AFP/PVAO Scholarship Endorsement na may pangalan ng beneficiary\n- Government Agency (PNP/BFP/BJMP/BI): Agency Endorsement Letter, Employment Certification (SG 24 o mas mababa)\n- PWD: 1 copy ng PWD ID (front at back)\n- Siblings/Parent-Child: Final Grade Report ng parehong applicants\n- EFACE: Approved EFACE Application Form at photocopy ng Company ID ng magulang\n- City of Dasmarinas Matching Grant: Mayor Scholarship Endorsement Certificate\n- Non-Academic (Talent/MAGDALO/Varsity): Performance Evaluation ng talent coordinator\n\nDEADLINE NG SUBMISSION:\n- 1st Semester: Sa loob ng 1st week ng Setyembre\n- 2nd Semester: Sa loob ng 1st week ng Pebrero"
+  },
+  {
+    "chunk_id": "EAC-022",
+    "topic": "Enrollment Flow for Freshmen and Transferees",
+    "article": "Article 5 - College Enrollment and Registration",
+    "section": "Section 1.1 - Enrollment Flow (Freshmen and Transferees)",
+    "keywords": ["enrollment", "enrollment flow", "freshmen", "transferee", "steps", "registration", "Admissions Office", "Cashier", "Registrar", "MIS", "Medical", "Student ID"],
+    "bot_routing": "Kapag tinanong ang bot kung paano mag-enroll bilang freshman o transferee sa EAC, o ano ang proseso ng enrollment.",
+    "content": "ENROLLMENT FLOW PARA SA FRESHMEN AT TRANSFEREES:\n\nStep 1 - ADMISSIONS OFFICE:\nScreening ng credentials. Ibibigay ang Applicant Number.\n\nStep 2 - GUIDANCE OFFICE:\nPaghahanda sa entrance examination.\n\nStep 3 - ENROLLMENT SECTION (E-Telecare Lab / Dean's Office):\nAdvising at evaluation ng subjects. Bibigyan ng printed student load.\n\nStep 4 - ACCOUNTING OFFICE / CASHIER:\nBayad ng required down payment. Kailangan ng auto-generated student number.\n\nStep 5 - OFFICE OF THE REGISTRAR:\nPag-print ng Registration Form na may Student Number. Issuance ng ID Referral Slip.\n\nStep 6 - STUDENT ID:\nPumunta sa MIS para sa ID Processing. Ang processed IDs ay ibibigay sa Dean's Office kasama ang Student Manual, EAC ID Lanyard, at ID Case. Pagkatapos, pumunta sa Registrar's Office para sa ID Validity Stickers.\n\nStep 7 - MEDICAL/DENTAL CLINIC:\nPara sa physical/medical-dental examinations.\n\nAng estudyante ay opisyal na enrolled pagkatapos mag-submit ng admission/transfer credentials AT gumawa ng initial payment na tinanggap ng school.\n\nENROLLMENT FLOW PARA SA CONTINUING STUDENTS AT RETURNEES:\nStep 1: Enrollment Section (E-telecare Lab / Dean's Office) para sa advising at student load.\nStep 2: Bayad ng TF Down payment sa Cashier's Office.\nStep 3: Pag-print ng Enrollment Registration Form at issuance ng bagong EAC ID Validation Stickers."
+  },
+  {
+    "chunk_id": "EAC-023",
+    "topic": "Adding, Dropping, Changing Subjects and Pre-Requisites",
+    "article": "Article 5 - College Enrollment and Registration",
+    "section": "Sections 3-4 - Adding, Dropping, Pre-Requisites",
+    "keywords": ["dropping", "adding", "changing subjects", "2 weeks", "pre-requisite", "OW", "official withdrawal", "refund", "Dean approval"],
+    "bot_routing": "Kapag tinanong ang bot tungkol sa pagdrop, pagdagdag, o pagpalit ng subject, o tungkol sa pre-requisite subjects.",
+    "content": "ADDING, DROPPING, AT CHANGING NG SUBJECTS:\n- Maaaring gawin sa loob ng 2 LINGGO mula sa simula ng klase, may bayad, at may approval ng Program Head at Dean.\n- Hindi dapat lumagpas ang total units sa maximum load ng curriculum ng estudyante.\n- Kung gusto i-drop ang LAHAT ng subjects: Kailangan ng parental consent.\n  * Kung sa loob ng 2-week period: I-drop ang lahat ng subjects ng Registrar's Office.\n  * Pagkatapos ng 2-week period: Subject na sa school policies sa Article 6 (Tuition and Miscellaneous Fees).\n\nPRE-REQUISITE SUBJECTS:\n- Bilang panuntunan: HINDI maaaring kumuha ng advanced subject kung hindi pa natatapos ang pre-requisite.\n- EXCEPTION para sa graduating students sa huling semester:\n  1. Kapag ang pre-requisite ay repeated course/subject.\n  2. Kapag ang estudyante ay may superior scholastic standing.\n  3. Kapag aprubado ng Dean o authorized academic official.\n\nINC MARKS AT COMPLETION:\n- Ang INC na hindi nakumpleto sa loob ng ISANG SEMESTER ay AWTOMATIKONG nagiging 5.0.\n- I-complete ang INC sa loob ng prescribed period lamang."
+  },
+  {
+    "chunk_id": "EAC-024",
+    "topic": "Tuition Fee Payments, Installment, and Refund Policy",
+    "article": "Article 6 - Payments, Record and Adjustments of Tuition, Miscellaneous and Other School Fees",
+    "section": "Sections 1-5",
+    "keywords": ["tuition fee", "payment", "installment", "refund", "cash discount", "5% discount", "dropping", "withdrawal", "promissory note", "online payment", "BPI", "BDO"],
+    "bot_routing": "Kapag tinanong ang bot tungkol sa bayad ng tuition, installment, refund policy, o online payment channels ng EAC.",
+    "content": "PAYMENT OPTIONS:\n1. Cash payment upon enrollment - 5% discount sa tuition fee.\n2. Installment: Bayad ng down payment upon enrollment, ang balanse ay mababayaran sa 8 equal installments. Ang huling installment ay dapat isang linggo bago ang scheduled final exams.\n\nINSTALLMENT RULES:\n- Hindi makaka-enroll sa susunod na semester kung may hindi pa bayad na balanse.\n- Ang mga documents (Transcript of Records, Transfer Credentials) ay mawi-withhold hanggang mabayaran ang balanse.\n- Accepted ang check payments pero subject sa bank clearing bago maibigay ang Official Receipt.\n\nREFUND POLICY:\n- Kapag ang estudyante ay nag-withdraw BAGO ang 2-linggo period at naibayad na ang buong tuition:\n  * 1st week ng klase: Charged ng 25% ng total amount.\n  * 2nd week ng klase: Charged ng 50% ng total amount.\n- Pagkatapos ng ika-2 linggo: Charged ng BUONG tuition fees.\n- Registration at other pertinent fees ay HINDI refundable.\n- Kapag ang course/subject ay discontinued ng school nang walang kasalanan ng estudyante: FULL REFUND.\n- Ang estudyante na na-dismiss o na-expel ay HINDI karapat-dapat sa refund.\n\nONLINE PAYMENT CHANNELS:\n- BPI Account No.: 0961-0035-12\n- BDO Account No.: 4300071171\n- AUB Account No.: 117-01-0000389\n- Metrobank Account No.: 235-3-23570494-4\n- Account Name: Emilio Aguinaldo Educational Corporation\n- Pagkatapos ng online payment, i-email ang screenshot/soft copy ng receipt sa: cashier.cavite@eac.edu.ph"
+  },
+  {
+    "chunk_id": "EAC-025",
+    "topic": "Online Learning and Brightspace LMS",
+    "article": "Article 7 - Online Teaching and Learning",
+    "section": "Sections 1-15",
+    "keywords": ["Brightspace", "online class", "LMS", "Google Meet", "synchronous", "asynchronous", "online attendance", "OLTD", "academic integrity", "data privacy"],
+    "bot_routing": "Kapag tinanong ang bot tungkol sa online classes, Brightspace, online attendance, o OLTD ng EAC.",
+    "content": "ONLINE LEARNING SA EAC:\n- BRIGHTSPACE ang official LMS (Learning Management System) ng EAC para sa lahat ng online class delivery.\n- Ginagamit ito para sa: Pag-upload ng lectures, discussion forums, virtual classroom, announcements, assignments, quizzes, at tests.\n- Sinusuportahan ng GOOGLE MEET para sa synchronous classes.\n- Accessible sa computers, laptops, tablets, at smartphones.\n\nURAN NG KLASE:\n- Online class schedules ay dapat katulad ng official class schedules.\n- Synchronous: Real-time interaction (professors at estudyante online nang sabay).\n- Asynchronous: Hindi required na sabay-online; depende sa availability.\n- Recommended class size: Maximum 50 students sa Brightspace.\n\nONLINE ATTENDANCE:\n- Kailangang aktibong lumahok: Mag-submit ng assignments, mag-engage sa discussion forums, kumpletuhin ang quizzes, at mag-attend ng online chats/virtual classrooms.\n- ANG BASTA PANLOLOG LAMANG SA COURSE AY HINDI BINIBILANG BILANG ATTENDANCE.\n- Hindi kasama ang online attendance sa computation ng grades.\n\nACADEMIC INTEGRITY:\n- Parehong patakaran sa face-to-face at online: BAWAL ang cheating, plagiarism, at collusion.\n- Mga guro ay gagamit ng mga paraan para maiwasan ang cheating (unique assignments, plagiarism checkers).\n\nSUPPORT CONTACTS:\n- Para sa Brightspace at Google Meet concerns: oltd@eac.edu.ph\n- Para sa EAC email concerns: itsupport@eac.edu.ph\n- Para sa Brightspace Instructors guide: https://documentation.brightspace.com/EN/instructors\n- Para sa Brightspace Learners guide: https://documentation.brightspace.com/EN/learners\n\nDATA PRIVACY: Ang lahat ng personal information sa LMS ay protektado ng Republic Act No. 10173 (Data Privacy Act of 2012)."
+  },
+  {
+    "chunk_id": "EAC-026",
+    "topic": "Social Media Policy",
+    "article": "Article 8 - EAC Social Media Policy",
+    "section": "Sections 1-15",
+    "keywords": ["social media", "Facebook", "Instagram", "TikTok", "Twitter", "cyber bullying", "data privacy", "intellectual property", "EAC logo", "breach", "discipline"],
+    "bot_routing": "Kapag tinanong ang bot tungkol sa patakaran ng EAC sa social media, cyber-bullying, o paggamit ng EAC name at logo sa social media.",
+    "content": "EAC SOCIAL MEDIA POLICY:\n- Applicable sa lahat ng estudyante kahit saan, kahit sa personal na devices, kahit outside campus, basta may reference sa EAC.\n- Kasama ang: Facebook, Instagram, TikTok, Twitter, YouTube, LinkedIn, Snapchat, Flickr, blogs, discussion forums, instant messaging.\n\nIBAWAL SA SOCIAL MEDIA:\na) Confidential information (unpublished research, private info ng ibang estudyante o staff).\nb) Details ng complaints o legal proceedings ng Institution.\nc) Personal info ng ibang tao nang walang pahintulot.\nd) Mga post gamit ang fake accounts o pangalan ng iba nang walang consent.\ne) Threatening, harassing, discriminatory, illegal, obscene, defamatory content.\nf) Anumang post na magdadala ng kahihiyan sa EAC o makikinabang sa iligal na gawi.\ng) Anumang kriminal na offense.\n\nCYBER-BULLYING - mga halimbawa:\n- Pagkakalat ng maling impormasyon at tsismis.\n- Intimidation o aggressive behavior.\n- Vulgar, lewd, o threatening na comments.\n- Paggamit ng memes para i-mock ang isang tao.\n\nINTELLECTUAL PROPERTY:\n- Kailangan ng pahintulot bago mag-share ng third-party materials (images, photos, text, videos).\n\nEAC LOGO AT NAME:\n- Hindi maaaring baguhin ang EAC logo (huwag i-stretch, distort, baguhin ang elements, o palitan ng kulay).\n- Kailangan ng consent ng Marketing and Communications Office.\n\nKONSEKWENSYA NG PAGLABAG:\n- MAJOR OFFENSE sa ilalim ng EAC Student Manual.\n- Maaaring isangguni sa law enforcement agencies.\n- Maaari ring mag-pursue ng legal action ang partido na nasaktan.\n- Ang lahat ng reported violations ay tratratuhin nang confidential."
+  },
+  {
+    "chunk_id": "EAC-027",
+    "topic": "Attendance Policy and Tardiness Rules",
+    "article": "Article 9 - Attendance and Examinations",
+    "section": "Sections 1-4 - Attendance",
+    "keywords": ["attendance", "absence", "tardy", "late", "excused absence", "unexcused absence", "80%", "UW", "unauthorized withdrawal", "3 consecutive absences", "guidance office", "make-up"],
+    "bot_routing": "Kapag tinanong ang bot tungkol sa attendance policy, ilang absences ang allowed, o kung ano ang mangyayari kapag late o absent.",
+    "content": "ATTENDANCE POLICY:\n- Lahat ng estudyante ay kailangan pumasok sa HINDI BABABA SA 80% ng class periods sa bawat subject para makuha ang units.\n- Ang 20% ay para sa excused at unexcused absences.\n\nURAN NG ABSENCES:\n- EXCUSED ABSENCE: Sakit, pagkamatay sa pamilya, o opisyal na school activity. Kailangan ng written request sa Dean at supporting documents (medical certificate, death certificate).\n- UNEXCUSED ABSENCE: Lahat ng hindi sakop ng excused absence.\n- Ang guro ay OBLIGADONG mag-bigay ng make-up activities (quizzes) para sa EXCUSED absences lamang.\n\nTARDINESS (Pagiging Late):\n- Late ang estudyante kung hindi siya nakarating sa loob ng 15 minuto mula sa simula ng klase.\n- Ang lugar ng tirahan ay HINDI valid na dahilan para maging late.\n- 3 consecutive tardiness (wala pang 15 minuto) = 1 absence sa subject.\n- Kung huli nang HIGIT SA 15 minuto = awtomatikong absent na.\n- Kahit absent o late, pwede pa ring pumasok sa klase.\n\nMAXIMUM NA PINAPAYAGAN NA ABSENCES:\n- 3-unit subject: 11 oras\n- 4-unit subject: 9 oras\n- 5-unit subject: 7 oras\n- 6-unit subject: 6 oras\n- NSTP 1 at 2: 6 oras\n\nKAPITAG LUMAMPAS SA MAXIMUM:\n- Awtomatikong mag-eenroll ang UW (Unauthorized Withdrawal) at mawawalan ng units.\n\n3 MAGKASUNOD NA ABSENCES:\n- Kailangan pumunta sa Guidance Office para sa counseling.\n- Kailangan ipakita ang referral form mula sa Guidance Office bago muling pumasok sa klase."
+  },
+  {
+    "chunk_id": "EAC-028",
+    "topic": "Examinations Policy",
+    "article": "Article 9 - Attendance and Examinations",
+    "section": "Sections 5-11 - Examinations",
+    "keywords": ["examination", "prelim", "midterm", "final", "examination permit", "special exam", "completion exam", "INC", "cheating", "5.0", "departmentalized"],
+    "bot_routing": "Kapag tinanong ang bot tungkol sa exams, examination permit, special exams, completion exam, o cheating policy.",
+    "content": "EXAMINATIONS SA EAC:\n- 3 periodic examinations bawat semester: PRELIM, MIDTERM, at FINAL.\n- Sa Summer Term: MIDTERM at FINAL exams lamang.\n\nEXAMINATION PERMIT:\n- WALANG estudyanteng allowed na pumasok sa exam nang walang examination permit mula sa Accounting Office.\n\nCHARACTER NG EXAMS:\n- Departmentalized at mula sa College Test Bank.\n- Ang pag-check ay computerized (scanner) at ang resulta ay nire-record sa Registrar's Office.\n- Ang resulta ng exams ay makukuha sa Dean's Office.\n\nSPECIAL EXAMS (para sa Prelim at Midterm):\n- Para sa: Mga estudyanteng may valid na dahilan (sakit, pagkamatay sa pamilya).\n- Kailangan ng clearance mula sa Dean.\n- Kung hindi maitake ang special exam dahil sa sakit, kailangan ng medical certificate mula sa School Physician.\n- Special exams ay dapat itake BAGO ang scheduled midterm at final exams.\n- Kung hindi matake sa prescribed period: ZERO ang score.\n\nCOMPLETION EXAMS (Final Exam):\n- Dapat itake sa loob ng prescribed period sa Academic Calendar.\n- Kailangan ng completion form mula sa Registrar's Office na lagdaan ng instructor at aprubahan ng Dean.\n- Kung hindi matake pagkatapos ng prescribed period: GRADE NG 5.0.\n\nOPEN ACCOUNTS:\n- Ang mga estudyanteng may hindi pa bayad na balance ay HINDI maaaring makuha ang resulta ng kanilang exams.\n\nCHEATING:\n- Anumang estudyanteng mahuli na nandadaya sa exam o quiz ay makakakuha ng grade na 5.0 sa subject AT idi-drop mula sa course."
+  },
+  {
+    "chunk_id": "EAC-029",
+    "topic": "Grading System",
+    "article": "Article 10 - Grading System",
+    "section": "Sections 1-4",
+    "keywords": ["grading system", "grade", "1.0", "1.25", "1.5", "1.75", "2.0", "2.5", "3.0", "5.0", "INC", "OW", "UW", "incomplete", "official withdrawal", "unauthorized withdrawal", "passing grade", "class standing"],
+    "bot_routing": "Kapag tinanong ang bot tungkol sa grading system, kung ano ang passing grade, o kung ano ang INC, OW, at UW.",
+    "content": "EAC GRADING SYSTEM:\n\nGRADE EQUIVALENTS:\n1.00 = 97-100% = Excellent\n1.25 = 94-96% = Superior\n1.50 = 91-93% = Very Good\n1.75 = 88-90% = Good\n2.00 = 85-87% = Very Satisfactory\n2.25 = 82-84% = Satisfactory\n2.50 = 79-81% = Average\n2.75 = 76-78% = Fair\n3.00 = 75% = PASSING GRADE (minimum passing)\n5.00 = 74% at pababa = FAILED\n\nANG STANDARD PASSING GRADE AY 3.0 (75%).\n\nMGA ESPESYAL NA MARKA:\n- INC (Incomplete): Ibinibigay kapag (a) hindi natake ang final exam dahil sa valid na dahilan, o (b) may incomplete requirements bago ang final exam. KAILANGAN MA-COMPLETE SA LOOB NG ISANG SEMESTER - kung hindi, awtomatikong nagiging 5.0.\n- OW (Official Withdrawal): Ibinibigay kapag nag-drop ng subject sa loob ng authorized period (bago ang unang araw ng scheduled midterm exam).\n- UW (Unauthorized Withdrawal): Ibinibigay kapag (a) walang attendance sa buong semester, o (b) lumampas sa maximum allowed absences (>20%).\n\nCOMPONENTS NG GRADING (General Education subjects - Base 40%; Professional subjects - Base 30%):\nPARA SA SUBJECTS NANG WALANG LABORATORY:\n- Prelim Exam: 20%, Midterm Exam: 20%, Final Exam: 20%, Class Standing: 40%\nPARA SA SUBJECTS NA MAY LABORATORY:\n- Prelim: 15%, Midterm: 15%, Final: 15%, Class Standing: 25%, Laboratory: 30%\nPURE LABORATORY SUBJECTS:\n- Prelim: 20%, Midterm: 20%, Final: 20%, Laboratory: 40%\n\nVERIFICATION NG GRADES:\n- Bago ang final grading period: Program Adviser o School Dean.\n- Pagkatapos ng final grading period: School Dean o VP for Academic Affairs."
+  },
+  {
+    "chunk_id": "EAC-030",
+    "topic": "Major Offenses",
+    "article": "Article 11 - Rules of Student Conduct and Discipline",
+    "section": "Section 2 - Major Offenses",
+    "keywords": ["major offense", "disruptive behavior", "assault", "harassment", "drugs", "alcohol", "smoking", "hazing", "fraternities", "cheating", "plagiarism", "forgery", "bullying", "hacking", "gambling", "sexual assault", "weapons", "obstruction", "blackmail"],
+    "bot_routing": "Kapag tinanong ang bot tungkol sa major offenses sa EAC, kung ano ang mga kasalanan na malubha, o mga violations na may mabigat na parusa.",
+    "content": "MAJOR OFFENSES SA EAC (Seksyon 2, Artikulo 11):\n\n2.1 Disruptive behavior, willful disobedience, malaswang salita, hostile gestures, o bukas na pagtutol sa awtoridad ng EAC.\n2.2 Assault, battery, harassment, o banta ng puwersa laban sa estudyante, personnel, o authorized visitor.\n2.3 Willful misconduct na nagdudulot ng injury o kamatayan, o pinsala sa ari-arian ng school.\n2.4 Unsafe behavior sa loob ng campus, clinical setting, o lab na nagbabanta sa sarili o iba.\n2.5 Illegal na paggamit, pagbebenta, o pag-aari ng controlled substance o lason sa school property.\n2.6 Anumang uri ng paninigarilyo sa lugar na ipinagbawal ng batas o ng EAC Board.\n2.7 Malaswang, indecent, o obscene na gawi sa school property, online class, o school-sponsored events.\n2.8 Sexual assault (R.A. 9262) laban sa kahit sino, on o off campus.\n2.9 Pag-aari o paggamit ng baril, explosibo, matalas na armas, o mapanganib na sangkap.\n2.10 Pagharang o pagkagambala ng anumang educational o administrative function ng school.\n2.11 Physical abuse o pagbabanta ng physical abuse sa sinumang miyembro ng campus community.\n2.12 Pagpapanggap bilang kinatawan ng EAC.\n2.13 Extortion, blackmail, o koleksyon ng pondo nang walang approval ng Institution.\n2.14 Pagtulong sa ibang estudyante na gumawa ng disciplinary offense.\n2.15 Paggamit, pag-aari, o pamamahagi ng alak o ilegal na droga sa school premises o events.\n2.16 Hacking, unauthorized recording, o paglalagay ng academic presentations o materials online (R.A. 10175).\n2.17 Discriminatory actions o pagbabanta batay sa lahi, relihiyon, kasarian, o sexual orientation.\n2.18 Academic dishonesty: falsification, plagiarism, cheating, o fabrication.\n2.19 Pamemeke ng pirma (Forgery of signatures).\n2.20 Lahat ng anyo ng hazing at pagiging miyembro ng fraternity o sorority (R.A. 8049).\n2.21 Pagsusugal o anumang aktibidad na may betting sa loob ng campus.\n2.22 Lahat ng anyo ng bullying laban sa estudyante, faculty, staff, o opisyal (R.A. 10627).\n2.23 Paglabag sa Copyright Laws (R.A. 8293).\n2.24 Unjust enrichment.\n2.25 Paglalaro sa fire alarm at iba pang safety devices ng campus.\n2.26 Pagwawalang-bahala sa summons mula sa OSA at iba pang awtoridad ng College.\n2.27 Paglabag sa Institutional Board Policies at Administrative Regulations."
+  },
+  {
+    "chunk_id": "EAC-031",
+    "topic": "Minor Offenses",
+    "article": "Article 11 - Rules of Student Conduct and Discipline",
+    "section": "Section 3 - Minor Offenses",
+    "keywords": ["minor offense", "school ID", "dress code", "littering", "CLAYGO", "loitering", "cellphone", "noise", "public display of affection", "PDA", "fake ID", "comfort room", "sando", "rubber slippers", "dyed hair"],
+    "bot_routing": "Kapag tinanong ang bot tungkol sa minor offenses sa EAC o mga hindi gaanong malubha na paglabag.",
+    "content": "MINOR OFFENSES SA EAC (Seksyon 3, Artikulo 11):\n\n3.1 Hindi pagsuot at/o improper na paggamit ng school ID (kasama ang peke na ID, dalawang ID, at pagpapahiram ng ID).\n3.2 Tampering ng school ID.\n3.3 Hindi angkop na damit sa loob ng school premises:\n  - Sando\n  - PE shorts at athletic shorts (maliban sa PE classes)\n  - Damit na may plunging neckline\n  - Revealing shorts\n  - Tokong\n  - Leggings, pants na may butas\n  - Mini skirts\n  - Spaghetti straps nang walang vest/topper\n  - Tube blouse nang walang vest/topper\n  - Rubber slippers\n  - Sandals ng kahit anong uri\n  - Cross-dressing\n3.4 Dyed na buhok na may unnatural, outlandish na kulay o highlights.\n3.5 Pagdadala at pagkain ng pagkain at inumin sa loob ng classroom.\n3.6 Loitering o pananatili malapit sa walkways, fire exits, at restricted areas.\n3.7 Paggawa ng ingay sa mga corridor sa oras ng klase.\n3.8 Para sa LALAKI: Mahabang buhok (humahawak sa collar ng polo), suot ng earrings, ball caps, hats, bonnets.\n3.9 Pakikilahok sa off-campus activities na gumagamit ng pangalan ng EAC nang walang written authorization.\n3.10 Adverse o sexist na pangungusap sa sinumang miyembro ng academic community.\n3.11 Pag-aari at/o paggamit ng pornographic materials.\n3.12 Paggamit ng cellphone, headsets, at iba pang electronic devices sa oras ng klase at exams.\n3.13 Improper at unauthorized na paggamit ng classrooms at school facilities.\n3.14 Pag-post ng unauthorized na notices sa bulletin boards o sa labas ng authorized areas.\n3.15 Indiscriminate na paggamit ng musical instruments, megaphones, cameras sa oras ng klase.\n3.16 Paggamit ng abusive o obscene na wika sa loob ng campus.\n3.17 Public display of affection (PDA).\n3.18 Pagpasok at/o paggamit ng comfort room na nakatakda para sa opposite gender.\n3.19 Iba pang misdemeanor na hindi itinuturing na major offense."
+  },
+  {
+    "chunk_id": "EAC-032",
+    "topic": "Contact Information and Key Offices",
+    "article": "General Information",
+    "section": "Contact Details at Key Offices",
+    "keywords": ["contact", "email", "phone", "trunkline", "Registrar", "OSA", "Cashier", "Admissions", "OLTD", "Guidance", "MIS", "Dean's Office", "Dasmarinas"],
+    "bot_routing": "Kapag tinanong ang bot tungkol sa contact numbers, email addresses, o kung aling opisina ang dapat puntahan para sa isang partikular na concern.",
+    "content": "KEY CONTACT INFORMATION NG EAC-CAVITE:\n\nCAMPUS ADDRESS: Congressional East Ave., Burol Main, Dasmarinas City, Cavite\nTRUNKLINE: (+046) 416-4341 to 42\nWEBSITE: http://www.eac.edu.ph/cavite\n\nKEY OFFICES AT CONTACTS:\n- ADMISSIONS OFFICE: admission_cavite@eac.edu.ph\n- CASHIER'S OFFICE (Online payment): cashier.cavite@eac.edu.ph\n- OFFICE OF STUDENT AFFAIRS (OSA): studentaffairs.cvt@eac.edu.ph | Tel loc 115\n- ONLINE TEACHING LEARNING DEPARTMENT (OLTD): oltd@eac.edu.ph\n- IT SUPPORT: itsupport@eac.edu.ph\n\nPARA SA ANONG CONCERN, ALIN ANG OPISINA:\n- Academic records, graduation, enrollment: REGISTRAR'S OFFICE\n- Admissions, transferee, returnee: ADMISSIONS OFFICE\n- Scholarships, ID, student concerns: OFFICE OF STUDENT AFFAIRS (OSA)\n- Financial concerns, payment, promissory notes: ACCOUNTING/CASHIER'S OFFICE\n- Counseling, mental health, career guidance: CENTER FOR COUNSELING, CAREER AND STUDENT DEVELOPMENT\n- ID processing at MIS concerns: MIS OFFICE\n- Online class at Brightspace concerns: OLTD\n- Health concerns: SCHOOL CLINIC / MEDICAL-DENTAL CLINIC\n- Discipline concerns: OFFICE OF STUDENT AFFAIRS (OSA)\n- Grade verification (before final grading): PROGRAM ADVISER or SCHOOL DEAN\n- Grade verification (after final grading): SCHOOL DEAN or VP FOR ACADEMIC AFFAIRS"
+  },
+  {
+    "chunk_id": "EAC-033",
+    "topic": "Shifting Programs and Cross Enrollment",
+    "article": "Article 5 - College Enrollment and Registration",
+    "section": "Sections 6-7 - Cross Enrollment and Shifting",
+    "keywords": ["shifting", "cross enrollment", "change program", "registration period", "Dean approval", "cross enroll permit", "credit transfer"],
+    "bot_routing": "Kapag tinanong ang bot tungkol sa paano magshift ng program o paano mag-cross enroll sa ibang school.",
+    "content": "SHIFTING SA IBANG PROGRAM:\n- Allowed lamang sa REGISTRATION PERIOD.\n- Proseso:\n  1. Kumuha ng prescribed shifting form sa Registrar's Office.\n  2. Hanapin ang approval ng Dean ng kasalukuyang school.\n  3. Hanapin ang acceptance/approval ng Dean ng bagong school.\n  4. Para sa shifting sa loob ng parehong school: approval lamang ng sariling Dean.\n\nCROSS ENROLLMENT (mag-enroll ng subjects sa ibang school):\n- Sa pangkalahatan, HINDI hinihikayat ng EAC ang cross enrollment.\n- Kung may valid na dahilan at written approval ng Dean: Pwedeng mag-cross enroll sa ibang institution hangang normal course load.\n- I-ibibigay ang cross-enrollment permit ng Registrar's Office batay sa approved request.\n- Ang subjects na natake sa ibang school nang walang authorization ng Dean at Registrar - WALANG CREDIT.\n- Cross-enrollment ay dapat gawin SA LOOB NG REGISTRATION PERIOD lamang.\n- BAWAL ang simultaneous cross-enrollment sa DALAWA O HIGIT pang external schools.\n\nCREDIT TRANSFER (para sa Transferees):\n- Kailangan ng minimum na 50% ng total units ng course at hindi bababa sa 2 taong enrollment bago mag-graduate.\n- Sa unang semester sa EAC, dapat mag-enroll ng minimum na 15 units: 12 units ng courses at 3 units ng Emilian Culture Formation course."
+  },
+  {
+    "chunk_id": "EAC-034",
+    "topic": "Health and Wellness, Clinic Policy",
+    "article": "Article 2 - General Directives",
+    "section": "Title 7 - Health and Wellness",
+    "keywords": ["health", "wellness", "school clinic", "medical examination", "communicable disease", "medical clearance", "health protocol", "IATF"],
+    "bot_routing": "Kapag tinanong ang bot tungkol sa health policy, school clinic, o medical requirements ng EAC.",
+    "content": "HEALTH AT WELLNESS POLICY NG EAC:\n\n1.1 HEALTH PROTOCOLS:\n- Lahat ng estudyante ay kailangan sumunod sa lahat ng health at safety protocols ng EAC alinsunod sa Inter-agency Task Force (IATF) para sa pamamahala ng emerging infectious diseases.\n\n1.2 HEALTH EXAMINATIONS:\n- Lahat ng estudyante ay kailangan sumailalim sa scheduled entrance at periodic health examinations na isinasagawa ng EAC School Clinic.\n\n1.3 MEDICAL CLEARANCE:\n- Ang mga estudyanteng na-diagnose ng communicable disease o hindi makapagtend ng klase dahil sa matagal na sakit ay kailangan ng medical clearance bago makabalik sa klase.\n\nSMOKE-FREE POLICY:\n- Prohibition ng paninigarilyo sa lahat ng anyo sa lahat ng school buildings at properties (kasama ang rented vehicles).\n- Ang Student Clinic ay nagbibigay ng referral at smoking cessation guidance kung hihilingin."
+  },
+  {
+    "chunk_id": "EAC-035",
+    "topic": "Campus Facility Access and Classroom Management",
+    "article": "Article 2 - General Directives",
+    "section": "Titles 6 and 8 - Campus Facilities and Classroom Management",
+    "keywords": ["campus facilities", "classroom", "CLAYGO", "reservation", "first come first served", "electronic devices", "cellphone", "faculty policies"],
+    "bot_routing": "Kapag tinanong ang bot tungkol sa paggamit ng campus facilities o classroom rules ng EAC.",
+    "content": "CAMPUS FACILITY ACCESS:\n- Lahat ng estudyante ay may pantay na karapatang gamitin ang available na campus space at facilities.\n- WALANG permanent reservation right sa kahit anong school facility - first come, first served basis.\n- Maaaring pagbawalan ng school ang paggamit ng facility sa sinumang hindi sumusunod sa regulations.\n\nCLASSROOM MANAGEMENT POLICIES:\n1.1 Dapat palaging sundin ang CLAYGO (Clean As You Go) at ang dress code sa loob ng classroom.\n1.2 Ang paggamit ng electronic devices (cellphone, laptop, etc.) ay dapat naaayon sa instructions ng faculty member para sa instruction lamang.\n1.3 Ang mga instructional equipment at materials ay para sa academic purposes lamang, ayon sa venue at equipment reservation guidelines.\n1.4 Proper care at responsible use ng lahat ng classroom furniture at equipment.\n1.5 Ang mga faculty member ay maaaring magtakda ng additional classroom policies - basta hindi salungat sa Student Manual at dapat practical, reasonable, at mutually agreed upon ng faculty at students.\n\nMINOR OFFENSE: Ang pagkain at pag-inom sa loob ng classroom, loitering, paggamit ng cellphone sa oras ng klase, at unauthorized use ng school facilities ay minor offenses."
+  }
+]

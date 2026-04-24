@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e 'const {Pool} = require\\('\\\\''pg'\\\\''\\); const pool = new Pool\\({connectionString: '\\\\''postgresql://postgres.lbmniroxrhfoxujvscwi:2B0zSYsw9QKV3mDk@aws-0-__TRACKED_VAR__.pooler.supabase.com:5432/postgres'\\\\'', ssl:{rejectUnauthorized:false}, connectionTimeoutMillis:5000}\\); pool.query\\('\\\\''SELECT 1'\\\\''\\).then\\(\\(\\)=>{console.log\\('\\\\''OK'\\\\''\\)}\\).catch\\(e=>{console.log\\(e.message\\)}\\)')"
+    ]
+  }
+}

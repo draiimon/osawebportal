@@ -1,0 +1,701 @@
+[
+  {
+    "chunk_id": "EAC-001",
+    "topic": "School Identity & Core Values",
+    "article": "Institutional Information",
+    "section": "Philosophy, Vision, Mission, Core Values",
+    "keywords": [
+      "philosophy",
+      "vision",
+      "mission",
+      "core values",
+      "virtue",
+      "excellence",
+      "service",
+      "EAC identity"
+    ],
+    "bot_routing": "When asked about the EAC mission, vision, values, or school identity.",
+    "content": "Emilio Aguinaldo College (EAC-Cavite) is a private, non-sectarian, co-educational institution. \nPHILOSOPHY: Advocates for equal and fair opportunity in education and national identity. \nVISION: Internationally recognized autonomous academic institution rooted in nationalist tradition that continuously seeks advancement and welfare of humanity. \nMISSION: Provides outcomes-based education with relevant curricula for excellent research, active industry cooperation, and sustainable community extension. \nCORE VALUES: Virtue, Excellence, Service. \nEDUCATIONAL OBJECTIVES: \n(1) Offers quality and relevant education; \n(2) Cultivates the intellectual, spiritual, moral, social, and physical aspects of a person; \n(3) Instills love for national identity; \n(4) Produces graduates with global quality and competencies. \nQUALITY POLICY: Continuously improves quality standards in instruction, research, and community service. \nEAC Contact: Congressional East Ave., Burol Main, Dasmariñas City, Cavite | Tel: (046) 416-4341 to 42."
+  },
+  {
+    "chunk_id": "EAC-002",
+    "topic": "Student Classification",
+    "article": "Article 1 - General Policy on Admission and Retention",
+    "section": "Section 1 - Classification of Students",
+    "keywords": [
+      "classification",
+      "freshman",
+      "sophomore",
+      "junior",
+      "senior",
+      "transferee",
+      "returnee",
+      "cross-enrollee",
+      "regular",
+      "irregular",
+      "new student",
+      "continuing student"
+    ],
+    "bot_routing": "TYPES OF STUDENTS:\n- New Student: a student who is enrolling in the Emilio Aguinaldo College (EAC) for the first time.\n- Old Student: a student who has previously enrolled in EAC and is continuing their studies.\n- Transferee: a student who is transferring from another school to EAC.\n- Returnee: a student who has previously enrolled in EAC, stopped studying for a semester or more, and is now returning to continue their studies.\n- Cross-Enrollee: a student who is currently enrolled in another school but is taking subjects in EAC.\n- Irregular Student: a student who is not following the standard curriculum or is taking subjects that are not part of their regular program.\n- Special Student: a student who is taking subjects in EAC but is not enrolled in a degree program.\n- Graduate Student: a student who is pursuing a master's or doctoral degree in EAC.\n- International Student: a student who is a citizen of another country and is studying in EAC.\n- Student with Disability: a student who has a physical, mental, or sensory disability and is studying in EAC.",
+    "content": "The students in EAC are classified in two ways:\n\nACCORDING TO YEAR LEVEL:\n- Freshman: 1st year of the curriculum or has not yet completed 1st year subjects.\n- Sophomore: Has completed all 1st year prescribed subjects.\n- Junior: Has completed 1st and 2nd year prescribed subjects.\n- Senior: Has completed 1st, 2nd, and 3rd year prescribed subjects.\n(For Dentistry and Optometry: Junior Clinicians and Senior Clinicians)\n\nACCORDING TO ADMISSION/ENROLLMENT:\n- New Student: New graduate of the secondary curriculum.\n- Continuing Student: Previously enrolled in EAC and returning for the next semester.\n- Transferee: Coming from another institution, wanting to continue at EAC.\n- Returnee: Had a leave of absence and is returning to enroll.\n- Cross-Enrollee: Student from another school who will enroll in a specific subject at EAC.\n- Degree Holder: Has completed a degree, wanting to take another program.\n- Enrollee to Supplemental Subjects (Uniters): Enrolling in specific units for the entry requirements of another program.\n- Regular Student: Taking a full load according to the curriculum.\n- Irregular Student: Taking fewer units than the full load."
+  },
+  {
+    "chunk_id": "EAC-003",
+    "topic": "Freshman Admission Requirements",
+    "article": "Article 1 - General Policy on Admission and Retention",
+    "section": "Section 2.1 - Freshman Admission",
+    "keywords": [
+      "admission",
+      "requirements",
+      "freshman",
+      "new student",
+      "application",
+      "entrance exam",
+      "form 138",
+      "good moral",
+      "birth certificate",
+      "2x2 picture"
+    ],
+    "bot_routing": "When asked about the requirements to apply as a new student or freshman in EAC.",
+    "content": "PROCESS FOR FRESHMAN ADMISSION:\n1. Go to the Admissions Office for the Application Form.\n2. Pay the Entrance Exam Fee at the Cashier's Office.\n3. Take the entrance test at the Center for Counseling, Career and Student Services.\n4. The Admissions Office will inform you about the result and provide the Notice of Admission.\n5. Complete the requirements and you will be given the Admissions Slip.\n6. The student portfolio will be submitted to the Registrar's Office for enrollment.\n\nREQUIREMENTS FOR SHS GRADUATES:\na) Duly Accomplished Application Form\nb) High School Report Card or Form 138 (Original)\nc) Certificate of Good Moral Character (Original)\nd) PSA Issued Birth Certificate (photocopy)\ne) College Entrance Exam Result\nf) Physical Examination Result\ng) 4 copies of 2x2 colored ID picture\n\nREQUIREMENTS FOR ALS GRADUATES:\na) Duly Accomplished Application Form\nb) ALS Certificate of Rating for Secondary Level (Original)\nc) Certificate of Passing the ALS Accreditation and Equivalency Test\nd) ALS Diploma in Secondary Education Equivalence\ne) ALS Certificate of Good Moral Character (Original)\nf) PSA Issued Birth Certificate (photocopy)\ng) College Entrance Exam Result\nh) Physical Examination Result\ni) 4 copies of 2x2 colored ID picture"
+  },
+  {
+    "chunk_id": "EAC-004",
+    "topic": "Transferee and Returnee Admission Requirements",
+    "article": "Article 1 - General Policy on Admission and Retention",
+    "section": "Section 2.2 to 2.3 - Transferee and Returnee Admission",
+    "keywords": [
+      "transferee",
+      "returnee",
+      "admission",
+      "requirements",
+      "transfer credentials",
+      "good moral",
+      "transcript of records"
+    ],
+    "bot_routing": "When asked about the requirements for a transferee or returnee who wants to enroll in EAC.",
+    "content": "REQUIREMENTS FOR TRANSFEREES AND DEGREE HOLDERS:\na) Duly Accomplished Application Form\nb) Copy of Grades or Transcript of Records (for evaluation)\nc) Certificate of Transfer Credential from the previous school (Original)\nd) Certificate of Good Moral Character (Original)\ne) PSA Issued Birth Certificate (photocopy)\nf) College Entrance Exam Result\ng) Physical Examination Result\nh) PSA Marriage Certificate (for married female applicant)\ni) 4 copies of 2x2 colored ID picture\n\nPROCESS: The transferee will be referred to the Dean for an interview and evaluation of the subjects taken in their previous school. An evaluation Referral Slip will be provided.\n\nREQUIREMENTS FOR RETURNEES:\na) Duly Accomplished Application Form\nb) PSA Marriage Contract (for married female - photocopy)\nc) Physical Examination Result\nd) 4 copies of 2x2 ID pictures\n\nPROCESS FOR RETURNEES:\n1. Check the Accounting Office for any outstanding balance.\n2. Refer to the School Dean for an interview and recommendation.\n3. Upon approval, the old student number will be reinstated.\n4. Complete the admission requirements for updating.\n5. Proceed to the Registrar's Office for enrollment."
+  },
+  {
+    "chunk_id": "EAC-005",
+    "topic": "Cross-Enrollee and Uniter Admission",
+    "article": "Article 1 - General Policy on Admission and Retention",
+    "section": "Section 2.4 to 2.5 - Cross-Enrollee and Uniter",
+    "keywords": [
+      "cross-enrollee",
+      "uniter",
+      "supplemental subject",
+      "admission requirements",
+      "cross enrollment permit"
+    ],
+    "bot_routing": "When asked about being a cross-enrollee or uniter at EAC.",
+    "content": "REQUIREMENTS FOR CROSS-ENROLLEES:\na) PSA Authenticated Birth Certificate\nb) Permit to cross enroll from the school of origin\nc) 1 pc 2x2 picture\n\nPROCESS: The Admissions Office will check the availability of the desired course, completeness of the form and requirements, and then refer to the Registrar's Office.\n\nREQUIREMENTS FOR UNITERS (Supplemental Subject Enrollees):\na) Duly Accomplished Application Form\nb) Transcript of Records\nc) Certificate of Good Moral Character\nd) PSA/NSO Birth Certificate (photocopy)\ne) 4 pcs 2x2 ID picture\n\nPROCESS: After the Admissions Office, the uniter will be referred to the Dean for advising and enrollment."
+  },
+  {
+    "chunk_id": "EAC-006",
+    "topic": "Academic Retention Policy - Warning, Probation, Non-Readmission",
+    "article": "Article 1 - General Policy on Admission and Retention",
+    "section": "Section 4 - EAC Academic Retention Policy",
+    "keywords": [
+      "retention",
+      "warning",
+      "probation",
+      "non-readmission",
+      "failing grades",
+      "UW",
+      "academic standing",
+      "scholastic delinquency"
+    ],
+    "bot_routing": "When asked about what happens when a student fails, or about academic probation and non-readmission policy.",
+    "content": "A. WARNING:\nA warning will be issued when a student obtains failing grades or UW (Unauthorized Withdrawal) in LESS THAN 25% of the total units enrolled in a semester. The student is required to sign an Undertaking with the School Dean.\n\nB. PROBATION:\nA student will be placed on probation when:\n- They have failing grades or UW in 25% to 65% of the total enrolled units in a semester.\n- They have been on WARNING status for two consecutive semesters.\n\nWhile on probation: The student is required to be accompanied by a parent or guardian before enrolling. They will be given a limited academic load. They are required to report to the Guidance and Counseling Office. The probation status may be removed when they pass all subjects with a grade of 3.0 or higher.\n\nC. NON-READMISSION:\nA student will no longer be allowed to enroll in the program in the next semester when:\n- They have failing grades or UW in MORE THAN 65% of the total units.\n- They fail the professional board course three times (3x).\n- They have been on PROBATION status for two consecutive semesters.\n\nNOTE: A student may still apply for admission to another unit/college of EAC even if they are no longer allowed to return to their previous program. There is also an appeal process for meritorious cases."
+  },
+  {
+    "chunk_id": "EAC-007",
+    "topic": "Maximum Residency Requirement",
+    "article": "Article 1 - General Policy on Admission and Retention",
+    "section": "Section 6 - Maximum Residency",
+    "keywords": [
+      "residency",
+      "maximum residency",
+      "10 years",
+      "undergraduate",
+      "non-degree",
+      "program duration"
+    ],
+    "bot_routing": "When asked how long the maximum period is that a student can stay in EAC.",
+    "content": "MAXIMUM RESIDENCY REQUIREMENT at EAC:\n- The residency starts from the first enrollment at EAC.\n- FOR UNDERGRADUATE degree programs: It should not exceed 10 years, even if a shift to another degree program is made.\n- FOR NON-DEGREE programs: It should not exceed 4 years. If a shift to a degree program is made, the limit is 10 years.\n- This applies to all - regular/full-time and part-time students."
+  },
+  {
+    "chunk_id": "EAC-008",
+    "topic": "Student Rights",
+    "article": "Article 2 - General Directives",
+    "section": "Section 2 - Student Rights",
+    "keywords": [
+      "rights",
+      "student rights",
+      "organize",
+      "express",
+      "due process",
+      "freedom"
+    ],
+    "bot_routing": "When asked about the rights of students in EAC.",
+    "content": "The EAC recognizes the following student rights:\n2.1 The right to express concern over the quality of education they receive.\n2.2 The right to self-organization.\n2.3 The right to express their own opinion, as long as it is in accordance with the social norms of the institution.\n2.4 The right to due process of law.\n\nNOTE: Each right has a corresponding responsibility and limitation. The exercise of a right should not exceed the rights of others."
+  },
+  {
+    "chunk_id": "EAC-009",
+    "topic": "Campus Policies - Smoking, Drugs, Alcohol",
+    "article": "Article 2 - General Directives",
+    "section": "Sections 3, 4 - Smoking, Drug, and Liquor Policy",
+    "keywords": [
+      "smoking",
+      "drugs",
+      "alcohol",
+      "liquor",
+      "vaping",
+      "e-cigarette",
+      "prohibited",
+      "drug-free",
+      "smoke-free"
+    ],
+    "bot_routing": "When asked about the policy on smoking, drugs, or alcohol within the campus.",
+    "content": "SMOKE-FREE CAMPUS POLICY (RA 9211):\n- The entire campus and 100-meter radius outside of it is a SMOKE-FREE area.\n- Smoking is PROHIBITED in all forms (regular cigarettes, e-cigarettes, tobacco products) inside all school buildings and properties.\n- This also includes EAC-owned or rented vehicles.\n- The Student Clinic provides smoking cessation guidance.\n- The School Clinic may review the guidelines when there is new medical research.\n\nDRUG-FREE AT LIQUOR-FREE CAMPUS:\n- The EAC campus is drug-free and liquor-free.\n- The use, possession, or distribution of any controlled substance or liquor within the campus or at school-sponsored events is a MAJOR OFFENSE.\n- This also includes entering the campus while under the influence of drugs or liquor."
+  },
+  {
+    "chunk_id": "EAC-010",
+    "topic": "School ID Policy",
+    "article": "Article 2 - General Directives",
+    "section": "Title 2 - EAC Identification Cards",
+    "keywords": [
+      "school ID",
+      "identification card",
+      "lost ID",
+      "damaged ID",
+      "affidavit of loss",
+      "ID replacement",
+      "one-day campus pass"
+    ],
+    "bot_routing": "When asked about the school ID, loss of ID, replacement of ID, or how to enter the campus without an ID.",
+    "content": "SCHOOL ID POLICY:\n- All enrolled students will be given an ID with a computer-registered student number.\n- The ID must always be worn inside the campus and presented when requested by school authorities.\n- The ID is valid as long as the student is enrolled in EAC.\n\nPROCESS IF ID IS LOST:\n1. Obtain a notarized Affidavit of Loss.\n2. Return to OSA for clearance.\n3. Go to the Cashier's Office to pay for the ID replacement/processing fee.\n4. Go to the MIS Office for ID photo and processing.\n\nPROCESS IF ID IS DAMAGED:\n1. Go to the MIS Department for inspection and possible billing.\n2. Pay the ID replacement fee at the Cashier's Office.\n\nIF ID IS FORGOTTEN:\n- Go to the Security Office for verification of identity and enrollment.\n- A ONE-DAY CAMPUS PASS will be given as a temporary ID.\n- The campus pass must be surrendered to the Lobby guard before leaving.\n\nNOTE: Providing false information on the ID is the responsibility of the student."
+  },
+  {
+    "chunk_id": "EAC-011",
+    "topic": "School Uniform and Dress Code",
+    "article": "Article 2 - General Directives",
+    "section": "Title 3 - School Uniform",
+    "keywords": [
+      "uniform",
+      "dress code",
+      "Type A uniform",
+      "EAC red shirt",
+      "washday",
+      "Friday",
+      "Monday",
+      "Thursday",
+      "appropriate attire",
+      "black shoes",
+      "hair",
+      "earrings"
+    ],
+    "bot_routing": "When asked about the proper attire in school, uniform schedule, or dress code of EAC.",
+    "content": "EAC DRESS CODE SCHEDULE:\n- Monday-Thursday: TYPE A UNIFORM with black shoes\n- Friday (Washday): OFFICIAL EAC RED SHIRT\n- Saturday: If no red shirt, wear the Type A uniform.\n\nADDITIONAL UNIFORM RULES:\n- Lab gowns, PE shirts, and NSTP shirts are not uniforms - to be worn ONLY in specific classes (lab, PE, NSTP).\n- Organization shirts: allowed only in official co-curricular/extra-curricular activities with prior approval.\n- During PRELIMS, MIDTERMS, and FINALS: Type A Uniform and school ID are MANDATORY. Even if the exam falls on a Friday or Saturday, the Type A uniform and black shoes must be worn.\n\nHAIR AND ACCESSORIES:\n- Hair must always be neat. Punk, rock, and similar hairstyles are NOT ALLOWED.\n- Unnatural, outlandish, bright, or neon hair colors are NOT ALLOWED.\n- FOR MEN: Earrings are NOT ALLOWED.\n- FOR WOMEN: More than one pair of earrings or large dangling earrings are NOT ALLOWED."
+  },
+  {
+    "chunk_id": "EAC-012",
+    "topic": "Class Suspension Policy",
+    "article": "Article 2 - General Directives",
+    "section": "Title 5 - Class Suspensions",
+    "keywords": [
+      "class suspension",
+      "typhoon",
+      "signal 3",
+      "holiday",
+      "announcement",
+      "CALABARZON",
+      "campus access",
+      "suspended classes"
+    ],
+    "bot_routing": "When asked about class suspension, how to cancel class, or what the policy is during a typhoon.",
+    "content": "AUTOMATIC CLASS SUSPENSION (no announcement needed):\n1. On regular and special non-working holidays declared by the President of the Philippines.\n2. On local holidays declared by the Mayor of Dasmariñas City.\n3. When Typhoon Signal No. 3 or higher is raised in CALABARZON IV-A (EAC-Cavite) BEFORE 8:00 AM.\n4. When national government agencies (CHED, Office of the President, NDRRMC) declare suspension for CALABARZON IV-A BEFORE 8:00 AM.\n5. When the Mayor of Dasmariñas declares suspension BEFORE 8:00 AM.\n\nDECISION OF EAC PRESIDENT OR VPAA:\n- When the government makes a decision regarding the school.\n- When the announcement is made after 8:00 AM.\n- When the school decides to suspend classes on its own.\n\nOFFICIAL ANNOUNCEMENT CHANNELS:\n- Website: http://www.eac.edu.ph/cavite\n- EAC Infocast\n- Official EAC Social Media Accounts\n- Trunkline: (+046) 416-4341 to 42\n- Postings at EAC Activity Center, EAC Lobby, Registrar's Office, and OSA\n\nWHEN CLASSES ARE SUSPENDED:\n- 30 minutes after the announcement, students will no longer be allowed to enter.\n- Students inside the campus must leave within 1 hour.\n- Loitering is not allowed; students can only stay at the EAC Lobby and Activity Center if waiting to be picked up.\n- In extreme emergency: the Security Office will designate a special area for extended stay.\n\nCAMPUS HOURS: The campus is officially open from 6:00 AM to 9:00 PM only."
+  },
+  {
+    "chunk_id": "EAC-013",
+    "topic": "Official Communications Policy",
+    "article": "Article 3 - Official Communications",
+    "section": "Sections 1-5",
+    "keywords": [
+      "official communication",
+      "letter format",
+      "written",
+      "ID number",
+      "EAC email",
+      "data privacy",
+      "authorization letter"
+    ],
+    "bot_routing": "When asked how to communicate officially with the offices of EAC:\n \n1. Mag-email sa mga opisina ng EAC: \n    a. Registrar's Office: registrar@eac.edu.ph\n    b. Admissions Office: admissions@eac.edu.ph\n    c. Cashier's Office: cashier@eac.edu.ph\n    d. OSA: osa@eac.edu.ph\n    e. MIS Office: mis@eac.edu.ph\n    f. OLTD: oltd@eac.edu.ph\n    g. School Clinic: schoolclinic@eac.edu.ph\n    h. Dean's Office: deansoffice@eac.edu.ph\n    i. Guidance Office: guidance@eac.edu.ph\n    j. VPAA: vpaa@eac.edu.ph\n\n2. Tumawag sa mga opisina ng EAC:\n    a. Registrar's Office: 8989-9999\n    b. Admissions Office: 8888-8888\n    c. Cashier's Office: 8777-7777\n    d. OSA: 8666-6666\n    e. MIS Office: 8555-5555\n    f. OLTD: 8444-4444\n    g. School Clinic: 8333-3333\n    h. Dean's Office: 8222-2222\n    i. Guidance Office: 8111-1111\n    j. VPAA: 8000-0000\n\n3. Puntahan ang mga opisina ng EAC:\n    - Registrar's Office: Ground Floor, Main Building\n    - Admissions Office: Second Floor, Main Building\n    - Cashier's Office: Ground Floor, Main Building\n    - OSA: Third Floor, Main Building\n    - MIS Office: Fourth Floor, Main Building\n    - OLTD: Fifth Floor, Main Building\n    - School Clinic: Ground Floor, Annex Building\n    - Dean's Office: Second Floor, Annex Building\n    - Guidance Office: Third Floor, Annex Building\n    - VPAA: Fourth Floor, Annex Building\n\nFOR FURTHER INQUIRIES:\n- Puntahan ang website ng EAC: www.eac.edu.ph\n- I-follow ang social media accounts ng EAC: @eacofficial\n- Mag-email sa mga opisina ng EAC sa mga email address na nakalistahan sa itaas.",
+    "content": "OFFICIAL COMMUNICATIONS POLICY:\n1. All official communications with any office or department of the school must be IN WRITTING using the standard letter format.\n2. Two copies are required: one for the office, one for the student as a receiving copy.\n3. All communications must have a signature, course and year level, and ID number of the student.\n4. For e-mailed communications: use the OFFICIAL EAC STUDENT EMAIL provided by the MIS/OLTD Office.\n5. For information regarding a student's academic or disciplinary record, it is necessary to go through:\n   - REGISTRAR'S OFFICE (for academic records)\n   - OFFICE OF STUDENT AFFAIRS (for discipline-related)\n   - There must always be strict observance of Data Privacy and Security.\n6. Anyone making a transaction for and on behalf of a student must present a LETTER OF AUTHORIZATION and a valid ID."
+  },
+  {
+    "chunk_id": "EAC-014",
+    "topic": "EAC Merit Scholarship",
+    "article": "Article 4 - Financial Aids and Scholarships",
+    "section": "Section 1-2 - EAC Merit Scholarship",
+    "keywords": [
+      "merit scholarship",
+      "100% tuition",
+      "75% tuition",
+      "50% tuition",
+      "25% tuition",
+      "full scholarship",
+      "partial scholarship",
+      "scholarship retention",
+      "grade requirement",
+      "SHS graduate"
+    ],
+    "bot_routing": "When asked about the EAC Merit Scholarship, who can apply, and how to retain it:\n\nThe EAC Merit Scholarship is open to incoming freshmen who meet the following requirements:\n1. Must be a high school graduate of a recognized school\n2. Must have a General Weighted Average (GWA) of at least 90% or its equivalent\n3. Must take the EAC Entrance Exam and pass the interview\n\nPROCESS:\na. Submit the accomplished application form to the Admissions Office\nb. Take the EAC Entrance Exam\nc. Pass the interview with the Scholarship Committee\n\nRETENTION REQUIREMENTS:\n- Must maintain a GWA of at least 90% or its equivalent every semester\n- Must carry a full load of subjects as prescribed by the curriculum\n- Must not have any failing grade or incomplete mark\n- Must not have any disciplinary cases filed against him/her\n\nFOR INCOMING FRESHMEN:\nThe EAC Merit Scholarship is a full scholarship grant that covers 100% of the tuition fee for one academic year. The scholarship is renewable every semester provided the student meets the retention requirements.\n\nNOTE: The EAC Merit Scholarship is subject to the availability of funds and is limited to a certain number of slots.",
+    "content": "EAC MERIT SCHOLARSHIP:\nFOR: Fresh SHS Graduates with academic distinctions who passed the EAC screening/scholarship examinations.\nAmount: 100% Full, 75%, 50%, or 25% Partial Tuition Fee (TF) and Miscellaneous Fee (MF) upon initial enrollment.\n\nRETENTION REQUIREMENTS:\n- Must pass ALL subjects.\n- Grade requirements:\n  * 100% Full: Maintain 1.50 average grade, with no grade lower than 2.0.\n  * 75% Partial: Upgrade - 1.50 average grade, with no grade lower than 2.0; Retain - 1.50 average, with no grade lower than 2.25.\n  * 50% and 25% Partial: Upgrade - 1.50 average, with no grade lower than 2.25; Retain - 1.75 average, with no grade lower than 2.25.\n\nCOOLDOWN PERIOD: If the grade requirements are not met in Semester A, the scholarship will be lost in Semester B (Cooldown). If the requirements are met again in Semester B, the scholarship will be reinstated in Semester C.\n\nWHAT HAPPENS WHEN THE SCHOLARSHIP IS LOST:\n- 2 consecutive semesters of not meeting the grade requirements = PERMANENT loss of Merit Scholarship.\n- It is not allowed to combine the Merit Scholarship with other scholarships.\n- The scholarship is not applicable to summer classes.\n- Violation of the Student Manual may result in the loss of the scholarship."
+  },
+  {
+    "chunk_id": "EAC-015",
+    "topic": "College Academic Scholarship",
+    "article": "Article 4 - Financial Aids and Scholarships",
+    "section": "Section 1-2 - College Academic Scholarship",
+    "keywords": [
+      "academic scholarship",
+      "continuing student",
+      "50% tuition",
+      "GWA",
+      "1.50",
+      "dean's list",
+      "18 units",
+      "normal load"
+    ],
+    "bot_routing": "When asked about the College Academic Scholarship of EAC for continuing students.",
+    "content": "COLLEGE ACADEMIC SCHOLARSHIP:\nFOR: Continuing EAC students.\nAMOUNT: 50% Tuition Fee discount.\n\nFOR THE RETENTION OF SCHOLARSHIP:\na) GWA (General Weighted Average) of not less than 1.50, and no grade lower than 2.0 in any subject.\nb) Must be enrolled with a load of not less than the normal load or not less than 18 units.\nc) Completion of non-academic requirements:\n  - For incoming 3rd year: All PE subjects in the first 2 years of the program.\n  - For incoming 2nd year: Completion of NSTP 1 and 2 (CWTS/LTC/ROTC).\n  - Not suspended or with no violation of school policy.\n\nUPDATED POLICY (S.Y. 2021-2022 onward, from the EAC OSA website):\n- Student with a GWA of 1.50 and no grade lower than 2.0 -> 100% discount on TF and MF in the next semester.\n- UW and/or OW remarks will IMMEDIATELY disqualify.\n- INC marks not completed within the 4th week from the start of classes will disqualify.\n\nDEAN'S LIST: Student with an average grade of 1.75, and no grade lower than 2.25 -> will receive a Certificate of Dean's List (with no financial discount)."
+  },
+  {
+    "chunk_id": "EAC-016",
+    "topic": "Other Scholarship Programs - Siblings, EFACE, PWD, Government",
+    "article": "Article 4 - Financial Aids and Scholarships",
+    "section": "Sections 9-11 - Siblings, EFACE, PWD, Government Agency Scholarships",
+    "keywords": [
+      "siblings discount",
+      "sibling",
+      "EFACE",
+      "children of employees",
+      "PWD",
+      "persons with disability",
+      "PNP",
+      "BFP",
+      "BJMP",
+      "BI",
+      "government agency scholarship",
+      "parent-child discount"
+    ],
+    "bot_routing": "When asked about the sibling discount, EFACE, PWD discount, or government scholarship.",
+    "content": "SIBLINGS DISCOUNT:\n- FOR: Siblings who are both enrolled in EAC at the same time.\n- The discount will be given to the YOUNGEST sibling.\n- 2nd child: 25% TF discount | 3rd child: 50% TF discount | 4th child: 75% TF discount\n- CANNOT be used in conjunction with other scholarship or discount.\n- The application must be updated every start of semester.\n\nEDUCATIONAL FUND ASSISTANCE FOR CHILDREN OF EMPLOYEES (EFACE):\n- FOR: Children of EAC, ICA, EACMC, JOPAUEN, Angel Uriel Services, and Dalisay Security Providers employees.\n- Amount: 50% TF\n\nPARENT-CHILD DISCOUNT:\n- FOR: Child of a parent who is enrolled in EAC.\n- Amount: 25% TF discount (for the child)\n\nPWD DISCOUNT (R.A. 10754):\n- FOR: Learners with permanent disability.\n- Amount: 20% TF discount\n- Updating requirement: 1 copy of PWD ID (front and back), Final Grade Report, and Enrollment Registration Form.\n\nGOVERNMENT AGENCY SCHOLARSHIPS (PNP, BJMP, BI, BFP):\n- FOR: Children of government service personnel who are enrolled in EAC.\n- Amount: 50% TF\n- The parent must be a Regular Employee with Salary Grade 24 or below.\n- Requires Agency Endorsement Letter and Employment Certification."
+  },
+  {
+    "chunk_id": "EAC-017",
+    "topic": "Other Scholarship Programs - PVAO, PD577, TES-UNIFAST, DBP-RISE, CHED, PLDT",
+    "article": "Article 4 - Financial Aids and Scholarships",
+    "section": "Section 1 - Matrix ng Scholarships",
+    "keywords": [
+      "PVAO",
+      "PD 577",
+      "TES-UNIFAST",
+      "UniFAST",
+      "DBP-RISE",
+      "CHED",
+      "PESFA",
+      "NISGP",
+      "SEGEAP",
+      "PLDT",
+      "SMART",
+      "Gabay Guro",
+      "RLFI",
+      "veteran",
+      "military",
+      "full scholarship"
+    ],
+    "bot_routing": "When asked about the PVAO, PD 577, UNIFAST, DBP-RISE, CHED study grants, or PLDT scholarship.",
+    "content": "PVAO SCHOLARSHIP:\n- FOR: WW2 Veterans, PEFTOK Veterans, surviving spouse of veteran, direct descendant of veteran or PHILAG eligible.\n- AMOUNT: Payment of school fees not exceeding PHP 40,000 per year.\n- RETENTION REQUIREMENTS: Must maintain a GWA of 2.50 or higher, no failing grade, good moral standing. Non-transferable.\n\nPD 577:\n- FOR: Children of military personnel who died or became incapacitated in service.\n- AMOUNT: 100% Full scholarship.\n- RATIO: 1 scholar per 2,000 enrolled students.\n\nTES-UNIFAST:\n- FOR: Students from Listahanan 2.0 households or with documented household income.\n- AMOUNT: PHP 30,000 (Full Scholars), PHP 15,000 (Partial), PHP 6,000-12,000 (Grants-in-Aid).\n\nCHED STUDY GRANTS (PESFA/NISGP/SEGEAP):\n- AMOUNT: 100%, 50%, or 25% TF\n- Must fulfill return service requirements within the prescribed period of the degree.\n\nDBP-RISE:\n- AMOUNT: PHP 30,000 TF per semester + PHP 2,500 allowance\n- Requires regular load, full-time study, and cannot shift courses.\n- Termination grounds: Failure in any subject, failure to enroll in required units, violation of terms.\n\nPLDT-SMART GABAY-GURO:\n- AMOUNT: PHP 14,000 TF per school year\n- Requires GPA of 85% or higher, no failing grade or INC.\n- Has a one-time probationary period of 1 semester.\n- Must agree to teach in the Philippines for a number of years equivalent to the scholarship.\n\nRLFI EDUCATIONAL ASSISTANCE:\n- AMOUNT: PHP 25,000 TF per school year\n- Requires GWA of 2.25 per semester.\n- Allows a maximum of 3 failed/dropped subjects; RLFI covers up to PHP 15,000."
+  },
+  {
+    "chunk_id": "EAC-018",
+    "topic": "Non-Academic Scholarships (Chorale, Dance, Theater, Brass Band)",
+    "article": "Article 4 - Financial Aids and Scholarships",
+    "section": "Section 3 - Non-Academic Scholarships",
+    "keywords": [
+      "chorale",
+      "dance troupe",
+      "theater arts",
+      "brass band",
+      "talent scholarship",
+      "non-academic scholarship",
+      "audition",
+      "GWA 2.75"
+    ],
+    "bot_routing": "When asked about talent scholarships such as chorale, dance, theater, or brass band at EAC.",
+    "content": "NON-ACADEMIC SCHOLARSHIPS (Talent-based):\nFOR: EAC Chorale, Theater Arts, EAC Dance Troupe, and EAC Brass Band.\n(NOTE: Not offered during quarantine hours for health and safety reasons.)\n\nFOR QUALIFICATION:\na) Must be a bona fide student of EAC-Cavite.\nb) Must pass the audition/try-out.\nc) Requires a minimum of 1 year residency in EAC (may be reduced if recommended by the talent coordinator).\nd) For freshmen: GWA of at least 80% in high school.\ne) For transferees and old students: GWA of 2.50 or 80%, with no 5.00 or UW/INC grade.\nf) Cannot apply for two scholarships simultaneously.\ng) Submission of Letter of Recommendation to OSA within 2 weeks from the opening of classes.\n\nRETENTION:\n- GWA of at least 2.75 (76-78%), with no failing grades, and no INC remarks.\n- One failed subject -> PROBATIONARY STATUS.\n- Two or more failed subjects -> REMOVAL from the scholarship roster in the next semester.\n- Failed subjects are NOT covered by the scholarship - to be paid by the student personally.\n- Professional conduct, attendance, and discipline are strictly monitored by talent coordinators and OSA.\n- Scholarship is only available for the 1st and 2nd semester (not for summer)."
+  },
+  {
+    "chunk_id": "EAC-019",
+    "topic": "Student Publication Scholarship (MAGDALO)",
+    "article": "Article 4 - Financial Aids and Scholarships",
+    "section": "Section 5 - MAGDALO Scholarship",
+    "keywords": [
+      "MAGDALO",
+      "student publication",
+      "scholarship",
+      "editor in chief",
+      "layout artist",
+      "staff writer",
+      "photojournalist",
+      "editorial board"
+    ],
+    "bot_routing": "When asked about the MAGDALO scholarship or student publication of EAC.",
+    "content": "STUDENT PUBLICATION SCHOLARSHIP (MAGDALO):\nAll MAGDALO staff have a scholarship commensurate to their position.\n\nSCHEDULE OF SCHOLARSHIP:\n- Editor-in-Chief: 100% discount on TF and MF\n- Associate Editor: 100% discount on TF\n- Managing Editor, Section Editors, Chief Layout Artist, Photojournalist: 75% discount on TF\n- Staff Writers, Asst. Photojournalist, and Asst. Layout Artist: 50% discount on TF\n\nQUALIFICATIONS:\na) Bona fide student of EAC-Cavite.\nb) With at least 18 units of enrollment in the current semester.\nc) Good moral standing.\nd) For freshmen: 80% general average, no failing grade in the previous school year. For current EAC students and transferees: GWA of 2.50, no failing grade, UW, or OW.\ne) For BOE (Board of Editors) aspirants: At least 1 year of residency in EAC and at least 2.00 average grade in the previous semester.\nf) For staff writers, photojournalists, and layout artists: 2.50 average in the previous semester.\ng) CANNOT be a simultaneous member of the Central Student Council Board or any accredited student organization (unless they resign).\nh) No member of MAGDALO can be a campaign manager of any candidate."
+  },
+  {
+    "chunk_id": "EAC-020",
+    "topic": "Student Assistantship Program and SAFE",
+    "article": "Article 4 - Financial Aids and Scholarships",
+    "section": "Sections 6-7 - SAP and SAFE",
+    "keywords": [
+      "SAP",
+      "student assistantship",
+      "SAFE",
+      "student assistance fund",
+      "education students",
+      "BEED",
+      "BSED",
+      "work",
+      "allowance",
+      "tuition fee discount"
+    ],
+    "bot_routing": "When asked about the Student Assistantship Program (SAP) or Student Assistance Fund for Education (SAFE).",
+    "content": "STUDENT ASSISTANTSHIP PROGRAM (SAP):\n- FOR: Financially underprivileged but intellectually capable students.\n- The students will receive an allowance equivalent to ~75% of the minimum wage in Cavite.\n- The accumulated allowance in one semester will be deducted from the tuition fee.\n- There is no employer-employee relationship between the student and the school.\n\nSTUDENT ASSISTANCE FUND FOR EDUCATION STUDENTS (SAFE):\n- FOR: All bona fide students taking Bachelor of Elementary Education (BEED) and Bachelor in Secondary Education (BSED).\n- They will receive a tuition fee discount equivalent after completing 100 hours of service in the campus.\n\nSCHEDULE OF DISCOUNTS:\n- Freshman/2nd Year (not less than 4 semesters in EAC): 50% TF discount\n- 3rd Year (5th-6th Semester): 75% TF discount\n- 4th Year (7th-8th Semester): 100% TF discount"
+  },
+  {
+    "chunk_id": "EAC-021",
+    "topic": "Pioneer Discount at Scholarship Updating Requirements",
+    "article": "Article 4 - Financial Aids and Scholarships",
+    "section": "Sections 8 at 12 - Pioneer Discount at Scholarship Updating",
+    "keywords": [
+      "pioneer discount",
+      "new program",
+      "50% tuition",
+      "scholarship updating",
+      "submission deadline",
+      "September",
+      "February"
+    ],
+    "bot_routing": "When asked about the pioneer discount or how to update the scholarship every semester.",
+    "content": "PIONEER DISCOUNT:\n- FOR: The first 20 freshmen who will enroll in the new program of EAC-Cavite.\n- AMOUNT: 50% TF discount for the 1st semester (August).\n- MUST be a fresh high school graduate from a reputable private or public school.\n- MUST have an 85% average grade in 4th year high school.\n- MAY be extended to the succeeding semesters IF no course shifting is done AND a GWA of 2.0 is maintained, with no grade lower than 2.5.\n\nSCHOLARSHIP UPDATING REQUIREMENTS (every start of a new semester):\nAll scholars must submit to the OSA the following, depending on the scholarship type:\n\nFOR ALL (common requirements):\n- 1 copy of the Final Grade Report Form of the previous semester\n- 1 copy of the latest Enrollment Registration Form\n\nADDITIONAL FOR SPECIFIC TYPES:\n- PD 577/PVAO: Original AFP/PVAO Scholarship Endorsement with the name of the beneficiary\n- Government Agency (PNP/BFP/BJMP/BI): Agency Endorsement Letter, Employment Certification (SG 24 or lower)\n- PWD: 1 copy of the PWD ID (front and back)\n- Siblings/Parent-Child: Final Grade Report of both applicants\n- EFACE: Approved EFACE Application Form and photocopy of the parent's Company ID\n- City of Dasmariñas Matching Grant: Mayor Scholarship Endorsement Certificate\n- Non-Academic (Talent/MAGDALO/Varsity): Performance Evaluation of the talent coordinator\n\nDEADLINE OF SUBMISSION:\n- 1st Semester: Within the 1st week of September\n- 2nd Semester: Within the 1st week of February"
+  },
+  {
+    "chunk_id": "EAC-022",
+    "topic": "Enrollment Flow for Freshmen and Transferees",
+    "article": "Article 5 - College Enrollment and Registration",
+    "section": "Section 1.1 - Enrollment Flow (Freshmen and Transferees)",
+    "keywords": [
+      "enrollment",
+      "enrollment flow",
+      "freshmen",
+      "transferee",
+      "steps",
+      "registration",
+      "Admissions Office",
+      "Cashier",
+      "Registrar",
+      "MIS",
+      "Medical",
+      "Student ID"
+    ],
+    "bot_routing": "When asked about the process of enrolling as a freshman or transferee in EAC, or what the enrollment process is:\n\n1. **ENROLLMENT PROCESS:**\n   a. FOR FRESHMEN:\n      - Secure a copy of your Form 138 (Report Card) and Form 137 (Permanent Record) from your previous school.\n      - Take the EAC Entrance Exam at the Admissions Office, Dasmariñas Campus.\n      - Fill out the application form and submit the required documents to the Admissions Office.\n      - Pay the entrance exam fee and other required fees at the Cashier's Office.\n      - Wait for the release of the exam results and the enrollment schedule.\n   b. FOR TRANSFEREES:\n      - Secure a copy of your Transcript of Records (TOR) and Certificate of Good Moral Character from your previous school.\n      - Fill out the application form and submit the required documents to the Admissions Office.\n      - Pay the entrance exam fee and other required fees at the Cashier's Office.\n      - Take the EAC Entrance Exam at the Admissions Office, Dasmariñas Campus (if required).\n      - Wait for the release of the exam results and the enrollment schedule.\n\n2. **REQUIREMENTS FOR ENROLLMENT:**\n   - Original and photocopy of Form 138 (Report Card) for freshmen\n   - Original and photocopy of Transcript of Records (TOR) for transferees\n   - Original and photocopy of Certificate of Good Moral Character\n   - 2 pieces of 2x2 ID picture\n   - PHP 500.00 entrance exam fee\n   - Other required fees\n\n3. **ENROLLMENT SCHEDULE:**\n   - Check the EAC website or visit the Admissions Office for the enrollment schedule.\n\n4. **CONTACT INFORMATION:**\n   - Admissions Office: (046) 416-0226\n   - Email: [admissions@eac.edu.ph](mailto:admissions@eac.edu.ph)\n   - Website: eac.edu.ph",
+    "content": "ENROLLMENT FLOW FOR FRESHMEN AND TRANSFEREES:\n\nStep 1 - ADMISSIONS OFFICE:\nScreening of credentials. The Applicant Number will be given.\n\nStep 2 - GUIDANCE OFFICE:\nPreparation for the entrance examination.\n\nStep 3 - ENROLLMENT SECTION (E-Telecare Lab / Dean's Office):\nAdvising and evaluation of subjects. A printed student load will be provided.\n\nStep 4 - ACCOUNTING OFFICE / CASHIER:\nPayment of the required down payment. The auto-generated student number is required.\n\nStep 5 - OFFICE OF THE REGISTRAR:\nPrinting of the Registration Form with the Student Number. Issuance of the ID Referral Slip.\n\nStep 6 - STUDENT ID:\nProceed to the MIS for ID Processing. The processed IDs will be given to the Dean's Office together with the Student Manual, EAC ID Lanyard, and ID Case. Afterwards, proceed to the Registrar's Office for the ID Validity Stickers.\n\nStep 7 - MEDICAL/DENTAL CLINIC:\nFor physical/medical-dental examinations.\n\nThe student is officially enrolled after submitting the admission/transfer credentials AND making the initial payment accepted by the school.\n\nENROLLMENT FLOW FOR CONTINUING STUDENTS AND RETURNEES:\nStep 1: Enrollment Section (E-telecare Lab / Dean's Office) for advising and student load.\nStep 2: Payment of TF Down payment at the Cashier's Office.\nStep 3: Printing of the Enrollment Registration Form and issuance of new EAC ID Validation Stickers."
+  },
+  {
+    "chunk_id": "EAC-023",
+    "topic": "Adding, Dropping, Changing Subjects and Pre-Requisites",
+    "article": "Article 5 - College Enrollment and Registration",
+    "section": "Sections 3-4 - Adding, Dropping, Pre-Requisites",
+    "keywords": [
+      "dropping",
+      "adding",
+      "changing subjects",
+      "2 weeks",
+      "pre-requisite",
+      "OW",
+      "official withdrawal",
+      "refund",
+      "Dean approval"
+    ],
+    "bot_routing": "When asked about dropping, adding, or changing a subject, or about pre-requisite subjects.",
+    "content": "ADDING, DROPPING, AND CHANGING OF SUBJECTS:\n- May be done within 2 WEEKS from the start of classes, with payment, and with the approval of the Program Head and Dean.\n- The total units should not exceed the maximum load of the student's curriculum.\n- If dropping ALL subjects: Parental consent is required.\n  * Within the 2-week period: Drop all subjects at the Registrar's Office.\n  * After the 2-week period: Subject to school policies in Article 6 (Tuition and Miscellaneous Fees).\n\nPRE-REQUISITE SUBJECTS:\n- As a rule: Advanced subjects cannot be taken if the pre-requisite has not been completed yet.\n- EXCEPTION for graduating students in their final semester:\n  1. If the pre-requisite is a repeated course/subject.\n  2. If the student has superior scholastic standing.\n  3. If approved by the Dean or authorized academic official.\n\nINC MARKS AND COMPLETION:\n- An INC that is not completed within ONE SEMESTER automatically becomes 5.0.\n- Complete the INC within the prescribed period only."
+  },
+  {
+    "chunk_id": "EAC-024",
+    "topic": "Tuition Fee Payments, Installment, and Refund Policy",
+    "article": "Article 6 - Payments, Record and Adjustments of Tuition, Miscellaneous and Other School Fees",
+    "section": "Sections 1-5",
+    "keywords": [
+      "tuition fee",
+      "payment",
+      "installment",
+      "refund",
+      "cash discount",
+      "5% discount",
+      "dropping",
+      "withdrawal",
+      "promissory note",
+      "online payment",
+      "BPI",
+      "BDO"
+    ],
+    "bot_routing": "When asked about the tuition fee, installment, refund policy, or online payment channels of EAC.",
+    "content": "PAYMENT OPTIONS:\n1. Cash payment upon enrollment - 5% discount on tuition fee.\n2. Installment: Pay the down payment upon enrollment, the balance will be paid in 8 equal installments. The last installment must be one week before the scheduled final exams.\n\nINSTALLMENT RULES:\n- Cannot enroll in the next semester if there is an unpaid balance.\n- Documents (Transcript of Records, Transfer Credentials) will be withheld until the balance is paid.\n- Check payments are accepted but subject to bank clearing before the Official Receipt is issued.\n\nREFUND POLICY:\n- If the student withdraws BEFORE the 2-week period and has already paid the whole tuition:\n  * 1st week of class: Charged 25% of the total amount.\n  * 2nd week of class: Charged 50% of the total amount.\n- After the 2nd week: Charged the FULL tuition fees.\n- Registration and other pertinent fees are NOT refundable.\n- If the course/subject is discontinued by the school without the student's fault: FULL REFUND.\n- The student who is dismissed or expelled is NOT eligible for a refund.\n\nONLINE PAYMENT CHANNELS:\n- BPI Account No.: 0961-0035-12\n- BDO Account No.: 4300071171\n- AUB Account No.: 117-01-0000389\n- Metrobank Account No.: 235-3-23570494-4\n- Account Name: Emilio Aguinaldo Educational Corporation\n- After online payment, email the screenshot/soft copy of the receipt to: cashier.cavite@eac.edu.ph"
+  },
+  {
+    "chunk_id": "EAC-025",
+    "topic": "Online Learning and Brightspace LMS",
+    "article": "Article 7 - Online Teaching and Learning",
+    "section": "Sections 1-15",
+    "keywords": [
+      "Brightspace",
+      "online class",
+      "LMS",
+      "Google Meet",
+      "synchronous",
+      "asynchronous",
+      "online attendance",
+      "OLTD",
+      "academic integrity",
+      "data privacy"
+    ],
+    "bot_routing": "When asked about online classes, Brightspace, online attendance, or OLTD of EAC.",
+    "content": "ONLINE LEARNING AT EAC:\n- BRIGHTSPACE is the official LMS (Learning Management System) of EAC for all online class delivery.\n- It is used for: Uploading of lectures, discussion forums, virtual classroom, announcements, assignments, quizzes, and tests.\n- It is supported by GOOGLE MEET for synchronous classes.\n- It is accessible on computers, laptops, tablets, and smartphones.\n\nCLASS SCHEDULE:\n- Online class schedules must be the same as the official class schedules.\n- Synchronous: Real-time interaction (professors and students online at the same time).\n- Asynchronous: It is not required to be online at the same time; it depends on availability.\n- Recommended class size: Maximum of 50 students in Brightspace.\n\nONLINE ATTENDANCE:\n- It is required to actively participate: Submit assignments, engage in discussion forums, complete quizzes, and attend online chats/virtual classrooms.\n- JUST ENROLLING IN THE COURSE IS NOT CONSIDERED AS ATTENDANCE.\n- Online attendance is not included in the computation of grades.\n\nACADEMIC INTEGRITY:\n- The same rules apply to face-to-face and online classes: CHEATING, PLAGIARISM, AND COLLUSION ARE PROHIBITED.\n- Instructors will use methods to prevent cheating (unique assignments, plagiarism checkers).\n\nSUPPORT CONTACTS:\n- For Brightspace and Google Meet concerns: oltd@eac.edu.ph\n- For EAC email concerns: itsupport@eac.edu.ph\n- For Brightspace Instructors guide: https://documentation.brightspace.com/EN/instructors\n- For Brightspace Learners guide: https://documentation.brightspace.com/EN/learners\n\nDATA PRIVACY: All personal information in the LMS is protected by Republic Act No. 10173 (Data Privacy Act of 2012)."
+  },
+  {
+    "chunk_id": "EAC-026",
+    "topic": "Social Media Policy",
+    "article": "Article 8 - EAC Social Media Policy",
+    "section": "Sections 1-15",
+    "keywords": [
+      "social media",
+      "Facebook",
+      "Instagram",
+      "TikTok",
+      "Twitter",
+      "cyber bullying",
+      "data privacy",
+      "intellectual property",
+      "EAC logo",
+      "breach",
+      "discipline"
+    ],
+    "bot_routing": "When asked about the EAC policy on social media, cyber-bullying, or the use of the EAC name and logo on social media.",
+    "content": "EAC SOCIAL MEDIA POLICY:\n- Applicable to all students everywhere, whether on personal devices, outside campus, as long as there is reference to EAC.\n- Includes: Facebook, Instagram, TikTok, Twitter, YouTube, LinkedIn, Snapchat, Flickr, blogs, discussion forums, instant messaging.\n\nPROHIBITED ON SOCIAL MEDIA:\na) Confidential information (unpublished research, private information of other students or staff).\nb) Details of complaints or legal proceedings of the Institution.\nc) Personal information of others without their consent.\nd) Posts using fake accounts or names of others without consent.\ne) Threatening, harassing, discriminatory, illegal, obscene, defamatory content.\nf) Any post that will bring shame to EAC or benefit from illegal activities.\ng) Any criminal offense.\n\nCYBER-BULLYING - examples:\n- Spreading false information and rumors.\n- Intimidation or aggressive behavior.\n- Vulgar, lewd, or threatening comments.\n- Using memes to mock a person.\n\nINTELLECTUAL PROPERTY:\n- Permission is required before sharing third-party materials (images, photos, text, videos).\n\nEAC LOGO AND NAME:\n- The EAC logo cannot be altered (do not stretch, distort, change elements, or change color).\n- Consent from the Marketing and Communications Office is required.\n\nCONSEQUENCES OF VIOLATION:\n- MAJOR OFFENSE under the EAC Student Manual.\n- May be referred to law enforcement agencies.\n- The affected party may also pursue legal action.\n- All reported violations will be treated confidentially."
+  },
+  {
+    "chunk_id": "EAC-027",
+    "topic": "Attendance Policy and Tardiness Rules",
+    "article": "Article 9 - Attendance and Examinations",
+    "section": "Sections 1-4 - Attendance",
+    "keywords": [
+      "attendance",
+      "absence",
+      "tardy",
+      "late",
+      "excused absence",
+      "unexcused absence",
+      "80%",
+      "UW",
+      "unauthorized withdrawal",
+      "3 consecutive absences",
+      "guidance office",
+      "make-up"
+    ],
+    "bot_routing": "When asked about the attendance policy, how many absences are allowed, or what happens when late or absent.",
+    "content": "ATTENDANCE POLICY:\n- All students are required to attend at least 80% of class periods for each subject to earn the units.\n- The 20% is for excused and unexcused absences.\n\nTYPES OF ABSENCES:\n- EXCUSED ABSENCE: Illness, death in the family, or official school activity. A written request to the Dean and supporting documents (medical certificate, death certificate) are required.\n- UNEXCUSED ABSENCE: All absences that do not fall under excused absence.\n- The teacher is OBLIGED to give make-up activities (quizzes) for EXCUSED absences only.\n\nTARDINESS (Being Late):\n- A student is considered late if they do not arrive within 15 minutes from the start of the class.\n- The place of residence is NOT a valid reason for being late.\n- 3 consecutive tardiness (less than 15 minutes) = 1 absence in the subject.\n- If late by MORE THAN 15 minutes = automatically absent.\n- Whether absent or late, the student can still attend the class.\n\nMAXIMUM ALLOWED ABSENCES:\n- 3-unit subject: 11 hours\n- 4-unit subject: 9 hours\n- 5-unit subject: 7 hours\n- 6-unit subject: 6 hours\n- NSTP 1 and 2: 6 hours\n\nEXCEEDING THE MAXIMUM:\n- The student will automatically be enrolled in UW (Unauthorized Withdrawal) and will lose the units.\n\n3 CONSECUTIVE ABSENCES:\n- The student needs to go to the Guidance Office for counseling.\n- The student needs to show the referral form from the Guidance Office before returning to class."
+  },
+  {
+    "chunk_id": "EAC-028",
+    "topic": "Examinations Policy",
+    "article": "Article 9 - Attendance and Examinations",
+    "section": "Sections 5-11 - Examinations",
+    "keywords": [
+      "examination",
+      "prelim",
+      "midterm",
+      "final",
+      "examination permit",
+      "special exam",
+      "completion exam",
+      "INC",
+      "cheating",
+      "5.0",
+      "departmentalized"
+    ],
+    "bot_routing": "When asked about exams, examination permit, special exams, completion exam, or cheating policy.",
+    "content": "EXAMINATIONS AT EAC:\n- 3 periodic examinations per semester: PRELIM, MIDTERM, and FINAL.\n- In the Summer Term: MIDTERM and FINAL exams only.\n\nEXAMINATION PERMIT:\n- NO student is allowed to take an exam without an examination permit from the Accounting Office.\n\nCHARACTER OF EXAMS:\n- Departmentalized and from the College Test Bank.\n- Checking is computerized (scanner) and the results are recorded in the Registrar's Office.\n- Exam results can be obtained at the Dean's Office.\n\nSPECIAL EXAMS (for Prelim and Midterm):\n- FOR: Students with a valid reason (illness, death in the family).\n- Clearance from the Dean is required.\n- If the special exam cannot be taken due to illness, a medical certificate from the School Physician is required.\n- Special exams must be taken BEFORE the scheduled midterm and final exams.\n- If not taken within the prescribed period: ZERO score.\n\nCOMPLETION EXAMS (Final Exam):\n- Must be taken within the prescribed period in the Academic Calendar.\n- A completion form from the Registrar's Office is required, to be signed by the instructor and approved by the Dean.\n- If not taken after the prescribed period: GRADE OF 5.0.\n\nOPEN ACCOUNTS:\n- Students with an unpaid balance CANNOT obtain their exam results.\n\nCHEATING:\n- Any student caught cheating on an exam or quiz will receive a grade of 5.0 in the subject AND will be dropped from the course."
+  },
+  {
+    "chunk_id": "EAC-029",
+    "topic": "Grading System",
+    "article": "Article 10 - Grading System",
+    "section": "Sections 1-4",
+    "keywords": [
+      "grading system",
+      "grade",
+      "1.0",
+      "1.25",
+      "1.5",
+      "1.75",
+      "2.0",
+      "2.5",
+      "3.0",
+      "5.0",
+      "INC",
+      "OW",
+      "UW",
+      "incomplete",
+      "official withdrawal",
+      "unauthorized withdrawal",
+      "passing grade",
+      "class standing"
+    ],
+    "bot_routing": "When asked about the grading system, what the passing grade is, or what INC, OW, and UW are.",
+    "content": "EAC GRADING SYSTEM:\n\nGRADE EQUIVALENTS:\n1.00 = 97-100% = Excellent\n1.25 = 94-96% = Superior\n1.50 = 91-93% = Very Good\n1.75 = 88-90% = Good\n2.00 = 85-87% = Very Satisfactory\n2.25 = 82-84% = Satisfactory\n2.50 = 79-81% = Average\n2.75 = 76-78% = Fair\n3.00 = 75% = PASSING GRADE (minimum passing)\n5.00 = 74% and below = FAILED\n\nTHE STANDARD PASSING GRADE IS 3.0 (75%).\n\nSPECIAL MARKS:\n- INC (Incomplete): Given when (a) the final exam is not taken due to a valid reason, or (b) there are incomplete requirements before the final exam. MUST BE COMPLETED WITHIN ONE SEMESTER - if not, automatically becomes 5.0.\n- OW (Official Withdrawal): Given when a subject is dropped within the authorized period (before the first day of the scheduled midterm exam).\n- UW (Unauthorized Withdrawal): Given when (a) there is no attendance for the entire semester, or (b) the maximum allowed absences are exceeded (>20%).\n\nCOMPONENTS OF GRADING (General Education subjects - Base 40%; Professional subjects - Base 30%):\nFOR SUBJECTS WITHOUT LABORATORY:\n- Prelim Exam: 20%, Midterm Exam: 20%, Final Exam: 20%, Class Standing: 40%\nFOR SUBJECTS WITH LABORATORY:\n- Prelim: 15%, Midterm: 15%, Final: 15%, Class Standing: 25%, Laboratory: 30%\nPURE LABORATORY SUBJECTS:\n- Prelim: 20%, Midterm: 20%, Final: 20%, Laboratory: 40%\n\nVERIFICATION OF GRADES:\n- Before the final grading period: Program Adviser or School Dean.\n- After the final grading period: School Dean or VP for Academic Affairs."
+  },
+  {
+    "chunk_id": "EAC-030",
+    "topic": "Major Offenses",
+    "article": "Article 11 - Rules of Student Conduct and Discipline",
+    "section": "Section 2 - Major Offenses",
+    "keywords": [
+      "major offense",
+      "disruptive behavior",
+      "assault",
+      "harassment",
+      "drugs",
+      "alcohol",
+      "smoking",
+      "hazing",
+      "fraternities",
+      "cheating",
+      "plagiarism",
+      "forgery",
+      "bullying",
+      "hacking",
+      "gambling",
+      "sexual assault",
+      "weapons",
+      "obstruction",
+      "blackmail"
+    ],
+    "bot_routing": "When asked about major offenses in EAC, what are the serious violations, or offenses with severe penalties.",
+    "content": "MAJOR OFFENSES IN EAC (Section 2, Article 11):\n\n2.1 Disruptive behavior, willful disobedience, foul language, hostile gestures, or open defiance of EAC authority.\n2.2 Assault, battery, harassment, or threat of force against a student, personnel, or authorized visitor.\n2.3 Willful misconduct that results in injury or death, or damage to school property.\n2.4 Unsafe behavior in the campus, clinical setting, or lab that threatens oneself or others.\n2.5 Illegal use, sale, or possession of controlled substances or poison on school property.\n2.6 Any form of smoking in areas prohibited by law or by the EAC Board.\n2.7 Lewd, indecent, or obscene behavior on school property, online class, or school-sponsored events.\n2.8 Sexual assault (R.A. 9262) against anyone, on or off campus.\n2.9 Possession or use of firearms, explosives, sharp weapons, or hazardous materials.\n2.10 Interference with or disruption of any educational or administrative function of the school.\n2.11 Physical abuse or threat of physical abuse against any member of the campus community.\n2.12 Impersonation of an EAC representative.\n2.13 Extortion, blackmail, or collection of funds without Institution approval.\n2.14 Aiding another student in committing a disciplinary offense.\n2.15 Use, possession, or distribution of alcohol or illegal drugs on school premises or events.\n2.16 Hacking, unauthorized recording, or posting of academic presentations or materials online (R.A. 10175).\n2.17 Discriminatory actions or threats based on race, religion, gender, or sexual orientation.\n2.18 Academic dishonesty: falsification, plagiarism, cheating, or fabrication.\n2.19 Forgery of signatures.\n2.20 All forms of hazing and membership in a fraternity or sorority (R.A. 8049).\n2.21 Gambling or any activity with betting on campus.\n2.22 All forms of bullying against students, faculty, staff, or officials (R.A. 10627).\n2.23 Violation of Copyright Laws (R.A. 8293).\n2.24 Unjust enrichment.\n2.25 Tampering with fire alarms and other campus safety devices.\n2.26 Failure to respond to summons from the OSA and other College authorities.\n2.27 Violation of Institutional Board Policies and Administrative Regulations."
+  },
+  {
+    "chunk_id": "EAC-031",
+    "topic": "Minor Offenses",
+    "article": "Article 11 - Rules of Student Conduct and Discipline",
+    "section": "Section 3 - Minor Offenses",
+    "keywords": [
+      "minor offense",
+      "school ID",
+      "dress code",
+      "littering",
+      "CLAYGO",
+      "loitering",
+      "cellphone",
+      "noise",
+      "public display of affection",
+      "PDA",
+      "fake ID",
+      "comfort room",
+      "sando",
+      "rubber slippers",
+      "dyed hair"
+    ],
+    "bot_routing": "When asked about minor offenses in EAC or less serious violations.",
+    "content": "MINOR OFFENSES IN EAC (Section 3, Article 11):\n\n3.1 Failure to wear and/or improper use of school ID (including fake ID, two IDs, and lending of ID).\n3.2 Tampering of school ID.\n3.3 Inappropriate attire within school premises:\n  - Sando\n  - PE shorts and athletic shorts (except during PE classes)\n  - Clothing with plunging neckline\n  - Revealing shorts\n  - Tokong\n  - Leggings, pants with holes\n  - Mini skirts\n  - Spaghetti straps without vest/topper\n  - Tube blouse without vest/topper\n  - Rubber slippers\n  - Sandals of any kind\n  - Cross-dressing\n3.4 Dyed hair with unnatural, outlandish color or highlights.\n3.5 Bringing and eating food and drinks inside the classroom.\n3.6 Loitering or staying near walkways, fire exits, and restricted areas.\n3.7 Making noise in the corridors during class hours.\n3.8 For MALES: Long hair (reaching the collar of the polo), wearing earrings, ball caps, hats, bonnets.\n3.9 Participating in off-campus activities using the name of EAC without written authorization.\n3.10 Adverse or sexist statements against any member of the academic community.\n3.11 Possession and/or use of pornographic materials.\n3.12 Use of cellphones, headsets, and other electronic devices during class hours and exams.\n3.13 Improper and unauthorized use of classrooms and school facilities.\n3.14 Posting of unauthorized notices on bulletin boards or outside authorized areas.\n3.15 Indiscriminate use of musical instruments, megaphones, cameras during class hours.\n3.16 Use of abusive or obscene language within the campus.\n3.17 Public display of affection (PDA).\n3.18 Entering and/or using the comfort room designated for the opposite gender.\n3.19 Other misdemeanors not considered as major offenses."
+  },
+  {
+    "chunk_id": "EAC-032",
+    "topic": "Contact Information and Key Offices",
+    "article": "General Information",
+    "section": "Contact Details at Key Offices",
+    "keywords": [
+      "contact",
+      "email",
+      "phone",
+      "trunkline",
+      "Registrar",
+      "OSA",
+      "Cashier",
+      "Admissions",
+      "OLTD",
+      "Guidance",
+      "MIS",
+      "Dean's Office",
+      "Dasmarinas"
+    ],
+    "bot_routing": "When asked about contact numbers, email addresses, or which office to visit for a particular concern.",
+    "content": "KEY CONTACT INFORMATION OF EAC-CAVITE:\n\nCAMPUS ADDRESS: Congressional East Ave., Burol Main, Dasmariñas City, Cavite\nTRUNKLINE: (+046) 416-4341 to 42\nWEBSITE: http://www.eac.edu.ph/cavite\n\nKEY OFFICES AND CONTACTS:\n- ADMISSIONS OFFICE: admission_cavite@eac.edu.ph\n- CASHIER'S OFFICE (Online payment): cashier.cavite@eac.edu.ph\n- OFFICE OF STUDENT AFFAIRS (OSA): studentaffairs.cvt@eac.edu.ph | Tel loc 115\n- ONLINE TEACHING LEARNING DEPARTMENT (OLTD): oltd@eac.edu.ph\n- IT SUPPORT: itsupport@eac.edu.ph\n\nFOR WHICH CONCERN, WHICH OFFICE:\n- Academic records, graduation, enrollment: REGISTRAR'S OFFICE\n- Admissions, transferee, returnee: ADMISSIONS OFFICE\n- Scholarships, ID, student concerns: OFFICE OF STUDENT AFFAIRS (OSA)\n- Financial concerns, payment, promissory notes: ACCOUNTING/CASHIER'S OFFICE\n- Counseling, mental health, career guidance: CENTER FOR COUNSELING, CAREER AND STUDENT DEVELOPMENT\n- ID processing at MIS concerns: MIS OFFICE\n- Online class at Brightspace concerns: OLTD\n- Health concerns: SCHOOL CLINIC / MEDICAL-DENTAL CLINIC\n- Discipline concerns: OFFICE OF STUDENT AFFAIRS (OSA)\n- Grade verification (before final grading): PROGRAM ADVISER or SCHOOL DEAN\n- Grade verification (after final grading): SCHOOL DEAN or VP FOR ACADEMIC AFFAIRS"
+  },
+  {
+    "chunk_id": "EAC-033",
+    "topic": "Shifting Programs and Cross Enrollment",
+    "article": "Article 5 - College Enrollment and Registration",
+    "section": "Sections 6-7 - Cross Enrollment and Shifting",
+    "keywords": [
+      "shifting",
+      "cross enrollment",
+      "change program",
+      "registration period",
+      "Dean approval",
+      "cross enroll permit",
+      "credit transfer"
+    ],
+    "bot_routing": "When asked about how to shift programs or how to cross-enroll in another school.",
+    "content": "SHIFTING TO ANOTHER PROGRAM:\n- Allowed only during the REGISTRATION PERIOD.\n- Process:\n  1. Obtain the prescribed shifting form from the Registrar's Office.\n  2. Secure the approval of the Dean of the current school.\n  3. Secure the acceptance/approval of the Dean of the new school.\n  4. For shifting within the same school: approval of the Dean of the same school is required.\n\nCROSS ENROLLMENT (enrolling in subjects from another school):\n- In general, EAC DOES NOT encourage cross enrollment.\n- If there is a valid reason and written approval from the Dean: Cross enrollment in another institution is allowed up to the normal course load.\n- The cross-enrollment permit will be issued by the Registrar's Office based on the approved request.\n- Subjects taken from another school without authorization from the Dean and Registrar - NO CREDIT.\n- Cross-enrollment must be done ONLY WITHIN THE REGISTRATION PERIOD.\n- Simultaneous cross-enrollment in TWO OR MORE external schools is PROHIBITED.\n\nCREDIT TRANSFER (for Transferees):\n- A minimum of 50% of the total units of the course and not less than 2 years of enrollment is required before graduation.\n- In the first semester at EAC, a minimum of 15 units must be enrolled: 12 units of courses and 3 units of Emilian Culture Formation course."
+  },
+  {
+    "chunk_id": "EAC-034",
+    "topic": "Health and Wellness, Clinic Policy",
+    "article": "Article 2 - General Directives",
+    "section": "Title 7 - Health and Wellness",
+    "keywords": [
+      "health",
+      "wellness",
+      "school clinic",
+      "medical examination",
+      "communicable disease",
+      "medical clearance",
+      "health protocol",
+      "IATF"
+    ],
+    "bot_routing": "When asked about the health policy, school clinic, or medical requirements of EAC.",
+    "content": "HEALTH AND WELLNESS POLICY OF EAC:\n\n1.1 HEALTH PROTOCOLS:\n- All students are required to follow all health and safety protocols of EAC in accordance with the Inter-agency Task Force (IATF) for the management of emerging infectious diseases.\n\n1.2 HEALTH EXAMINATIONS:\n- All students are required to undergo scheduled entrance and periodic health examinations conducted by the EAC School Clinic.\n\n1.3 MEDICAL CLEARANCE:\n- Students diagnosed with a communicable disease or unable to attend classes due to a prolonged illness are required to secure medical clearance before returning to class.\n\nSMOKE-FREE POLICY:\n- Prohibition of smoking in all forms in all school buildings and properties (including rented vehicles).\n- The Student Clinic provides referral and smoking cessation guidance if requested."
+  },
+  {
+    "chunk_id": "EAC-035",
+    "topic": "Campus Facility Access and Classroom Management",
+    "article": "Article 2 - General Directives",
+    "section": "Titles 6 and 8 - Campus Facilities and Classroom Management",
+    "keywords": [
+      "campus facilities",
+      "classroom",
+      "CLAYGO",
+      "reservation",
+      "first come first served",
+      "electronic devices",
+      "cellphone",
+      "faculty policies"
+    ],
+    "bot_routing": "When asked about the use of campus facilities or classroom rules of EAC.",
+    "content": "CAMPUS FACILITY ACCESS:\n- All students have equal rights to use the available campus space and facilities.\n- THERE IS NO permanent reservation right to any school facility - first come, first served basis.\n- The school may prohibit the use of the facility by anyone who does not comply with the regulations.\n\nCLASSROOM MANAGEMENT POLICIES:\n1.1 The CLAYGO (Clean As You Go) and dress code must always be followed inside the classroom.\n1.2 The use of electronic devices (cellphone, laptop, etc.) must be in accordance with the instructions of the faculty member for instructional purposes only.\n1.3 The instructional equipment and materials are for academic purposes only, in accordance with the venue and equipment reservation guidelines.\n1.4 Proper care and responsible use of all classroom furniture and equipment.\n1.5 Faculty members may set additional classroom policies - as long as they do not contradict the Student Manual and are practical, reasonable, and mutually agreed upon by the faculty and students.\n\nMINOR OFFENSE: Eating and drinking inside the classroom, loitering, using a cellphone during class hours, and unauthorized use of school facilities are minor offenses."
+  }
+]

@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Knowledge Base · OSA Admin</title>
+  <link rel="icon" type="image/png" href="/assets/images/eac-emblem.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/admin/admin-shell.css?v=20260424a">
+  <style>
+    .rag-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
+    .rag-row {
+      background: linear-gradient(180deg, rgba(255,253,249,0.98), rgba(255,248,240,0.94));
+      border: 1px solid var(--line);
+      border-top: 3px solid var(--brand);
+      padding: 14px 16px; border-radius: 10px;
+      box-shadow: var(--shadow-sm);
+    }
+    .rag-row__head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+    .rag-row__title { font-weight: 700; color: var(--ink); line-height: 1.3; }
+    .rag-row__meta { font-size: 0.72rem; color: var(--muted); letter-spacing: 0.03em; text-transform: uppercase; }
+    .rag-row__chunkid { font-family: ui-monospace,Menlo,Consolas,monospace; font-size: 0.72rem; color: var(--brand); font-weight: 800; }
+    .rag-row__kw { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+    .rag-chip { background: rgba(132,26,45,0.08); color: #841a2d; font-size: 0.72rem; font-weight: 700; padding: 3px 10px; border-radius: 999px; }
+    .rag-row__content {
+      font-size: 0.82rem; color: #3c2a24; line-height: 1.55;
+      max-height: 110px; overflow: hidden; position: relative;
+      white-space: pre-wrap;
+    }
+    .rag-row__content.expanded { max-height: none; }
+    .rag-row__fade {
+      position: absolute; bottom: 0; left: 0; right: 0; height: 40px;
+      background: linear-gradient(180deg, rgba(255,253,249,0), rgba(255,253,249,0.98));
+      pointer-events: none;
+    }
+    .rag-row__actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+    .rag-pill { font-size: 0.7rem; font-weight: 800; padding: 3px 10px; border-radius: 999px; letter-spacing: 0.04em; text-transform: uppercase; }
+    .rag-pill--embed { background: #dcfce7; color: #166534; }
+    .rag-pill--no-embed { background: #fee2e2; color: #991b1b; }
+    .rag-pill--active { background: #dbeafe; color: #1e40af; }
+    .rag-pill--inactive { background: #f3f4f6; color: #6b7280; }
+
+    .rag-search-panel { display: none; }
+    .rag-search-panel.open { display: block; }
+    .rag-search-results { margin-top: 10px; display: grid; gap: 8px; }
+    .rag-search-result {
+      background: #fff; border: 1px solid var(--line); border-radius: 8px;
+      padding: 10px 12px; font-size: 0.82rem;
+    }
+    .rag-search-result__head {
+      display: flex; justify-content: space-between; gap: 8px;
+      font-family: ui-monospace,Menlo,Consolas,monospace; font-weight: 700;
+      color: var(--brand); font-size: 0.78rem;
+    }
+    .rag-search-confidence {
+      display: inline-block; padding: 4px 10px; border-radius: 999px;
+      font-weight: 800; font-size: 0.74rem; letter-spacing: 0.04em;
+    }
+    .rag-conf--HIGH     { background: #dcfce7; color: #166534; }
+    .rag-conf--MEDIUM   { background: #fef3c7; color: #92400e; }
+    .rag-conf--LOW      { background: #ffedd5; color: #9a3412; }
+    .rag-conf--ESCALATE { background: #fee2e2; color: #991b1b; }
+  </style>
+</head>
+<body>
+<div class="admin-page" id="admin-page">
+
+  <!-- NAV -->
+  <nav class="admin-nav" id="admin-nav">
+    <button class="nav-hamburger" id="nav-hamburger" aria-label="Open navigation menu" aria-expanded="false">
+      <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+    <a class="admin-nav__brand" href="/admin/dashboard">
+      <img class="admin-nav__logo" src="/assets/images/eac-emblem.png" alt="EAC" onerror="this.style.display='none'">
+      <div class="admin-nav__title"><strong>EAC Cavite</strong><span>OSA Admin Panel</span></div>
+    </a>
+    <div class="admin-nav__sep"></div>
+    <div class="admin-nav__links">
+      <a class="nav-link" href="/admin/dashboard"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</a>
+      <a class="nav-link" href="/admin/modules/announcements"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Announcements</a>
+      <a class="nav-link" href="/admin/modules/lost-found"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Lost &amp; Found</a>
+      <a class="nav-link" href="/admin/modules/home-content"><svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home Content</a>
+      <a class="nav-link" href="/admin/modules/about"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>About Page</a>
+      <a class="nav-link" href="/admin/modules/chat-support"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Chat Support</a>
+      <a class="nav-link active" href="/admin/modules/rag-chunks"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Knowledge Base</a>
+      <a class="nav-link" href="/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Live Portal</a>
+    </div>
+    <div class="admin-nav__right">
+      <div class="admin-avatar" data-admin-initials>AD</div>
+      <div class="admin-name-wrap"><strong data-admin-name>Administrator</strong><span data-admin-email></span></div>
+      <button class="btn-logout" data-logout type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Log Out</span></button>
+    </div>
+  </nav>
+
+  <!-- UTIL BAR -->
+  <div class="admin-util-bar" id="admin-util-bar">
+    <div class="util-left">
+      <span class="util-page-title">Knowledge Base (RAG)</span>
+      <div class="util-breadcrumb"><span>Admin</span><span class="sep">›</span><span>Chatbot Knowledge Base</span></div>
+    </div>
+    <div class="util-right">
+      <div class="util-datetime">
+        <span class="util-datetime__date" id="dt-date"></span>
+        <span class="util-datetime__sep">·</span>
+        <span class="util-datetime__time" id="dt-time"></span>
+        <span class="util-datetime__ph">PST</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- DRAWER -->
+  <div class="admin-drawer" id="admin-drawer" role="dialog" aria-modal="true" aria-label="Navigation">
+    <div class="drawer-backdrop" id="drawer-backdrop"></div>
+    <div class="drawer-panel">
+      <div class="drawer-header">
+        <div class="drawer-brand"><img src="/assets/images/eac-emblem.png" alt="EAC" onerror="this.style.display='none'"><div class="drawer-brand-text"><strong>EAC Cavite</strong><span>OSA Admin Panel</span></div></div>
+        <button class="drawer-close" id="drawer-close" aria-label="Close menu"><svg viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="M6 6 18 18"/></svg></button>
+      </div>
+      <nav class="drawer-nav">
+        <span class="drawer-section-label">Overview</span>
+        <a class="drawer-nav-item" href="/admin/dashboard"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</a>
+        <span class="drawer-section-label">Content</span>
+        <a class="drawer-nav-item" href="/admin/modules/announcements"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Announcements</a>
+        <a class="drawer-nav-item" href="/admin/modules/lost-found"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Lost &amp; Found</a>
+        <a class="drawer-nav-item" href="/admin/modules/home-content"><svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home Content</a>
+        <a class="drawer-nav-item" href="/admin/modules/about"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>About Page</a>
+        <a class="drawer-nav-item" href="/admin/modules/chat-support"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Chat Support</a>
+        <span class="drawer-section-label">Chatbot</span>
+        <a class="drawer-nav-item active" href="/admin/modules/rag-chunks"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Knowledge Base</a>
+        <span class="drawer-section-label">Portal</span>
+        <a class="drawer-nav-item" href="/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>View Live Portal</a>
+      </nav>
+      <div class="drawer-footer">
+        <div class="drawer-profile"><div class="admin-avatar" data-admin-initials>AD</div><div class="drawer-profile-text"><strong data-admin-name>Administrator</strong><span data-admin-email></span></div></div>
+        <button class="drawer-logout" data-logout type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Log Out</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <main class="admin-main">
+
+    <div class="page-header">
+      <div>
+        <div class="page-header__eyebrow">Chatbot Knowledge Base</div>
+        <h1>RAG Manager — EAC Student Manual</h1>
+        <p>Manage the 35 knowledge chunks that power the chatbot's Tier 2 answers. Edit content, keywords, or active status — embeddings regenerate automatically on save.</p>
+      </div>
+      <div class="page-header__actions">
+        <button class="btn btn-ghost" id="btn-toggle-search">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Test Search
+        </button>
+        <button class="btn btn-ghost" id="btn-reembed-all" title="Regenerate embeddings for all active chunks">
+          <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/><path d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14"/></svg>
+          Re-embed All
+        </button>
+        <button class="btn btn-primary" id="btn-new-chunk">
+          <svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          New Chunk
+        </button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row" style="grid-template-columns:repeat(3,1fr)">
+      <div class="stat-card"><div class="stat-card__label">Total Chunks</div><div class="stat-card__value" id="s-total">0</div><div class="stat-card__sub">In knowledge base</div></div>
+      <div class="stat-card gold"><div class="stat-card__label">Active</div><div class="stat-card__value" id="s-active">0</div><div class="stat-card__sub">Available to chatbot</div></div>
+      <div class="stat-card"><div class="stat-card__label">Embedded</div><div class="stat-card__value" id="s-embedded">0</div><div class="stat-card__sub">Gemini vectors (768-d)</div></div>
+    </div>
+
+    <!-- Test Search Panel -->
+    <div class="panel rag-search-panel" id="search-panel" style="padding: 16px;">
+      <div class="panel-head"><h2>Test RAG Retrieval</h2></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <input type="search" id="rag-test-query" placeholder="e.g., paano mag-apply ng scholarship?" style="flex:1;min-width:250px;padding:10px 14px;border:1px solid var(--line);border-radius:8px;font-size:0.88rem">
+        <button class="btn btn-primary" id="btn-run-search">Search</button>
+      </div>
+      <div id="search-results" class="rag-search-results"></div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="search-input-wrap">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="search" id="filter-search" placeholder="Filter by topic, section, or keyword…">
+      </div>
+      <select class="filter-select" id="filter-status" aria-label="Filter by status" title="Filter by status">
+        <option value="">All Status</option>
+        <option value="active">Active only</option>
+        <option value="inactive">Inactive only</option>
+        <option value="no-embed">Missing embedding</option>
+      </select>
+    </div>
+
+    <div class="panel" style="padding:16px">
+      <div class="panel-head" style="margin-bottom:10px">
+        <h2>Knowledge Chunks</h2>
+        <span id="row-count" style="font-size:0.74rem;color:var(--muted)"></span>
+      </div>
+      <div class="rag-grid" id="chunk-grid"></div>
+    </div>
+
+  </main>
+</div>
+
+<!-- MODAL -->
+<div class="modal-backdrop" id="chunk-modal">
+  <div class="modal modal-lg">
+    <div class="modal-head">
+      <h2 id="chunk-modal-title">New Chunk</h2>
+      <button class="modal-close" data-modal-close="chunk-modal" aria-label="Close modal" title="Close modal"><svg viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="M6 6 18 18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-row">
+          <div class="field">
+            <label for="f-chunkid">Chunk ID <span style="color:var(--brand)">*</span></label>
+            <input type="text" id="f-chunkid" placeholder="e.g., EAC-036" style="font-family:ui-monospace,Menlo,Consolas,monospace">
+          </div>
+          <div class="field">
+            <label for="f-source">Source</label>
+            <input type="text" id="f-source" value="EAC Student Manual 2021">
+          </div>
+        </div>
+        <div class="field">
+          <label for="f-topic">Topic</label>
+          <input type="text" id="f-topic" placeholder="e.g., Freshman Admission Requirements">
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label for="f-article">Article</label>
+            <input type="text" id="f-article" placeholder="e.g., Article 1 - General Policy">
+          </div>
+          <div class="field">
+            <label for="f-section">Section</label>
+            <input type="text" id="f-section" placeholder="e.g., Section 2.1 - Freshman Admission">
+          </div>
+        </div>
+        <div class="field">
+          <label for="f-keywords">Keywords <span style="font-weight:400;text-transform:none;letter-spacing:0">(comma-separated)</span></label>
+          <input type="text" id="f-keywords" placeholder="admission, requirements, freshman, form 138">
+        </div>
+        <div class="field">
+          <label for="f-routing">Bot Routing Hint <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional, when to use this chunk)</span></label>
+          <input type="text" id="f-routing" placeholder="When the bot is asked about freshman admission requirements.">
+        </div>
+        <div class="field">
+          <label for="f-content">Content <span style="color:var(--brand)">*</span></label>
+          <textarea id="f-content" style="min-height:220px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.82rem" placeholder="Full chunk text that the chatbot will use as authoritative source…"></textarea>
+          <small style="color:var(--muted);font-size:0.72rem">Changes to content auto-regenerate the embedding.</small>
+        </div>
+        <div class="field">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input type="checkbox" id="f-active" checked style="width:auto;accent-color:var(--brand)">
+            <span>Active (available to chatbot)</span>
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-modal-close="chunk-modal">Cancel</button>
+      <button class="btn btn-primary" id="btn-save-chunk">
+        <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Save Chunk
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="/admin/admin-shell.js?v=20260424a"></script>
+<script>
+  let chunks = [];
+  let editingId = null;
+
+  async function loadChunks() {
+    try {
+      const r = await adminApi.get('/admin/rag/chunks');
+      chunks = Array.isArray(r.data) ? r.data : [];
+      updateStats(r.totals || {});
+      renderGrid();
+    } catch (err) {
+      alert('Failed to load chunks: ' + err.message);
+    }
+  }
+
+  function updateStats(totals) {
+    document.getElementById('s-total').textContent = totals.total ?? chunks.length;
+    document.getElementById('s-active').textContent = totals.active ?? chunks.filter(c => c.isActive).length;
+    document.getElementById('s-embedded').textContent = totals.embedded ?? chunks.filter(c => c.hasEmbedding).length;
+  }
+
+  function escapeHtml(s) {
+    return String(s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  }
+
+  function renderGrid() {
+    const search = document.getElementById('filter-search').value.toLowerCase().trim();
+    const statusFilter = document.getElementById('filter-status').value;
+
+    let items = chunks;
+    if (search) {
+      items = items.filter(c =>
+        (c.topic + ' ' + c.section + ' ' + c.content + ' ' + (c.keywords || []).join(' ') + ' ' + c.chunkId)
+          .toLowerCase()
+          .includes(search)
+      );
+    }
+    if (statusFilter === 'active') items = items.filter(c => c.isActive);
+    else if (statusFilter === 'inactive') items = items.filter(c => !c.isActive);
+    else if (statusFilter === 'no-embed') items = items.filter(c => !c.hasEmbedding);
+
+    document.getElementById('row-count').textContent = items.length + ' chunk' + (items.length !== 1 ? 's' : '');
+
+    const grid = document.getElementById('chunk-grid');
+    if (!items.length) {
+      grid.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">No chunks found.</div>';
+      return;
+    }
+
+    grid.innerHTML = items.map(c => `
+      <div class="rag-row" data-id="${escapeHtml(c.id)}">
+        <div class="rag-row__head">
+          <div style="flex:1;min-width:0">
+            <div class="rag-row__chunkid">${escapeHtml(c.chunkId)}</div>
+            <div class="rag-row__title">${escapeHtml(c.topic || '(no topic)')}</div>
+            <div class="rag-row__meta">${escapeHtml(c.article || '')}${c.section ? ' · ' + escapeHtml(c.section) : ''}</div>
+          </div>
+          <div style="display:flex;gap:4px;flex-wrap:wrap">
+            <span class="rag-pill ${c.hasEmbedding ? 'rag-pill--embed' : 'rag-pill--no-embed'}">${c.hasEmbedding ? '● Embedded' : '○ No embedding'}</span>
+            <span class="rag-pill ${c.isActive ? 'rag-pill--active' : 'rag-pill--inactive'}">${c.isActive ? 'Active' : 'Inactive'}</span>
+          </div>
+        </div>
+        <div class="rag-row__kw">
+          ${(c.keywords || []).slice(0, 12).map(k => '<span class="rag-chip">' + escapeHtml(k) + '</span>').join('')}
+        </div>
+        <div class="rag-row__content" data-content>${escapeHtml(c.content)}<div class="rag-row__fade" data-fade></div></div>
+        <div class="rag-row__actions">
+          <button class="btn btn-ghost" data-act="expand">Show full</button>
+          <button class="btn btn-ghost" data-act="edit">Edit</button>
+          <button class="btn btn-ghost" data-act="reembed" title="Regenerate embedding for this chunk">Re-embed</button>
+          <button class="btn btn-ghost" data-act="toggle">${c.isActive ? 'Deactivate' : 'Activate'}</button>
+          <button class="btn btn-ghost" data-act="delete" style="color:var(--brand)">Delete</button>
+        </div>
+      </div>
+    `).join('');
+
+    grid.querySelectorAll('.rag-row').forEach(row => {
+      const id = row.getAttribute('data-id');
+      row.querySelectorAll('[data-act]').forEach(btn => {
+        btn.addEventListener('click', () => handleAction(btn.getAttribute('data-act'), id, row));
+      });
+    });
+  }
+
+  async function handleAction(action, id, rowEl) {
+    const chunk = chunks.find(c => c.id === id);
+    if (!chunk) return;
+
+    if (action === 'expand') {
+      const body = rowEl.querySelector('[data-content]');
+      const fade = rowEl.querySelector('[data-fade]');
+      const isExpanded = body.classList.toggle('expanded');
+      if (fade) fade.style.display = isExpanded ? 'none' : 'block';
+      const btn = rowEl.querySelector('[data-act="expand"]');
+      if (btn) btn.textContent = isExpanded ? 'Collapse' : 'Show full';
+    }
+
+    if (action === 'edit') {
+      openModal(chunk);
+    }
+
+    if (action === 'toggle') {
+      try {
+        await adminApi.post('/admin/rag/chunks/upsert', {
+          id: chunk.id,
+          chunkId: chunk.chunkId,
+          topic: chunk.topic,
+          article: chunk.article,
+          section: chunk.section,
+          keywords: chunk.keywords,
+          botRouting: chunk.botRouting,
+          content: chunk.content,
+          source: chunk.source,
+          isActive: !chunk.isActive,
+        });
+        await loadChunks();
+      } catch (err) {
+        alert('Failed to toggle: ' + err.message);
+      }
+    }
+
+    if (action === 'reembed') {
+      try {
+        const btn = rowEl.querySelector('[data-act="reembed"]');
+        if (btn) { btn.disabled = true; btn.textContent = 'Embedding…'; }
+        const r = await adminApi.post('/admin/rag/chunks/reembed', { id: chunk.id });
+        await loadChunks();
+        alert(`Re-embedded ${r.embedded}/${r.total}. ${r.failures.length ? 'Failures: ' + JSON.stringify(r.failures) : ''}`);
+      } catch (err) {
+        alert('Re-embed failed: ' + err.message);
+        await loadChunks();
+      }
+    }
+
+    if (action === 'delete') {
+      if (!confirm(`Delete chunk ${chunk.chunkId}? This cannot be undone.`)) return;
+      try {
+        await adminApi.post('/admin/rag/chunks/delete', { id: chunk.id });
+        await loadChunks();
+      } catch (err) {
+        alert('Delete failed: ' + err.message);
+      }
+    }
+  }
+
+  function openModal(chunk) {
+    editingId = chunk ? chunk.id : null;
+    document.getElementById('chunk-modal-title').textContent = chunk ? 'Edit Chunk' : 'New Chunk';
+    document.getElementById('f-chunkid').value = chunk ? chunk.chunkId : '';
+    document.getElementById('f-chunkid').disabled = !!chunk;
+    document.getElementById('f-source').value = chunk ? (chunk.source || 'EAC Student Manual 2021') : 'EAC Student Manual 2021';
+    document.getElementById('f-topic').value = chunk ? chunk.topic : '';
+    document.getElementById('f-article').value = chunk ? chunk.article : '';
+    document.getElementById('f-section').value = chunk ? chunk.section : '';
+    document.getElementById('f-keywords').value = chunk ? (chunk.keywords || []).join(', ') : '';
+    document.getElementById('f-routing').value = chunk ? chunk.botRouting : '';
+    document.getElementById('f-content').value = chunk ? chunk.content : '';
+    document.getElementById('f-active').checked = chunk ? chunk.isActive : true;
+
+    const modal = document.getElementById('chunk-modal');
+    modal.classList.add('active');
+  }
+
+  function closeModal() {
+    document.getElementById('chunk-modal').classList.remove('active');
+    editingId = null;
+  }
+
+  async function saveChunk() {
+    const payload = {
+      id: editingId || undefined,
+      chunkId: document.getElementById('f-chunkid').value.trim(),
+      topic: document.getElementById('f-topic').value.trim(),
+      article: document.getElementById('f-article').value.trim(),
+      section: document.getElementById('f-section').value.trim(),
+      keywords: document.getElementById('f-keywords').value.split(',').map(s => s.trim()).filter(Boolean),
+      botRouting: document.getElementById('f-routing').value.trim(),
+      content: document.getElementById('f-content').value.trim(),
+      source: document.getElementById('f-source').value.trim() || 'EAC Student Manual 2021',
+      isActive: document.getElementById('f-active').checked,
+    };
+
+    if (!payload.chunkId) { alert('Chunk ID is required.'); return; }
+    if (!payload.content) { alert('Content is required.'); return; }
+
+    const btn = document.getElementById('btn-save-chunk');
+    btn.disabled = true;
+    const originalHtml = btn.innerHTML;
+    btn.innerHTML = 'Saving & embedding…';
+
+    try {
+      const r = await adminApi.post('/admin/rag/chunks/upsert', payload);
+      if (r.embedError) {
+        alert('Saved, but embedding failed: ' + r.embedError + '\n\nUse "Re-embed" to retry.');
+      }
+      await loadChunks();
+      closeModal();
+    } catch (err) {
+      alert('Save failed: ' + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = originalHtml;
+    }
+  }
+
+  async function reembedAll() {
+    if (!confirm('Re-generate embeddings for all ACTIVE chunks? This may take ~30 seconds and uses Gemini API quota.')) return;
+    const btn = document.getElementById('btn-reembed-all');
+    btn.disabled = true;
+    btn.textContent = 'Re-embedding all…';
+    try {
+      const r = await adminApi.post('/admin/rag/chunks/reembed', {});
+      alert(`Re-embedded ${r.embedded}/${r.total} chunks.\n${r.failures.length ? 'Failures: ' + JSON.stringify(r.failures, null, 2) : 'All successful.'}`);
+      await loadChunks();
+    } catch (err) {
+      alert('Re-embed failed: ' + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/><path d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14"/></svg> Re-embed All';
+    }
+  }
+
+  async function runTestSearch() {
+    const q = document.getElementById('rag-test-query').value.trim();
+    if (!q) return;
+    const resultsEl = document.getElementById('search-results');
+    resultsEl.innerHTML = '<div style="padding:10px;color:var(--muted)">Searching…</div>';
+    try {
+      const r = await adminApi.post('/admin/rag/search', { query: q });
+      const tier = r.tier || 'ESCALATE';
+      const conf = Number(r.confidence || 0).toFixed(3);
+      const header = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div><strong>Confidence:</strong> ${conf} · <strong>Method:</strong> ${escapeHtml(r.method)}</div>
+        <span class="rag-search-confidence rag-conf--${tier}">${tier}</span>
+      </div>`;
+      const list = (r.chunks || []).map((c, i) => `
+        <div class="rag-search-result">
+          <div class="rag-search-result__head">
+            <span>${i + 1}. ${escapeHtml(c.chunkId)} · ${escapeHtml(c.topic || '')}</span>
+            <span>sim: ${Number(c.similarity).toFixed(3)} · ${escapeHtml(c.retrieval)}</span>
+          </div>
+          <div style="margin-top:6px;color:var(--muted);font-size:0.8rem">${escapeHtml(c.section || '')}</div>
+          <div style="margin-top:6px">${escapeHtml(c.contentPreview)}…</div>
+        </div>
+      `).join('');
+      resultsEl.innerHTML = header + list;
+    } catch (err) {
+      resultsEl.innerHTML = '<div style="padding:10px;color:var(--brand)">Search failed: ' + escapeHtml(err.message) + '</div>';
+    }
+  }
+
+  // Event wiring
+  document.getElementById('filter-search').addEventListener('input', renderGrid);
+  document.getElementById('filter-status').addEventListener('change', renderGrid);
+  document.getElementById('btn-new-chunk').addEventListener('click', () => openModal(null));
+  document.getElementById('btn-save-chunk').addEventListener('click', saveChunk);
+  document.getElementById('btn-reembed-all').addEventListener('click', reembedAll);
+  document.getElementById('btn-toggle-search').addEventListener('click', () => {
+    document.getElementById('search-panel').classList.toggle('open');
+  });
+  document.getElementById('btn-run-search').addEventListener('click', runTestSearch);
+  document.getElementById('rag-test-query').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); runTestSearch(); }
+  });
+
+  // Modal close handlers
+  document.querySelectorAll('[data-modal-close="chunk-modal"]').forEach(btn => {
+    btn.addEventListener('click', closeModal);
+  });
+
+  // Initial load
+  loadChunks();
+</script>
+</body>
+</html>

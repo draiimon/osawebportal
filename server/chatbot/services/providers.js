@@ -1,18 +1,26 @@
-const { GoogleGenAI } = require("@google/genai");
-
 const GEMINI_MODEL = String(process.env.GEMINI_MODEL || "gemini-2.5-flash").trim();
+// Free-tier fallback models tried in order when the primary Gemini model returns 503.
+// gemini-2.5-flash-8b: lighter variant, less demand pressure.
+// gemini-2.0-flash-lite: most stable free-tier allocation.
+const GEMINI_FALLBACK_MODELS = (
+  process.env.GEMINI_FALLBACK_MODELS
+    ? process.env.GEMINI_FALLBACK_MODELS.split(",").map((s) => s.trim()).filter(Boolean)
+    : ["gemini-2.5-flash-8b", "gemini-2.0-flash-lite"]
+).filter((m) => m !== GEMINI_MODEL);
 const GROQ_MODEL = String(process.env.GROQ_MODEL || "qwen/qwen3-32b").trim();
 const OPENROUTER_MODEL = String(process.env.OPENROUTER_MODEL || "openai/gpt-oss-20b:free").trim();
 const HUGGINGFACE_MODEL = String(process.env.HUGGINGFACE_MODEL || "mistralai/Mistral-7B-Instruct-v0.2").trim();
-const MAX_OUTPUT_TOKENS = Math.max(80, Number(process.env.CHATBOT_MAX_OUTPUT_TOKENS || 280));
+const { runWithGeminiFailover } = require("../../services/geminiKeyPool");
+/** Default raised so RAG-backed institutional answers are not cut mid-sentence (was 280). */
+const MAX_OUTPUT_TOKENS = Math.min(
+  8192,
+  Math.max(128, Number(process.env.CHATBOT_MAX_OUTPUT_TOKENS ?? 1024))
+);
 const TEMPERATURE = Number(process.env.CHATBOT_TEMPERATURE || 0.3);
 
-const GEMINI_API_KEY = String(process.env.GEMINI_API_KEY || "").trim();
 const GROQ_API_KEY = String(process.env.GROQ_API_KEY || "").trim();
 const OPENROUTER_API_KEY = String(process.env.OPENROUTER_API_KEY || "").trim();
 const HUGGINGFACE_API_KEY = String(process.env.HUGGINGFACE_API_KEY || "").trim();
-
-const gemini = GEMINI_API_KEY ? new GoogleGenAI({ apiKey: GEMINI_API_KEY }) : null;
 
 function toOpenAiMessages(systemPrompt, messages) {
   const payload = [];
@@ -37,18 +45,38 @@ function extractOpenAiText(payload) {
   return content.map((p) => (typeof p?.text === "string" ? p.text : "")).join("").trim();
 }
 
-async function callGemini({ systemPrompt, messages }) {
-  if (!gemini) throw new Error("Gemini unavailable");
-  const result = await gemini.models.generateContent({
-    model: GEMINI_MODEL,
-    config: {
-      ...(systemPrompt ? { systemInstruction: systemPrompt } : {}),
-      maxOutputTokens: MAX_OUTPUT_TOKENS,
-      temperature: TEMPERATURE,
-    },
-    contents: toGeminiMessages(messages),
+async function callGeminiModel(model, { systemPrompt, messages }) {
+  const result = await runWithGeminiFailover(`guest-chat Gemini generation (${model})`, async (client) => {
+    return client.models.generateContent({
+      model,
+      config: {
+        ...(systemPrompt ? { systemInstruction: systemPrompt } : {}),
+        maxOutputTokens: MAX_OUTPUT_TOKENS,
+        temperature: TEMPERATURE,
+      },
+      contents: toGeminiMessages(messages),
+    });
   });
   return String(result?.text || "").trim();
+}
+
+async function callGemini(args) {
+  const modelsToTry = [GEMINI_MODEL, ...GEMINI_FALLBACK_MODELS];
+  let lastError = null;
+  for (const model of modelsToTry) {
+    try {
+      const text = await callGeminiModel(model, args);
+      if (text) return text;
+    } catch (err) {
+      const msg = String(err?.message || "").toLowerCase();
+      const isTransient = /503|502|high demand|unavailable|timeout|overloaded/i.test(msg);
+      lastError = err;
+      if (!isTransient) throw err;
+      // eslint-disable-next-line no-console
+      console.warn(`[gemini-model-fallback] ${model} transient (${msg.slice(0, 80)}) — trying next model`);
+    }
+  }
+  throw lastError || new Error("All Gemini models unavailable");
 }
 
 async function callGroq({ systemPrompt, messages }) {

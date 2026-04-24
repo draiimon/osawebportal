@@ -1,3 +1,31 @@
 {
-    "git.ignoreLimitWarning": true
+    "git.ignoreLimitWarning": true,
+    "files.watcherExclude": {
+        "**/.git/objects/**": true,
+        "**/.git/subtree-cache/**": true,
+        "**/node_modules/**": true,
+        "**/dist/**": true,
+        "**/build/**": true,
+        "**/.next/**": true,
+        "**/coverage/**": true,
+        "**/.turbo/**": true,
+        "**/.cache/**": true,
+        "**/tmp/**": true
+    },
+    "search.exclude": {
+        "**/node_modules": true,
+        "**/dist": true,
+        "**/build": true,
+        "**/.next": true,
+        "**/coverage": true,
+        "**/.turbo": true,
+        "**/.cache": true,
+        "**/tmp": true
+    },
+    "files.exclude": {
+        "**/.DS_Store": true,
+        "**/.turbo": true,
+        "**/.cache": true,
+        "**/coverage": true
+    }
 }

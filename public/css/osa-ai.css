@@ -15,7 +15,7 @@
 :root {
     --osai-in: 240ms ease-out;
     --osai-in-fast: 180ms ease-out;
-    --osai-r-shell: 20px;
+    --osai-r-shell: 0px;
     --osai-r-bubble: 18px;
     --osai-r-control: 12px;
     --osai-r-chip: 999px;
@@ -166,6 +166,21 @@
     font-size: 12px;
     font-weight: 500;
     color: rgba(255,255,255,0.8);
+}
+
+/* Trailing cluster (mode pill + close) — used by the global launcher widget */
+.osa-ai-header__trailing {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    flex-shrink: 0;
+}
+
+/* Live status under title (styled like /chat topbar on --chat-ui) */
+.osa-ai-header__status-line {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.88);
 }
 
 .osa-ai-header__status {
@@ -585,6 +600,88 @@
 }
 .osa-ai-handoff strong { color: #af1d33; font-weight: 600; }
 
+.osa-ai-waiting {
+    padding: 12px 14px;
+    border: 1px solid rgba(132, 26, 45, 0.22);
+    background: #fffaf5;
+    color: #2a201d;
+    font-family: "Plus Jakarta Sans", "Inter", system-ui, -apple-system, sans-serif;
+    box-shadow: 0 4px 12px rgba(132, 26, 45, 0.08);
+}
+
+.osa-ai-waiting__head {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+}
+
+.osa-ai-waiting__spinner {
+    width: 11px;
+    height: 11px;
+    border: 2px solid rgba(132, 26, 45, 0.2);
+    border-top-color: #841a2d;
+    border-radius: 999px;
+    animation: osaiWaitSpin 0.9s linear infinite;
+}
+
+.osa-ai-waiting__titles strong {
+    display: block;
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.osa-ai-waiting__est {
+    display: block;
+    margin-top: 2px;
+    font-size: 11px;
+    color: #7b5f56;
+    letter-spacing: 0.02em;
+}
+
+.osa-ai-waiting__elapsed {
+    font-size: 12px;
+    font-weight: 700;
+    color: #841a2d;
+}
+
+.osa-ai-waiting__case,
+.osa-ai-waiting__note {
+    margin: 8px 0 0;
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.osa-ai-waiting__actions {
+    margin-top: 10px;
+}
+
+.osa-ai-waiting__cancel {
+    height: 32px;
+    padding: 0 12px;
+    border: 1px solid rgba(132, 26, 45, 0.24);
+    background: #fff;
+    color: #841a2d;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.osa-ai-waiting__cancel:hover:not(:disabled) {
+    background: #fff4ec;
+}
+
+.osa-ai-waiting__cancel:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+@keyframes osaiWaitSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
 .osa-ai-rich {
     margin-top: 10px;
     background: transparent;
@@ -617,6 +714,36 @@
     font-size: 15px;
     color: inherit;
     line-height: 1.42;
+}
+
+/* Inline escalation draft form */
+.osa-esc-draft-form {
+    margin-top: 4px;
+}
+.osa-esc-draft-ta {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 9px 11px;
+    border: 1.5px solid rgba(132, 26, 45, 0.25);
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.45;
+    color: #191412;
+    background: rgba(255, 255, 255, 0.85);
+    resize: vertical;
+    min-height: 72px;
+    outline: none;
+    transition: border-color 0.15s;
+}
+.osa-esc-draft-ta:focus {
+    border-color: #841a2d;
+    background: #fff;
+}
+.osa-esc-draft-ta::placeholder {
+    color: #9a9a9a;
+    font-size: 13px;
 }
 
 /* iOS-style service picker row: translucent, hairline separator, tight caps label */
@@ -1565,6 +1692,460 @@
 
 .chat-page-shell .osa-ai-tier-rail__cell {
     font-size: 0.72rem !important;
+}
+
+/* -------------------------------------------------------------------------
+   Launcher widget — modern iOS-inspired glassmorphism, rounded, EAC theme.
+   ------------------------------------------------------------------------- */
+.osa-launcher-panel--chat-ui {
+    font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    background: linear-gradient(160deg, #fff7f0 0%, #fdf0f3 55%, #fef5e4 100%) !important;
+    box-shadow: 0 24px 56px rgba(54, 28, 14, 0.18), 0 4px 16px rgba(132, 26, 45, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.7) !important;
+    border-radius: 24px !important;
+}
+
+.osa-launcher-panel--chat-ui::before {
+    border-radius: 24px;
+    opacity: 0.18 !important;
+    filter: blur(6px) !important;
+}
+
+/* ── Header: glassy maroon bar with depth ─── */
+.osa-launcher-panel--chat-ui .osa-ai-header {
+    align-items: center;
+    min-height: 66px;
+    padding: 0 14px 0 16px;
+    background: linear-gradient(135deg, #8f1c30 0%, #841a2d 60%, #9e2438 100%) !important;
+    border-bottom: none;
+    border-radius: 24px 24px 0 0 !important;
+    box-shadow: 0 3px 14px rgba(132, 26, 45, 0.32), inset 0 1px 0 rgba(255,255,255,0.12);
+}
+
+.osa-launcher-panel--chat-ui .osa-ai-header__avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px !important;
+    border: 1.5px solid rgba(255,255,255,0.22) !important;
+    background: rgba(255,255,255,0.14) !important;
+    color: #fff;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.2);
+}
+
+.osa-launcher-panel--chat-ui .osa-ai-header__titles strong {
+    color: #fff !important;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.osa-launcher-panel--chat-ui .osa-ai-header__sub {
+    margin-top: 3px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+}
+
+.osa-launcher-panel--chat-ui .osa-ai-header__status-line {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.88);
+}
+
+.osa-launcher-panel--chat-ui .osa-ai-header__status-line::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #4ade80;
+    box-shadow: 0 0 0 3px rgba(74,222,128,0.28);
+    flex-shrink: 0;
+}
+
+.osa-launcher-panel--chat-ui .osa-ai-header__status-line.is-staff {
+    color: rgba(255,255,255,0.88);
+}
+
+.osa-launcher-panel--chat-ui .osa-ai-header__status-line.is-staff::before {
+    background: #fb923c;
+    box-shadow: 0 0 0 3px rgba(251,146,60,0.28);
+}
+
+/* Session timer — inline pill, warm translucent on dark header */
+.osa-launcher-panel--chat-ui .osa-ai-session-timer {
+    border-radius: 999px !important;
+    border: 1px solid rgba(255,255,255,0.2) !important;
+    background: rgba(255,255,255,0.12) !important;
+    color: rgba(255,255,255,0.82) !important;
+    font-family: "SF Mono", ui-monospace, Menlo, monospace !important;
+    font-size: 10.5px !important;
+    padding: 3px 9px !important;
+    gap: 4px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+}
+
+.osa-launcher-panel--chat-ui .osa-ai-session-timer svg {
+    color: rgba(255,255,255,0.7);
+}
+
+.osa-launcher-panel--chat-ui .osa-ai-session-timer.is-warning {
+    background: rgba(251,191,36,0.22) !important;
+    color: #fcd34d !important;
+    border-color: rgba(251,191,36,0.32) !important;
+}
+
+.osa-launcher-panel--chat-ui .osa-ai-session-timer.is-critical {
+    background: rgba(252,165,165,0.22) !important;
+    color: #fca5a5 !important;
+    border-color: rgba(252,165,165,0.32) !important;
+}
+
+/* Mode badge on dark header */
+.osa-launcher-panel--chat-ui .osa-ai-mode {
+    border-radius: 8px !important;
+    border: 1px solid rgba(255,255,255,0.22) !important;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    padding: 3px 9px;
+    background: rgba(255,255,255,0.14) !important;
+    color: rgba(255,255,255,0.9) !important;
+}
+
+.osa-launcher-panel--chat-ui .osa-ai-mode--faq {
+    background: rgba(134,239,172,0.2) !important;
+    color: #86efac !important;
+    border-color: rgba(134,239,172,0.28) !important;
+}
+
+.osa-launcher-panel--chat-ui .osa-ai-mode--staff {
+    background: rgba(251,146,60,0.2) !important;
+    color: #fdba74 !important;
+    border-color: rgba(251,146,60,0.28) !important;
+}
+
+.osa-launcher-panel--chat-ui .osa-launcher-head__close {
+    color: rgba(255,255,255,0.82) !important;
+    margin-right: -4px;
+    border-radius: 50% !important;
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 140ms ease, color 140ms ease;
+}
+
+.osa-launcher-panel--chat-ui .osa-launcher-head__close:hover {
+    color: #fff !important;
+    background: rgba(255,255,255,0.14) !important;
+}
+
+/* Scroll-to-bottom pill */
+.osa-launcher-panel--chat-ui .osa-ai-scroll-bottom {
+    border-radius: 999px !important;
+    bottom: 172px;
+    background: rgba(255,255,255,0.88) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.12) !important;
+    border: 0.5px solid rgba(132,26,45,0.14) !important;
+}
+
+/* ── Thread ─── */
+.osa-launcher-panel--chat-ui .osa-ai-thread {
+    padding: 18px 14px 12px;
+    background: transparent;
+}
+
+.osa-launcher-panel--chat-ui .osa-ai-msg {
+    margin-bottom: 10px;
+}
+
+.osa-launcher-panel--chat-ui .osa-ai-msg > div {
+    max-width: 80%;
+}
+
+/* ── Bubbles: glassy iOS style ─── */
+.osa-launcher-panel--chat-ui .osa-ai-msg__bubble {
+    border-radius: 18px !important;
+    padding: 10px 14px;
+    font-size: 14.5px;
+    line-height: 1.52;
+}
+
+.osa-launcher-panel--chat-ui .osa-ai-msg--user .osa-ai-msg__bubble {
+    background: linear-gradient(135deg, #9a1f35 0%, #841a2d 100%) !important;
+    border: none !important;
+    border-bottom-right-radius: 5px !important;
+    box-shadow: 0 3px 10px rgba(132, 26, 45, 0.28) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    margin-right: 4px;
+}
+
+.osa-launcher-panel--chat-ui .osa-ai-msg--assistant .osa-ai-msg__bubble {
+    background: rgba(255,255,255,0.82) !important;
+    border: 0.5px solid rgba(255,255,255,0.6) !important;
+    color: #1c1412 !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important;
+    border-bottom-left-radius: 5px !important;
+}
+
+.osa-launcher-panel--chat-ui .osa-ai-msg__meta {
+    color: rgba(100,80,70,0.65);
+    margin-top: 3px;
+    padding: 0 3px;
+    font-size: 10.5px;
+}
+
+/* ── Typing dots ─── */
+.osa-launcher-panel--chat-ui .osa-ai-typing {
+    border-radius: 18px !important;
+    border-bottom-left-radius: 5px !important;
+    padding: 12px 16px;
+    gap: 5px;
+    background: rgba(255,255,255,0.8) !important;
+    border: 0.5px solid rgba(255,255,255,0.6) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important;
+}
+
+.osa-launcher-panel--chat-ui .osa-ai-typing span {
+    width: 6px;
+    height: 6px;
+    background: #9a8a80;
+}
+
+/* System message pill */
+.osa-launcher-panel--chat-ui .osa-ai-system {
+    border-radius: 999px !important;
+    background: rgba(255,255,255,0.55) !important;
+    border: 0.5px solid rgba(132,26,45,0.12) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    color: #6b4840;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+/* ── Service row ─── */
+.osa-launcher-panel--chat-ui .osa-ai-service-row {
+    border-top: 0.5px solid rgba(132,26,45,0.08);
+    background: rgba(255,255,255,0.6) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+}
+
+.osa-launcher-panel--chat-ui .osa-ai-service-select {
+    border-radius: 12px !important;
+    border: 1px solid rgba(132,26,45,0.14) !important;
+    background: rgba(255,255,255,0.88) !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+/* ── Quick-action chips ─── */
+.osa-launcher-panel--chat-ui .osa-ai-chips-wrapper {
+    border-top: 0.5px solid rgba(132,26,45,0.07);
+    background: rgba(255,255,255,0.55) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    padding: 7px 0 9px;
+}
+
+.osa-launcher-panel--chat-ui .osa-ai-chip {
+    border-radius: 999px !important;
+    padding: 7px 15px;
+    font-size: 12.5px;
+    font-weight: 600;
+    background: rgba(255,255,255,0.78) !important;
+    color: var(--brand, #841a2d) !important;
+    border: 1px solid rgba(132, 26, 45, 0.18) !important;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    transition: background 140ms ease, color 140ms ease, box-shadow 140ms ease;
+}
+
+.osa-launcher-panel--chat-ui .osa-ai-chip:hover {
+    background: rgba(255,255,255,0.96) !important;
+    box-shadow: 0 2px 8px rgba(132,26,45,0.14);
+}
+
+.osa-launcher-panel--chat-ui .osa-ai-chip:active {
+    background: var(--brand, #841a2d) !important;
+    color: #fff !important;
+    border-color: transparent !important;
+    box-shadow: 0 2px 8px rgba(132,26,45,0.28) !important;
+}
+
+/* ── Composer bar ─── */
+.osa-launcher-panel--chat-ui .osa-ai-composer {
+    padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+    background: rgba(255,255,255,0.65) !important;
+    border-top: 0.5px solid rgba(132,26,45,0.07);
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-radius: 0 0 24px 24px !important;
+}
+
+.osa-launcher-panel--chat-ui .osa-ai-composer__row {
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.osa-launcher-panel--chat-ui .osa-ai-composer textarea {
+    border-radius: 14px !important;
+    border: 1px solid rgba(132,26,45,0.12) !important;
+    background: rgba(255,255,255,0.88) !important;
+    font-size: 14.5px;
+    line-height: 1.5;
+    max-height: 120px;
+    min-height: 42px;
+    padding: 10px 14px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.8);
+    transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.osa-launcher-panel--chat-ui .osa-ai-composer textarea:focus {
+    border-color: rgba(132,26,45,0.35) !important;
+    background: rgba(255,255,255,0.98) !important;
+    box-shadow: 0 0 0 3px rgba(132,26,45,0.1), 0 1px 3px rgba(0,0,0,0.04) !important;
+    outline: none;
+}
+
+.osa-launcher-panel--chat-ui .osa-ai-composer textarea::placeholder {
+    color: #b0978a;
+}
+
+.osa-launcher-panel--chat-ui .osa-ai-btn-send {
+    width: 40px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    border-radius: 50% !important;
+    box-shadow: 0 3px 10px rgba(132,26,45,0.3) !important;
+    background: linear-gradient(135deg, #9a1f35 0%, #841a2d 100%) !important;
+    transition: transform 120ms ease, box-shadow 120ms ease !important;
+}
+
+.osa-launcher-panel--chat-ui .osa-ai-btn-send:not(:disabled):active {
+    transform: scale(0.91) !important;
+    box-shadow: 0 2px 6px rgba(132,26,45,0.2) !important;
+}
+
+.osa-launcher-panel--chat-ui .osa-ai-btn-send svg {
+    width: 17px !important;
+    height: 17px !important;
+    fill: #fff !important;
+}
+
+.osa-launcher-panel--chat-ui .osa-ai-composer__hint {
+    font-size: 10.5px;
+    color: rgba(100,80,70,0.55);
+    text-align: center;
+    padding-top: 4px;
+}
+
+/* ── Escalation/waiting card ─── */
+.osa-launcher-panel--chat-ui .osa-ai-waiting {
+    border-radius: 16px !important;
+    background: rgba(255,255,255,0.82) !important;
+    border: 0.5px solid rgba(132,26,45,0.14) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    box-shadow: 0 4px 16px rgba(132,26,45,0.1) !important;
+}
+
+.osa-launcher-panel--chat-ui .osa-ai-waiting__cancel {
+    border-radius: 8px !important;
+}
+
+/* ── Handoff card ─── */
+.osa-launcher-panel--chat-ui .osa-ai-handoff {
+    border-radius: 16px !important;
+    background: rgba(255,255,255,0.82) !important;
+    border: 0.5px solid rgba(255,255,255,0.6) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06) !important;
+}
+
+/* ── OTP card ─── */
+.osa-launcher-panel--chat-ui .osa-ai-otp {
+    border-radius: 16px !important;
+    border: none !important;
+    border-top: 3px solid var(--brand) !important;
+    background: rgba(255,255,255,0.88) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    box-shadow: 0 4px 16px rgba(132,26,45,0.08) !important;
+}
+
+.osa-launcher-panel--chat-ui .osa-ai-otp__field input,
+.osa-launcher-panel--chat-ui .osa-ai-otp__field textarea {
+    border-radius: 10px !important;
+    border: 1px solid rgba(132,26,45,0.14) !important;
+    background: rgba(255,255,255,0.88) !important;
+}
+
+.osa-launcher-panel--chat-ui .osa-ai-otp__btn--primary {
+    border-radius: 10px !important;
+}
+
+.osa-launcher-panel--chat-ui .osa-ai-otp__btn {
+    border-radius: 10px !important;
+}
+
+/* ── Actions / inline buttons ─── */
+.osa-launcher-panel--chat-ui .osa-ai-actions button {
+    border-radius: 8px !important;
+    background: rgba(255,255,255,0.82) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    border: 1px solid rgba(132,26,45,0.16) !important;
+}
+
+/* ── Escalation draft textarea ─── */
+.osa-launcher-panel--chat-ui .osa-esc-draft-ta {
+    border-radius: 12px !important;
+    background: rgba(255,255,255,0.88) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+}
+
+/* Mobile: full-screen but keep rounded top edge */
+@media (max-width: 768px) {
+    .osa-launcher-panel--chat-ui {
+        border-radius: 0 !important;
+    }
+    .osa-launcher-panel--chat-ui::before {
+        border-radius: 0 !important;
+    }
+    .osa-launcher-panel--chat-ui .osa-ai-header {
+        border-radius: 0 !important;
+        padding-top: max(14px, env(safe-area-inset-top, 0px));
+    }
+    .osa-launcher-panel--chat-ui .osa-ai-composer {
+        border-radius: 0 !important;
+    }
+}
+
+/* FAB — pill shape */
+.osa-launcher-fab {
+    border-radius: 999px !important;
+    background: linear-gradient(135deg, #9a1f35 0%, #841a2d 100%) !important;
+    box-shadow: 0 6px 22px rgba(132,26,45,0.35), 0 2px 6px rgba(132,26,45,0.2) !important;
+    padding: 0 1.35rem !important;
+    gap: 0.5rem;
+    min-height: 3rem !important;
 }
 
 /* -------------------------------------------------------------------------

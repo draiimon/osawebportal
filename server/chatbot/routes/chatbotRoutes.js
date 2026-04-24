@@ -1,4 +1,5 @@
 const { runChatPipeline } = require("../services/chatPipeline");
+const { NO_RELIABLE_KB_REPLY } = require("../utils/responseCleaner");
 
 function registerChatbotRoutes(app, apiPrefix) {
   app.post(`${apiPrefix}/chatbot/message`, async (req, res) => {
@@ -21,7 +22,9 @@ function registerChatbotRoutes(app, apiPrefix) {
       return res.json({
         success: true,
         data: {
-          response: "I can still help. Please resend your question and I will answer immediately.",
+          response: NO_RELIABLE_KB_REPLY,
+          answer: NO_RELIABLE_KB_REPLY,
+          escalate: true,
           provider: "fallback-static",
           cached: false,
           intent: "general",

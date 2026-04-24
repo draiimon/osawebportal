@@ -14,6 +14,7 @@ const publicDir = join(root, 'public');
 const files = [
   ['css/osa-design.css', 'css/osa-design.min.css'],
   ['css/osa-ai.css', 'css/osa-ai.min.css'],
+  ['css/osa-chat-widget-island.css', 'css/osa-chat-widget-island.min.css'],
   ['assets/js/portal-shell.js', 'assets/js/portal-shell.min.js'],
   ['assets/js/osa-chat-widget.js', 'assets/js/osa-chat-widget.min.js'],
   ['assets/js/osa-chat-loader.js', 'assets/js/osa-chat-loader.min.js'],

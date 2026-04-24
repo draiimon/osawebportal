@@ -14,6 +14,8 @@ const { registerChatbot } = require("./chatbot");
 const { registerAuthRoutes } = require("./auth/routes");
 const { registerRealtimeChat } = require("./socket/chatRealtime");
 const { ensureV2Schema } = require("./migration/ensureV2Schema");
+const { registerRagAdminRoutes } = require("./admin/ragRoutes");
+const { registerChatLogAdminRoutes } = require("./admin/chatLogRoutes");
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -56,6 +58,41 @@ function requireAdminKey(req, res, next) {
   return next();
 }
 
+function isOtpBypassEmail(rawEmail) {
+  const email = String(rawEmail || "").trim().toLowerCase();
+  if (!email) return false;
+  const allowed = String(process.env.OTP_TEST_BYPASS_EMAILS || "")
+    .split(",")
+    .map((v) => String(v || "").trim().toLowerCase())
+    .filter(Boolean);
+  return allowed.includes(email);
+}
+
+function isLocalRequest(req) {
+  const ip = String((req && req.ip) || "").toLowerCase();
+  const host = String((req && req.hostname) || "").toLowerCase();
+  if (host === "localhost" || host === "127.0.0.1") return true;
+  return (
+    ip.includes("127.0.0.1") ||
+    ip.includes("::1") ||
+    ip.includes("localhost")
+  );
+}
+
+function shouldSkipRateLimits(req) {
+  const disableAll = String(process.env.DISABLE_RATE_LIMITS || "")
+    .trim()
+    .toLowerCase();
+  if (disableAll === "1" || disableAll === "true" || disableAll === "yes") return true;
+  const disableLocal = String(process.env.DISABLE_RATE_LIMITS_LOCAL || "true")
+    .trim()
+    .toLowerCase();
+  if (disableLocal === "1" || disableLocal === "true" || disableLocal === "yes") {
+    return isLocalRequest(req);
+  }
+  return false;
+}
+
 // ── Rate limiters ─────────────────────────────────────────────
 const fmt = (success, message) => ({ success, message });
 
@@ -65,6 +102,7 @@ const globalLimiter = rateLimit({
   max: 300,
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req) => shouldSkipRateLimits(req),
   message: fmt(false, "Too many requests. Please slow down."),
 });
 
@@ -73,6 +111,7 @@ const otpSendLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 3,
   validate: false,
+  skip: (req) => shouldSkipRateLimits(req) || isOtpBypassEmail(req.body && req.body.email),
   keyGenerator: (req) => {
     const email = String((req.body && req.body.email) || "").toLowerCase().trim();
     return (req.ip || "unknown") + ":" + email;
@@ -84,6 +123,7 @@ const otpSendLimiter = rateLimit({
 const otpVerifyLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
+  skip: (req) => shouldSkipRateLimits(req) || isOtpBypassEmail(req.body && req.body.email),
   message: fmt(false, "Too many verification attempts. Please wait 15 minutes."),
 });
 
@@ -91,6 +131,7 @@ const otpVerifyLimiter = rateLimit({
 const chatSessionLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 5,
+  skip: (req) => shouldSkipRateLimits(req),
   message: fmt(false, "Too many sessions created. Please wait an hour."),
 });
 
@@ -99,6 +140,7 @@ const chatMsgLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 80,
   validate: false,
+  skip: (req) => shouldSkipRateLimits(req),
   keyGenerator: (req) => {
     return String((req.body && req.body.session_id) || req.ip || "unknown");
   },
@@ -624,6 +666,8 @@ registerOtpRoutes(app, API_PREFIX);
 registerChatRoutes(app, API_PREFIX);
 registerChatbot(app, API_PREFIX);
 registerAuthRoutes(app, API_PREFIX);
+registerRagAdminRoutes(app, API_PREFIX);
+registerChatLogAdminRoutes(app, API_PREFIX);
 
 // Serve the portal frontend from the same server so chat pages and API stay aligned.
 const publicDir = path.resolve(__dirname, "../public");
@@ -646,6 +690,11 @@ function stripHtmlFromPath(pathname) {
 app.use((req, res, next) => {
   if (req.method !== "GET" && req.method !== "HEAD") return next();
   if (req.path.startsWith(API_PREFIX)) return next();
+
+  const chatPath = String(req.path || "").toLowerCase();
+  if (chatPath === "/chat" || chatPath === "/chat/" || chatPath.startsWith("/chat/index")) {
+    return res.redirect(302, "/preview#dashboard");
+  }
 
   // Keep non-HTML assets (e.g. .css/.js/.png) on normal static handling.
   const extension = path.extname(req.path || "");

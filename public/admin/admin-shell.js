@@ -48,6 +48,8 @@
     '/admin/modules/home-content': { title: 'Home Content', crumb: 'Edit Home Content' },
     '/admin/modules/about': { title: 'About Page', crumb: 'Edit About Page' },
     '/admin/modules/chat-support': { title: 'Chat Support', crumb: 'Live Support' },
+    '/admin/modules/rag-chunks': { title: 'Knowledge Base', crumb: 'RAG Manager' },
+    '/admin/modules/chat-logs': { title: 'Chat Logs', crumb: 'Testing & debug' },
   };
 
   /* ── NAV HTML TEMPLATE ── */
@@ -59,6 +61,8 @@
       { href: '/admin/modules/home-content',  label: 'Home Content',  icon: '<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>', badge: '' },
       { href: '/admin/modules/about',         label: 'About Page',    icon: '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>', badge: '' },
       { href: '/admin/modules/chat-support', label: 'Chat Support',  icon: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>', badge: 'chat' },
+      { href: '/admin/modules/chat-logs',    label: 'Chat Logs',      icon: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>', badge: '' },
+      { href: '/admin/modules/rag-chunks',   label: 'Knowledge Base', icon: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>', badge: '' },
     ];
 
     const currentPath = normalizePath(activePage || window.location.pathname);
@@ -121,6 +125,14 @@
       <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
       Chat Support
       <span class="nav-badge" data-nav-badge="chat" style="display:none">0</span>
+    </a>
+    <a class="nav-link" href="/admin/modules/chat-logs">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      Chat Logs
+    </a>
+    <a class="nav-link" href="/admin/modules/rag-chunks">
+      <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      Knowledge Base
     </a>
     <a class="nav-link" href="/" target="_blank" rel="noopener">
       <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
@@ -223,6 +235,15 @@
         <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
         Chat Support
         <span class="nav-badge" data-nav-badge="chat" style="display:none">0</span>
+      </a>
+      <span class="drawer-section-label">Chatbot</span>
+      <a class="drawer-nav-item" href="/admin/modules/chat-logs">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Chat Logs
+      </a>
+      <a class="drawer-nav-item" href="/admin/modules/rag-chunks">
+        <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        Knowledge Base
       </a>
       <span class="drawer-section-label">Portal</span>
       <a class="drawer-nav-item" href="/" target="_blank" rel="noopener">
@@ -483,6 +504,51 @@
         if (window.innerWidth > 900) closeDrawer();
       });
     }
+
+    /* ── Adaptive desktop navbar overflow handling ── */
+    const navEl = document.getElementById('admin-nav');
+    const navLinksEl = navEl ? navEl.querySelector('.admin-nav__links') : null;
+    const navRightEl = navEl ? navEl.querySelector('.admin-nav__right') : null;
+    const navBrandEl = navEl ? navEl.querySelector('.admin-nav__brand') : null;
+    const navHamburgerEl = document.getElementById('nav-hamburger');
+    const drawerEl = document.getElementById('admin-drawer');
+
+    let navRaf = 0;
+    const syncNavOverflowMode = () => {
+      if (!navEl || !navLinksEl || !navRightEl || !navBrandEl || !navHamburgerEl) return;
+      const mobileMode = window.innerWidth <= 900;
+      if (mobileMode) {
+        navEl.classList.remove('admin-nav--overflow');
+        return;
+      }
+
+      // If full nav content cannot fit, switch to drawer mode without changing theme.
+      const navWidth = navEl.clientWidth || 0;
+      const requiredWidth =
+        navBrandEl.offsetWidth +
+        navLinksEl.scrollWidth +
+        navRightEl.offsetWidth +
+        navHamburgerEl.offsetWidth +
+        32;
+      const shouldOverflowCollapse = requiredWidth > navWidth;
+      navEl.classList.toggle('admin-nav--overflow', shouldOverflowCollapse);
+
+      // Desktop should never stay in mobile drawer mode after resize.
+      if (drawerEl && drawerEl.classList.contains('is-open')) {
+        drawerEl.classList.remove('is-open');
+        document.body.classList.remove('admin-menu-open');
+        navHamburgerEl.setAttribute('aria-expanded', 'false');
+      }
+    };
+
+    const queueNavOverflowSync = () => {
+      if (navRaf) cancelAnimationFrame(navRaf);
+      navRaf = requestAnimationFrame(syncNavOverflowMode);
+    };
+
+    queueNavOverflowSync();
+    window.addEventListener('resize', queueNavOverflowSync);
+    window.addEventListener('load', queueNavOverflowSync);
 
     /* ── Modal handling ── */
     document.querySelectorAll('[data-modal-open]').forEach(trigger => {

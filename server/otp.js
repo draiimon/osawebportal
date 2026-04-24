@@ -6,6 +6,8 @@ const RESEND_COOLDOWN_MS = 30 * 1000;
 const MAX_VERIFY_ATTEMPTS = 5;
 const MAX_OTP_SENDS_PER_DAY = Math.max(1, Number(process.env.MAX_OTP_SENDS_PER_DAY || 5));
 const BREVO_URL = "https://api.brevo.com/v3/smtp/email";
+const OTP_TEST_MODE = String(process.env.OTP_TEST_MODE || "false").trim().toLowerCase() === "true";
+const OTP_TEST_CODE = String(process.env.OTP_TEST_CODE || "00000").replace(/\D/g, "");
 
 function getAllowedDomain() {
   return String(process.env.OSA_ALLOWED_EMAIL_DOMAIN || "").trim().toLowerCase();
@@ -19,6 +21,16 @@ function normalizeEmail(raw) {
   return String(raw || "")
     .trim()
     .toLowerCase();
+}
+
+function isOtpBypassEmail(email) {
+  const normalized = normalizeEmail(email);
+  if (!normalized) return false;
+  const allowed = String(process.env.OTP_TEST_BYPASS_EMAILS || "")
+    .split(",")
+    .map((v) => normalizeEmail(v))
+    .filter(Boolean);
+  return allowed.includes(normalized);
 }
 
 function isAllowedStudentEmail(email) {
@@ -36,6 +48,21 @@ function hashOtp(email, code) {
 
 function generateSixDigitOtp() {
   return String(crypto.randomInt(0, 1_000_000)).padStart(6, "0");
+}
+
+function isOtpTestCodeMatch(rawOtp) {
+  const digits = String(rawOtp || "").replace(/\D/g, "");
+  if (!OTP_TEST_CODE) return false;
+  return digits === OTP_TEST_CODE;
+}
+
+async function issueChatToken(email) {
+  const chatToken = crypto.randomUUID();
+  await db.query(
+    `INSERT INTO chat_auth_tokens (token, email, expires_at) VALUES ($1, $2, NOW() + INTERVAL '5 minutes')`,
+    [chatToken, email]
+  );
+  return chatToken;
 }
 
 async function deleteExpiredForEmail(email) {
@@ -118,6 +145,7 @@ function registerOtpRoutes(app, apiPrefix) {
 
   app.post(`${apiPrefix}/otp/send`, ...[otpSendLimiter].filter(Boolean), async (req, res) => {
     const email = normalizeEmail(req.body && req.body.email);
+    const bypassLimits = isOtpBypassEmail(email);
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return res.status(400).json({ success: false, message: "Valid email is required." });
     }
@@ -134,18 +162,34 @@ function registerOtpRoutes(app, apiPrefix) {
     try {
       await deleteExpiredForEmail(email);
 
+      // Local testing mode: skip external OTP email provider usage.
+      if (OTP_TEST_MODE) {
+        return res.json({
+          success: true,
+          message: "OTP test mode active. Use test code for verification.",
+          cooldownSeconds: 0,
+          dailyLimit: "bypassed",
+          dailyUsed: 0,
+          dailyRemaining: "unlimited",
+          testBypass: true,
+          testMode: true,
+        });
+      }
+
       // Daily cap: reject the 6th+ send in a calendar day.
       const quota = await getDailyOtpQuota(email);
-      if (!quota.allowed) {
-        return res.status(429).json({
-          success: false,
-          code: "OTP_DAILY_LIMIT",
-          message:
-            `You've already requested ${quota.used} verification codes today ` +
-            `(max ${quota.limit}). For your security, please try again tomorrow.`,
-          dailyLimit: quota.limit,
-          dailyUsed: quota.used,
-        });
+      if (!bypassLimits) {
+        if (!quota.allowed) {
+          return res.status(429).json({
+            success: false,
+            code: "OTP_DAILY_LIMIT",
+            message:
+              `You've already requested ${quota.used} verification codes today ` +
+              `(max ${quota.limit}). For your security, please try again tomorrow.`,
+            dailyLimit: quota.limit,
+            dailyUsed: quota.used,
+          });
+        }
       }
 
       const existing = await db.query(
@@ -153,7 +197,7 @@ function registerOtpRoutes(app, apiPrefix) {
         [email]
       );
 
-      if (existing.rows.length) {
+      if (existing.rows.length && !bypassLimits) {
         const lastSent = existing.rows[0].last_sent_at;
         const elapsed = Date.now() - new Date(lastSent).getTime();
         if (elapsed < RESEND_COOLDOWN_MS) {
@@ -195,16 +239,20 @@ function registerOtpRoutes(app, apiPrefix) {
       }
 
       // Only consume a daily quota slot on a confirmed send.
-      await incrementDailyOtpQuota(email);
-      const updatedQuota = await getDailyOtpQuota(email);
+      let updatedQuota = quota;
+      if (!bypassLimits) {
+        await incrementDailyOtpQuota(email);
+        updatedQuota = await getDailyOtpQuota(email);
+      }
 
       return res.json({
         success: true,
         message: "Verification code sent.",
         cooldownSeconds: Math.ceil(RESEND_COOLDOWN_MS / 1000),
-        dailyLimit: updatedQuota.limit,
-        dailyUsed: updatedQuota.used,
-        dailyRemaining: Math.max(0, updatedQuota.limit - updatedQuota.used),
+        dailyLimit: bypassLimits ? "bypassed" : updatedQuota.limit,
+        dailyUsed: bypassLimits ? 0 : updatedQuota.used,
+        dailyRemaining: bypassLimits ? "unlimited" : Math.max(0, updatedQuota.limit - updatedQuota.used),
+        testBypass: bypassLimits,
       });
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -233,6 +281,27 @@ function registerOtpRoutes(app, apiPrefix) {
           `Visitors should use the public OSA website (https://www.eac.edu.ph/osa/) and visit the office during business hours.`,
       });
     }
+    if (OTP_TEST_MODE && isOtpTestCodeMatch(otpRaw)) {
+      try {
+        const chatToken = await issueChatToken(email);
+        return res.json({
+          success: true,
+          verified: true,
+          message: "Email verified (test mode).",
+          chat_token: chatToken,
+          email,
+          testMode: true,
+        });
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error("[otp-verify:test-mode]", error && (error.stack || error.message || error));
+        return res.status(500).json({
+          success: false,
+          message: "Verification failed. Please try again.",
+        });
+      }
+    }
+
     if (!/^\d{6}$/.test(otp)) {
       return res.status(400).json({ success: false, message: "Enter the 6-digit code from your email." });
     }
@@ -298,11 +367,7 @@ function registerOtpRoutes(app, apiPrefix) {
 
       await db.query(`DELETE FROM email_otp_codes WHERE email = $1`, [email]);
 
-      const chatToken = crypto.randomUUID();
-      await db.query(
-        `INSERT INTO chat_auth_tokens (token, email, expires_at) VALUES ($1, $2, NOW() + INTERVAL '5 minutes')`,
-        [chatToken, email]
-      );
+      const chatToken = await issueChatToken(email);
 
       return res.json({
         success: true,

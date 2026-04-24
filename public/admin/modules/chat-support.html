@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/admin/admin-shell.css?v=20260423j">
+  <link rel="stylesheet" href="/admin/admin-shell.css?v=20260424a">
   <style>
     :root {
       --brand: #841a2d;
@@ -869,6 +869,7 @@
             <button type="button" class="btn-resolve" id="btn-approve-appt" style="background:#0f766e">Approve Appointment</button>
             <button type="button" class="btn-resolve" id="btn-end-session" style="background:#9f1239">End Session</button>
             <button type="button" class="btn-resolve" id="btn-resolve-ticket">Resolve Ticket</button>
+            <button type="button" class="btn-resolve hidden" id="btn-delete-ticket" style="background:#7f1d1d">Delete Ticket</button>
           </div>
         </div>
         <div id="session-limit-panel" class="hidden" style="padding:10px 14px;border-bottom:1px solid var(--line);background:#fffbeb;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
@@ -956,7 +957,7 @@
   </div>
 </div>
 
-<script src="/admin/admin-shell.js?v=20260423j" defer></script>
+<script src="/admin/admin-shell.js?v=20260424a" defer></script>
 <script>
 (function () {
   'use strict';
@@ -982,8 +983,17 @@
   }
 
   var API = resolveApiBase() + '/api/v1';
+  var STATUS_KEY = 'osa_admin_chat_status';
+  var LAST_CASE_KEY = 'osa_admin_chat_last_case_id';
 
-  function adminKey() { return sessionStorage.getItem('osa_admin_token') || ''; }
+  function adminKey() {
+    var token = sessionStorage.getItem('osa_admin_token') || '';
+    if (token) return token;
+    // Dev fallback so hard refresh on localhost doesn't blank admin lists.
+    var host = String((window.location && window.location.hostname) || '').toLowerCase();
+    if (host === 'localhost' || host === '127.0.0.1') return 'dev-token';
+    return '';
+  }
   function staffName() { return sessionStorage.getItem('osa_admin_name') || 'OSA Staff'; }
 
   function apiHeaders() {
@@ -994,8 +1004,30 @@
   }
 
   /* ── State ── */
+  function readSavedStatus() {
+    var raw = String(sessionStorage.getItem(STATUS_KEY) || '').trim().toLowerCase();
+    if (raw === 'open' || raw === 'in_progress' || raw === 'resolved' || raw === 'approved') return raw;
+    return 'open';
+  }
+
+  function saveStatus(status) {
+    try { sessionStorage.setItem(STATUS_KEY, String(status || 'open')); } catch (_) {}
+  }
+
+  function readLastCaseId() {
+    return String(sessionStorage.getItem(LAST_CASE_KEY) || '').trim();
+  }
+
+  function saveLastCaseId(caseId) {
+    try { sessionStorage.setItem(LAST_CASE_KEY, String(caseId || '')); } catch (_) {}
+  }
+
+  function clearLastCaseId() {
+    try { sessionStorage.removeItem(LAST_CASE_KEY); } catch (_) {}
+  }
+
   var state = {
-    currentStatus: 'open',
+    currentStatus: readSavedStatus(),
     currentSearch: '',
     currentCaseId: null,
     currentSessionId: null,
@@ -1008,7 +1040,15 @@
     autoCloseTriggeredCaseId: '',
     pollTimer: null,
     busy: false,
+    pendingFocusCaseId: '',
+    pendingFocusUntilMs: 0,
+    ticketsLoadSeq: 0,
+    deleteInFlightCaseId: '',
+    restoredLastCaseAttempted: false,
+    restoreProbeInFlight: false,
   };
+  var adminTicketStream = null;
+  var adminStreamReconnectTimer = null;
 
   /* ── DOM refs ── */
   var ticketList     = document.getElementById('ticket-list');
@@ -1029,6 +1069,7 @@
   var btnApproveAppt = document.getElementById('btn-approve-appt');
   var btnEndSession  = document.getElementById('btn-end-session');
   var btnResolve     = document.getElementById('btn-resolve-ticket');
+  var btnDeleteTicket= document.getElementById('btn-delete-ticket');
   var btnRefresh     = document.getElementById('btn-refresh');
   var btnBack        = document.getElementById('btn-back');
   var ticketSearch   = document.getElementById('ticket-search');
@@ -1104,6 +1145,23 @@
     return t.replace(/_/g, ' ').replace(/\b\w/g, function (m) { return m.toUpperCase(); });
   }
 
+  function setStatusTab(status, reason, focusCaseId) {
+    var target = String(status || '').trim();
+    if (!target) return;
+    var tab = document.querySelector('.status-tab[data-status="' + target + '"]');
+    if (!tab) return;
+    document.querySelectorAll('.status-tab').forEach(function (t) { t.classList.remove('active'); });
+    tab.classList.add('active');
+    state.currentStatus = target;
+    saveStatus(target);
+    state.restoredLastCaseAttempted = false;
+    if (focusCaseId) {
+      state.pendingFocusCaseId = String(focusCaseId || '');
+      state.pendingFocusUntilMs = Date.now() + 10000;
+    }
+    loadTickets();
+  }
+
   function statusBadgeLabel(t) {
     if (String(t.appointment_status || '').toLowerCase() === 'approved') return 'approved';
     return String(t.status || '').replace('_', ' ');
@@ -1147,6 +1205,30 @@
     btnLfSchedule.disabled = t.status === 'resolved';
   }
 
+  function clearActiveConversationUi(reason) {
+    stopPolling();
+    state.currentCaseId = null;
+    state.currentSessionId = null;
+    state.currentConcern = '';
+    state.currentTicketStatus = null;
+    state.currentAppointmentStatus = '';
+    state.currentNeedsEndPrompt = false;
+    state.autoCloseTriggeredCaseId = '';
+    state.ticketSelectedAtMs = 0;
+    state.restoredLastCaseAttempted = false;
+    state.restoreProbeInFlight = false;
+    clearLastCaseId();
+    convoThread.innerHTML = '';
+    convoTopbar.classList.add('hidden');
+    convoThread.classList.add('hidden');
+    convoComposer.classList.add('hidden');
+    convoEmpty.classList.remove('hidden');
+    if (lfSchedulePanel) lfSchedulePanel.classList.add('hidden');
+    if (sessionLimitPanel) sessionLimitPanel.classList.add('hidden');
+    if (sessionLimitHint) sessionLimitHint.textContent = '';
+    syncResponsivePanels(false);
+  }
+
   var STAFF_PREFIX = '[OSA Staff ·';
   function parseStaffMessage(text) {
     if (!text.startsWith(STAFF_PREFIX)) return null;
@@ -1158,27 +1240,134 @@
     };
   }
 
-  /* ── Ticket list ── */
-  function loadTickets() {
-    ticketList.innerHTML = '<div class="empty-tickets">Loading…</div>';
-    var url = API + '/chat/tickets?status=' + encodeURIComponent(state.currentStatus);
-    if (state.currentSearch) {
-      url += '&q=' + encodeURIComponent(state.currentSearch);
-    }
-    fetch(url, { headers: apiHeaders() })
+  function tryRestoreLastCaseFromCurrentList(tickets) {
+    var rememberedCaseId = readLastCaseId();
+    if (state.currentCaseId || !rememberedCaseId) return false;
+    var remembered = (tickets || []).filter(function (t) { return String(t.case_id || '') === rememberedCaseId; })[0];
+    if (!remembered) return false;
+    selectTicket(remembered);
+    state.restoredLastCaseAttempted = true;
+    return true;
+  }
+
+  function probeAndRestoreLastCaseAcrossTabs() {
+    var rememberedCaseId = readLastCaseId();
+    if (!rememberedCaseId || state.currentCaseId || state.restoreProbeInFlight || state.restoredLastCaseAttempted) return;
+    state.restoreProbeInFlight = true;
+    fetch(API + '/chat/tickets/' + encodeURIComponent(rememberedCaseId) + '/status', { headers: apiHeaders() })
       .then(function (r) { return r.json(); })
+      .catch(function () { return null; })
+      .then(function (d) {
+        state.restoreProbeInFlight = false;
+        state.restoredLastCaseAttempted = true;
+        if (!d || !d.success || !d.ticket) return;
+        var targetStatus = String((d.ticket.status) || '').toLowerCase();
+        if (!targetStatus || targetStatus === state.currentStatus) return;
+        if (targetStatus !== 'open' && targetStatus !== 'in_progress' && targetStatus !== 'resolved') return;
+        setStatusTab(targetStatus, 'restore-last-viewed-case', rememberedCaseId);
+      });
+  }
+
+  /* ── Ticket list ── */
+  function loadTickets(opts) {
+    var options = opts || {};
+    var statusSnapshot = String(state.currentStatus || 'open');
+    var searchSnapshot = String(state.currentSearch || '');
+    state.ticketsLoadSeq += 1;
+    var reqSeq = state.ticketsLoadSeq;
+    if (!options.quiet) ticketList.innerHTML = '<div class="empty-tickets">Loading…</div>';
+    var url = API + '/chat/tickets?status=' + encodeURIComponent(statusSnapshot);
+    if (searchSnapshot) {
+      url += '&q=' + encodeURIComponent(searchSnapshot);
+    }
+    fetch(url + '&_ts=' + Date.now(), { headers: apiHeaders(), cache: 'no-store' })
+      .then(function (r) {
+        return r.json();
+      })
       .then(function (data) {
-        if (!data.success || !data.tickets.length) {
-          ticketList.innerHTML = '<div class="empty-tickets">No ' + state.currentStatus.replace('_', ' ') + ' tickets.</div>';
-          if (state.currentStatus === 'open' || state.currentStatus === 'approved') openCount.textContent = '0';
+        if (reqSeq !== state.ticketsLoadSeq || statusSnapshot !== state.currentStatus || searchSnapshot !== state.currentSearch) {
           return;
         }
-        if (state.currentStatus === 'open' || state.currentStatus === 'approved') openCount.textContent = data.tickets.length;
+        if (data && data.success === false && /unauthorized/i.test(String(data.message || ''))) {
+          ticketList.innerHTML = '<div class="empty-tickets">Admin session expired. Please sign in again.</div>';
+          return;
+        }
+        if (!data.success || !data.tickets.length) {
+          ticketList.innerHTML = '<div class="empty-tickets">No ' + state.currentStatus.replace('_', ' ') + ' tickets.</div>';
+          openCount.textContent = '0';
+          if (!state.currentCaseId) probeAndRestoreLastCaseAcrossTabs();
+          return;
+        }
+        openCount.textContent = String(data.tickets.length);
         renderTickets(data.tickets);
+        if (!state.currentCaseId) {
+          if (!tryRestoreLastCaseFromCurrentList(data.tickets)) {
+            probeAndRestoreLastCaseAcrossTabs();
+          }
+        }
+        if (state.pendingFocusCaseId) {
+          var focusCaseId = String(state.pendingFocusCaseId || '');
+          var focusTicket = data.tickets.filter(function (t) { return t.case_id === focusCaseId; })[0];
+          if (focusTicket) {
+            state.pendingFocusCaseId = '';
+            state.pendingFocusUntilMs = 0;
+            selectTicket(focusTicket);
+          }
+        }
       })
       .catch(function () {
         ticketList.innerHTML = '<div class="empty-tickets">Failed to load tickets.</div>';
       });
+  }
+
+  function stopAdminTicketStream() {
+    if (adminTicketStream) {
+      try { adminTicketStream.close(); } catch (_) {}
+      adminTicketStream = null;
+    }
+    if (adminStreamReconnectTimer) {
+      clearTimeout(adminStreamReconnectTimer);
+      adminStreamReconnectTimer = null;
+    }
+  }
+
+  function startAdminTicketStream() {
+    stopAdminTicketStream();
+    var token = adminKey();
+    if (!token || typeof window.EventSource !== 'function') return;
+    var streamUrl = API + '/chat/admin/stream?token=' + encodeURIComponent(token);
+
+    try {
+      adminTicketStream = new EventSource(streamUrl);
+    } catch (_err) {
+      adminTicketStream = null;
+      return;
+    }
+
+    adminTicketStream.onmessage = function (event) {
+      var payload = null;
+      try { payload = event && event.data ? JSON.parse(event.data) : null; } catch (_e) { payload = null; }
+      if (!payload || (!payload.case_id && payload.type !== 'ticket_created')) return;
+
+      var sameCaseAsFocused = String(payload.case_id || '') === String(state.currentCaseId || '');
+      var skipListRefreshForFocusedInProgress =
+        !!state.currentCaseId &&
+        sameCaseAsFocused &&
+        String((payload && payload.type) || '') === 'ticket_updated' &&
+        String((payload && payload.status) || '').toLowerCase() === 'in_progress';
+      var shouldRefreshList = (!state.currentCaseId || sameCaseAsFocused) && !skipListRefreshForFocusedInProgress;
+      if (shouldRefreshList) loadTickets({ quiet: true });
+      if (state.currentSessionId && (!payload.case_id || payload.case_id === state.currentCaseId)) {
+        loadMessages(state.currentSessionId, state.currentConcern);
+      }
+    };
+
+    adminTicketStream.onerror = function () {
+      stopAdminTicketStream();
+      adminStreamReconnectTimer = setTimeout(function () {
+        startAdminTicketStream();
+      }, 2000);
+    };
   }
 
   function renderTickets(tickets) {
@@ -1236,6 +1425,7 @@
     state.currentNeedsEndPrompt = !!t.needs_end_session_prompt;
     state.ticketSelectedAtMs = Date.now();
     state.autoCloseTriggeredCaseId = '';
+    saveLastCaseId(t.case_id);
 
     // Update selected style
     document.querySelectorAll('.ticket-item').forEach(function (el) {
@@ -1263,6 +1453,7 @@
     btnResolve.disabled = t.status === 'resolved';
     if (btnApproveAppt) btnApproveAppt.disabled = t.status === 'resolved' || String(t.appointment_status || '').toLowerCase() === 'approved';
     if (btnEndSession) btnEndSession.disabled = t.status === 'resolved';
+    if (btnDeleteTicket) btnDeleteTicket.classList.toggle('hidden', t.status !== 'resolved');
 
     // Show panels
     convoEmpty.classList.add('hidden');
@@ -1288,7 +1479,7 @@
 
   /* ── Load messages ── */
   function loadMessages(sessionId, concern) {
-    fetch(API + '/chat/session/' + encodeURIComponent(sessionId) + '/messages')
+    fetch(API + '/chat/session/' + encodeURIComponent(sessionId) + '/messages?_ts=' + Date.now(), { cache: 'no-store' })
       .then(function (r) { return r.json(); })
       .then(function (data) {
         if (!data.success) return;
@@ -1360,7 +1551,7 @@
       if (!state.currentSessionId || !state.currentCaseId) return;
 
       // Poll messages
-      fetch(API + '/chat/session/' + encodeURIComponent(state.currentSessionId) + '/messages')
+      fetch(API + '/chat/session/' + encodeURIComponent(state.currentSessionId) + '/messages?_ts=' + Date.now(), { cache: 'no-store' })
         .then(function (r) { return r.json(); })
         .then(function (data) {
           if (!data.success) return;
@@ -1375,7 +1566,7 @@
 
       // Poll ticket status — detect external resolve (another tab, auto-close, backend)
       if (state.currentTicketStatus !== 'resolved') {
-        fetch(API + '/chat/tickets/' + encodeURIComponent(state.currentCaseId) + '/status', { headers: apiHeaders() })
+        fetch(API + '/chat/tickets/' + encodeURIComponent(state.currentCaseId) + '/status?_ts=' + Date.now(), { headers: apiHeaders(), cache: 'no-store' })
           .then(function (r) { return r.json(); })
           .catch(function () { return null; })
           .then(function (d) {
@@ -1388,13 +1579,13 @@
               convoComposer.classList.add('hidden');
               if (sessionLimitPanel) sessionLimitPanel.classList.add('hidden');
               appendSystemPill('Session was closed externally');
-              loadTickets();
+              loadTickets({ quiet: true });
             }
           });
       }
 
       // Update student online indicator
-      fetch(API + '/chat/session/' + encodeURIComponent(state.currentSessionId) + '/active')
+      fetch(API + '/chat/session/' + encodeURIComponent(state.currentSessionId) + '/active?_ts=' + Date.now(), { cache: 'no-store' })
         .then(function (r) { return r.json(); })
         .then(function (s) {
           if (s.active) {
@@ -1403,7 +1594,7 @@
             convoActive.classList.add('hidden');
           }
         }).catch(function () {});
-    }, 5000);
+    }, 2000);
   }
 
   function stopPolling() {
@@ -1470,7 +1661,7 @@
       if (sessionLimitPanel) sessionLimitPanel.classList.add('hidden');
       appendSystemPill('Session closed — student has been notified');
       loadMessages(state.currentSessionId, state.currentConcern);
-      loadTickets();
+      loadTickets({ quiet: true });
     }
 
     function fallbackEndViaStaffCommand() {
@@ -1583,6 +1774,9 @@
             badge.textContent = 'in progress';
           }
         }
+        if (state.currentStatus === 'open' && !data.session_closed) {
+          setStatusTab('in_progress', data.first_staff_reply ? 'first-staff-reply' : 'staff-send-from-open', state.currentCaseId);
+        }
       })
       .catch(function () {
         state.busy = false;
@@ -1599,6 +1793,43 @@
       if (!state.currentCaseId) return;
       if (!confirm('End this live chat session now?')) return;
       endCurrentSession('ended manually by staff');
+    });
+  }
+
+  if (btnDeleteTicket) {
+    btnDeleteTicket.addEventListener('click', function () {
+      if (!state.currentCaseId || state.busy) return;
+      if (state.deleteInFlightCaseId && state.deleteInFlightCaseId === state.currentCaseId) return;
+      if (state.currentTicketStatus !== 'resolved') {
+        alert('Only resolved tickets can be deleted.');
+        return;
+      }
+      if (!confirm('Delete this resolved ticket permanently from the list?')) return;
+      state.busy = true;
+      state.deleteInFlightCaseId = state.currentCaseId;
+      btnDeleteTicket.disabled = true;
+      fetch(API + '/chat/tickets/' + encodeURIComponent(state.currentCaseId), {
+        method: 'DELETE',
+        headers: apiHeaders(),
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          state.busy = false;
+          state.deleteInFlightCaseId = '';
+          btnDeleteTicket.disabled = false;
+          if (!data.success) {
+            alert('Could not delete ticket: ' + (data.message || 'Unknown error'));
+            return;
+          }
+          clearActiveConversationUi('ticket-deleted');
+          loadTickets();
+        })
+        .catch(function () {
+          state.busy = false;
+          state.deleteInFlightCaseId = '';
+          btnDeleteTicket.disabled = false;
+          alert('Network error while deleting ticket.');
+        });
     });
   }
 
@@ -1627,7 +1858,7 @@
           state.currentAppointmentStatus = 'approved';
           if (convoApptApproved) convoApptApproved.classList.remove('hidden');
           loadMessages(state.currentSessionId, state.currentConcern);
-          loadTickets();
+          loadTickets({ quiet: true });
         })
         .catch(function () {
           state.busy = false;
@@ -1666,7 +1897,7 @@
         }
         loadMessages(state.currentSessionId, state.currentConcern);
         lastMsgCount = 0;
-        fetch(API + '/chat/tickets?status=' + encodeURIComponent(state.currentStatus), { headers: apiHeaders() })
+        fetch(API + '/chat/tickets?status=' + encodeURIComponent(state.currentStatus) + '&_ts=' + Date.now(), { headers: apiHeaders(), cache: 'no-store' })
           .then(function (r) { return r.json(); })
           .then(function (d) {
             if (!d.success || !d.tickets) return;
@@ -1674,7 +1905,7 @@
             if (found) fillLfSchedulePanel(found);
           })
           .catch(function () {});
-        loadTickets();
+        loadTickets({ quiet: true });
       })
       .catch(function () {
         state.busy = false;
@@ -1766,7 +1997,8 @@
         }
 
         alert('Ticket resolved.' + (data.promoted_to_faq ? ' Answer added to FAQ.' : ''));
-        loadTickets();
+        loadTickets({ quiet: true });
+        clearActiveConversationUi('ticket-resolved');
       })
       .catch(function () {
         btnSubmitRes.disabled = false;
@@ -1781,6 +2013,8 @@
       document.querySelectorAll('.status-tab').forEach(function (t) { t.classList.remove('active'); });
       tab.classList.add('active');
       state.currentStatus = tab.dataset.status;
+      saveStatus(state.currentStatus);
+      state.restoredLastCaseAttempted = false;
       loadTickets();
     });
   });
@@ -1801,7 +2035,7 @@
   });
 
   /* ── Refresh ── */
-  btnRefresh.addEventListener('click', loadTickets);
+  btnRefresh.addEventListener('click', function () { loadTickets(); });
 
   /* ── Back button (mobile) ── */
   btnBack.addEventListener('click', function () {
@@ -1836,13 +2070,19 @@
   })();
 
   /* ── Initial load ── */
+  document.querySelectorAll('.status-tab').forEach(function (t) {
+    t.classList.toggle('active', t.dataset.status === state.currentStatus);
+  });
   syncResponsivePanels(false);
   loadTickets();
+  startAdminTicketStream();
 
-  // Auto-refresh ticket list every 30s
+  // Auto-refresh ticket list every 3s when no active conversation is selected
   setInterval(function () {
-    if (!state.currentCaseId) loadTickets();
-  }, 30000);
+    if (!state.currentCaseId && !state.busy) loadTickets({ quiet: true });
+  }, 3000);
+
+  window.addEventListener('beforeunload', stopAdminTicketStream);
 
 })();
 </script>

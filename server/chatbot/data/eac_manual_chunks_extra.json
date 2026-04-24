@@ -1,0 +1,431 @@
+[
+  {
+    "chunk_id": "EAC-036",
+    "topic": "Student Manual Receipt and Emilian Declaration",
+    "article": "Front Matter",
+    "section": "Student Manual Acknowledgement Slip and The Emilian Declaration",
+    "keywords": [
+      "acknowledgement slip",
+      "student manual acknowledgement",
+      "emilian declaration",
+      "receipt of manual",
+      "parent-student orientation",
+      "semester to semester",
+      "tuition increase",
+      "promissory notes"
+    ],
+    "bot_routing": "When asked about the acknowledgement slip, the Emilian Declaration, or what students agree to upon admission and enrollment.",
+    "content": "STUDENT MANUAL ACKNOWLEDGEMENT SLIP:\n- The student acknowledges receipt of the Emilio Aguinaldo College Student Manual 2021 Edition.\n- The student accepts responsibility for reading and understanding all applicable school rules and regulations contained in the manual.\n- The slip must be signed by the student, include the student ID number, course, and year level, and be submitted to the respective dean after completion.\n- Students are instructed to bring the manual to the scheduled Parent-Student Orientation Program.\n\nTHE EMILIAN DECLARATION:\n- In consideration of admission to Emilio Aguinaldo College, the student agrees to recognize, accept, abide by, and comply with the rules, regulations, policies, and requirements in the EAC Student Manual, bulletins, and other official documents.\n- The school has the absolute prerogative to accept or refuse admission. Willful disregard of rules of behavior, decency, and morality, or deliberate concealment or misrepresentation of facts in the admission process, may be grounds for denial of admission or discharge from EAC.\n- Enrollment is on a semester-to-semester basis only.\n- The student acknowledges the tuition and other school fees for the semester and agrees that the school may raise tuition and other fees in accordance with CHED guidelines.\n- Installment payments not paid on due dates may be subject to additional surcharge based on school guidelines on promissory notes.\n- The student pledges loyalty to Emilio Aguinaldo College and adherence to the laws of the land."
+  },
+  {
+    "chunk_id": "EAC-037",
+    "topic": "Foreword and Student Manual Revision History",
+    "article": "Front Matter",
+    "section": "Foreword and EAC Student Manual Revision Tracker",
+    "keywords": [
+      "foreword",
+      "revision tracker",
+      "manual revision",
+      "student manual history",
+      "2010 edition",
+      "2014 edition",
+      "2017 edition",
+      "2021 edition"
+    ],
+    "bot_routing": "When asked about the purpose of the Student Manual or the history of its revisions and editions.",
+    "content": "FOREWORD:\n- The Emilio Aguinaldo College-Cavite Student Manual contains the norms and standards to be observed by all enrolled students.\n- Admission to the school carries the tacit agreement to abide by the rules and regulations on conduct and discipline to uphold order, propriety, and school operations.\n- Academic and fiscal administration of the College is vested in the President of Emilio Aguinaldo College and staff.\n- All students are subject to the academic and administrative authorities of the College and are expected to believe in the vision, mission, philosophy, and goals of EAC and help implement them.\n- The manual undergoes constant revision to suit the needs of the changing EAC-Cavite community.\n\nREVISION TRACKER:\n- EAC Student Manual 2010 1st Edition: May 12, 2010.\n- EAC Student Manual 2014 1st Edition: June 22, 2014.\n- EAC Student Manual 2014 2nd Edition: May 5, 2015.\n- EAC Student Manual 2014 3rd Edition: February 21, 2016.\n- EAC Student Manual 2017 1st Edition: April 9, 2017.\n- EAC Student Manual 2017 2nd Edition: May 21, 2018.\n- EAC Student Manual 2017 3rd Edition: August 11, 2019.\n- EAC Student Manual 2017 4th Edition (Digital Version): June 18, 2020.\n- EAC Student Manual 2021 1st Edition: February 26, 2021.\n- EAC Student Manual 2021 1st Edition (Digital Version): July 31, 2021."
+  },
+  {
+    "chunk_id": "EAC-038",
+    "topic": "Chairman's and President's Messages",
+    "article": "Front Matter",
+    "section": "Chairman's Message and President's Message",
+    "keywords": [
+      "chairman's message",
+      "president's message",
+      "welcome to eac",
+      "virtue excellence service",
+      "cross reference advice",
+      "clarification of provisions",
+      "office of student affairs"
+    ],
+    "bot_routing": "When asked about the welcome messages from EAC leadership or the guidance given by the Chairman and President regarding the manual.",
+    "content": "CHAIRMAN'S MESSAGE:\n- Students are thanked for choosing Emilio Aguinaldo College and joining the institution's journey to help the youth earn an education that uplifts them and contributes to society.\n- EAC is committed to enabling and empowering students to live the values of Virtue, Excellence, and Service.\n- Students are expected to abide by the rules and policies of the institution so that the mission and vision can be fulfilled.\n- The message emphasizes genuine cooperation, mutual respect, perseverance, and success with God's guidance.\n\nPRESIDENT'S MESSAGE:\n- The faculty, staff, and administrators welcome students to the EAC community of learners and commit to guide and support them toward full adulthood.\n- The Student Manual is intended as a reference to the rules and values lived by the EAC learning community.\n- Students are advised to read the manual carefully, understand that it may need to be re-read, and use it as a reference while navigating school processes.\n- Students are specifically advised to cross-reference advice from friends, upperclassmen, or other informants with the provisions of the manual.\n- Any difference between actual procedures and the manual should be reported to the Office of Student Affairs so the manual can stay updated.\n- Students should not hesitate to seek clarification from faculty, staff, or administrators when a provision is confusing."
+  },
+  {
+    "chunk_id": "EAC-039",
+    "topic": "EAEC Board of Directors AY 2020-2021",
+    "article": "Front Matter",
+    "section": "Emilio Aguinaldo Educational Corporation Board of Directors A.Y. 2020-2021",
+    "keywords": [
+      "board of directors",
+      "eaec",
+      "ay 2020-2021",
+      "danilo l dolor",
+      "jose paulo e campos",
+      "paulo e campos jr",
+      "enrique e campos",
+      "ma soledad de leon"
+    ],
+    "bot_routing": "When asked who served on the Emilio Aguinaldo Educational Corporation Board of Directors for A.Y. 2020-2021.",
+    "content": "EMILIO AGUINALDO EDUCATIONAL CORPORATION BOARD OF DIRECTORS A.Y. 2020-2021:\n- Danilo L. Dolor: Chairman of the Board, Director.\n- Jose Paulo E. Campos, Ed.D.: President, Emilio Aguinaldo College, Director.\n- Atty. Paulo E. Campos, Jr.: Treasurer/Corporate Secretary, Director.\n- Enrique E. Campos, M.D.: Director.\n- Mrs. Ma. Soledad D.S. De Leon: Director.\n- Leandro M. De Leon, M.D.: Director.\n- Asuncion L. Abaya-Morido, M.D.: Director."
+  },
+  {
+    "chunk_id": "EAC-040",
+    "topic": "Admission Policy Overview and Special Admission Concerns",
+    "article": "Article 1 - General Policy on Admission and Retention",
+    "section": "Article Overview and Section 3 - Students with Special Admission Concerns",
+    "keywords": [
+      "general policy on admission",
+      "special admission concerns",
+      "open admission selective retention",
+      "honesty maturity moral character",
+      "withdraw application",
+      "academic delinquency",
+      "unpaid tuition",
+      "program closure"
+    ],
+    "bot_routing": "When asked about the overall EAC admission policy, reasons admission may be denied or withdrawn, or the rules for students with special admission concerns.",
+    "content": "GENERAL POLICY ON ADMISSION AND RETENTION:\n- Emilio Aguinaldo College reserves the right to admit local and foreign nationals who completed a secondary curriculum and are interested in college enrollment.\n- The College may decline or withdraw an application if the student fails to comply with admission standards or engages in behavior that places honesty, maturity, or moral character in question.\n- EAC offers opportunity regardless of nationality, gender, religious belief, political affinity, and economic status.\n- The institution follows an open admission, selective retention policy.\n\nSTUDENTS WITH SPECIAL ADMISSION CONCERNS:\n- Admission is open to all students who meet the specific standards, requirements, and regulations of the College.\n- Except in cases of academic delinquency, violation of school rules, failure to settle tuition and other obligations, illness or disease that prevents normal school work or is harmful to the academic community, or closure of the program or the College itself, a student who qualifies for enrollment qualifies to remain for the entire expected period needed to complete the program.\n- This policy is without prejudice to the student's right to transfer to another school within the prescribed period."
+  },
+  {
+    "chunk_id": "EAC-041",
+    "topic": "Academic Retention Appeals and Special Provision",
+    "article": "Article 1 - General Policy on Admission and Retention",
+    "section": "Section 4 - Special Provision under the EAC Academic Retention Policy",
+    "keywords": [
+      "special provision",
+      "appeal non-readmission",
+      "guidance evaluation",
+      "another unit of the college",
+      "ad hoc committee",
+      "transfer credentials",
+      "scholastic delinquency"
+    ],
+    "bot_routing": "When asked whether a student who is barred from re-enrollment may appeal, transfer to another unit, or still seek another program in EAC.",
+    "content": "SPECIAL PROVISION UNDER THE ACADEMIC RETENTION POLICY:\n- Students who are no longer allowed to re-enroll in a particular school because of scholastic delinquency may seek admission to another unit in the College.\n- Before transfer to another unit, the student must first be referred to the Guidance and Counseling Office for evaluation of capability and possibility of success in the new program.\n- The application must also be favorably considered by the Dean of the school to which the student seeks transfer.\n- Students slated for non-readmission may appeal their case.\n- In meritorious cases, and for causes other than scholastic delinquency, the College Ad Hoc Committee may recommend that the student be allowed to re-enroll in the next semester under specific conditions.\n- If the student fails to satisfy the conditions imposed in the appeal, the student may no longer be allowed to re-enroll and shall be issued transfer credentials."
+  },
+  {
+    "chunk_id": "EAC-042",
+    "topic": "General Directives, Student Rights, and Respectful Conduct",
+    "article": "Article 2 - General Directives",
+    "section": "Preliminaries, Student Rights, and Courtesy Expectations",
+    "keywords": [
+      "general directives",
+      "ignorance of the manual",
+      "student rights",
+      "courtesy",
+      "politeness",
+      "due process",
+      "respect differences",
+      "drug-free liquor-free"
+    ],
+    "bot_routing": "When asked about students' general responsibilities under the manual, their rights, or the expected standards of courtesy and respect in EAC.",
+    "content": "GENERAL DIRECTIVES:\n- All students are required to comply with the provisions of the Emilio Aguinaldo College Student Manual and should be familiar with its contents.\n- Ignorance of any provision does not excuse a student from sanctions for non-compliance.\n\nSTUDENT RIGHTS RECOGNIZED BY EAC:\n- The right to express concern on matters related to the quality of education they deserve.\n- The right to organize among themselves.\n- The right to express themselves, provided the exercise is in accordance with the institution's social norms.\n- The right to due process of law.\n\nCOURTESY AND RESPECT:\n- All members of the academic community, including students, are expected to observe politeness, etiquette, and courtesy in dealing with others and with campus guests.\n- Students are expected to show respect for all persons and for differences in religion, race, sexual orientation, gender identity, and political beliefs.\n\nCAMPUS ENVIRONMENT RULES:\n- EAC recognizes the hazards of smoking and declares the entire campus and its 100-meter exterior radius a non-smoking area.\n- Emilio Aguinaldo College is a drug-free and liquor-free campus."
+  },
+  {
+    "chunk_id": "EAC-043",
+    "topic": "ID Rules, Uniform, Exam Attire, and Appearance Standards",
+    "article": "Article 2 - General Directives",
+    "section": "Title 2 - EAC Identification Cards and Title 3 - The School Uniform",
+    "keywords": [
+      "one-day campus pass",
+      "forgot ID",
+      "uniform during exams",
+      "type a uniform",
+      "black shoes",
+      "washday",
+      "unnatural hair color",
+      "earrings for male students"
+    ],
+    "bot_routing": "When asked about entering campus without an ID, what uniform to wear on exam days, or appearance rules such as hair and earrings.",
+    "content": "IDENTIFICATION CARDS:\n- Students must always wear their school ID while inside campus and present or surrender it when requested by authorities.\n- A student who forgets the school ID must go to the Security Office for identity and enrollment verification.\n- If verified, the student may be issued a one-day campus pass to serve as a temporary ID for that day only.\n- The campus pass must be surrendered to the lobby guard upon exit.\n\nUNIFORM SCHEDULE:\n- Monday to Thursday: Type A Uniform and black shoes.\n- Friday (Washday): Official EAC Red Shirt.\n- Saturday: Students who do not have the official EAC Red Shirt must wear the Type A uniform.\n- Laboratory gowns, PE shirts, and NSTP shirts are not uniforms and should only be worn during the appropriate classes.\n- Organization shirts may only be worn during approved co-curricular or extra-curricular activities.\n\nEXAM ATTIRE:\n- During Prelims, Midterms, and Final examinations, wearing the Type A uniform and school ID is mandatory.\n- If a major exam falls on a Friday or Saturday, students must still wear the Type A uniform and black shoes.\n\nAPPEARANCE RULES:\n- Students are expected to be presentable and appropriately attired at all times.\n- Hair should be neatly combed.\n- Unconventional haircuts such as punk or rock styles and unnatural, outlandish, bright, or neon hair colors and highlights are not allowed.\n- Earrings for male students are not allowed.\n- Female students may not wear more than one pair of earrings or large dangling earrings."
+  },
+  {
+    "chunk_id": "EAC-044",
+    "topic": "Class Suspension Announcements, Timelines, and Campus Access",
+    "article": "Article 2 - General Directives",
+    "section": "Title 5 - Class Suspensions",
+    "keywords": [
+      "class suspension timing",
+      "11:30 pm",
+      "4:30 am",
+      "official announcement channels",
+      "campus open 6am to 9pm",
+      "entry after suspension",
+      "students must exit within 1 hour"
+    ],
+    "bot_routing": "When asked how suspension announcements are made, what time they are usually posted, or what happens to campus access when classes are suspended.",
+    "content": "CLASS SUSPENSION ANNOUNCEMENTS:\n- Official suspension announcements are disseminated through the EAC website, EAC Infocast, official EAC social media accounts, trunkline, and postings in campus areas such as the Activity Center, Lobby, Registrar's Office, and OSA.\n- If the suspension is announced in advance, the general rule is that the official announcement is made no earlier than 11:30 p.m. on the night before implementation.\n- If the suspension is announced on the same day, the general rule is that the official announcement is made no later than 4:30 a.m., unless the President or VPAA deems a later suspension necessary due to unforeseen circumstances.\n\nCAMPUS HOURS AND ACCESS:\n- The EAC campus is officially open from 6:00 a.m. to 9:00 p.m. only.\n- Only those with permits may enter earlier or stay beyond those hours.\n- When classes are suspended, students will no longer be allowed to enter the campus 30 minutes after the suspension takes effect.\n- Students already on campus are expected to leave within one hour after the suspension takes effect.\n- Loitering is prohibited, but students waiting to be fetched may stay at the EAC Lobby and EAC Activity Center.\n- In extreme emergencies, the Security Office designates specific areas for stranded students and employees."
+  },
+  {
+    "chunk_id": "EAC-045",
+    "topic": "Official Communications and Authorized Representatives",
+    "article": "Article 3 - Official Communications",
+    "section": "Sections 1-5",
+    "keywords": [
+      "official communications",
+      "standard letter format",
+      "two copies",
+      "official student email",
+      "letter of authorization",
+      "valid identification card",
+      "registrar release of documents",
+      "data privacy"
+    ],
+    "bot_routing": "When asked how to write to a school office, what details must be included in an official communication, or what a representative needs to transact on behalf of a student.",
+    "content": "OFFICIAL COMMUNICATIONS POLICY:\n- Official business with any office, unit, department, or administrative personnel of the school should be transacted in writing using the standard letter format.\n- The student should provide two copies: one for the office concerned and one receiving copy noted by the office for the student.\n- Oral arrangements or agreements should later be supported by a written document.\n- All communications must bear the student's name, course and year level, and ID number.\n- Hard-copy communications should be signed.\n- For email communications, students are strongly encouraged to use their official EAC student email issued by the MIS/OLTD Office.\n- Academic-related information may only be obtained through the Registrar's Office, while discipline-related information may only be obtained through the Office of Student Affairs, subject to strict observance of Data Privacy and Security.\n- Any person transacting with the Registrar's Office, Finance and Accounting Office, OSA, or a Dean's Office for and on behalf of a student must present a letter of authorization and a valid identification card.\n- Information regarding students enrolled in the College may be obtained through the Registrar's Office in accordance with the guidelines on release of documents."
+  },
+  {
+    "chunk_id": "EAC-046",
+    "topic": "Scholarship Updating Requirements and Submission Deadlines",
+    "article": "Article 4 - Financial Aids and Scholarships",
+    "section": "Section 12 - Scholarship Updating Requirements",
+    "keywords": [
+      "scholarship updating",
+      "submission deadline",
+      "first week of september",
+      "first week of february",
+      "final grade report form",
+      "enrollment registration form",
+      "endorsement certificate",
+      "performance evaluation"
+    ],
+    "bot_routing": "When asked what scholars need to submit every semester to continue their benefits and when those scholarship updating requirements are due.",
+    "content": "SCHOLARSHIP UPDATING REQUIREMENTS:\n- At the start of each new semester, previously accepted scholars and grant beneficiaries are required by OSA to submit updating requirements for continuation of privileges.\n- Common requirements often include a copy of the Final Grade Report Form from the previous semester and a copy of the latest Enrollment Registration Form.\n- Additional documentary requirements vary by scholarship type.\n\nTYPE-SPECIFIC EXAMPLES:\n- PD 577 and PVAO Educational Assistance: latest AFP/PVAO scholarship endorsement bearing the beneficiary's name.\n- Government Agency Educational Assistance (PNP, BFP, BJMP, BI): original agency endorsement letter and scholarship endorsement, plus employment certification showing the parent is a regular employee with Salary Grade 24 or below.\n- PWD Tuition Fee Discount: copy of the PWD ID front and back.\n- Siblings and Parent-Child Scholarship: grade report and enrollment form for both applicants.\n- EFACE: latest approved EFACE application form and photocopy of the parent's company ID.\n- City of Dasmariñas Matching Grant: latest Mayor Scholarship endorsement certificate.\n- Non-academic scholarships such as varsity, culture and arts production groups, and MAGDALO: talent coordinator's performance evaluation.\n\nSUBMISSION DEADLINES:\n- First Semester: within the first week of September.\n- Second Semester: within the first week of February."
+  },
+  {
+    "chunk_id": "EAC-047",
+    "topic": "Enrollment Flow for Continuing Students, Returnees, and Course Credit",
+    "article": "Article 5 - College Enrollment and Registration",
+    "section": "Section 1.2 - Continuing Students and Returnees; Section 2 - Course Credit for Transferees",
+    "keywords": [
+      "continuing students enrollment",
+      "returnees enrollment",
+      "e-telecare lab",
+      "id validation sticker",
+      "course credit for transferees",
+      "15 units first semester",
+      "emilian culture formation",
+      "50 percent total units"
+    ],
+    "bot_routing": "When asked how continuing students or returnees enroll, or how course credit and residency rules apply to transferees.",
+    "content": "ENROLLMENT FLOW FOR CONTINUING STUDENTS AND RETURNEES:\n- Step 1: Proceed to the Enrollment Section at the E-Telecare Lab or Dean's Office for advising, evaluation of subjects taken, and printing of the student load.\n- Step 2: Pay the tuition fee down payment at the Cashier's Office.\n- Step 3: Print the Enrollment Registration Form and secure the new EAC ID validation sticker.\n\nCOURSE CREDIT FOR TRANSFEREES:\n- The student must satisfy the college residence requirement by taking at least 50% of the total units or credit of the course or subject in EAC and must have registered for at least two years prior to graduation.\n- During the student's initial semester in the College, the student must be enrolled in at least 15 units, consisting of 12 units of courses or subjects and an additional 3 units of Emilian Culture Formation, unless the Dean allows additional units.\n- Courses or subjects taken from another school should be credited during the first term of studies at EAC, subject to the governing rules and regulations of the College."
+  },
+  {
+    "chunk_id": "EAC-048",
+    "topic": "Study Load, Prerequisites, Overloading, Cross Enrollment, and Shifting",
+    "article": "Article 5 - College Enrollment and Registration",
+    "section": "Sections 3-7",
+    "keywords": [
+      "study load",
+      "overloading",
+      "pre-requisite",
+      "graduating student",
+      "add drop change subjects",
+      "cross enrollment",
+      "registration period",
+      "shifting to another program"
+    ],
+    "bot_routing": "When asked about adding or dropping subjects, prerequisite exceptions, overloads for graduating students, cross enrollment, or shifting to another program.",
+    "content": "ADDING, DROPPING, OR CHANGING SUBJECTS:\n- A student with valid reasons may add, drop, or change courses or subjects within two weeks after the beginning of classes, subject to payment of the corresponding fee and completion of the prescribed form from the Registrar's Office.\n- If a student intends to drop all enrolled subjects, parental consent is required.\n\nPRE-REQUISITES AND OVERLOADING:\n- As a general rule, a student may not take an advanced course or subject until the prerequisite has been satisfactorily passed.\n- A graduating student in the last semester of studies may be allowed to take both the prerequisite and advanced class when the prerequisite is a repeated subject, the student has superior scholastic standing, and the Dean or authorized academic official approves.\n- A graduating student in the last semester may also be allowed up to six academic units in excess of the normal load.\n\nCROSS ENROLLMENT AND SHIFTING:\n- Cross enrollment is generally discouraged, but for valid reasons and with written approval of the Dean, a student may be allowed to cross-enroll in another institution up to the normal course load for the term.\n- Unauthorized cross-enrolled subjects receive no credit.\n- Cross enrollment must be done within the registration period, and no student may cross-enroll in two or more schools outside EAC at the same time.\n- Shifting to another program is allowed only during the registration period using the prescribed shifting form and the necessary Dean approvals."
+  },
+  {
+    "chunk_id": "EAC-049",
+    "topic": "Tuition Payments, Withdrawal Charges, and Refund Rules",
+    "article": "Article 6 - Payments, Record and Adjustments of Tuition, Miscellaneous and Other School Fees",
+    "section": "Sections 2-5",
+    "keywords": [
+      "withdrawal refund",
+      "25 percent charge",
+      "50 percent charge",
+      "summer refund",
+      "registration fees non refundable",
+      "promissory note",
+      "installment payment",
+      "open accounts"
+    ],
+    "bot_routing": "When asked about installment rules, withdrawal charges, refund percentages, open accounts, or what happens to fees if a student stops attending classes.",
+    "content": "PAYMENTS AND INSTALLMENTS:\n- Tuition, miscellaneous, and other school fees may be paid in cash upon enrollment or by installment.\n- Students who pay in cash upon enrollment within the stipulated period are entitled to a cash payment discount equivalent to 5% of the tuition fee amount.\n- Students who opt to pay by installment must make a down payment, with the balance payable in eight equal installments, the last of which falls one week before the first day of final examinations.\n- Students who fail to pay the balance may complete the term but cannot enroll in the next semester and may have documents withheld until balances are settled.\n- A currently enrolled student with unsettled financial obligations may be allowed to take final examinations upon submission of a promissory note guaranteed by the parents, but clearance may still be withheld until all balances are settled.\n\nWITHDRAWAL AND REFUND RULES:\n- A student who transfers or withdraws in writing within the first week of classes may be charged 25% of the total amount due for the term if the fees have already been paid in full or for more than one month.\n- If the written withdrawal is made within the second week of classes, the student may be charged 50% of the total amount due.\n- Withdrawal after the second week of classes may result in the student being charged the full school fees.\n- If the withdrawal is due to a justifiable reason, the student is charged only the pertinent fees up to and including the last month of attendance.\n- Registration and other pertinent fees are not refundable.\n- If a course or subject is discontinued by the school or not credited through no fault of the student, full refund of tuition for that course or subject shall be made.\n\nSUMMER RULES:\n- During summer, dropping within the first and second days of classes results in a 25% charge of the total amount due.\n- Dropping within the third and fourth day results in a 50% charge of the total amount due.\n- Any student dismissed or expelled from the College is not entitled to a refund of tuition fees."
+  },
+  {
+    "chunk_id": "EAC-050",
+    "topic": "Online Teaching Delivery, Attendance, and Examinations",
+    "article": "Article 7 - Online Teaching and Learning",
+    "section": "Sections 1-7",
+    "keywords": [
+      "brightspace",
+      "google meet",
+      "synchronous",
+      "asynchronous",
+      "online attendance",
+      "major examinations online",
+      "class size 50",
+      "oltd"
+    ],
+    "bot_routing": "When asked how online classes are delivered in EAC, what counts as online attendance, or how major online examinations are administered.",
+    "content": "ONLINE CLASS DELIVERY:\n- Brightspace is the official learning management system of EAC for online class delivery.\n- It is used for uploading lectures, holding discussion forums, managing the virtual classroom, posting announcements, and uploading assignments, quizzes, and tests.\n- Google Meet supports synchronous classes.\n- Brightspace may be accessed through computers, laptops, tablets, and smartphones.\n- Online class schedules must be parallel to the official class schedules of enrolled students.\n- Synchronous interaction means faculty members and students are present online at the same time, while asynchronous interaction does not require simultaneous presence.\n- The recommended maximum class size in Brightspace is 50 students.\n- All major examinations are administered online using Brightspace.\n\nONLINE ATTENDANCE:\n- Students are expected to attend online classes regularly through active participation such as submitting assignments, engaging in discussion forums, completing quizzes and examinations, attending online chats, and joining virtual classrooms.\n- Simply logging into the course does not count as attendance.\n- Online attendance must not be included in the computation of grades.\n\nSTUDENT SUPPORT:\n- Students enrolled in online classes must be given access to library resources, guidance and career services, and similar academic and non-academic support services.\n- Questions or concerns regarding Brightspace may be sent to oltd@eac.edu.ph."
+  },
+  {
+    "chunk_id": "EAC-051",
+    "topic": "Online Academic Integrity, Netiquette, Support Links, and Data Privacy",
+    "article": "Article 7 - Online Teaching and Learning",
+    "section": "Sections 8-15",
+    "keywords": [
+      "academic integrity online",
+      "scholastic dishonesty",
+      "netiquette",
+      "anti-bullying act",
+      "cybercrime prevention act",
+      "activate deactivate users",
+      "brightspace support links",
+      "data privacy act"
+    ],
+    "bot_routing": "When asked about academic integrity in online classes, online behavior standards, account activation and deactivation, or the official support links and privacy policy for online learning.",
+    "content": "ACADEMIC INTEGRITY AND NETIQUETTE:\n- Online learners are expected to follow the same academic policies as face-to-face students.\n- Scholastic dishonesty includes cheating, plagiarism, and collusion.\n- Faculty members are encouraged to deter cheating through measures such as unique assignments and plagiarism checkers.\n- Faculty and students must show respect, communicate effectively, and help create a community of scholars online.\n- They must always be mindful of the Anti-Bullying Act (Republic Act 10627) and the Cybercrime Prevention Act of 2012 (Republic Act 10175).\n\nREGISTRATION AND ACCOUNT MANAGEMENT:\n- The EAC Online Teaching and Learning Department is responsible for registering faculty members and students in Brightspace.\n- School Deans must accomplish faculty registration two weeks before the opening of online classes.\n- Officially enrolled student data is migrated from AIMS for enrollment to Brightspace.\n- Faculty and student accounts remain active for the whole semester or summer term.\n- Accounts are deactivated immediately upon resignation or termination of a faculty member or official withdrawal of a student.\n- Only the Department Head or Brightspace Administrator may activate or deactivate user accounts.\n\nSUPPORT AND PRIVACY:\n- Questions regarding Brightspace and Google Meet may be forwarded to oltd@eac.edu.ph.\n- Support links listed in the manual include the Brightspace Instructor Guide, Brightspace Learner Guide, Google Meet Help, Labster Help, and IT support via itsupport@eac.edu.ph.\n- Emilio Aguinaldo College commits to protecting privacy rights over personal information pursuant to Republic Act No. 10173 or the Data Privacy Act of 2012, its IRR, and the Basic Education Act of 1982."
+  },
+  {
+    "chunk_id": "EAC-052",
+    "topic": "Social Media Scope, Personal Use, and Expected Behavior",
+    "article": "Article 8 - EAC Social Media Policy",
+    "section": "Sections 1-6",
+    "keywords": [
+      "social media policy scope",
+      "personal account",
+      "private social media account",
+      "freedom of speech",
+      "expected standards of behavior",
+      "personal decorum",
+      "future employers",
+      "school grievance channels"
+    ],
+    "bot_routing": "When asked when the social media policy applies, how students should identify themselves on personal accounts, or what behavior EAC expects on social media.",
+    "content": "SCOPE OF THE SOCIAL MEDIA POLICY:\n- The policy applies to any online interactive tool that encourages participation, interaction, and exchange, including Facebook, Instagram, TikTok, Twitter, YouTube, LinkedIn, Snapchat, Flickr, blogs, discussion forums, instant messaging, and any website allowing public commenting or posting.\n- It applies to all students and to any published personal communication that directly or indirectly references Emilio Aguinaldo College, its officers, faculty, employees, or fellow students.\n- It applies regardless of whether the communication is made publicly or privately, on or off campus, and whether on personal devices or otherwise.\n- Students may use social media in their private lives, but if a private account identifies Emilio Aguinaldo College, it must be clear that the views expressed are personal and not made on behalf of the institution.\n- Nothing in the policy is meant to limit freedom of speech or academic freedom, provided that those freedoms are exercised within the law.\n\nPERSONAL USE AND EXPECTED BEHAVIOR:\n- Students must ensure their social media profiles and content are consistent with school policies, their registration agreement, and proper personal decorum.\n- Students should be mindful of the permanence and wide reach of digital content.\n- They are advised not to post personal data they would not want in the public domain, such as phone numbers, addresses, signatures, passwords, medical records, bank records, or government-issued IDs.\n- They are also advised not to post statements they would not be willing to say directly to another person.\n- Students are personally responsible for what they communicate on or through social media and must adhere to the standards of behavior in the EAC Student Manual.\n- Social media use must not infringe on the rights or privacy of others.\n- Student concerns should be raised through established school grievance channels and not aired openly on social media."
+  },
+  {
+    "chunk_id": "EAC-053",
+    "topic": "Social Media Prohibited Content, Cyber-Bullying, and Brand Rules",
+    "article": "Article 8 - EAC Social Media Policy",
+    "section": "Sections 6-10",
+    "keywords": [
+      "confidential information",
+      "fake accounts",
+      "cyber-bullying",
+      "rumors lies gossip",
+      "harassing content",
+      "school logo",
+      "brand guidelines",
+      "marketing and communications office"
+    ],
+    "bot_routing": "When asked what kinds of social media posts are prohibited, what counts as cyber-bullying, or how the EAC name and logo may be used online.",
+    "content": "PROHIBITED OR UNACCEPTABLE POSTS MAY INCLUDE:\n- Confidential information such as unpublished research, private information about students or staff, personnel matters, or non-public documents.\n- Details of complaints, legal proceedings, or potential legal proceedings involving the institution.\n- Personal information about another individual without express permission.\n- Comments made through fake accounts or through another person's name without consent.\n- Threatening, harassing, discriminatory, illegal, obscene, indecent, defamatory, or hostile material directed toward any person, entity, or EAC.\n- Any posting that constitutes a criminal offense or may bring the institution into disrepute or compromise the safety or reputation of partner communities, colleagues, students, staff, or those connected with EAC.\n\nCYBER-BULLYING:\n- Examples include maliciously spreading rumors, lies, or gossip; intimidation or aggressive behavior; vulgar, lewd, offensive, or threatening comments; and posting comments, photos, or memes intended to expose a person to ridicule, shame, or humiliation.\n- Cyber-bullying may also occur through email, text, or instant messaging.\n- Students who experience cyber-bullying from another student or school employee are entitled to full institutional support in resolving grievances and complaints.\n\nBRAND AND NAME USAGE:\n- The institution's name, identity, and logo may only be used in accordance with Emilio Aguinaldo College brand guidelines.\n- Official EAC logos and associated marks must not be altered, stretched, distorted, rearranged, recolored, or used on similarly colored backgrounds.\n- Use of school logos requires consent from the Marketing and Communications Office.\n- Students using EAC-administered social media resources should seek the necessary permissions, verify information, secure proper clearance, and post appropriate disclaimers when the school is named."
+  },
+  {
+    "chunk_id": "EAC-054",
+    "topic": "Social Media Monitoring, Data Privacy, Reporting, and Consequences",
+    "article": "Article 8 - EAC Social Media Policy",
+    "section": "Sections 11-15",
+    "keywords": [
+      "monitoring social media",
+      "data privacy social media",
+      "report violation",
+      "consequences of breach",
+      "major offense social media",
+      "law enforcement",
+      "respective dean or principal",
+      "utmost confidentiality"
+    ],
+    "bot_routing": "When asked how EAC handles social media violations, how incidents are reported, or what disciplinary and legal consequences may follow a breach of the policy.",
+    "content": "MONITORING AND DATA PRIVACY:\n- Emilio Aguinaldo College reserves the right, within the law, to monitor, intercept, and review student activities using its IT resources and communications systems, including social media postings, to ensure compliance with rules and legitimate use.\n- The Data Privacy Act applies to social media in the same way it applies in other contexts.\n- Personal information, including photographs, videos, CCTV footage, screenshots of online meetings, classes, or discussions, should not be shared on social media without consent of the individual or group concerned.\n\nINCIDENTS, REPORTING, AND RESPONSE:\n- Where a breach of the policy is reported, the institution reviews the circumstances and decides on the most appropriate and proportionate course of action.\n- Students who receive content considered to be in breach of the policy should first report it to their respective dean or principal.\n- Reports of violation are carefully documented and treated with utmost confidentiality by the relevant body constituted by the institution.\n\nCONSEQUENCES:\n- Any breach of the social media policy may result in disciplinary action categorized as a major offense under the EAC Student Manual.\n- Disciplinary action may be taken regardless of when the breach occurred and regardless of whether EAC equipment or facilities were used.\n- Where the conduct is connected with an illegal criminal offense, the institution may coordinate with the appropriate law enforcement agency and report the matter.\n- Beyond school action, any student, parent or guardian, teacher, employee, or third party may also choose to pursue legal action against the violator."
+  },
+  {
+    "chunk_id": "EAC-055",
+    "topic": "Attendance, Tardiness, Guidance Referral, and Absence Limits",
+    "article": "Article 9 - Attendance and Examinations",
+    "section": "Sections 1-4",
+    "keywords": [
+      "80 percent attendance",
+      "tardiness",
+      "three consecutive absences",
+      "guidance referral",
+      "maximum allowable absences",
+      "3 unit subject",
+      "nstp absences",
+      "excused absence"
+    ],
+    "bot_routing": "When asked about attendance requirements, being late, excused absences, the maximum number of allowed absences, or when Guidance counseling is required.",
+    "content": "ATTENDANCE POLICY:\n- Prompt and regular attendance in all classes is required from the first day until the end of the semester.\n- A student must attend at least 80% of class periods in each subject to earn the corresponding units.\n- The remaining 20% may consist of excused or unexcused absences.\n- Excused absences include illness, death in the family, or authorized participation in an activity officially recognized by the school, supported by the necessary documents and a written request to the Dean.\n- The teacher is obliged to give make-up activities such as quizzes for excused absences only.\n- Unexcused absences are those not covered by the excused absence rules.\n\nTARDINESS AND REFERRAL RULES:\n- A student is considered late if not in class within 15 minutes from the start of class.\n- Place of residence or distance is not an acceptable excuse for tardiness.\n- Three consecutive tardiness of less than 15 minutes in a subject are equivalent to one absence.\n- A student who is late for more than 15 minutes is considered absent, although still allowed to attend class.\n- A student who incurs at least three consecutive absences in any subject must be referred by the instructor to the Guidance Office for counseling and must present the referral form before re-admission to class.\n- Students remain responsible for all assignments, lessons, and requirements missed regardless of the reason for absence.\n\nMAXIMUM ALLOWABLE ABSENCES:\n- 3-unit subject: 11 hours.\n- 4-unit subject: 9 hours.\n- 5-unit subject: 7 hours.\n- 6-unit subject: 6 hours.\n- NSTP 1 and NSTP 2: 6 hours.\n- Students who exceed the maximum allowable absences are automatically dropped from the class and receive a final grade of U.W. (Unauthorized Withdrawal)."
+  },
+  {
+    "chunk_id": "EAC-056",
+    "topic": "Examination Permits, Special Exams, Completion Exams, and Cheating",
+    "article": "Article 9 - Attendance and Examinations",
+    "section": "Sections 5-11",
+    "keywords": [
+      "examination permit",
+      "special prelim exam",
+      "special midterm exam",
+      "completion exam",
+      "medical certificate from school physician",
+      "zero score",
+      "departmentalized examinations",
+      "cheating in examination"
+    ],
+    "bot_routing": "When asked about exam permits, how special exams work, how completion exams are processed, or what penalty applies for cheating in exams or quizzes.",
+    "content": "PERIODIC EXAMINATIONS:\n- Three periodic examinations are conducted every semester: prelim, midterm, and final examinations.\n- During the summer term, only midterm and final examinations are given.\n- No student may take a periodic examination without presenting the examination permit issued by the Accounting Office and distributed by the respective school.\n- Periodic examinations are departmentalized, questions are taken from the College Test Bank, and checking is performed through a scanner. Results are recorded in the Registrar's Office and may be obtained through the Dean's Office.\n\nSPECIAL EXAMINATIONS:\n- Special prelim or midterm examinations are given to students who miss the scheduled prelim or midterm for valid reasons such as illness or death in the family.\n- The student must secure clearance from the Dean.\n- If the student cannot take the examination because of illness, a medical certificate from the School Physician must be presented.\n- Special examinations must be taken within the semester and before the scheduled midterm or final examinations, respectively.\n- If not taken within the prescribed period, the student receives a score of zero.\n- During summer classes, a special midterm is scheduled.\n\nCOMPLETION EXAMINATIONS AND CHEATING:\n- Completion examinations for final examinations must be taken within the prescribed period stated in the Academic Calendar.\n- The student must accomplish a standard completion form from the Registrar's Office and secure the signatures of the instructor and the Dean.\n- If the completion period lapses, the student receives a grade of 5.0 in the course or subject with no final examination completed.\n- Students caught cheating in any examination or quiz shall be sanctioned with a grade of 5.0 in the course or subject and dropped from that course or subject."
+  },
+  {
+    "chunk_id": "EAC-057",
+    "topic": "Grade Weights, Grade Equivalents, INC/OW/UW, and Verification",
+    "article": "Article 10 - Grading System",
+    "section": "Sections 1-4",
+    "keywords": [
+      "grading weights",
+      "grade equivalents",
+      "1.00 excellent",
+      "3.00 pass",
+      "inc incomplete",
+      "official withdrawal",
+      "unauthorized withdrawal",
+      "verification of grades"
+    ],
+    "bot_routing": "When asked how grades are computed, what the grade equivalents mean, what INC, OW, and UW stand for, or how a student may verify grades.",
+    "content": "GRADING WEIGHTS:\n- General Education subjects without laboratory: Prelim 20%, Midterm 20%, Final 20%, Class Standing 40%.\n- Professional subjects without laboratory: Base 30% weight classification under the institutional grading table, with written exams and class standing as provided in the manual.\n- Subjects with laboratory: Prelim 15%, Midterm 15%, Final 15%, Class Standing 25%, Laboratory 30%.\n- Pure laboratory subjects: Prelim 20%, Midterm 20%, Final 20%, Laboratory 40%.\n- OJT subjects follow school requirements and industry evaluation, with details governed by the program's OJT Manual.\n\nGRADE EQUIVALENTS:\n- 1.00 = 97-100 = Excellent.\n- 1.25 = 94-96 = Superior.\n- 1.50 = 91-93 = Very Good.\n- 1.75 = 88-90 = Good.\n- 2.00 = 85-87 = Very Satisfactory.\n- 2.25 = 82-84 = Satisfactory.\n- 2.50 = 79-81 = Average.\n- 2.75 = 76-78 = Fair.\n- 3.00 = 75 = Pass.\n- 5.00 = 74 and below = Failed.\n- The standard passing grade is 3.0 or 75%.\n\nSPECIAL MARKS:\n- INC means Incomplete and is given when a student cannot take the final examination for a valid reason or has incomplete requirements before the final examination.\n- OW means Official Withdrawal and is given when a subject is dropped within the authorized period before the first day of the scheduled midterm examinations.\n- UW means Unauthorized Withdrawal and is given when the student has no attendance for the entire semester or exceeds the maximum tolerated absences in a course or subject.\n- The period to remove an INC may not extend beyond one semester. After that, the INC automatically becomes 5.0.\n\nVERIFICATION OF GRADES:\n- Before the final grading period, requests may be addressed formally to the Program Adviser or School Dean.\n- After the final grading period, requests may be addressed formally to the School Dean or the Vice President for Academic Affairs."
+  },
+  {
+    "chunk_id": "EAC-058",
+    "topic": "Major Offenses - Safety, Integrity, and Policy Violations",
+    "article": "Article 11 - Rules of Student Conduct and Discipline",
+    "section": "Title 1, Section 2 - Major Offenses",
+    "keywords": [
+      "major offenses",
+      "hazing",
+      "fraternities",
+      "sororities",
+      "gambling",
+      "copyright",
+      "unauthorized recording",
+      "fire alarm"
+    ],
+    "bot_routing": "When asked whether a serious act is considered a major offense in EAC, especially for hazing, gambling, hacking, unauthorized recording, bullying, copyright violations, or ignoring official summons.",
+    "content": "MAJOR OFFENSES INCLUDE, BUT ARE NOT LIMITED TO:\n- Disruptive behavior, willful disobedience, hostile gestures, or open defiance of school authority.\n- Assault, battery, harassment, threats of force, physical abuse, or willful misconduct causing injury, death, or damage to persons or property.\n- Unsafe behavior in school, clinical, or laboratory settings that threatens self or others.\n- Illegal use, sale, possession, or influence of controlled substances, poison, alcoholic beverages, or illegal narcotics on school property or during school-sponsored events.\n- Smoking in areas where smoking is prohibited by law, board policy, or administrative regulation.\n- Disorderly, lewd, indecent, or obscene conduct; sexual assault; possession or use of firearms, explosives, dangerous chemicals, deadly weapons, or other harmful implements.\n- Obstruction or disruption of educational or administrative processes, misrepresentation as an agent of the College, extortion, blackmail, unapproved solicitation, and assisting another to commit an offense.\n- Hacking and unauthorized recording, dissemination, or publication of academic presentations or materials.\n- Actions motivated by race, color, religious affiliation, ancestry, national origin, disability, gender, or sexual orientation that involve force or threat of force.\n- Academic dishonesty such as falsification, plagiarism, cheating, fabrication, and forgery of signatures.\n- Any form of hazing and membership in fraternities or sororities.\n- Gambling or any betting activity within school premises.\n- Bullying, copyright violations, unjust enrichment, playing with the institution's fire alarm or other safety devices, ignoring summonses from OSA or other authorities, and violation of institutional board policies and administrative regulations."
+  },
+  {
+    "chunk_id": "EAC-059",
+    "topic": "Minor Offenses - IDs, Dress Code, Facilities, and Behavior",
+    "article": "Article 11 - Rules of Student Conduct and Discipline",
+    "section": "Title 1, Section 3 - Minor Offenses",
+    "keywords": [
+      "minor offenses",
+      "fake id",
+      "sando",
+      "tokong",
+      "cross-dressing",
+      "food in classroom",
+      "cellphone during class",
+      "public display of affection"
+    ],
+    "bot_routing": "When asked whether a less serious act is considered a minor offense in EAC, especially issues involving IDs, attire, electronic devices, facilities, notices, or public behavior.",
+    "content": "MINOR OFFENSES INCLUDE, BUT ARE NOT LIMITED TO:\n- Not wearing the school ID, improper use of the ID, possession of fake or falsified school IDs, possession of two or more school IDs, using another student's ID, lending an ID, or tampering with the school ID.\n- Wearing inappropriate attire such as sando, PE shorts or athletic shorts outside PE class, apparel with plunging necklines, revealing short pants, tokong, leggings or pants with holes, mini skirts, spaghetti straps without vest or topper, tube blouses without vest or topper, rubber slippers, sandals of any kind, and cross-dressing.\n- Dyed hair with unnatural, outlandish colors or highlights.\n- Littering and failure to observe CLAYGO.\n- Bringing or eating food and beverages inside the classroom.\n- Loitering near walkways, fire exits, and restricted areas, or creating boisterous noise in corridors during class hours.\n- For male students, sporting long hair that touches the back of the polo collar and wearing earrings, ball caps, hats, bonnets, and similar items inside class.\n- Participating in off-campus activities in the name of the College without written authorization.\n- Making adverse or sexist remarks, possessing or using pornographic materials, using cellular phones, headsets, or other electronic devices during class hours and examinations, and improper or unauthorized use of classrooms or school facilities.\n- Posting unauthorized notices or announcements, indiscriminate use of musical instruments, recorders, megaphones, cameras, or similar items during class hours, using abusive or obscene language, engaging in public display of affection, entering or using comfort rooms designated for the opposite gender, and other misdemeanors not classified as major offenses."
+  }
+]

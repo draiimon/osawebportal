@@ -460,6 +460,41 @@ input, select, textarea { font-family: var(--font-body); }
 }
 .admin-drawer.is-open { visibility: visible; pointer-events: auto; }
 
+/* Desktop overflow mode: keep desktop layout, just compact controls. */
+.admin-nav.admin-nav--overflow .admin-nav__brand {
+  padding-right: 10px;
+}
+.admin-nav.admin-nav--overflow .admin-nav__title span {
+  display: none;
+}
+.admin-nav.admin-nav--overflow .admin-nav__links {
+  padding: 0 4px;
+}
+.admin-nav.admin-nav--overflow .nav-link {
+  padding: 0 9px;
+  font-size: 0.75rem;
+  gap: 6px;
+}
+.admin-nav.admin-nav--overflow .admin-nav-time {
+  min-width: 96px;
+  margin: 0 4px;
+  padding: 0 6px;
+  font-size: 0.74rem;
+}
+.admin-nav.admin-nav--overflow .admin-nav-time strong {
+  font-size: 0.82rem;
+}
+.admin-nav.admin-nav--overflow .admin-user-trigger__label span {
+  display: none;
+}
+.admin-nav.admin-nav--overflow .admin-user-trigger__label strong {
+  max-width: 96px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+}
+
 .drawer-backdrop {
   position: absolute; inset: 0;
   background: rgba(10,3,6,0.56);

@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Chat Logs · OSA Admin</title>
+  <link rel="icon" type="image/png" href="/assets/images/eac-emblem.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/admin/admin-shell.css?v=20260424a">
+  <style>
+    .chatlog-filters { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; margin-bottom: 16px; }
+    .chatlog-filters label { display: flex; flex-direction: column; gap: 4px; font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+    .chatlog-filters input, .chatlog-filters select {
+      padding: 8px 12px; border: 1px solid var(--line); font-size: 0.88rem; min-width: 120px;
+      background: #fff;
+    }
+    .chatlog-table-wrap { overflow: auto; border: 1px solid var(--line); background: rgba(255,253,249,0.98); max-height: min(70vh, 720px); }
+    .chatlog-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+    .chatlog-table th {
+      position: sticky; top: 0; background: #fffdf9; z-index: 1;
+      text-align: left; padding: 10px 12px; border-bottom: 2px solid var(--brand); color: var(--ink); font-weight: 800;
+    }
+    .chatlog-table td { padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    .chatlog-table tr:hover td { background: rgba(132,26,45,0.04); }
+    .chatlog-role { font-weight: 800; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em; }
+    .chatlog-role--user { color: #1d4ed8; }
+    .chatlog-role--assistant { color: #841a2d; }
+    .chatlog-text { white-space: pre-wrap; word-break: break-word; max-width: 560px; }
+    .chatlog-meta { font-size: 0.72rem; color: var(--muted); font-family: ui-monospace, Menlo, Consolas, monospace; }
+    .chatlog-json { margin-top: 12px; display: none; }
+    .chatlog-json.open { display: block; }
+    .chatlog-json textarea {
+      width: 100%; min-height: 160px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.72rem;
+      padding: 12px; border: 1px solid var(--line); background: #1c1917; color: #e7e5e4;
+    }
+    .chatlog-hint { font-size: 0.78rem; color: var(--muted); margin-top: 8px; line-height: 1.5; }
+  </style>
+</head>
+<body>
+<div class="admin-page" id="admin-page">
+
+  <nav class="admin-nav" id="admin-nav">
+    <button class="nav-hamburger" id="nav-hamburger" aria-label="Open navigation menu" aria-expanded="false">
+      <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+    <a class="admin-nav__brand" href="/admin/dashboard">
+      <img class="admin-nav__logo" src="/assets/images/eac-emblem.png" alt="EAC" onerror="this.style.display='none'">
+      <div class="admin-nav__title"><strong>EAC Cavite</strong><span>OSA Admin Panel</span></div>
+    </a>
+    <div class="admin-nav__sep"></div>
+    <div class="admin-nav__links">
+      <a class="nav-link" href="/admin/dashboard"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</a>
+      <a class="nav-link" href="/admin/modules/announcements"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Announcements</a>
+      <a class="nav-link" href="/admin/modules/lost-found"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Lost &amp; Found</a>
+      <a class="nav-link" href="/admin/modules/home-content"><svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home Content</a>
+      <a class="nav-link" href="/admin/modules/about"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>About Page</a>
+      <a class="nav-link" href="/admin/modules/chat-support"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Chat Support</a>
+      <a class="nav-link active" href="/admin/modules/chat-logs"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>Chat Logs</a>
+      <a class="nav-link" href="/admin/modules/rag-chunks"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Knowledge Base</a>
+      <a class="nav-link" href="/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Live Portal</a>
+    </div>
+    <div class="admin-nav__right">
+      <div class="admin-avatar" data-admin-initials>AD</div>
+      <div class="admin-name-wrap"><strong data-admin-name>Administrator</strong><span data-admin-email></span></div>
+      <button class="btn-logout" data-logout type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Log Out</span></button>
+    </div>
+  </nav>
+
+  <div class="admin-util-bar" id="admin-util-bar">
+    <div class="util-left">
+      <span class="util-page-title">Chat Logs</span>
+      <div class="util-breadcrumb"><span>Admin</span><span class="sep">›</span><span>Testing &amp; debug</span></div>
+    </div>
+    <div class="util-right">
+      <div class="util-datetime">
+        <span class="util-datetime__date" id="dt-date"></span>
+        <span class="util-datetime__sep">·</span>
+        <span class="util-datetime__time" id="dt-time"></span>
+        <span class="util-datetime__ph">PH</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="admin-drawer" id="admin-drawer" role="dialog" aria-modal="true" aria-label="Navigation">
+    <div class="drawer-backdrop" id="drawer-backdrop"></div>
+    <div class="drawer-panel">
+      <div class="drawer-header">
+        <div class="drawer-brand"><img src="/assets/images/eac-emblem.png" alt="EAC" onerror="this.style.display='none'"><div class="drawer-brand-text"><strong>EAC Cavite</strong><span>OSA Admin Panel</span></div></div>
+        <button class="drawer-close" id="drawer-close" aria-label="Close menu"><svg viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="M6 6 18 18"/></svg></button>
+      </div>
+      <nav class="drawer-nav">
+        <span class="drawer-section-label">Overview</span>
+        <a class="drawer-nav-item" href="/admin/dashboard"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard</a>
+        <span class="drawer-section-label">Content</span>
+        <a class="drawer-nav-item" href="/admin/modules/announcements"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Announcements</a>
+        <a class="drawer-nav-item" href="/admin/modules/lost-found"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Lost &amp; Found</a>
+        <a class="drawer-nav-item" href="/admin/modules/home-content"><svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home Content</a>
+        <a class="drawer-nav-item" href="/admin/modules/about"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>About Page</a>
+        <a class="drawer-nav-item" href="/admin/modules/chat-support"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Chat Support</a>
+        <span class="drawer-section-label">Chatbot</span>
+        <a class="drawer-nav-item active" href="/admin/modules/chat-logs"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>Chat Logs</a>
+        <a class="drawer-nav-item" href="/admin/modules/rag-chunks"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Knowledge Base</a>
+        <span class="drawer-section-label">Portal</span>
+        <a class="drawer-nav-item" href="/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>View Live Portal</a>
+      </nav>
+      <div class="drawer-footer">
+        <div class="drawer-profile"><div class="admin-avatar" data-admin-initials>AD</div><div class="drawer-profile-text"><strong data-admin-name>Administrator</strong><span data-admin-email></span></div></div>
+        <button class="drawer-logout" data-logout type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Log Out</button>
+      </div>
+    </div>
+  </div>
+
+  <main class="admin-main">
+    <div class="page-header">
+      <div>
+        <div class="page-header__eyebrow">Testing &amp; QA</div>
+        <h1>Student chat logs</h1>
+        <p>
+          <strong>OTP verified</strong> chats use <code>/chat/session</code> → stored in <code>chat_messages</code> (what you mostly see).
+          Users who chat <strong>without OTP</strong> (widget offline path) use <code>/chatbot/message</code> → turns go to <code>chatbot_conversation_memory</code>.
+          Pick the correct <strong>Source</strong> below.
+          CLI: <code>npm run chat:log</code> — only exports OTP sessions; guest table is API <code>/admin/chat/logs/guest</code>.
+        </p>
+      </div>
+      <div class="page-header__actions">
+        <button type="button" class="btn btn-ghost" id="btn-toggle-json">Raw JSON</button>
+        <button type="button" class="btn btn-primary" id="btn-refresh">Refresh</button>
+      </div>
+    </div>
+
+    <div class="panel" style="padding:16px">
+      <div class="chatlog-filters">
+        <label>Source
+          <select id="f-source" title="Where messages are stored">
+            <option value="otp">OTP students — chat_messages</option>
+            <option value="guest">Guest / no OTP — chatbot_conversation_memory</option>
+          </select>
+        </label>
+        <label>Limit
+          <input type="number" id="f-limit" min="5" max="200" value="80">
+        </label>
+        <label><span id="f-id-label">Session ID (UUID)</span>
+          <input type="text" id="f-session" placeholder="optional" autocomplete="off" style="min-width:280px">
+        </label>
+        <label>Role
+          <select id="f-role">
+            <option value="">All</option>
+            <option value="user">user</option>
+            <option value="assistant">assistant</option>
+            <option value="system" id="f-role-system" disabled>system</option>
+          </select>
+        </label>
+        <button type="button" class="btn btn-primary" id="btn-apply">Apply</button>
+      </div>
+      <p class="chatlog-hint" id="status-line">Loading…</p>
+      <div class="chatlog-table-wrap">
+        <table class="chatlog-table" id="log-table">
+          <thead id="log-thead"></thead>
+          <tbody id="log-body"></tbody>
+        </table>
+      </div>
+      <div class="chatlog-json" id="json-panel">
+        <textarea id="json-out" readonly spellcheck="false"></textarea>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="/admin/admin-shell.js?v=20260424a"></script>
+<script>
+(function () {
+  'use strict';
+
+  /** Same logic as chat-support.html — avoids fetching the wrong origin (HTML page instead of JSON). */
+  function resolveApiBase() {
+    var configured = String(window.__OSA_API_BASE__ || '').trim().replace(/\/+$/, '');
+    if (configured) return configured;
+
+    var port = String((window.__OSA_API_PORT__ != null && window.__OSA_API_PORT__ !== '') ? window.__OSA_API_PORT__ : '8787');
+    var loc = window.location;
+    var host = String((loc && loc.hostname) || '').toLowerCase();
+    var origin = (loc && loc.origin) ? loc.origin : '';
+    var staticDevPorts = { '3000': 1, '4173': 1, '5000': 1, '5173': 1, '5500': 1, '5501': 1, '8888': 1 };
+
+    if (!loc || loc.protocol === 'file:') return 'http://127.0.0.1:' + port;
+    if (host === 'localhost' || host === '127.0.0.1' || host === '::1' || host === '[::1]') {
+      return 'http://127.0.0.1:' + port;
+    }
+    if (loc.port && loc.port !== port && staticDevPorts[loc.port]) {
+      return loc.protocol + '//' + host + ':' + port;
+    }
+    return origin || ('http://127.0.0.1:' + port);
+  }
+
+  var API = resolveApiBase() + '/api/v1';
+
+  function adminKey() {
+    var token = sessionStorage.getItem('osa_admin_token') || '';
+    if (token) return token;
+    var host = String((window.location && window.location.hostname) || '').toLowerCase();
+    if (host === 'localhost' || host === '127.0.0.1') return 'dev-token';
+    return '';
+  }
+
+  var lastPayload = null;
+
+  function esc(s) {
+    var d = document.createElement('div');
+    d.textContent = s == null ? '' : String(s);
+    return d.innerHTML;
+  }
+
+  function renderOtp(rows) {
+    document.getElementById('log-thead').innerHTML =
+      '<tr><th>Time (server)</th><th>Role</th><th>Student</th><th>Message</th><th>Session</th></tr>';
+    var tb = document.getElementById('log-body');
+    tb.innerHTML = '';
+    if (!rows || !rows.length) {
+      tb.innerHTML = '<tr><td colspan="5" style="padding:20px;color:var(--muted)">No rows.</td></tr>';
+      return;
+    }
+    rows.forEach(function (m) {
+      var tr = document.createElement('tr');
+      var t = m.createdAt ? new Date(m.createdAt).toISOString().replace('T', ' ').slice(0, 19) : '';
+      var roleClass = m.role === 'user' ? 'chatlog-role--user' : 'chatlog-role--assistant';
+      var sid = String(m.sessionId || '').slice(0, 8) + '…';
+      tr.innerHTML =
+        '<td class="chatlog-meta">' + esc(t) + '</td>' +
+        '<td><span class="chatlog-role ' + roleClass + '">' + esc(m.role) + '</span></td>' +
+        '<td class="chatlog-meta">' + esc((m.studentName || '').slice(0, 40)) + '<br>' + esc((m.studentEmail || '').slice(0, 42)) + '</td>' +
+        '<td class="chatlog-text">' + esc(m.content) + '</td>' +
+        '<td class="chatlog-meta">' + esc(sid) + '</td>';
+      tb.appendChild(tr);
+    });
+  }
+
+  function renderGuest(rows) {
+    document.getElementById('log-thead').innerHTML =
+      '<tr><th>Time (server)</th><th>Role</th><th>Conversation ID</th><th>Message</th></tr>';
+    var tb = document.getElementById('log-body');
+    tb.innerHTML = '';
+    if (!rows || !rows.length) {
+      tb.innerHTML = '<tr><td colspan="4" style="padding:20px;color:var(--muted)">No rows.</td></tr>';
+      return;
+    }
+    rows.forEach(function (m) {
+      var tr = document.createElement('tr');
+      var t = m.createdAt ? new Date(m.createdAt).toISOString().replace('T', ' ').slice(0, 19) : '';
+      var rc = m.role === 'user' ? 'chatlog-role--user' : (m.role === 'system' ? 'chatlog-role--assistant' : 'chatlog-role--assistant');
+      tr.innerHTML =
+        '<td class="chatlog-meta">' + esc(t) + '</td>' +
+        '<td><span class="chatlog-role ' + rc + '">' + esc(m.role) + '</span></td>' +
+        '<td class="chatlog-meta">' + esc(String(m.conversationId || '').slice(0, 56)) + '</td>' +
+        '<td class="chatlog-text">' + esc(m.content) + '</td>';
+      tb.appendChild(tr);
+    });
+  }
+
+  function syncSourceUi() {
+    var guest = document.getElementById('f-source').value === 'guest';
+    document.getElementById('f-id-label').textContent = guest ? 'Conversation ID' : 'Session ID (UUID)';
+    document.getElementById('f-role-system').disabled = !guest;
+  }
+
+  async function loadLogs() {
+    syncSourceUi();
+    var status = document.getElementById('status-line');
+    status.textContent = 'Loading…';
+    var limit = Math.min(200, Math.max(5, parseInt(document.getElementById('f-limit').value, 10) || 80));
+    var filterId = String(document.getElementById('f-session').value || '').trim();
+    var role = String(document.getElementById('f-role').value || '').trim();
+    var guest = document.getElementById('f-source').value === 'guest';
+    var q = new URLSearchParams({ limit: String(limit) });
+    if (guest) {
+      if (filterId) q.set('conversation_id', filterId);
+      if (role) q.set('role', role);
+    } else {
+      if (filterId) q.set('session_id', filterId);
+      if (role) q.set('role', role);
+    }
+
+    var url = guest ? (API + '/admin/chat/logs/guest?' + q.toString()) : (API + '/admin/chat/logs?' + q.toString());
+
+    try {
+      var r = await fetch(url, {
+        headers: { 'x-admin-key': adminKey() },
+        cache: 'no-store'
+      });
+      var raw = await r.text();
+      var j = null;
+      try {
+        j = raw ? JSON.parse(raw) : {};
+      } catch (parseErr) {
+        status.textContent =
+          'Not JSON from server — usually wrong API URL or HTML error page. API base is ' +
+          resolveApiBase() +
+          '. First line: ' +
+          String(raw || '').replace(/\s+/g, ' ').slice(0, 120);
+        document.getElementById('log-thead').innerHTML = '';
+        document.getElementById('log-body').innerHTML = '';
+        lastPayload = null;
+        document.getElementById('json-out').value = raw.slice(0, 4000);
+        return;
+      }
+      if (!r.ok || !j.success) {
+        status.textContent = 'Error: ' + (j.message || r.status);
+        document.getElementById('log-thead').innerHTML = '';
+        document.getElementById('log-body').innerHTML = '';
+        lastPayload = null;
+        document.getElementById('json-out').value = '';
+        return;
+      }
+      lastPayload = j;
+      document.getElementById('json-out').value = JSON.stringify(j, null, 2);
+      var note = j.note ? (' ' + j.note) : '';
+      status.textContent = 'Showing ' + j.count + ' message(s) (limit ' + j.limit + ').' + note;
+      if (guest) renderGuest(j.messages || []);
+      else renderOtp(j.messages || []);
+    } catch (e) {
+      status.textContent = 'Network error: ' + (e && e.message);
+      document.getElementById('log-body').innerHTML = '';
+    }
+  }
+
+  document.getElementById('f-source').addEventListener('change', function () {
+    var sel = document.getElementById('f-role');
+    if (this.value !== 'guest' && sel.value === 'system') sel.value = '';
+    loadLogs();
+  });
+  document.getElementById('btn-refresh').addEventListener('click', loadLogs);
+  document.getElementById('btn-apply').addEventListener('click', loadLogs);
+  document.getElementById('btn-toggle-json').addEventListener('click', function () {
+    document.getElementById('json-panel').classList.toggle('open');
+  });
+
+  loadLogs();
+})();
+</script>
+</body>
+</html>

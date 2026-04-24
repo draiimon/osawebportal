@@ -1,22 +1,46 @@
-const { GoogleGenAI } = require("@google/genai");
 const crypto = require("crypto");
 const db = require("./db");
+const { verifyAuthToken } = require("./auth/jwt");
+const { searchRag } = require("./chatbot/services/ragService");
+const { cleanModelText, NO_RELIABLE_KB_REPLY } = require("./chatbot/utils/responseCleaner");
+const { buildPortalPageContext, looksLikePortalPageIntent } = require("./chatbot/utils/portalPageContext");
+const { looksLikeOtpHelpIntent } = require("./chatbot/utils/preprocessor");
+const { searchFaq } = require("./faqSearch");
+const { hasGeminiKeys, runWithGeminiFailover } = require("./services/geminiKeyPool");
 
-const GEMINI_API_KEY = String(process.env.GEMINI_API_KEY || "").trim();
 const GROQ_API_KEY = String(process.env.GROQ_API_KEY || "").trim();
-const gemini = GEMINI_API_KEY ? new GoogleGenAI({ apiKey: GEMINI_API_KEY }) : null;
 const GEMINI_MODEL = String(process.env.GEMINI_MODEL || "gemini-2.5-flash").trim();
+const GEMINI_FALLBACK_MODELS = (
+  process.env.GEMINI_FALLBACK_MODELS
+    ? process.env.GEMINI_FALLBACK_MODELS.split(",").map((s) => s.trim()).filter(Boolean)
+    : ["gemini-2.5-flash-8b", "gemini-2.0-flash-lite"]
+).filter((m) => m !== GEMINI_MODEL);
 const GROQ_MODEL = String(process.env.GROQ_MODEL || "qwen/qwen3-32b").trim();
 const GROQ_BASE_URL = String(process.env.GROQ_BASE_URL || "https://api.groq.com/openai/v1")
   .trim()
   .replace(/\/+$/, "");
 const GROQ_FINAL_ONLY_INSTRUCTION =
   "Return only the final user-facing answer. Do not include reasoning traces or <think> tags.";
-const CHAT_PRIMARY_PROVIDER = String(process.env.CHAT_PRIMARY_PROVIDER || "gemini").trim().toLowerCase();
-const CHAT_FALLBACK_PROVIDER = String(process.env.CHAT_FALLBACK_PROVIDER || "groq").trim().toLowerCase();
-const MAX_OUTPUT_TOKENS = Number(process.env.CHAT_MAX_OUTPUT_TOKENS || 220);
-const TIER1_MAX_OUTPUT_TOKENS = Number(process.env.CHAT_TIER1_MAX_OUTPUT_TOKENS || 170);
+/** Headroom for long grounded answers (Vision/Mission, handbook lists). Override via CHAT_MAX_OUTPUT_TOKENS. */
+const MAX_OUTPUT_TOKENS = Math.min(
+  8192,
+  Math.max(128, Number(process.env.CHAT_MAX_OUTPUT_TOKENS ?? 1024))
+);
+const TIER1_MAX_OUTPUT_TOKENS = Math.min(
+  2048,
+  Math.max(80, Number(process.env.CHAT_TIER1_MAX_OUTPUT_TOKENS ?? 400))
+);
 const CHAT_TEMPERATURE = Number(process.env.CHAT_TEMPERATURE || 0.4);
+/** When no RAG chunks matched, cap creativity to reduce policy hallucinations (still allows listing live portal data). */
+const CHAT_TEMPERATURE_NO_KB = Math.min(
+  CHAT_TEMPERATURE,
+  Math.max(0, Math.min(1, Number(process.env.CHAT_TEMPERATURE_NO_KB || 0.12)))
+);
+/** If true (default), Tier 2 will NOT call the LLM when rag_chunks is empty unless the message is greeting / escalation / appointment / live listing / portal logistics (hours·location). Set false only for debugging. */
+const CHAT_STRICT_NO_RAG_LLM =
+  String(process.env.CHAT_STRICT_NO_RAG_LLM || "true").trim().toLowerCase() !== "false";
+/** Minimum RAG confidence (0–1) before Tier-2 may answer from retrieved chunks; below this → escalation message, no LLM. */
+const CHAT_RAG_MIN_CONFIDENCE = Math.max(0, Math.min(1, Number(process.env.CHAT_RAG_MIN_CONFIDENCE ?? 0.58)));
 // Idle-based session TTL (time since last activity, not since creation).
 // Default: 10 minutes of inactivity.
 const CHAT_SESSION_TTL_MS = Math.max(
@@ -32,6 +56,26 @@ function sessionExpiresAtIso(sessionRow) {
 }
 // If true, skip the LLM rewrite step on Tier 1 FAQ matches (faster by 300–800 ms).
 const TIER1_REWRITE = String(process.env.CHAT_TIER1_REWRITE || "false").toLowerCase() === "true";
+/** When true, secure chat checks curated FAQ first (fast Tier 1). Default false so Tier 2 (LLM + RAG + live DB) feels more conversational unless ops enables FAQ-first. */
+const CHAT_TIER1_FAQ_ENABLED =
+  String(process.env.CHAT_TIER1_FAQ_ENABLED || "false").trim().toLowerCase() === "true";
+
+/**
+ * Per-session message queue — serializes concurrent requests from the same session.
+ * Prevents a fast-typing student from firing multiple parallel LLM calls.
+ * Each session gets a promise chain; the latest message always runs after the prior one finishes.
+ * Entries are cleaned up when the chain resolves to avoid unbounded growth.
+ */
+const _sessionQueues = new Map();
+
+function enqueueForSession(sessionId, fn) {
+  const prev = _sessionQueues.get(sessionId) || Promise.resolve();
+  const next = prev.then(() => fn()).finally(() => {
+    if (_sessionQueues.get(sessionId) === next) _sessionQueues.delete(sessionId);
+  });
+  _sessionQueues.set(sessionId, next);
+  return next;
+}
 
 function logError(scope, err) {
   try {
@@ -39,6 +83,7 @@ function logError(scope, err) {
     console.error(`[${scope}]`, err && (err.stack || err.message || err));
   } catch (_) {}
 }
+
 function genericError(res, scope, err, status) {
   logError(scope, err);
   return res.status(status || 500).json({
@@ -47,21 +92,10 @@ function genericError(res, scope, err, status) {
   });
 }
 
-function pushUnique(values, value) {
-  const next = String(value || "").trim().toLowerCase();
-  if (!next || values.includes(next)) return;
-  values.push(next);
-}
-
 function getLlmProviderOrder() {
-  const order = [];
-  pushUnique(order, CHAT_PRIMARY_PROVIDER);
-  pushUnique(order, CHAT_FALLBACK_PROVIDER);
-  pushUnique(order, "gemini");
-  pushUnique(order, "groq");
-
+  const order = ["gemini", "groq"];
   return order.filter((provider) => {
-    if (provider === "gemini") return !!gemini;
+    if (provider === "gemini") return hasGeminiKeys();
     if (provider === "groq") return !!GROQ_API_KEY;
     return false;
   });
@@ -128,20 +162,42 @@ function extractGroqText(payload) {
   );
 }
 
-async function generateWithGemini(options) {
-  if (!gemini) throw new Error("Gemini is not configured.");
-
-  const response = await gemini.models.generateContent({
-    model: GEMINI_MODEL,
-    config: {
-      ...(options.systemPrompt ? { systemInstruction: options.systemPrompt } : {}),
-      ...(options.maxOutputTokens ? { maxOutputTokens: options.maxOutputTokens } : {}),
-      temperature: CHAT_TEMPERATURE,
-    },
-    contents: mapMessagesToGemini(options.messages),
+async function generateWithGeminiModel(model, options) {
+  const temperature =
+    typeof options.temperature === "number" && Number.isFinite(options.temperature)
+      ? options.temperature
+      : CHAT_TEMPERATURE;
+  const response = await runWithGeminiFailover(`secure-chat Gemini generation (${model})`, async (client) => {
+    return client.models.generateContent({
+      model,
+      config: {
+        ...(options.systemPrompt ? { systemInstruction: options.systemPrompt } : {}),
+        ...(options.maxOutputTokens ? { maxOutputTokens: options.maxOutputTokens } : {}),
+        temperature,
+      },
+      contents: mapMessagesToGemini(options.messages),
+    });
   });
-
   return String((response && response.text) || "").trim();
+}
+
+async function generateWithGemini(options) {
+  const modelsToTry = [GEMINI_MODEL, ...GEMINI_FALLBACK_MODELS];
+  let lastError = null;
+  for (const model of modelsToTry) {
+    try {
+      const text = await generateWithGeminiModel(model, options);
+      if (text) return text;
+    } catch (err) {
+      const msg = String(err?.message || "").toLowerCase();
+      const isTransient = /503|502|high demand|unavailable|timeout|overloaded/i.test(msg);
+      lastError = err;
+      if (!isTransient) throw err;
+      // eslint-disable-next-line no-console
+      console.warn(`[gemini-model-fallback] ${model} transient (${msg.slice(0, 80)}) — trying next model`);
+    }
+  }
+  throw lastError || new Error("All Gemini models unavailable");
 }
 
 async function generateWithGroq(options) {
@@ -156,9 +212,13 @@ async function generateWithGroq(options) {
     body: JSON.stringify({
       model: GROQ_MODEL,
       messages: mapMessagesToGroq(options.systemPrompt, options.messages),
-      reasoning_format: "hidden",
-      reasoning_effort: "none",
-      temperature: CHAT_TEMPERATURE > 0 ? CHAT_TEMPERATURE : 0.00000001,
+      temperature: (() => {
+        const t =
+          typeof options.temperature === "number" && Number.isFinite(options.temperature)
+            ? options.temperature
+            : CHAT_TEMPERATURE;
+        return t > 0 ? t : 0.00000001;
+      })(),
       ...(options.maxOutputTokens ? { max_completion_tokens: options.maxOutputTokens } : {}),
     }),
   });
@@ -185,7 +245,7 @@ async function generateWithGroq(options) {
 async function generateLlmText(options) {
   const providers = getLlmProviderOrder();
   if (!providers.length) {
-    throw new Error("No LLM provider configured. Set GEMINI_API_KEY or GROQ_API_KEY.");
+    throw new Error("No LLM provider configured. Set GEMINI_API_KEY / GEMINI_API_KEY2..9 or GROQ_API_KEY.");
   }
 
   let lastError = null;
@@ -199,6 +259,10 @@ async function generateLlmText(options) {
       if (text) return text;
     } catch (error) {
       lastError = error;
+      if (provider === "gemini" && error?.geminiAllKeysFailed && providers.includes("groq")) {
+        // eslint-disable-next-line no-console
+        console.warn("[llm] all Gemini API keys failed; attempting Groq emergency fallback.");
+      }
       logError(`llm:${provider}`, error);
     }
   }
@@ -219,19 +283,39 @@ async function readSessionExpiryIso(sessionId) {
   } catch (_) { return null; }
 }
 
-function requireAdminKey(req, res, next) {
+function isAdminTokenAuthorized(rawToken) {
+  const provided = String(rawToken || "").trim();
   const expected = String(process.env.ADMIN_KEY || "").trim();
   if (!expected) {
-    // Dev-mode fallback: allow when unset, but warn loudly so prod doesn't ship open.
+    return true;
+  }
+
+  // Allow either static ADMIN_KEY or a valid ADMIN JWT token from admin login.
+  if (provided === expected) {
+    return true;
+  }
+
+  try {
+    const decoded = verifyAuthToken(provided);
+    const role = String((decoded && decoded.role) || "").trim().toUpperCase();
+    if (role === "ADMIN") {
+      return true;
+    }
+  } catch (_error) {}
+
+  return false;
+}
+
+function requireAdminKey(req, res, next) {
+  // Dev-mode fallback: allow when ADMIN_KEY is unset, but warn loudly so prod doesn't ship open.
+  if (!String(process.env.ADMIN_KEY || "").trim()) {
     // eslint-disable-next-line no-console
     console.warn("[admin] ADMIN_KEY is not set — admin routes are unauthenticated (dev only).");
     return next();
   }
   const provided = String((req.headers && req.headers["x-admin-key"]) || "").trim();
-  if (provided !== expected) {
-    return res.status(401).json({ success: false, message: "Unauthorized." });
-  }
-  return next();
+  if (isAdminTokenAuthorized(provided)) return next();
+  return res.status(401).json({ success: false, message: "Unauthorized." });
 }
 const HUMAN_WAIT_NOTIFY_MS = Math.max(
   60 * 1000,
@@ -245,12 +329,21 @@ const STAFF_CHAT_IDLE_MS = Math.max(
 // ── In-memory SSE registry ─────────────────────────────────────
 // sessionId → Set of response objects (one per open browser tab)
 const sseClients = new Map();
+// Admin dashboard ticket stream clients
+const adminTicketClients = new Set();
 
 function pushToSession(sessionId, payload) {
   const clients = sseClients.get(sessionId);
   if (!clients || !clients.size) return false;
   const line = `data: ${JSON.stringify(payload)}\n\n`;
   clients.forEach((res) => { try { res.write(line); } catch (_) {} });
+  return true;
+}
+
+function pushToAdminTickets(payload) {
+  if (!adminTicketClients.size) return false;
+  const line = `data: ${JSON.stringify(payload)}\n\n`;
+  adminTicketClients.forEach((res) => { try { res.write(line); } catch (_) {} });
   return true;
 }
 
@@ -394,8 +487,12 @@ async function sendEscalationWaitReminderEmail(caseId, studentName, studentEmail
   }
 }
 
-// Keywords that trigger Tier 3 escalation
+// Keywords that trigger Tier 3 escalation.
+// Two categories:
+//   (A) explicit staff-request phrases
+//   (B) sensitive/disciplinary topics that MUST ALWAYS go to staff
 const ESCALATION_TRIGGERS = [
+  // A — explicit staff requests
   "escalate",
   "human support",
   "human agent",
@@ -405,8 +502,63 @@ const ESCALATION_TRIGGERS = [
   "representative",
   "create ticket",
   "file ticket",
-  "complaint",
   "report concern",
+  "file complaint",
+  "kausapin staff",
+  "kausapin ang staff",
+  "makipag-usap sa staff",
+  // slash-command shortcuts
+  "/chat staff",
+  "chat staff",
+  "/staff",
+  "/human",
+  "/escalate",
+  "/talk to staff",
+  // B — disciplinary / sensitive topics (always route to staff regardless of confidence)
+  "complaint",
+  "disciplinary",
+  "disciplinary action",
+  "disciplinary case",
+  "disciplinary concern",
+  "suspension",
+  "suspended",
+  "code violation",
+  "student violation",
+  "violation",
+  "appeal",
+  "academic appeal",
+  "appeal suspension",
+  "misconduct",
+  "student misconduct",
+  "harassment",
+  "sexual harassment",
+  "bullying",
+  "bullied",
+  "bully",
+  "cyberbullying",
+  "fight",
+  "physical altercation",
+  "physical fight",
+  "incident report",
+  "incident case",
+  "personal concern",
+  "sensitive concern",
+  "mental health",
+  "psychological concern",
+  "emotional concern",
+  "probation",
+  "academic probation",
+  "dismissal",
+  "expelled",
+  "expulsion",
+  "cheating",
+  "academic dishonesty",
+  "plagiarism",
+  "case filed",
+  "case against",
+  "summon",
+  "hearing",
+  "student hearing",
 ];
 
 function extractStudentName(email) {
@@ -471,163 +623,268 @@ async function loadSessionRow(sessionId) {
   return { found: true, expired: true, session: null };
 }
 
-// ── Tier 1: FAQ keyword match ─────────────────────────────────
-async function searchFaq(message) {
+async function persistReply(sessionId, reply) {
+  await db.query(
+    `INSERT INTO chat_messages (session_id, role, content) VALUES ($1, 'assistant', $2)`,
+    [sessionId, reply]
+  );
+  await db.query(`UPDATE chat_sessions SET last_active_at = NOW() WHERE id = $1`, [sessionId]);
+}
+
+async function fetchRagResult(message) {
   try {
-    const words = message
-      .toLowerCase()
-      .replace(/[^a-z0-9\s]/g, " ")
-      .split(/\s+/)
-      .filter((w) => w.length > 2);
-
-    if (!words.length) return null;
-
-    // Match by keywords array overlap OR question similarity
-    const result = await db.query(
-      `SELECT id, question, answer, category
-       FROM faq_entries
-       WHERE is_active = true
-         AND (
-           keywords && $1::text[]
-           OR lower(question) LIKE ANY($2::text[])
-         )
-       ORDER BY times_matched DESC
-       LIMIT 1`,
-      [
-        words,
-        words.map((w) => `%${w}%`),
-      ]
-    );
-
-    if (result.rows.length) {
-      const faq = result.rows[0];
-      // Increment match counter
-      await db.query(
-        `UPDATE faq_entries SET times_matched = times_matched + 1, updated_at = NOW() WHERE id = $1`,
-        [faq.id]
-      );
-      return faq;
-    }
-    return null;
-  } catch (_e) {
-    return null;
+    const rag = await searchRag(message || "");
+    return rag && rag.chunks && rag.chunks.length
+      ? { context: rag.context || "", confidence: Number(rag.confidence) || 0, tier: rag.tier || "ESCALATE", chunkCount: rag.chunks.length }
+      : { context: "", confidence: 0, tier: "ESCALATE", chunkCount: 0 };
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.warn("[tier2-rag]", err?.message || err);
+    return { context: "", confidence: 0, tier: "ESCALATE", chunkCount: 0 };
   }
 }
 
-/** Tier 2 RAG-lite: retrieve Student Manual / policy excerpts by keyword overlap. */
-async function searchManualKnowledge(message) {
+// ── Tier 2: live DB context — announcements, Lost & Found, OSA services,
+//    the student's OWN open tickets, and their OWN appointments. This is
+//    what makes the bot aware of current system state (not just the manual).
+async function getOsaContext(studentEmail, sessionId) {
   try {
-    const words = String(message || "")
-      .toLowerCase()
-      .replace(/[^a-z0-9\s]/g, " ")
-      .split(/\s+/)
-      .filter((w) => w.length > 2);
+    const email = String(studentEmail || "").trim().toLowerCase();
+    const sid = String(sessionId || "").trim();
 
-    if (!words.length) return "";
-
-    const result = await db.query(
-      `SELECT section_title, chunk_text
-       FROM student_manual_chunks
-       WHERE is_active = true
-         AND (
-           keywords && $1::text[]
-           OR lower(chunk_text) LIKE ANY ($2::text[])
-         )
-       ORDER BY section_title ASC
-       LIMIT 5`,
-      [words, words.map((w) => `%${w}%`)]
-    );
-
-    if (!result.rows.length) return "";
-
-    return result.rows
-      .map((row) => {
-        const title = String(row.section_title || "Section").trim();
-        const body = String(row.chunk_text || "").trim();
-        return title ? `### ${title}\n${body}` : body;
-      })
-      .join("\n\n");
-  } catch (_e) {
-    return "";
-  }
-}
-
-// ── Tier 2: Gemini context ────────────────────────────────────
-async function getOsaContext() {
-  try {
-    const [ann, items] = await Promise.all([
+    const queries = [
       db.query(
-        `SELECT title, category, details FROM announcements WHERE is_active = true ORDER BY created_at DESC LIMIT 6`
+        `SELECT page_name, content_key, content_value
+         FROM portal_content
+         WHERE page_name IN ('home', 'about')
+         ORDER BY page_name ASC, content_key ASC`
       ),
+      // Active announcements (most recent 8)
       db.query(
-        `SELECT item_number, title, tag FROM lost_found_items WHERE is_active = true AND status = 'Unclaimed' ORDER BY created_at DESC LIMIT 10`
+        `SELECT title, category, urgency, details, date_label
+         FROM announcements
+         WHERE is_active = true
+         ORDER BY created_at DESC
+         LIMIT 8`
       ),
-    ]);
+      // ALL L&F items (with status) so the bot can answer "is LF-X claimed?"
+      db.query(
+        `SELECT item_number, title, tag, status, date_label
+         FROM lost_found_items
+         WHERE is_active = true
+         ORDER BY created_at DESC
+         LIMIT 40`
+      ),
+      // Pending L&F claims — who is trying to claim what
+      db.query(
+        `SELECT c.id, c.email, c.status, c.created_at, i.item_number, i.title
+         FROM lost_found_claims c
+         LEFT JOIN lost_found_items i ON c.item_id = i.id
+         WHERE c.status = 'Pending'
+         ORDER BY c.created_at DESC
+         LIMIT 15`
+      ),
+      // OSA services catalog
+      db.query(
+        `SELECT name, description, requirements, fees, processing_time, office_location
+         FROM osa_services
+         WHERE is_active = true
+         ORDER BY name ASC
+         LIMIT 20`
+      ),
+      // THE CURRENT STUDENT's own non-resolved tickets
+      email
+        ? db.query(
+            `SELECT case_id, ticket_type, status, appointment_status,
+                    preferred_day, preferred_time_window, appointment_datetime,
+                    concern, created_at, updated_at
+             FROM escalation_tickets
+             WHERE lower(student_email) = $1
+               AND status IN ('open','in_progress')
+             ORDER BY created_at DESC
+             LIMIT 5`,
+            [email]
+          )
+        : Promise.resolve({ rows: [] }),
+      // THE CURRENT STUDENT's resolved tickets today (for reference)
+      email
+        ? db.query(
+            `SELECT case_id, ticket_type, status, appointment_status,
+                    appointment_datetime, concern, updated_at
+             FROM escalation_tickets
+             WHERE lower(student_email) = $1
+               AND status = 'resolved'
+               AND updated_at > NOW() - INTERVAL '1 day'
+             ORDER BY updated_at DESC
+             LIMIT 3`,
+            [email]
+          )
+        : Promise.resolve({ rows: [] }),
+    ];
+
+    const [contentR, annR, lfR, claimsR, svcR, ownOpenR, ownResolvedR] = await Promise.all(queries);
+
     let ctx = "";
-    if (ann.rows.length) {
-      ctx += "\n\nCURRENT OSA ANNOUNCEMENTS:\n";
-      ann.rows.forEach((a) => {
-        ctx += `- [${a.category}] ${a.title}: ${a.details || "No details."}\n`;
+    const pageCtx = buildPortalPageContext(contentR.rows);
+
+    if (pageCtx) {
+      ctx += pageCtx;
+    }
+
+    if (annR.rows.length) {
+      ctx += "\n\nCURRENT OSA ANNOUNCEMENTS (live from the admin panel):\n";
+      annR.rows.forEach((a) => {
+        const urgency = a.urgency ? ` [${a.urgency}]` : "";
+        const date = a.date_label ? ` (${a.date_label})` : "";
+        ctx += `- [${a.category || "General"}]${urgency}${date} ${a.title}: ${a.details || "No details."}\n`;
       });
     }
-    if (items.rows.length) {
-      ctx += "\n\nUNCLAIMED LOST & FOUND ITEMS:\n";
-      items.rows.forEach((i) => {
-        ctx += `- ${i.item_number}: ${i.title} (${i.tag})\n`;
+
+    if (lfR.rows.length) {
+      ctx += "\n\nLOST & FOUND REGISTRY (live — every item with current status):\n";
+      lfR.rows.forEach((i) => {
+        ctx += `- ${i.item_number}: ${i.title} (${i.tag || "Other"}) — STATUS: ${i.status || "Unclaimed"}${i.date_label ? `, posted ${i.date_label}` : ""}\n`;
       });
+    }
+    if (claimsR.rows.length) {
+      ctx += "\nPENDING LOST & FOUND CLAIMS (awaiting staff verification):\n";
+      claimsR.rows.forEach((c) => {
+        const itemNum = c.item_number || "(unknown item)";
+        const when = c.created_at ? new Date(c.created_at).toISOString().slice(0, 10) : "";
+        ctx += `- ${itemNum} claimed by ${c.email}${when ? ` on ${when}` : ""} (status: ${c.status})\n`;
+      });
+    }
+
+    if (svcR.rows.length) {
+      ctx += "\n\nOSA SERVICES CATALOG (live):\n";
+      svcR.rows.forEach((s) => {
+        const reqs = Array.isArray(s.requirements) && s.requirements.length
+          ? ` | Requirements: ${s.requirements.join(", ")}`
+          : "";
+        const fees = s.fees ? ` | Fee: ${s.fees}` : "";
+        const time = s.processing_time ? ` | Processing: ${s.processing_time}` : "";
+        const loc = s.office_location ? ` | Office: ${s.office_location}` : "";
+        ctx += `- ${s.name}: ${s.description}${reqs}${fees}${time}${loc}\n`;
+      });
+    }
+
+    if (ownOpenR.rows.length) {
+      ctx += "\n\nTHIS STUDENT'S OWN OPEN TICKETS (only visible to them):\n";
+      ownOpenR.rows.forEach((t) => {
+        const apt = t.appointment_status ? ` | appointment: ${t.appointment_status}` : "";
+        const day = t.preferred_day ? ` | preferred day: ${t.preferred_day}` : "";
+        const tw = t.preferred_time_window ? ` | time: ${t.preferred_time_window}` : "";
+        const when = t.appointment_datetime ? ` | scheduled: ${new Date(t.appointment_datetime).toISOString()}` : "";
+        ctx += `- ${t.case_id} [${t.ticket_type || "general"}] status: ${t.status}${apt}${day}${tw}${when} — ${t.concern || ""}\n`;
+      });
+    }
+    if (ownResolvedR.rows.length) {
+      ctx += "\nTHIS STUDENT'S TICKETS RESOLVED IN THE LAST 24H:\n";
+      ownResolvedR.rows.forEach((t) => {
+        ctx += `- ${t.case_id} [${t.ticket_type || "general"}] resolved — ${t.concern || ""}\n`;
+      });
+    }
+
+    if (ctx) {
+      ctx = "\n\nCURRENT SYSTEM STATE (live data from the OSA portal database — treat as authoritative for current state questions):" + ctx;
     }
     return ctx;
-  } catch (_e) {
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.warn("[osa-ctx]", err?.message || err);
     return "";
   }
 }
 
-function buildSystemPrompt(name, email, ctx, manualRag) {
-  const ragBlock =
-    manualRag && String(manualRag).trim()
-      ? `\n\nSTUDENT MANUAL / POLICY EXCERPTS (retrieved for this question — treat as authoritative for campus rules; do not contradict them):\n${manualRag.trim()}\n`
-      : "";
-
+function buildNoKbGuidancePrompt(name, email) {
   return (
-    `You are the OSA (Office of Student Affairs) AI Transaction Guide Assistant for Emilio Aguinaldo College (EAC) Cavite Campus. ` +
-    `You operate in Tier 2: your answers may be grounded in the retrieved context below (announcements, lost-and-found snapshot, and manual excerpts).\n\n` +
-    `You help students navigate OSA services using a 3-tier approach.\n\n` +
-    `You assist with:\n` +
-    `- Scholarship applications and eligibility requirements\n` +
-    `- Good Moral Certificate requests (step-by-step process)\n` +
-    `- Lost and Found item inquiries and claims\n` +
-    `- Appointments and scheduling with OSA staff\n` +
-    `- OSA policies, announcements, and general student affairs inquiries\n\n` +
-    `Guidelines:\n` +
-    `- Be warm, friendly, and professional.\n` +
-    `- For simple greetings (e.g., "hi"), reply in 1-2 short sentences only.\n` +
-    `- Do not guess or invent the student's real name from email username.\n` +
-    `- Keep answers concise by default (2-4 short sentences unless user asks for detail).\n` +
-    `- Prefer practical steps over long explanations.\n` +
-    `- Provide clear, step-by-step guidance.\n\n` +
-    `APPOINTMENTS / SCHEDULING — IMPORTANT:\n` +
-    `- This chat itself can create an appointment request for the student.\n` +
-    `- When a student wants to schedule a meeting or visit OSA, DO NOT tell them to:\n` +
-    `    * email OSA\n` +
-    `    * call OSA\n` +
-    `    * visit the office to book\n` +
-    `    * check the website for contact info\n` +
-    `- Instead, ask them for: (1) purpose of the visit, (2) preferred weekday, (3) preferred time window (Morning or Afternoon), then say exactly:\n` +
-    `    "I recommend escalating this to an OSA staff member."\n` +
-    `  so the system can open a ticket and let staff confirm the slot in this same chat.\n\n` +
-    `ESCALATION:\n` +
-    `- If the concern is complex, sensitive, or you are unsure, suggest escalation to OSA staff.\n` +
-    `- When suggesting escalation, say exactly: "I recommend escalating this to an OSA staff member."\n` +
-    `- If escalation is needed, tell the student we can escalate directly in this same chat.\n` +
-    `- Do not claim that you cannot connect them to staff through this chat.\n` +
-    `- Keep responses focused on EAC OSA services only.\n\n` +
-    `Current student: ${name} (${email})` +
-    ctx +
-    ragBlock
+    `You are the OSA (Office of Student Affairs) Assistant for EAC Cavite.\n\n` +
+    `The student's question doesn't have matching official EAC records available right now.\n` +
+    `Your role is to give a brief, genuinely helpful general response — practical tips or general guidance ` +
+    `about the topic — without inventing any specific EAC policy, fee, deadline, or institutional data.\n\n` +
+    `RULES:\n` +
+    `- Give 2–4 short, practical general tips relevant to what the student asked.\n` +
+    `- Never invent specific EAC figures, dates, names, or requirements.\n` +
+    `- Always end by directing the student to contact OSA for official confirmation:\n` +
+    `  "For the exact details, please visit the OSA office or type /chat staff to connect with a staff member directly."\n` +
+    `- Reply in the same language/mix the student used (Filipino, English, or Taglish).\n` +
+    `- Be warm and helpful — not dismissive.\n` +
+    `- Do not mention "knowledge base", "retrieval", "based on", "according to our data", or internal processes.\n\n` +
+    `Current student: ${name} (${email})`
   );
 }
 
-async function generateTier1FaqReply(studentName, userMessage, faqMatch) {
+function buildSystemPrompt(name, email, ctx, ragInfo) {
+  const ragText = ragInfo && typeof ragInfo === "object" ? String(ragInfo.context || "") : String(ragInfo || "");
+  const chunkCount = ragInfo && typeof ragInfo === "object" ? Number(ragInfo.chunkCount || 0) : (ragText ? 1 : 0);
+  const confidence = ragInfo && typeof ragInfo === "object" ? Number(ragInfo.confidence || 0) : 0;
+
+  const hasKbChunks = chunkCount > 0;
+  const hasLivePortalCtx = Boolean(ctx && String(ctx).trim().length > 40);
+  // Confidence < 0.62 = partial match — tell LLM to hedge on missing detail
+  // rather than invent or confidently answer from weak sources.
+  const lowConfidence = hasKbChunks && confidence < 0.62;
+
+  const ragBlock = ragText.trim()
+    ? `\n\nOFFICIAL SOURCES (authoritative — answer ONLY from these for EAC-specific questions):\n${ragText.trim()}\n`
+    : `\n\nOFFICIAL SOURCES: (no curated manual/policy chunks matched this query)\n`;
+
+  /** Live announcements/L&F/services are NOT a substitute for Student Manual excerpts — keeps the model from "filling in" policies. */
+  const noManualChunksGuard = !hasKbChunks
+    ? `\nCRITICAL — NO MANUAL / POLICY CHUNKS RETRIEVED:\n` +
+      `- Do NOT invent or assume institute rules, fees, deadlines, dress codes, disciplinary procedures, forms, or office processes.\n` +
+      `- Do NOT use general university knowledge or "typical" OSA practices unless the exact fact appears in CURRENT SYSTEM STATE below.\n` +
+      `- You MAY summarize or list items only when the user's question is directly answered by text explicitly present in CURRENT SYSTEM STATE (e.g. announcement titles/details, listed Lost & Found items, listed services, this student's own tickets).\n` +
+      `- For any policy, handbook, or procedural question not fully covered there, say you don't have that specific detail and suggest contacting OSA directly.\n`
+    : "";
+
+  const confidenceNote = lowConfidence
+    ? `\nNOTE: Retrieval confidence is moderate (${confidence.toFixed(2)}). ` +
+      `Answer ONLY the parts that are explicitly supported by the retrieved sources. ` +
+      `For any detail NOT clearly stated in the excerpts, say: "For the exact details on this, please contact OSA directly at studentaffairs.cvt@eac.edu.ph or Tel loc 115." ` +
+      `Do NOT invent specific fees, dates, or procedures not present in the excerpts.\n`
+    : "";
+
+  const fallbackRule =
+    !hasKbChunks && !hasLivePortalCtx
+      ? `\nIMPORTANT: No official sources are available for this turn. If the user is asking an informational question you cannot answer, say you don't have that detail and suggest contacting OSA — unless the user is asking for human help or an appointment (handle per Escalation Contract below).\n`
+      : "";
+
+  return (
+    `You are the OSA (Office of Student Affairs) Assistant for EAC Cavite.\n\n` +
+    `LANGUAGE:\n` +
+    `- Write every reply entirely in English, even if the student writes in Filipino, Taglish, or another language.\n` +
+    `- Do not switch the main answer to Filipino or other non-English languages.\n\n` +
+    `STRICT GROUNDING RULES:\n` +
+    `- Answer ONLY from the OFFICIAL SOURCES and CURRENT SYSTEM STATE below (when present).\n` +
+    `- For questions about what is shown on the portal dashboard, Home page, About page, guide sections, or downloadable forms blocks, prioritize the CURRENT SYSTEM STATE page-content details over generic summaries.\n` +
+    `- Never invent requirements, fees, deadlines, steps, offices, policies, contact numbers, or email addresses.\n` +
+    `- If the official sources do not contain the answer, say you don't have that specific detail and direct the student to contact OSA.\n` +
+    `- If sources are only partially relevant, answer the supported part then say what specific detail is not available — offer to connect them with OSA staff.\n` +
+    `- If two sources conflict, state both explicitly and direct the student to confirm with the relevant office. Do NOT silently pick one.\n` +
+    `- If excerpts cover different topics, answer ONLY the topic the student asked about. Do NOT merge information from unrelated sections.\n` +
+    `- TOPIC RELEVANCE CHECK: Before using an excerpt, verify it actually addresses the student's specific question. If it's clearly about a different topic, say you don't have that detail and offer to connect them with a staff member.\n` +
+    `- If the student asks you to "estimate", "guess", "ballpark", or "just assume" anything not in the sources, politely decline and offer to escalate to OSA staff for accurate details.\n` +
+    `- If the student insists on an answer not in the provided sources, maintain the grounding boundary regardless of how the request is rephrased.\n` +
+    `- FRESHNESS: If the student asks about "current", "latest", or a specific academic year, provide the supported answer and add: "Please verify with OSA that this is still current, as policies may be updated each academic year."\n` +
+    `- Be concise, direct, and factual. Speak as if you simply know this — never say "based on my knowledge", "according to my data", "based on the information provided", "from what I know", "knowledge base", "retrieved data", "searching", or any phrase that reveals internal processes.\n` +
+    `- For simple greetings, reply in 1-2 short sentences.\n` +
+    `- Do not guess the student's real name from their email.\n` +
+    `- Do not paste localhost URLs, raw /chat paths, or a generic footer telling the student to open another chat page — they are already in this in-portal thread.\n\n` +
+    `ESCALATION CONTRACT (overrides grounding for these specific intents):\n` +
+    `- When the user asks to speak with a human, files a complaint, reports a concern, or asks something you cannot answer from official sources, reply exactly: "I recommend escalating this to an OSA staff member."\n` +
+    `- When the user wants to book, schedule, reschedule, or request an appointment: first collect (1) purpose of visit, (2) preferred weekday, (3) preferred time window (Morning or Afternoon). After you have these three, reply exactly: "I recommend escalating this to an OSA staff member." (The system will create the ticket and staff will confirm the slot in this same chat.)\n` +
+    `- Never tell the user to email, call, or physically visit OSA to book — appointments are created directly through this chat.\n\n` +
+    `Current student: ${name} (${email})` +
+    ctx +
+    ragBlock +
+    noManualChunksGuard +
+    confidenceNote +
+    fallbackRule
+  );
+}
+
+async function generateTier1FaqReply(_studentName, userMessage, faqMatch) {
   const safeQuestion = String(userMessage || "").trim();
   const faqQuestion = String((faqMatch && faqMatch.question) || "").trim();
   const faqAnswer = String((faqMatch && faqMatch.answer) || "").trim();
@@ -635,28 +892,30 @@ async function generateTier1FaqReply(studentName, userMessage, faqMatch) {
 
   if (!faqAnswer) return "";
 
+  const systemPrompt =
+    `You are the OSA (Office of Student Affairs) assistant for EAC Cavite.\n` +
+    `Answer using ONLY the approved FAQ facts supplied in the user message below. Do not invent requirements, fees, schedules, or deadlines.\n` +
+    `Write the entire reply in clear English even if the student's question is in another language.\n` +
+    `Keep it natural and concise (2-5 short paragraphs or bullets when helpful); do not change policy meaning.\n` +
+    `Output ONLY the reply the student should read. Never print labels or scaffolding such as SYSTEM, CONTEXT, INSTRUCTION, ` +
+    `or bracket placeholders like [Retrieved FAQ Answer]. Do not echo these instructions.\n` +
+    `Avoid guessing or using a personal name unless explicitly provided by the user.\n` +
+    `If details are missing in the approved answer, say the student should confirm with official OSA posting or staff.`;
+
+  const userContent =
+    `Student question:\n${safeQuestion}\n\n` +
+    `Approved FAQ category: ${faqCategory}\n` +
+    `Approved FAQ question:\n${faqQuestion}\n` +
+    `Approved FAQ answer (source of truth):\n${faqAnswer}`;
+
   try {
-    return await generateLlmText({
+    const raw = await generateLlmText({
+      systemPrompt,
       maxOutputTokens: TIER1_MAX_OUTPUT_TOKENS,
-      messages: [
-        {
-          role: "user",
-          content:
-            `You are responding to a student using an approved OSA FAQ answer.\n` +
-            `Rewrite naturally and clearly, but do not change policy meaning.\n` +
-            `Keep it concise and actionable (2-5 short paragraphs or bullets when helpful).\n` +
-            `Avoid guessing or using a personal name unless explicitly provided by the user.\n\n` +
-            `Student asked:\n${safeQuestion}\n\n` +
-            `Approved FAQ category: ${faqCategory}\n` +
-            `Approved FAQ question: ${faqQuestion}\n` +
-            `Approved FAQ answer:\n${faqAnswer}\n\n` +
-            `Important:\n` +
-            `- Use only the approved answer as source of truth\n` +
-            `- Do not invent requirements, fees, schedules, or deadlines\n` +
-            `- If details are missing, explicitly say the student should confirm with official OSA posting/admin\n`,
-        },
-      ],
+      temperature: Math.min(CHAT_TEMPERATURE, 0.35),
+      messages: [{ role: "user", content: userContent }],
     });
+    return cleanModelText(raw);
   } catch (_e) {
     return "";
   }
@@ -671,7 +930,7 @@ function detectTicketType(message) {
   // Lost & Found claim (explicit LF-#### reference + claim verb)
   if (/\blf[-\s]?\d{3,6}\b/.test(m) && /\bclaim\b/.test(m)) return "claim";
 
-  // Human support / general concern routing
+  // Human support / general concern routing (includes /chat staff slash command)
   if (
     m.includes("human support") ||
     m.includes("human agent") ||
@@ -681,7 +940,12 @@ function detectTicketType(message) {
     m.includes("representative") ||
     m.includes("file complaint") ||
     m.includes("report concern") ||
-    m.includes("escalate")
+    m.includes("escalate") ||
+    m.includes("/chat staff") ||
+    m.includes("chat staff") ||
+    m.includes("/staff") ||
+    m.includes("/human") ||
+    m.includes("/escalate")
   ) {
     return "human_support";
   }
@@ -698,6 +962,8 @@ const MAX_OPEN_TICKETS_PER_SESSION = Math.max(
   1,
   Number(process.env.MAX_OPEN_TICKETS_PER_SESSION || 3)
 );
+const ALLOW_REPEAT_APPOINTMENT_TEST =
+  String(process.env.ALLOW_REPEAT_APPOINTMENT_TEST || "false").trim().toLowerCase() === "true";
 
 async function findOpenTicketByType(sessionId, ticketType) {
   const result = await db.query(
@@ -717,6 +983,65 @@ async function countOpenTicketsForSession(sessionId) {
     [sessionId]
   );
   return result.rows.length ? Number(result.rows[0].c) : 0;
+}
+
+async function findTodayAppointmentTicketByEmail(email) {
+  const e = String(email || "").trim().toLowerCase();
+  if (!e) return null;
+  const result = await db.query(
+    `SELECT case_id, status, created_at, updated_at
+       FROM escalation_tickets
+      WHERE lower(student_email) = $1
+        AND ticket_type = 'appointment'
+        AND created_at >= date_trunc('day', NOW())
+      ORDER BY created_at DESC
+      LIMIT 1`,
+    [e]
+  );
+  return result.rows.length ? result.rows[0] : null;
+}
+
+async function findTodayResolvedTicketBySession(sessionId) {
+  const sid = String(sessionId || "").trim();
+  if (!sid) return null;
+  const result = await db.query(
+    `SELECT case_id, ticket_type, status, created_at, updated_at
+       FROM escalation_tickets
+      WHERE session_id = $1
+        AND status = 'resolved'
+        AND created_at >= date_trunc('day', NOW())
+      ORDER BY updated_at DESC, created_at DESC
+      LIMIT 1`,
+    [sid]
+  );
+  return result.rows.length ? result.rows[0] : null;
+}
+
+function isGenericAppointmentConcern(text) {
+  const normalized = String(text || "").trim().toLowerCase();
+  if (!normalized) return true;
+  const canned = [
+    "appointment",
+    "i need an appointment with osa. please guide me on scheduling a visit or meeting.",
+    "i need an appointment with osa. please guide me on scheduling a face-to-face visit and what to bring.",
+  ];
+  return canned.includes(normalized);
+}
+
+async function resolveEscalationConcern(sessionId, concern) {
+  const base = String(concern || "").trim();
+  if (!isGenericAppointmentConcern(base)) return base;
+  const recent = await db.query(
+    `SELECT content
+       FROM chat_messages
+      WHERE session_id = $1
+        AND role = 'user'
+      ORDER BY created_at DESC
+      LIMIT 1`,
+    [sessionId]
+  );
+  const latestUserMessage = recent.rows.length ? String(recent.rows[0].content || "").trim() : "";
+  return latestUserMessage || base;
 }
 
 function isAppointmentIntent(message) {
@@ -739,6 +1064,44 @@ function isAppointmentIntent(message) {
     "magpa appointment",
   ];
   return phrases.some((p) => m.includes(p));
+}
+
+/** User is asking about live listings we ship in CURRENT SYSTEM STATE (still works with 0 RAG chunks). */
+function looksLikeLivePortalListingIntent(message) {
+  const m = String(message || "").toLowerCase();
+  if (!m.trim()) return false;
+  return (
+    /\b(announcement|announcements|posted|lost\s*(and|&)?\s*found|\blf[-\s]?\d|\bitem\s+lf\b|unclaimed|claimed|pick\s*up|retrieve)\b/i.test(m) ||
+    /\bwhat\s+(are\s+)?(the\s+)?(current\s+)?announcements\b/i.test(m) ||
+    /\b(osa\s+)?services?\s+.*\b(list|offer|available|fee|processing|requirements)\b/i.test(m) ||
+    /\bwhat\s+(osa\s+)?services\b/i.test(m) ||
+    looksLikePortalPageIntent(m)
+  );
+}
+
+/** Block crude / trolling prompts so the LLM never invents embarrassing answers (school portal context). */
+function isInappropriatePortalMessage(message) {
+  const raw = String(message || "").trim();
+  if (raw.length < 3) return false;
+  const m = raw
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "");
+
+  return (
+    /\b(tumatae|tumae\b|umiihi|ebak|tae\b|taeng|putang\s*ina|tangina|puki|bayag|jakol|kantot|iyot)\b/i.test(m) ||
+    /\b(shit|crap|poop|defecat|feces|masturbat|porn|sex|nsfw)\b/i.test(m)
+  );
+}
+
+/** Hours / location / contact — often answerable from osa_services in CURRENT SYSTEM STATE without rag_chunks. */
+function looksLikePortalLogisticsIntent(message) {
+  const m = String(message || "").toLowerCase();
+  if (!m.trim()) return false;
+  return (
+    /\b(where\s+(is|are)|location|office\s+hours|open\s+hours|business\s+hours|operating\s+hours|address|how\s+to\s+(contact|reach)|contact\s+(osa|info|number))\b/i.test(m) ||
+    /\b(what\s+time|until\s+what\s+time|what\s+are\s+(the\s+)?hours)\b/i.test(m)
+  );
 }
 
 function needsEscalation(message, reply) {
@@ -780,6 +1143,11 @@ function stripOfflineContactInstructions(reply) {
     /(you\s+may|you\s+can|please)\s+(email|call|phone)\s+[^.\n]*osa[^.\n]*/gi,
     /check\s+the\s+(official\s+)?(eac|osa)[^.\n]*(website|site|page)[^.\n]*/gi,
     /refer\s+to\s+the\s+(official\s+)?(eac|osa)\s+website[^.\n]*/gi,
+    /\b(?:https?:\/\/)?(?:localhost|127\.0\.0\.1)(?::\d+)?\/chat\b[^\s.)\]]*/gi,
+    /\b(?:at|on|sa)\s+\/chat\b[^.\n]*/gi,
+    /\b(?:contact|reach)\s+(?:us\s+)?(?:at|on)\s+(?:the\s+)?(?:portal\s+)?(?:chat\s+)?(?:at\s+)?\/chat\b[^.\n]*/gi,
+    /\bmaaa?aari\s+kang\s+mag[-\s]?ugnay[^.]*(?:\/chat|chat\s+sa)[^.]*/gi,
+    /\bmagpadala\s+ng\s+mensahe\s+sa\s+(?:aming\s+)?(?:chat\s+)?(?:sa\s+)?\/chat[^.\n]*/gi,
   ];
   let out = text;
   for (const p of patterns) out = out.replace(p, "");
@@ -822,6 +1190,7 @@ function normalizeEscalationReply(reply, suggestEscalation, opts) {
 function isNameQuery(message) {
   const m = String(message || "").toLowerCase();
   if (m.includes("sino ako") || m.includes("who am i")) return true;
+  if (m.includes("who is me")) return true;
   if (m.includes("anong name ko") || m.includes("ano pangalan ko")) return true;
   if (m.includes("kilala mo ba ko") || m.includes("do you know me")) return true;
   return (
@@ -831,6 +1200,52 @@ function isNameQuery(message) {
     m.includes("my name?")
   );
 }
+
+function hasOsaScopeSignals(message) {
+  return /\b(eac|osa|student manual|manual|scholarship|tuition|clearance|enrollment|enroll|lost\s*(and|&)?\s*found|announcement|good moral|discipline|attendance|grading|uniform|cashier|registrar|school id|student id|office hours|campus pass)\b/i
+    .test(String(message || ""));
+}
+
+function parseSimpleMath(message) {
+  const normalized = String(message || "").trim().replace(/_/g, "+");
+  const m = normalized.match(/^\s*(-?\d+(?:\.\d+)?)\s*([\+\-\*\/])\s*(-?\d+(?:\.\d+)?)\s*$/);
+  if (!m) return null;
+  const a = Number(m[1]);
+  const op = m[2];
+  const b = Number(m[3]);
+  if (!Number.isFinite(a) || !Number.isFinite(b)) return null;
+  let answer = null;
+  if (op === "+") answer = a + b;
+  if (op === "-") answer = a - b;
+  if (op === "*") answer = a * b;
+  if (op === "/") answer = b === 0 ? null : a / b;
+  if (answer === null || !Number.isFinite(answer)) return op === "/" && b === 0 ? "Division by zero is undefined." : null;
+  return `${a} ${op} ${b} = ${answer}`;
+}
+
+function mayUseGeneralFactMode(message) {
+  const m = String(message || "").trim();
+  if (!m) return false;
+  if (hasOsaScopeSignals(m)) return false;
+  if (looksLikeOtpHelpIntent(m)) return false;
+  if (isAppointmentIntent(m)) return false;
+  if (needsEscalation(m, "")) return false;
+  return true;
+}
+
+async function generateGeneralFactReply(message) {
+  const raw = await generateLlmText({
+    maxOutputTokens: 220,
+    temperature: 0.2,
+    systemPrompt:
+      "You are a concise factual assistant. " +
+      "Answer in formal English using 1-3 short sentences. " +
+      "If uncertain, clearly say you are not sure instead of inventing details.",
+    messages: [{ role: "user", content: String(message || "") }],
+  });
+  return cleanModelText(raw);
+}
+
 
 async function createEscalationTicket(sessionId, email, studentName, concern, meta) {
   const m = meta && typeof meta === "object" ? meta : {};
@@ -846,6 +1261,13 @@ async function createEscalationTicket(sessionId, email, studentName, concern, me
     ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
     [caseId, sessionId, email, studentName, concern, ticketType, claimItem, "pending_staff_schedule"]
   );
+  pushToAdminTickets({
+    type: "ticket_created",
+    case_id: caseId,
+    status: "open",
+    ticket_type: ticketType,
+    timestamp: new Date().toISOString(),
+  });
   sendStaffNotificationEmail(caseId, studentName, email, concern, emailVariant);
   sendStudentEscalationEmail(caseId, studentName, email, concern, emailVariant);
   return caseId;
@@ -951,6 +1373,7 @@ function registerChatRoutes(app, apiPrefix) {
     async (req, res) => {
       const sessionId = String((req.body && req.body.session_id) || "").trim();
       const message = String((req.body && req.body.message) || "").trim();
+      const handlerStartMs = Date.now();
 
       if (!sessionId || !message) {
         return res.status(400).json({ success: false, message: "session_id and message are required." });
@@ -963,6 +1386,7 @@ function registerChatRoutes(app, apiPrefix) {
       }
 
       try {
+        await enqueueForSession(sessionId, async () => {
         const loaded = await loadSessionRow(sessionId);
         if (!loaded.found) {
           return res.status(404).json({ success: false, message: "Session not found." });
@@ -975,7 +1399,6 @@ function registerChatRoutes(app, apiPrefix) {
           });
         }
         const { email, student_name } = loaded.session;
-
         // Decorate every success response with session expiry for client countdown.
         const origJson = res.json.bind(res);
         res.json = async (payload) => {
@@ -995,6 +1418,20 @@ function registerChatRoutes(app, apiPrefix) {
           [sessionId, message]
         );
 
+        if (isInappropriatePortalMessage(message)) {
+          const refusal =
+            "I can only help with official OSA topics (announcements, Lost & Found, services, forms, and appointments). " +
+            "Please ask a respectful question about student support.";
+          await persistReply(sessionId, refusal);
+          return res.json({
+            success: true,
+            reply: refusal,
+            tier: 2,
+            suggest_escalation: false,
+            content_filtered: true,
+          });
+        }
+
         // Direct profile-aware answer for name queries.
         if (isNameQuery(message)) {
           const safeName = String(student_name || "Student").trim() || "Student";
@@ -1002,17 +1439,31 @@ function registerChatRoutes(app, apiPrefix) {
             `You are currently signed in as ${safeName}. ` +
             `If this is not your preferred name, re-verify and enter your full name in the OTP card.`;
 
-          await db.query(
-            `INSERT INTO chat_messages (session_id, role, content) VALUES ($1, 'assistant', $2)`,
-            [sessionId, nameReply]
-          );
-          await db.query(`UPDATE chat_sessions SET last_active_at = NOW() WHERE id = $1`, [sessionId]);
+          await persistReply(sessionId, nameReply);
 
           return res.json({
             success: true,
             reply: nameReply,
             tier: 2,
             suggest_escalation: false,
+          });
+        }
+
+        // OTP / re-verification UX (not a knowledge-base question).
+        if (looksLikeOtpHelpIntent(message)) {
+          const otpHelpReply =
+            "To get a **new OTP code**, use the **Verify email** section in this same chat: enter your official campus email, tap **Send OTP Code**, then enter the 6-digit code. " +
+            "If you need to change your name on file, enter the correct full name in that card before verifying. " +
+            "You can scroll up to the verification card or open it again from the chat actions.";
+          await persistReply(sessionId, otpHelpReply);
+          return res.json({
+            success: true,
+            reply: otpHelpReply,
+            answer: otpHelpReply,
+            tier: 2,
+            suggest_escalation: false,
+            escalate: false,
+            otp_action: true,
           });
         }
 
@@ -1036,6 +1487,22 @@ function registerChatRoutes(app, apiPrefix) {
             );
           }
 
+          // Once staff has engaged, suppress repeated AI "human support mode"
+          // banners on every student message. Keep the chat in human_mode and
+          // let staff messages drive the thread.
+          if (activeHumanTicket.status !== "open") {
+            await db.query(`UPDATE chat_sessions SET last_active_at = NOW() WHERE id = $1`, [sessionId]); // no assistant message for silent in-progress mode
+            return res.json({
+              success: true,
+              reply: "",
+              tier: 3,
+              human_mode: true,
+              case_id: activeHumanTicket.case_id,
+              human_ticket_status: String(activeHumanTicket.status || "in_progress"),
+              suggest_escalation: false,
+            });
+          }
+
           let humanReply =
             activeHumanTicket.status === "open"
               ? `Your inquiry is already escalated to OSA staff (Case ID: ${activeHumanTicket.case_id}). ` +
@@ -1054,11 +1521,7 @@ function registerChatRoutes(app, apiPrefix) {
             humanReply += ` Please pick a preferred weekday and Morning or Afternoon using the buttons.`;
           }
 
-          await db.query(
-            `INSERT INTO chat_messages (session_id, role, content) VALUES ($1, 'assistant', $2)`,
-            [sessionId, humanReply]
-          );
-          await db.query(`UPDATE chat_sessions SET last_active_at = NOW() WHERE id = $1`, [sessionId]);
+          await persistReply(sessionId, humanReply);
 
           return res.json({
             success: true,
@@ -1066,32 +1529,70 @@ function registerChatRoutes(app, apiPrefix) {
             tier: 3,
             human_mode: true,
             case_id: activeHumanTicket.case_id,
+            human_ticket_status: String(activeHumanTicket.status || "open"),
             suggest_escalation: false,
           });
         }
 
-        // ── TIER 1: FAQ search ───────────────────────────────
-        const faqMatch = await searchFaq(message);
-        if (faqMatch) {
-          // Rewrite via LLM only when CHAT_TIER1_REWRITE=true; otherwise return the
-          // curated answer directly for a fast, deterministic response.
-          const aiTier1Reply = TIER1_REWRITE
-            ? await generateTier1FaqReply(student_name, message, faqMatch)
-            : "";
-          const reply = aiTier1Reply || faqMatch.answer;
-
-          await db.query(
-            `INSERT INTO chat_messages (session_id, role, content) VALUES ($1, 'assistant', $2)`,
-            [sessionId, reply]
-          );
-          await db.query(`UPDATE chat_sessions SET last_active_at = NOW() WHERE id = $1`, [sessionId]);
-
+        // General/non-OSA factual queries in secure mode should still be answerable
+        // without forcing escalation (e.g., simple math or harmless general facts).
+        const mathReply = parseSimpleMath(message);
+        if (mathReply) {
+          await persistReply(sessionId, mathReply);
           return res.json({
             success: true,
-            reply,
-            tier: 1,
+            reply: mathReply,
+            answer: mathReply,
+            tier: 2,
             suggest_escalation: false,
+            escalate: false,
+            general_fact_mode: true,
           });
+        }
+
+        if (mayUseGeneralFactMode(message)) {
+          let generalReply = "";
+          try {
+            generalReply = await generateGeneralFactReply(message);
+          } catch (_) {
+            generalReply = "";
+          }
+          if (generalReply) {
+            await persistReply(sessionId, generalReply);
+            return res.json({
+              success: true,
+              reply: generalReply,
+              answer: generalReply,
+              tier: 2,
+              suggest_escalation: false,
+              escalate: false,
+              general_fact_mode: true,
+            });
+          }
+        }
+
+        // ── TIER 1: FAQ search (optional; default off for conversational Tier 2) ──
+        if (CHAT_TIER1_FAQ_ENABLED) {
+          const faqMatch = await searchFaq(message);
+          if (faqMatch) {
+            // eslint-disable-next-line no-console
+            console.log(`[RAG:chat] TIER 1 FAQ hit → question="${String(faqMatch.question || "").slice(0, 80)}"`);
+            const aiTier1Reply = TIER1_REWRITE
+              ? await generateTier1FaqReply(student_name, message, faqMatch)
+              : "";
+            const reply = cleanModelText(aiTier1Reply || faqMatch.answer);
+
+            await persistReply(sessionId, reply);
+
+            return res.json({
+              success: true,
+              reply,
+              answer: reply,
+              tier: 1,
+              suggest_escalation: false,
+              escalate: false,
+            });
+          }
         }
 
         // ── TIER 2: Gemini LLM ───────────────────────────────
@@ -1108,17 +1609,58 @@ function registerChatRoutes(app, apiPrefix) {
         const historyRows = historyResult.rows.slice().reverse();
 
         const [osaCtx, manualRag] = await Promise.all([
-          getOsaContext(),
-          searchManualKnowledge(message),
+          getOsaContext(email, sessionId),
+          fetchRagResult(message),
         ]);
-        const systemPrompt = buildSystemPrompt(student_name, email, osaCtx, manualRag);
 
         const appointmentIntent = isAppointmentIntent(message);
+        const explicitEscalationIntent = needsEscalation(message, "");
+        const hasOsaCtx = Boolean(osaCtx && String(osaCtx).trim().length > 40);
+        const hasRetrieval = manualRag.chunkCount > 0 || hasOsaCtx;
+        const isGreeting = /^\s*(hi+|hello+|hey|kumusta|kamusta|kamustahan|good\s+(morning|afternoon|evening|day)|hoy|oi|yo|sup|helo|helow|ello|greetings)\b/i.test(String(message || ""));
+
+        // ── RAG DEBUG (always-on console log for accuracy monitoring) ──
+        // eslint-disable-next-line no-console
+        console.log(
+          `[RAG:chat] query="${String(message || "").slice(0, 100)}" ` +
+          `chunks=${manualRag.chunkCount} confidence=${Number(manualRag.confidence || 0).toFixed(3)} ` +
+          `tier=${manualRag.tier || "ESCALATE"} ` +
+          `hasLiveCtx=${hasOsaCtx} apptIntent=${appointmentIntent} escalateIntent=${explicitEscalationIntent}`
+        );
+
+        // Do not block on weak RAG scores when the question can be answered from live
+        // portal state (announcements / L&F / services) or hours·location from osa_services.
+        const livePortalQuestion =
+          looksLikeLivePortalListingIntent(message) ||
+          (hasOsaCtx && looksLikePortalLogisticsIntent(message));
+
+        const lowConfidenceFallback =
+          manualRag.chunkCount > 0 &&
+          Number(manualRag.confidence || 0) < CHAT_RAG_MIN_CONFIDENCE &&
+          !isGreeting && !appointmentIntent && !explicitEscalationIntent && !livePortalQuestion;
+
+        // No reliable retrieval and no actionable intent — use AI guidance instead of dead-end.
+        const noRetrievalFallback =
+          (!hasRetrieval && !appointmentIntent && !explicitEscalationIntent && !isGreeting) ||
+          (CHAT_STRICT_NO_RAG_LLM &&
+            manualRag.chunkCount === 0 &&
+            !isGreeting && !appointmentIntent && !explicitEscalationIntent &&
+            !looksLikeLivePortalListingIntent(message) &&
+            !(hasOsaCtx && looksLikePortalLogisticsIntent(message)));
+
+        const needsNoKbGuidance = lowConfidenceFallback || noRetrievalFallback;
+
+        const systemPrompt = needsNoKbGuidance
+          ? buildNoKbGuidancePrompt(student_name, email)
+          : buildSystemPrompt(student_name, email, osaCtx, manualRag);
+
         let rawReply = "";
         try {
           rawReply = await generateLlmText({
             systemPrompt,
             maxOutputTokens: MAX_OUTPUT_TOKENS,
+            temperature:
+              manualRag.chunkCount > 0 ? CHAT_TEMPERATURE : CHAT_TEMPERATURE_NO_KB,
             messages: [
               ...historyRows.slice(0, -1).map((r) => ({
                 role: r.role === "assistant" ? "assistant" : "user",
@@ -1133,30 +1675,98 @@ function registerChatRoutes(app, apiPrefix) {
           rawReply = "";
         }
         if (!rawReply) {
-          const fallback =
-            "I'm having trouble generating a response right now. " +
-            "Please try rephrasing, or type 'human support' to reach OSA staff.";
-          await db.query(
-            `INSERT INTO chat_messages (session_id, role, content) VALUES ($1, 'assistant', $2)`,
-            [sessionId, fallback]
-          );
-          await db.query(`UPDATE chat_sessions SET last_active_at = NOW() WHERE id = $1`, [sessionId]);
-          return res.json({ success: true, reply: fallback, tier: 2, suggest_escalation: true });
+          const staticFallback = needsNoKbGuidance
+            ? "For this topic, I'd recommend reaching out to OSA directly for accurate and official information. You can visit the OSA office or type /chat staff to connect with a staff member."
+            : NO_RELIABLE_KB_REPLY;
+          await persistReply(sessionId, staticFallback);
+          return res.json({
+            success: true,
+            reply: staticFallback,
+            answer: staticFallback,
+            tier: 2,
+            suggest_escalation: true,
+            escalate: true,
+          });
         }
-        const suggestEscalation = needsEscalation(message, rawReply);
-        const reply = normalizeEscalationReply(rawReply, suggestEscalation, { appointmentIntent });
+        let cleanedRaw = cleanModelText(rawReply);
+        const looksLikeNoKb =
+          /^\s*no relevant information found\b/i.test(String(cleanedRaw).trim()) ||
+          /\bi have insufficient (data|information)\b/i.test(String(cleanedRaw).toLowerCase()) ||
+          /\binsufficient data to answer\b/i.test(String(cleanedRaw).toLowerCase());
+        if (looksLikeNoKb && !needsNoKbGuidance) {
+          cleanedRaw = NO_RELIABLE_KB_REPLY;
+        }
+        const suggestEscalation =
+          needsEscalation(message, rawReply) || looksLikeNoKb || cleanedRaw === NO_RELIABLE_KB_REPLY;
+        const reply = normalizeEscalationReply(cleanedRaw, suggestEscalation, { appointmentIntent });
+        // eslint-disable-next-line no-console
+        console.log(
+          `[RAG:chat:reply] tier=2 suggestEscalation=${suggestEscalation} ` +
+          `replyPreview="${String(reply || "").slice(0, 120).replace(/\n/g, " ")}"`
+        );
         let autoCaseId = "";
 
-        if (suggestEscalation) {
+        // Auto-create a ticket only for explicit escalation intents or appointment flows.
+        // For "no reliable answer" escalation hints, show UI guidance but keep ticket manual.
+        const shouldAutoEscalate = suggestEscalation && (explicitEscalationIntent || appointmentIntent);
+        if (shouldAutoEscalate) {
           const ticketType = detectTicketType(message);
+          const resolvedToday = await findTodayResolvedTicketBySession(sessionId);
+          if (resolvedToday) {
+            const resolvedCaseId = String(resolvedToday.case_id || "");
+            const blockedReply =
+              `Your support case for today is already resolved (Case ID: ${resolvedCaseId}). ` +
+              `For any follow-up, please email OSA directly.`;
+            await persistReply(sessionId, blockedReply);
+            return res.json({
+              success: true,
+              reply: blockedReply,
+              tier: 3,
+              suggest_escalation: false,
+              auto_escalated: false,
+              escalation_blocked_resolved: true,
+              case_id: resolvedCaseId,
+            });
+          }
+          const allowRepeatAppointment = ALLOW_REPEAT_APPOINTMENT_TEST && ticketType === "appointment";
+          const sameDayAppointmentTicket =
+            !allowRepeatAppointment && ticketType === "appointment"
+              ? await findTodayAppointmentTicketByEmail(email)
+              : null;
+          const sameDayAppointmentCaseId = sameDayAppointmentTicket
+            ? String(sameDayAppointmentTicket.case_id || "")
+            : "";
+          const sameDayAppointmentStatus = sameDayAppointmentTicket
+            ? String(sameDayAppointmentTicket.status || "").toLowerCase()
+            : "";
+          if (sameDayAppointmentCaseId) {
+            const blockedReply =
+              `You can only request one appointment per day. ` +
+              `Your appointment case today is already recorded (Case ID: ${sameDayAppointmentCaseId}, status: ${sameDayAppointmentStatus || "open"}). ` +
+              `Please wait for OSA updates or email OSA for follow-up.`;
+            await persistReply(sessionId, blockedReply);
+            return res.json({
+              success: true,
+              reply: blockedReply,
+              tier: 3,
+              suggest_escalation: false,
+              auto_escalated: false,
+              appointment_locked_today: true,
+              case_id: sameDayAppointmentCaseId,
+            });
+          }
           // One open ticket per (session, type): if the student already has
           // an appointment / human-support / claim / general ticket open,
           // reuse it instead of creating another.
-          const existingCaseId = await findOpenTicketByType(sessionId, ticketType);
-          if (existingCaseId) {
+          const existingCaseId = allowRepeatAppointment
+            ? ""
+            : await findOpenTicketByType(sessionId, ticketType);
+          if (sameDayAppointmentCaseId) {
+            autoCaseId = sameDayAppointmentCaseId;
+          } else if (existingCaseId) {
             autoCaseId = existingCaseId;
           } else {
-            const openCount = await countOpenTicketsForSession(sessionId);
+            const openCount = allowRepeatAppointment ? 0 : await countOpenTicketsForSession(sessionId);
             if (openCount >= MAX_OPEN_TICKETS_PER_SESSION) {
               // At the per-session cap: do not create more. Return the reply
               // without an auto-escalation flag so the UI won't show the
@@ -1171,20 +1781,19 @@ function registerChatRoutes(app, apiPrefix) {
           }
         }
 
-        await db.query(
-          `INSERT INTO chat_messages (session_id, role, content) VALUES ($1, 'assistant', $2)`,
-          [sessionId, reply]
-        );
-        await db.query(`UPDATE chat_sessions SET last_active_at = NOW() WHERE id = $1`, [sessionId]);
+        await persistReply(sessionId, reply);
 
         return res.json({
           success: true,
           reply,
+          answer: reply,
           tier: 2,
           suggest_escalation: suggestEscalation,
+          escalate: !!suggestEscalation,
           auto_escalated: !!autoCaseId,
           case_id: autoCaseId || null,
         });
+        }); // enqueueForSession
       } catch (error) {
         return genericError(res, "chat", error);
       }
@@ -1194,9 +1803,9 @@ function registerChatRoutes(app, apiPrefix) {
   // ── TIER 3: Create escalation ticket ────────────────────────
   app.post(`${apiPrefix}/chat/escalate`, async (req, res) => {
     const sessionId = String((req.body && req.body.session_id) || "").trim();
-    const concern = String((req.body && req.body.concern) || "").trim();
+    const rawConcern = String((req.body && req.body.concern) || "").trim();
 
-    if (!sessionId || !concern) {
+    if (!sessionId || !rawConcern) {
       return res.status(400).json({ success: false, message: "session_id and concern are required." });
     }
     if (!isValidSessionId(sessionId)) {
@@ -1216,17 +1825,53 @@ function registerChatRoutes(app, apiPrefix) {
         });
       }
       const { email, student_name } = loaded.session;
+      const concern = await resolveEscalationConcern(sessionId, rawConcern);
 
       const ticketType = detectTicketType(concern);
-      const existingCaseId = await findOpenTicketByType(sessionId, ticketType);
+      const resolvedToday = await findTodayResolvedTicketBySession(sessionId);
+      if (resolvedToday) {
+        const resolvedCaseId = String(resolvedToday.case_id || "");
+        return res.status(409).json({
+          success: false,
+          code: "SESSION_ALREADY_RESOLVED_TODAY",
+          message:
+            `Your support case for today is already resolved (Case ID: ${resolvedCaseId}). ` +
+            `For follow-up, please email OSA directly.`,
+          case_id: resolvedCaseId,
+        });
+      }
+      const allowRepeatAppointment = ALLOW_REPEAT_APPOINTMENT_TEST && ticketType === "appointment";
+      const sameDayAppointmentTicket =
+        !allowRepeatAppointment && ticketType === "appointment"
+          ? await findTodayAppointmentTicketByEmail(email)
+          : null;
+      const sameDayAppointmentCaseId = sameDayAppointmentTicket
+        ? String(sameDayAppointmentTicket.case_id || "")
+        : "";
+      const sameDayAppointmentStatus = sameDayAppointmentTicket
+        ? String(sameDayAppointmentTicket.status || "").toLowerCase()
+        : "";
+      const existingCaseId = allowRepeatAppointment
+        ? ""
+        : await findOpenTicketByType(sessionId, ticketType);
 
       let caseId;
       let reused = false;
-      if (existingCaseId) {
+      if (sameDayAppointmentCaseId) {
+        return res.status(409).json({
+          success: false,
+          code: "APPOINTMENT_LIMIT_DAILY",
+          message:
+            `You can only request one appointment per day. ` +
+            `Your appointment case today is already recorded (Case ID: ${sameDayAppointmentCaseId}, status: ${sameDayAppointmentStatus || "open"}). ` +
+            `Please wait for OSA updates or email OSA for follow-up.`,
+          case_id: sameDayAppointmentCaseId,
+        });
+      } else if (existingCaseId) {
         caseId = existingCaseId;
         reused = true;
       } else {
-        const openCount = await countOpenTicketsForSession(sessionId);
+        const openCount = allowRepeatAppointment ? 0 : await countOpenTicketsForSession(sessionId);
         if (openCount >= MAX_OPEN_TICKETS_PER_SESSION) {
           return res.status(429).json({
             success: false,
@@ -1614,6 +2259,13 @@ function registerChatRoutes(app, apiPrefix) {
         case_id: caseId,
         timestamp: new Date().toISOString(),
       });
+      pushToAdminTickets({
+        type: "ticket_updated",
+        case_id: caseId,
+        status: "in_progress",
+        appointment_status: "scheduled",
+        timestamp: new Date().toISOString(),
+      });
 
       return res.json({ success: true, delivered });
     } catch (error) {
@@ -1671,6 +2323,13 @@ function registerChatRoutes(app, apiPrefix) {
         case_id: caseId,
         timestamp: new Date().toISOString(),
         appointment_approved: true,
+      });
+      pushToAdminTickets({
+        type: "ticket_updated",
+        case_id: caseId,
+        status: "in_progress",
+        appointment_status: "approved",
+        timestamp: new Date().toISOString(),
       });
 
       return res.json({
@@ -1741,12 +2400,48 @@ function registerChatRoutes(app, apiPrefix) {
           [question, faqAnswer, faqCategory, keywords]
         );
       }
+      pushToAdminTickets({
+        type: "ticket_updated",
+        case_id: caseId,
+        status: "resolved",
+        timestamp: new Date().toISOString(),
+      });
 
       return res.json({
         success: true,
         message: "Ticket resolved." + (promoteToFaq ? " Answer added to FAQ." : ""),
         promoted_to_faq: promoteToFaq,
       });
+    } catch (error) {
+      return genericError(res, "chat", error);
+    }
+  });
+
+  // Admin: delete resolved ticket from admin list
+  app.delete(`${apiPrefix}/chat/tickets/:caseId`, requireAdminKey, async (req, res) => {
+    const caseId = String((req.params && req.params.caseId) || "").trim();
+    if (!caseId) return res.status(400).json({ success: false, message: "caseId is required." });
+    try {
+      const removed = await db.query(
+        `DELETE FROM escalation_tickets
+         WHERE case_id = $1
+           AND status = 'resolved'
+         RETURNING case_id`,
+        [caseId]
+      );
+      if (!removed.rows.length) {
+        return res.status(404).json({
+          success: false,
+          message: "Resolved ticket not found.",
+        });
+      }
+      pushToAdminTickets({
+        type: "ticket_deleted",
+        case_id: caseId,
+        status: "deleted",
+        timestamp: new Date().toISOString(),
+      });
+      return res.json({ success: true, case_id: caseId, deleted: true });
     } catch (error) {
       return genericError(res, "chat", error);
     }
@@ -1817,7 +2512,7 @@ function registerChatRoutes(app, apiPrefix) {
            t.created_at ASC`,
         vals
       );
-      const tickets = result.rows.map((t) => ({
+      let tickets = result.rows.map((t) => ({
         ...t,
         is_student_active: !!(sseClients.get(t.session_id) && sseClients.get(t.session_id).size > 0),
         needs_end_session_prompt: (() => {
@@ -1827,6 +2522,11 @@ function registerChatRoutes(app, apiPrefix) {
           return Date.now() - lastMs >= STAFF_CHAT_IDLE_MS;
         })(),
       }));
+      // Temporary UX rule requested by admin: hide stale "in progress" rows
+      // when the student session is already offline/disconnected.
+      if (normalizedStatus === "in_progress") {
+        tickets = tickets.filter((t) => t.is_student_active);
+      }
       return res.json({ success: true, tickets });
     } catch (error) {
       return genericError(res, "chat", error);
@@ -1866,6 +2566,29 @@ function registerChatRoutes(app, apiPrefix) {
         clients.delete(res);
         if (!clients.size) sseClients.delete(sessionId);
       }
+    });
+  });
+
+  // SSE stream: admin subscribes for real-time ticket list refresh
+  app.get(`${apiPrefix}/chat/admin/stream`, (req, res) => {
+    const token = String((req.query && req.query.token) || "").trim();
+    if (!isAdminTokenAuthorized(token)) {
+      return res.status(401).end();
+    }
+
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+    res.setHeader("X-Accel-Buffering", "no");
+    res.flushHeaders();
+    res.write(":connected\n\n");
+
+    adminTicketClients.add(res);
+    const keepalive = setInterval(() => { try { res.write(":ping\n\n"); } catch (_) {} }, 25000);
+
+    req.on("close", () => {
+      clearInterval(keepalive);
+      adminTicketClients.delete(res);
     });
   });
 
@@ -1919,6 +2642,12 @@ function registerChatRoutes(app, apiPrefix) {
       case_id: caseId,
       timestamp: new Date().toISOString(),
       session_closed: true,
+    });
+    pushToAdminTickets({
+      type: "ticket_updated",
+      case_id: caseId,
+      status: "resolved",
+      timestamp: new Date().toISOString(),
     });
     return { ok: true, delivered, session_id };
   }
@@ -2012,6 +2741,12 @@ function registerChatRoutes(app, apiPrefix) {
         content: msgContent,
         staff_name: staffName,
         case_id: caseId,
+        timestamp: new Date().toISOString(),
+      });
+      pushToAdminTickets({
+        type: "ticket_updated",
+        case_id: caseId,
+        status: "in_progress",
         timestamp: new Date().toISOString(),
       });
 

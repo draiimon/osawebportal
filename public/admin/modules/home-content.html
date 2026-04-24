@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/admin/admin-shell.css?v=20260423j">
+  <link rel="stylesheet" href="/admin/admin-shell.css?v=20260424a">
   <style>
     .section-tabs {
       display: flex;
@@ -428,7 +428,7 @@
   </main>
 </div>
 
-<script src="/admin/admin-shell.js?v=20260423j"></script>
+<script src="/admin/admin-shell.js?v=20260424a"></script>
 <script>
   const DB = 'osaHomeContent';
   const DEFAULTS = {
@@ -496,7 +496,61 @@
     ]
   };
 
-  const getData = () => adminDB.get(DB) || {};
+  let remoteState = {};
+
+  function parseMaybeJson(value) {
+    const text = String(value || '').trim();
+    if (!text) return null;
+    if (!((text.startsWith('{') && text.endsWith('}')) || (text.startsWith('[') && text.endsWith(']')))) {
+      return null;
+    }
+    try {
+      return JSON.parse(text);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function normalizeRemoteData(raw) {
+    const data = raw && typeof raw === 'object' ? raw : {};
+    const hero = parseMaybeJson(data.hero) || {};
+    const slides = parseMaybeJson(data.slides);
+    const services = parseMaybeJson(data.services);
+    const manual = parseMaybeJson(data.manual) || {};
+    const forms = parseMaybeJson(data.forms);
+    return {
+      hero,
+      slides: Array.isArray(slides) ? slides : [],
+      services: Array.isArray(services) ? services : [],
+      manual,
+      forms: Array.isArray(forms) ? forms : []
+    };
+  }
+
+  function toApiContent(data) {
+    return {
+      hero: JSON.stringify(data.hero || {}),
+      slides: JSON.stringify(Array.isArray(data.slides) ? data.slides : []),
+      services: JSON.stringify(Array.isArray(data.services) ? data.services : []),
+      manual: JSON.stringify(data.manual || {}),
+      forms: JSON.stringify(Array.isArray(data.forms) ? data.forms : []),
+      hero_title: (data.hero && data.hero.title) || '',
+      hero_subtitle: Array.isArray(data.hero && data.hero.subtitles) ? data.hero.subtitles.filter(Boolean).join(' | ') : ''
+    };
+  }
+
+  async function fetchRemoteData() {
+    try {
+      const response = await fetch('/api/v1/content/home', { cache: 'no-store' });
+      if (!response.ok) return;
+      const payload = await response.json();
+      if (!payload || payload.success !== true) return;
+      remoteState = normalizeRemoteData(payload.data || {});
+      loadAll();
+    } catch (e) {}
+  }
+
+  const getData = () => Object.assign({}, remoteState || {}, adminDB.get(DB) || {});
   const mergeData = () => {
     const saved = getData();
     return {
@@ -508,7 +562,13 @@
     };
   };
   const persistData = (data) => {
+    remoteState = data;
     adminDB.set(DB, data);
+    fetch('/api/v1/content/home', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: toApiContent(data) })
+    }).catch(() => {});
     fetch('/api/admin/home-content/save.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -825,6 +885,7 @@
   }
 
   loadAll();
+  fetchRemoteData();
 </script>
 </body>
 </html>
