@@ -2722,37 +2722,11 @@
             background: linear-gradient(135deg, rgba(255, 248, 238, 0.92) 0%, rgba(251, 243, 228, 0.88) 100%);
         }
 
-        #where.section.home-extra-surface {
-            background: #1a0c10;
-            min-height: 92vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        #where.section.home-extra-surface > .section-shell {
-            flex: 1 0 auto;
-        }
-
-        body, html {
-            background: #1a0c10;
-        }
-
         .where-surface::before {
             background:
-                linear-gradient(180deg, rgba(245, 232, 212, 0.95) 0%, rgba(245, 232, 212, 0.82) 14%, rgba(245, 232, 212, 0.20) 38%, rgba(132, 26, 45, 0.04) 70%, rgba(26, 12, 16, 0.55) 100%),
+                linear-gradient(180deg, rgba(132, 26, 45, 0.06), rgba(255, 252, 248, 0.6) 60%),
                 url("./assets/images/eac-photo.png") center / cover no-repeat;
-            opacity: 1;
-            z-index: 0;
-        }
-
-        #where.section.home-extra-surface > .section-shell {
-            position: relative;
-            z-index: 1;
-            padding-bottom: clamp(180px, 22vw, 360px);
-        }
-
-        #where.section.home-extra-surface::after {
-            display: none;
+            opacity: 0.32;
         }
 
         /* ----- 2. Flow / how it works ----- */
@@ -2888,13 +2862,10 @@
         }
 
         .where-panel {
-            position: relative;
-            z-index: 2;
             padding: 28px;
             border: 1px solid var(--line);
-            background-color: #ffffff !important;
-            background-image: linear-gradient(180deg, #ffffff 0%, #faf3e6 100%) !important;
-            box-shadow: 0 22px 46px rgba(20, 8, 12, 0.28);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(250, 244, 234, 0.92));
+            box-shadow: 0 16px 32px rgba(50, 25, 14, 0.06);
         }
 
         .where-panel .where-eyebrow {
@@ -3023,12 +2994,6 @@
             opacity: 0;
             transform: translateY(14px);
             transition: opacity 600ms cubic-bezier(0.22, 1, 0.36, 1), transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
-        }
-
-        /* Office hours panels are critical info — keep them visible regardless of IO */
-        .where-grid.home-extra-reveal > .where-panel {
-            opacity: 1;
-            transform: none;
         }
 
         .home-extra-reveal.is-in > * { opacity: 1; transform: none; }
