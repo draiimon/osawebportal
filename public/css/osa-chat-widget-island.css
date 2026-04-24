@@ -263,7 +263,7 @@
     transform: scale(0.94);
 }
 
-/* ── Thread / messages ────────────────────────────────────── */
+/* ── Thread / messages — iOS/Messenger style scroll ──────── */
 [data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-thread {
     background:
         linear-gradient(180deg, rgba(255, 251, 247, 0.62) 0%, rgba(255, 247, 239, 0.5) 100%),
@@ -273,11 +273,23 @@
             rgba(132, 26, 45, 0.05) 100%) !important;
     background-blend-mode: normal, normal;
     position: relative;
-    padding: 0 14px 28px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 8px 14px 12px !important;
     overflow-y: auto !important;
     overflow-x: hidden !important;
     -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior: contain !important;
+    scroll-behavior: smooth !important;
+    overflow-anchor: auto !important;
     z-index: 1 !important;
+}
+
+/* Anchor messages to the bottom (Messenger/iMessage feel) — when content
+   doesn't overflow, the spacer pushes the messages down to sit just above
+   the composer instead of floating at the top. */
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-thread > *:first-child {
+    margin-top: auto !important;
 }
 
 [data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-thread::before {
