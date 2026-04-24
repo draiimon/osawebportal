@@ -493,7 +493,7 @@
     flex: 1 !important;
     min-height: 40px !important;
     height: 40px !important;
-    max-height: 110px !important;
+    max-height: 40px !important;
     padding: 10px 14px !important;
     margin: 0 !important;
     background: rgba(255, 255, 255, 0.96) !important;
@@ -504,6 +504,8 @@
     line-height: 1.45 !important;
     box-sizing: border-box;
     transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+    overflow: hidden !important;
+    resize: none !important;
 }
 
 [data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-composer textarea:focus {
