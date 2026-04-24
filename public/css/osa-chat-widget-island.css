@@ -63,7 +63,7 @@
 /* ── Header: refined maroon with thin gold underline ────── */
 [data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-header {
     position: relative;
-    min-height: 60px !important;
+    min-height: 74px !important;
     padding: 10px 12px 10px 14px !important;
     background: linear-gradient(135deg,
         #8f1c30 0%,
@@ -125,7 +125,7 @@
     gap: 8px !important;
     flex-wrap: nowrap !important;
     min-width: 0 !important;
-    margin-top: 0 !important;
+    margin-top: 6px !important;
 }
 
 [data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-header__status-line {
@@ -152,16 +152,7 @@
 }
 
 [data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-header__status-line::after {
-    content: "\23F0";
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 16px;
-    height: 16px;
-    margin-left: 2px;
-    font-size: 10px;
-    line-height: 1;
-    color: rgba(255, 255, 255, 0.88);
+    content: none !important;
 }
 
 [data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-header__status-line.is-staff {
@@ -470,12 +461,7 @@
 }
 
 [data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-chip::before {
-    content: "\203A";
-    display: inline-block;
-    margin-right: 6px;
-    font-size: 15px;
-    line-height: 1;
-    color: inherit;
+    content: none !important;
 }
 
 [data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-chip:active {
