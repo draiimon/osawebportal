@@ -201,18 +201,25 @@
     #ticket-search {
       width: 100%;
       border: 1.5px solid var(--line);
-      padding: 9px 12px 9px 34px;
+      padding: 9px 12px;
       font: inherit;
       font-size: 13px;
       border-radius: var(--radius-sm);
       outline: none;
-      background: var(--paper) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23998b7f' stroke-width='2.5' stroke-linecap='round'><circle cx='11' cy='11' r='7'/><path d='m21 21-4.3-4.3'/></svg>") 11px center no-repeat;
+      background: var(--paper);
       transition: border-color 0.15s, box-shadow 0.15s;
     }
+    /* Hide the native clear ('x') button that some browsers add to type=search */
+    #ticket-search::-webkit-search-decoration,
+    #ticket-search::-webkit-search-cancel-button,
+    #ticket-search::-webkit-search-results-button,
+    #ticket-search::-webkit-search-results-decoration { -webkit-appearance: none; appearance: none; }
     #ticket-search:focus {
       border-color: var(--brand);
       box-shadow: 0 0 0 3px var(--brand-soft);
     }
+    /* Hide the per-ticket "student online" green dot (kept in DOM for a11y) */
+    .ticket-item .active-dot { display: none; }
 
     .ticket-list {
       flex: 1;
@@ -1533,14 +1540,23 @@
     var convoPanelEl = document.getElementById('convo-panel');
     if (!ticketPanel || !convoPanelEl) return;
 
+    var wantHidden, wantActive;
     if (isMobileLayout()) {
-      ticketPanel.classList.toggle('hidden', !!hasSelectedTicket);
-      convoPanelEl.classList.toggle('active', !!hasSelectedTicket);
-      return;
+      wantHidden = !!hasSelectedTicket;
+      wantActive = !!hasSelectedTicket;
+    } else {
+      wantHidden = false;
+      wantActive = true;
     }
 
-    ticketPanel.classList.remove('hidden');
-    convoPanelEl.classList.add('active');
+    // Only mutate the DOM if the desired state actually differs from
+    // current state — prevents redundant style recalcs (and the visible
+    // "panel disappears for a frame then comes back" flicker some mobile
+    // browsers exhibit when a resize event arrives mid-interaction).
+    var hasHidden = ticketPanel.classList.contains('hidden');
+    var hasActive = convoPanelEl.classList.contains('active');
+    if (hasHidden !== wantHidden) ticketPanel.classList.toggle('hidden', wantHidden);
+    if (hasActive !== wantActive) convoPanelEl.classList.toggle('active', wantActive);
   }
 
   function ticketTypeLabel(raw) {
@@ -2865,8 +2881,17 @@
     syncResponsivePanels(false);
   });
 
+  // Debounce resize: mobile browsers fire `resize` on every URL-bar
+  // collapse/expand and on virtual-keyboard show/hide. Re-running the
+  // panel sync on each one was making the convo panel briefly slide out
+  // and back on phones during scrolling.
+  var resizeDebounceTimer = null;
   window.addEventListener('resize', function () {
-    syncResponsivePanels(!!state.currentCaseId);
+    if (resizeDebounceTimer) clearTimeout(resizeDebounceTimer);
+    resizeDebounceTimer = setTimeout(function () {
+      resizeDebounceTimer = null;
+      syncResponsivePanels(!!state.currentCaseId);
+    }, 120);
   });
 
   /* ── Auto-open from email link (?case=OSA-...) ── */
