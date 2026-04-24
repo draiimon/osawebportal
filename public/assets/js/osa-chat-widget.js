@@ -1484,11 +1484,14 @@
             // forced to re-verify OTP repeatedly by frontend timers.
 
             if (!chatSessionId && !needsProtected(message)) {
+                var typingGuest = showTyping('guest-chatbot');
                 try {
                     var guestReply = await postChatbotApi(message);
                     appendGuestChatbotTurn(guestReply);
                 } catch (_guestErr) {
                     appendLocalAssistantReply(message, true);
+                } finally {
+                    hideTyping(typingGuest, 'guest-chatbot:finally');
                 }
                 sendBtn.disabled = false;
                 input.focus();
