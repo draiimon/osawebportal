@@ -52,6 +52,14 @@
     filter: blur(10px) saturate(1.05) !important;
 }
 
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-chips-wrapper {
+    border-radius: 0 !important;
+}
+
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-composer {
+    border-radius: 0 !important;
+}
+
 /* ── Header: refined maroon with thin gold underline ────── */
 [data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-header {
     position: relative;
