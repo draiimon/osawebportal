@@ -636,12 +636,28 @@
         }
 
         function showTyping(reason) {
-            var node = null;
+            var inStaffMode = String(typeof currentMode !== 'undefined' ? currentMode : 'ai').toLowerCase() === 'staff';
+            var node = document.createElement('div');
+            node.className = 'osa-ai-msg osa-ai-msg--assistant is-visible' + (inStaffMode ? ' osa-ai-msg--staff' : '');
+            node.setAttribute('data-osa-typing', '1');
+            var label = inStaffMode ? 'OSA Staff' : 'Assistant';
+            node.innerHTML = '<div><div class="osa-ai-msg__bubble"><div class="osa-ai-typing"><span></span><span></span><span></span></div></div><div class="osa-ai-msg__meta">' + label + '</div></div>';
+            try { thread.appendChild(node); } catch (_) {}
+            try { scrollThread(); } catch (_) {}
             return node;
         }
 
         function hideTyping(node, reason) {
             if (node && node.parentNode) node.parentNode.removeChild(node);
+            // Sweep any orphan typing indicators that may have been left behind.
+            try {
+                var orphans = thread.querySelectorAll('[data-osa-typing="1"]');
+                for (var i = 0; i < orphans.length; i++) {
+                    if (orphans[i] !== node && orphans[i].parentNode) {
+                        orphans[i].parentNode.removeChild(orphans[i]);
+                    }
+                }
+            } catch (_) {}
         }
 
         function isLocalHost(hostname) {
