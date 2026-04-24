@@ -672,38 +672,55 @@ input, select, textarea { font-family: var(--font-body); }
 }
 
 /* ══════════════════════════════════════════════════════════════
-   PAGE HEADER
+   PAGE HEADER  (shared "hero board" — matches dashboard welcome-banner)
    ══════════════════════════════════════════════════════════════ */
 .page-header {
   position: relative; overflow: hidden;
-  margin-bottom: 24px;
-  padding: 24px 26px 20px;
+  margin-bottom: 28px;
+  padding: 28px 32px 26px;
   min-height: 180px;
-  background: linear-gradient(180deg, #7b1025 0%, #a21b34 100%);
-  border: 1px solid rgba(255,255,255,0.08);
-  box-shadow: 0 16px 38px rgba(8,2,4,0.36);
-  display: flex; align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px; flex-wrap: wrap;
-  border-radius: 3px;
+  background:
+    linear-gradient(135deg, #6b0e1e 0%, #841a2d 35%, #a21b34 70%, #7a1020 100%);
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.14);
+  box-shadow: 0 12px 30px rgba(90,14,30,0.25), 0 2px 8px rgba(0,0,0,0.08);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 32px;
+  align-items: center;
+  animation: pageHeroIn 0.7s cubic-bezier(0.22,1,0.36,1) both;
+}
+@keyframes pageHeroIn {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 .page-header::before {
   content: '';
   position: absolute; inset: -6px;
   background: url('/assets/images/eac-photo.png') center/cover no-repeat;
-  opacity: 0.07; filter: blur(3px); transform: scale(1.04);
+  opacity: 0.09; filter: blur(3px); transform: scale(1.04);
+  z-index: 0;
 }
 .page-header::after {
-  content: "";
-  position: absolute; inset: 0;
-  background: linear-gradient(135deg,
-    rgba(60,8,18,0.85) 0%,
-    rgba(100,16,32,0.6) 60%,
-    transparent 100%
-  );
+  content: '';
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 280px; height: 280px;
+  background: radial-gradient(circle, rgba(199,154,73,0.22) 0%, transparent 65%);
   pointer-events: none;
+  z-index: 0;
 }
 .page-header > * { position: relative; z-index: 1; }
+
+/* Backward-compat: pages that still wrap content in a bare <div> get default
+   block layout in the left column, while .page-header__actions falls into the
+   right column when it lives directly under .page-header. */
+.page-header > div:not(.page-header__widget):not(.page-header__actions):not(.page-header__main) {
+  min-width: 0;
+}
+.page-header > .page-header__main {
+  min-width: 0;
+}
 
 .page-header__eyebrow {
   display: inline-flex; align-items: center; gap: 8px;
@@ -715,25 +732,30 @@ input, select, textarea { font-family: var(--font-body); }
   background: transparent;
 }
 .page-header__eyebrow::before {
-  content: ''; width: 5px; height: 5px;
+  content: ''; width: 6px; height: 6px;
   background: var(--gold); border-radius: 50%; flex-shrink: 0;
+  box-shadow: 0 0 8px var(--gold);
 }
 
 .page-header h1 {
-  font-family: var(--font-body);
-  font-size: clamp(1.35rem, 3vw, 1.9rem);
-  font-weight: 800;
-  color: #fff9f2; line-height: 1.18; margin: 0 0 10px;
-  letter-spacing: 0.01em;
+  font-family: var(--font-serif);
+  font-size: clamp(1.5rem, 3.5vw, 2.1rem);
+  font-weight: 700;
+  color: #fff9f2; line-height: 1.15; margin: 0 0 10px;
+  letter-spacing: -0.01em;
 }
 .page-header p {
-  font-size: 0.9rem; color: rgba(255,249,242,0.78);
-  max-width: 70ch; line-height: 1.65; margin: 0;
+  font-size: 0.92rem; color: rgba(255,249,242,0.82);
+  max-width: 64ch; line-height: 1.6; margin: 0;
 }
 .page-header__actions {
   display: flex; gap: 8px;
-  flex-wrap: wrap; flex-shrink: 0; align-self: flex-end;
+  flex-wrap: wrap; flex-shrink: 0;
+  margin-top: 18px;
 }
+.page-header__main .page-header__actions { margin-top: 18px; }
+.page-header > .page-header__actions { align-self: end; margin-top: 0; }
+
 .page-header__meta {
   display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px;
 }
@@ -748,6 +770,76 @@ input, select, textarea { font-family: var(--font-body); }
 .page-header__pill strong {
   color: #ffd98e; font-size: 0.64rem;
   letter-spacing: 0.1em; text-transform: uppercase;
+}
+
+/* Right-side decorative status widget (matches dashboard) */
+.page-header__widget {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  padding: 16px 22px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 12px;
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  min-width: 200px;
+}
+.page-header__widget-status {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  color: #fff;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  display: flex; align-items: center; gap: 9px;
+  white-space: nowrap;
+}
+.page-header__widget-status::before {
+  content: '';
+  width: 8px; height: 8px;
+  background: #4ade80;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #4ade80;
+  animation: pageHeroDotPulse 2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+@keyframes pageHeroDotPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.6; transform: scale(1.2); }
+}
+.page-header__widget-kicker {
+  font-size: 0.76rem;
+  color: rgba(255,249,242,0.78);
+  font-weight: 500;
+  text-align: right;
+}
+.page-header__widget-meta {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+  padding-top: 8px;
+  margin-top: 4px;
+  border-top: 1px solid rgba(255,255,255,0.14);
+  width: 100%;
+  text-align: right;
+}
+
+/* Gold accent variant — hint of uniqueness for Lost & Found */
+.page-header[data-accent="gold"]::after {
+  background: radial-gradient(circle, rgba(199,154,73,0.34) 0%, transparent 60%);
+  width: 320px; height: 320px;
+  top: -50px; right: -50px;
+}
+.page-header[data-accent="gold"] .page-header__widget {
+  background: rgba(199,154,73,0.16);
+  border-color: rgba(199,154,73,0.32);
+}
+.page-header[data-accent="gold"] .page-header__widget-status::before {
+  background: var(--gold);
+  box-shadow: 0 0 10px var(--gold);
 }
 
 .page-header .btn-primary {
@@ -781,6 +873,20 @@ input, select, textarea { font-family: var(--font-body); }
   transition: background 160ms;
 }
 .page-header .btn-white-ghost:hover { background: rgba(255,255,255,0.2); }
+
+@media (max-width: 780px) {
+  .page-header {
+    grid-template-columns: 1fr;
+    padding: 22px 20px;
+    gap: 18px;
+  }
+  .page-header__widget {
+    align-items: flex-start;
+    width: 100%;
+  }
+  .page-header__widget-kicker,
+  .page-header__widget-meta { text-align: left; }
+}
 
 /* ══════════════════════════════════════════════════════════════
    BUTTONS

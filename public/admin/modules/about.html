@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/admin/admin-shell.css?v=20260424a">
+  <link rel="stylesheet" href="/admin/admin-shell.css?v=20260424b">
   <style>
     .about-tabs {
       display: flex;
@@ -283,16 +283,25 @@
 
   <main class="admin-main">
     <div class="page-header">
-      <div>
+      <div class="page-header__main">
         <div class="page-header__eyebrow">Content Management</div>
         <h1>Edit About Page</h1>
-        <p>Manage the exact portal introduction, institutional text, OSA summary, contact details, and file links shown on the public About page.</p>
+        <p>Manage the portal introduction, institutional text, OSA summary, contact details, and file links shown on the public About page.</p>
+        <div class="page-header__actions">
+          <button class="btn btn-primary" id="save-all-btn">
+            <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Save All Changes
+          </button>
+          <a class="btn btn-ghost" href="/about" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            Preview Live About
+          </a>
+        </div>
       </div>
-      <div class="page-header__actions">
-        <button class="btn btn-primary" id="save-all-btn">
-          <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-          Save All Changes
-        </button>
+      <div class="page-header__widget">
+        <div class="page-header__widget-status">4 Sections Active</div>
+        <div class="page-header__widget-kicker">Portal · Institutional · OSA · Contact</div>
+        <div class="page-header__widget-meta">About · OSA</div>
       </div>
     </div>
 
@@ -488,7 +497,7 @@
   </main>
 </div>
 
-<script src="/admin/admin-shell.js?v=20260424a"></script>
+<script src="/admin/admin-shell.js?v=20260424b"></script>
 <script>
   const DB = 'osaAboutContent';
   const DEFAULTS = {

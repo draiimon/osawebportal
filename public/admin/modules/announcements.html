@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/admin/admin-shell.css?v=20260424a">
+  <link rel="stylesheet" href="/admin/admin-shell.css?v=20260424b">
   <style>
     /* Mobile-friendly table actions */
     .action-cell { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -122,16 +122,21 @@
 
     <!-- Page Header -->
     <div class="page-header">
-      <div>
+      <div class="page-header__main">
         <div class="page-header__eyebrow">Content Management</div>
         <h1>Manage Announcements</h1>
-        <p>Create, edit, and publish official OSA announcements and advisories.</p>
+        <p>Create, edit, and publish official OSA announcements and advisories visible across the live student portal.</p>
+        <div class="page-header__actions">
+          <button class="btn btn-primary" data-modal-open="ann-modal">
+            <svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+            New Announcement
+          </button>
+        </div>
       </div>
-      <div class="page-header__actions">
-        <button class="btn btn-primary" data-modal-open="ann-modal">
-          <svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-          New Announcement
-        </button>
+      <div class="page-header__widget">
+        <div class="page-header__widget-status"><span id="hero-stat-pub">0</span> Published</div>
+        <div class="page-header__widget-kicker">Visible to students right now</div>
+        <div class="page-header__widget-meta">Announcements · OSA</div>
       </div>
     </div>
 
@@ -246,7 +251,7 @@
   </div>
 </div>
 
-<script src="/admin/admin-shell.js?v=20260424a"></script>
+<script src="/admin/admin-shell.js?v=20260424b"></script>
 <script>
   let editId = null;
   let announcementState = [];
@@ -289,9 +294,12 @@
     if (stF)    items = items.filter(a => a.status === stF);
 
     const all = getData();
+    const pubCount = all.filter(a => a.status === 'Published').length;
     document.getElementById('s-total').textContent = all.length;
-    document.getElementById('s-pub').textContent   = all.filter(a => a.status === 'Published').length;
+    document.getElementById('s-pub').textContent   = pubCount;
     document.getElementById('s-draft').textContent = all.filter(a => a.status === 'Draft').length;
+    const heroPub = document.getElementById('hero-stat-pub');
+    if (heroPub) heroPub.textContent = pubCount;
     document.getElementById('ann-count').textContent = `${items.length} result${items.length !== 1 ? 's' : ''}`;
 
     // Table

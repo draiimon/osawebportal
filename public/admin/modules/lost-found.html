@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/admin/admin-shell.css?v=20260424a">
+  <link rel="stylesheet" href="/admin/admin-shell.css?v=20260424b">
   <style>
     #lf-modal-title {
       font-family: var(--font-body);
@@ -169,17 +169,22 @@
   <!-- MAIN -->
   <main class="admin-main">
 
-    <div class="page-header">
-      <div>
-        <div class="page-header__eyebrow">Content Management</div>
+    <div class="page-header" data-accent="gold">
+      <div class="page-header__main">
+        <div class="page-header__eyebrow">Campus Recovery</div>
         <h1>Lost &amp; Found Registry</h1>
-        <p>Log, update, and manage all lost and found items on campus.</p>
+        <p>Log, update, and reunite recovered items with their owners — every entry is searchable from the live student portal.</p>
+        <div class="page-header__actions">
+          <button class="btn btn-primary" data-modal-open="lf-modal">
+            <svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+            Add Item
+          </button>
+        </div>
       </div>
-      <div class="page-header__actions">
-        <button class="btn btn-primary" data-modal-open="lf-modal">
-          <svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-          Add Item
-        </button>
+      <div class="page-header__widget">
+        <div class="page-header__widget-status"><span id="hero-stat-unclaimed">0</span> Awaiting Pickup</div>
+        <div class="page-header__widget-kicker">Items still to be reunited</div>
+        <div class="page-header__widget-meta">Lost &amp; Found · OSA</div>
       </div>
     </div>
 
@@ -314,7 +319,7 @@
   </div>
 </div>
 
-<script src="/admin/admin-shell.js?v=20260424a"></script>
+<script src="/admin/admin-shell.js?v=20260424b"></script>
 <script>
   let editId = null;
   let currentView = 'grid';
@@ -393,10 +398,13 @@
 
     const all = getData();
     refreshCategoryFilters();
+    const unclaimedCount = all.filter(i => i.status === 'Unclaimed').length;
     document.getElementById('s-total').textContent    = all.length;
-    document.getElementById('s-unclaimed').textContent = all.filter(i => i.status === 'Unclaimed').length;
+    document.getElementById('s-unclaimed').textContent = unclaimedCount;
     document.getElementById('s-claimed').textContent   = all.filter(i => i.status === 'Claimed').length;
     document.getElementById('s-cats').textContent      = [...new Set(all.map(i => i.category).filter(Boolean))].length;
+    const heroUnclaimed = document.getElementById('hero-stat-unclaimed');
+    if (heroUnclaimed) heroUnclaimed.textContent = unclaimedCount;
     if (document.getElementById('lf-count')) document.getElementById('lf-count').textContent = `${items.length} items`;
 
     renderGrid(items);

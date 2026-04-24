@@ -69,3 +69,35 @@ JS hooks (IDs and class names like `.ticket-item`, `.cmsg`, `.convo-topbar`,
 `.btn-resolve`, `.btn-send-staff`, etc.) are unchanged — only visual styles,
 spacing, touch targets, and breakpoints were updated. Modal becomes a
 bottom-sheet on phones (≤ 560px), composer respects `env(safe-area-inset-bottom)`.
+
+## Shared Admin Page Hero (`.page-header`)
+Every admin module page (except chat-support, which is full-bleed) renders the
+same hero board defined in `public/admin/admin-shell.css`: maroon 4-stop
+diagonal gradient, EAC photo backdrop at low opacity, gold radial top-right
+glow, `pageHeroIn` slide-in animation, and a serif h1 — visually matching the
+dashboard `.welcome-banner`. Markup contract:
+```
+<div class="page-header" [data-accent="gold"]>
+  <div class="page-header__main">eyebrow + h1 + p + .page-header__actions</div>
+  <div class="page-header__widget">status + kicker + meta</div>
+</div>
+```
+Lost & Found uses `data-accent="gold"` for an extra-large gold radial and a
+gold-tinted widget — its "hint of uniqueness" relative to Announcements while
+keeping the same brand theme. Hero widget stat IDs (`hero-stat-pub`,
+`hero-stat-unclaimed`, `hero-stat-chunks`, `hero-stat-msgs`) are populated by
+each page's existing data load to give per-page live status.
+
+## Chat Logs deletion (`/admin/modules/chat-logs`)
+Both data sources are deletable from the UI and via REST. Backend
+(`server/admin/chatLogRoutes.js`):
+- `DELETE /api/v1/admin/chat/logs?id=<n>` — single OTP message row
+- `DELETE /api/v1/admin/chat/logs?session_id=<uuid>` — every message in a session
+- `DELETE /api/v1/admin/chat/logs/guest?id=<n>` — single guest memory row
+- `DELETE /api/v1/admin/chat/logs/guest?conversation_id=<id>` — whole guest conversation
+
+Auth uses the same `requireAdminAuth` (`x-admin-key: ADMIN_KEY` or admin JWT)
+as the GET endpoints. The page UI adds: a per-row trash button, a
+"Delete this session/conversation" bulk button (enabled only when the Session/
+Conversation ID filter is filled), and a "Delete shown rows" iterator. Cache
+bust is pinned at `?v=20260424b` for `admin-shell.css` and `admin-shell.js`.

@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/admin/admin-shell.css?v=20260424a">
+  <link rel="stylesheet" href="/admin/admin-shell.css?v=20260424b">
   <style>
     .rag-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
     .rag-row {
@@ -144,24 +144,29 @@
   <main class="admin-main">
 
     <div class="page-header">
-      <div>
+      <div class="page-header__main">
         <div class="page-header__eyebrow">Chatbot Knowledge Base</div>
         <h1>RAG Manager — EAC Student Manual</h1>
-        <p>Manage the 35 knowledge chunks that power the chatbot's Tier 2 answers. Edit content, keywords, or active status — embeddings regenerate automatically on save.</p>
+        <p>Manage the knowledge chunks that power the chatbot's Tier 2 answers. Edit content, keywords, or active status — embeddings regenerate automatically on save.</p>
+        <div class="page-header__actions">
+          <button class="btn btn-ghost" id="btn-toggle-search">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Test Search
+          </button>
+          <button class="btn btn-ghost" id="btn-reembed-all" title="Regenerate embeddings for all active chunks">
+            <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/><path d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14"/></svg>
+            Re-embed All
+          </button>
+          <button class="btn btn-primary" id="btn-new-chunk">
+            <svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+            New Chunk
+          </button>
+        </div>
       </div>
-      <div class="page-header__actions">
-        <button class="btn btn-ghost" id="btn-toggle-search">
-          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          Test Search
-        </button>
-        <button class="btn btn-ghost" id="btn-reembed-all" title="Regenerate embeddings for all active chunks">
-          <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/><path d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14"/></svg>
-          Re-embed All
-        </button>
-        <button class="btn btn-primary" id="btn-new-chunk">
-          <svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-          New Chunk
-        </button>
+      <div class="page-header__widget">
+        <div class="page-header__widget-status"><span id="hero-stat-chunks">0</span> Chunks Indexed</div>
+        <div class="page-header__widget-kicker">Powering Tier 2 chatbot retrieval</div>
+        <div class="page-header__widget-meta">RAG · Gemini 768-d</div>
       </div>
     </div>
 
@@ -271,7 +276,7 @@
   </div>
 </div>
 
-<script src="/admin/admin-shell.js?v=20260424a"></script>
+<script src="/admin/admin-shell.js?v=20260424b"></script>
 <script>
   let chunks = [];
   let editingId = null;
@@ -288,9 +293,12 @@
   }
 
   function updateStats(totals) {
-    document.getElementById('s-total').textContent = totals.total ?? chunks.length;
+    const totalCount = totals.total ?? chunks.length;
+    document.getElementById('s-total').textContent = totalCount;
     document.getElementById('s-active').textContent = totals.active ?? chunks.filter(c => c.isActive).length;
     document.getElementById('s-embedded').textContent = totals.embedded ?? chunks.filter(c => c.hasEmbedding).length;
+    const heroChunks = document.getElementById('hero-stat-chunks');
+    if (heroChunks) heroChunks.textContent = totalCount;
   }
 
   function escapeHtml(s) {

@@ -9,7 +9,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/admin/admin-shell.css?v=20260424a">
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/admin/admin-shell.css?v=20260424b">
   <style>
     .chatlog-filters { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; margin-bottom: 16px; }
     .chatlog-filters label { display: flex; flex-direction: column; gap: 4px; font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
@@ -37,6 +38,31 @@
       padding: 12px; border: 1px solid var(--line); background: #1c1917; color: #e7e5e4;
     }
     .chatlog-hint { font-size: 0.78rem; color: var(--muted); margin-top: 8px; line-height: 1.5; }
+    .chatlog-bulk { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 8px 0 12px; }
+    .chatlog-bulk__count { font-size: 0.78rem; color: var(--muted); margin-left: auto; }
+    .btn-danger {
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      min-height: 36px; padding: 0 14px;
+      background: #fff; color: #b91c1c;
+      border: 1px solid rgba(185,28,28,0.35);
+      border-radius: 8px;
+      font-size: 0.78rem; font-weight: 700;
+      cursor: pointer; transition: background 140ms, color 140ms, border-color 140ms;
+    }
+    .btn-danger:hover { background: #b91c1c; color: #fff; border-color: #b91c1c; }
+    .btn-danger:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-danger svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+    .row-del-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 28px; height: 28px;
+      background: transparent; color: #b91c1c;
+      border: 1px solid rgba(185,28,28,0.25);
+      border-radius: 6px; cursor: pointer;
+      transition: background 140ms, color 140ms;
+    }
+    .row-del-btn:hover { background: #b91c1c; color: #fff; }
+    .row-del-btn svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+    .chatlog-table th.col-actions, .chatlog-table td.col-actions { width: 56px; text-align: center; }
   </style>
 </head>
 <body>
@@ -115,19 +141,23 @@
 
   <main class="admin-main">
     <div class="page-header">
-      <div>
+      <div class="page-header__main">
         <div class="page-header__eyebrow">Testing &amp; QA</div>
         <h1>Student chat logs</h1>
         <p>
-          <strong>OTP verified</strong> chats use <code>/chat/session</code> → stored in <code>chat_messages</code> (what you mostly see).
-          Users who chat <strong>without OTP</strong> (widget offline path) use <code>/chatbot/message</code> → turns go to <code>chatbot_conversation_memory</code>.
-          Pick the correct <strong>Source</strong> below.
-          CLI: <code>npm run chat:log</code> — only exports OTP sessions; guest table is API <code>/admin/chat/logs/guest</code>.
+          <strong>OTP verified</strong> chats use <code>/chat/session</code> → stored in <code>chat_messages</code>.
+          Users without OTP (widget offline path) hit <code>/chatbot/message</code> → <code>chatbot_conversation_memory</code>.
+          Pick the correct <strong>Source</strong> below. Rows are deletable individually or by session.
         </p>
+        <div class="page-header__actions">
+          <button type="button" class="btn btn-ghost" id="btn-toggle-json">Raw JSON</button>
+          <button type="button" class="btn btn-primary" id="btn-refresh">Refresh</button>
+        </div>
       </div>
-      <div class="page-header__actions">
-        <button type="button" class="btn btn-ghost" id="btn-toggle-json">Raw JSON</button>
-        <button type="button" class="btn btn-primary" id="btn-refresh">Refresh</button>
+      <div class="page-header__widget">
+        <div class="page-header__widget-status"><span id="hero-stat-msgs">0</span> Messages Loaded</div>
+        <div class="page-header__widget-kicker" id="hero-stat-kicker">Switch source to inspect either store</div>
+        <div class="page-header__widget-meta">Chat Logs · OSA</div>
       </div>
     </div>
 
@@ -156,6 +186,17 @@
         <button type="button" class="btn btn-primary" id="btn-apply">Apply</button>
       </div>
       <p class="chatlog-hint" id="status-line">Loading…</p>
+      <div class="chatlog-bulk">
+        <button type="button" class="btn-danger" id="btn-delete-id" disabled title="Delete every row that matches the Session ID / Conversation ID above">
+          <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg>
+          <span id="btn-delete-id-label">Delete this session</span>
+        </button>
+        <button type="button" class="btn-danger" id="btn-delete-shown" disabled title="Delete every individual row currently shown in the table">
+          <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>
+          Delete shown rows
+        </button>
+        <span class="chatlog-bulk__count" id="row-count-line"></span>
+      </div>
       <div class="chatlog-table-wrap">
         <table class="chatlog-table" id="log-table">
           <thead id="log-thead"></thead>
@@ -169,7 +210,7 @@
   </main>
 </div>
 
-<script src="/admin/admin-shell.js?v=20260424a"></script>
+<script src="/admin/admin-shell.js?v=20260424b"></script>
 <script>
 (function () {
   'use strict';
@@ -206,6 +247,7 @@
   }
 
   var lastPayload = null;
+  var lastRows = [];
 
   function esc(s) {
     var d = document.createElement('div');
@@ -213,13 +255,28 @@
     return d.innerHTML;
   }
 
+  var TRASH_SVG =
+    '<svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/>' +
+    '<path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/>' +
+    '<path d="M10 11v6"/><path d="M14 11v6"/>' +
+    '<path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg>';
+
+  function rowDelButton(id) {
+    return (
+      '<button type="button" class="row-del-btn" data-del-id="' + esc(id) +
+      '" title="Delete this single message" aria-label="Delete row">' +
+      TRASH_SVG +
+      '</button>'
+    );
+  }
+
   function renderOtp(rows) {
     document.getElementById('log-thead').innerHTML =
-      '<tr><th>Time (server)</th><th>Role</th><th>Student</th><th>Message</th><th>Session</th></tr>';
+      '<tr><th>Time (server)</th><th>Role</th><th>Student</th><th>Message</th><th>Session</th><th class="col-actions">Del</th></tr>';
     var tb = document.getElementById('log-body');
     tb.innerHTML = '';
     if (!rows || !rows.length) {
-      tb.innerHTML = '<tr><td colspan="5" style="padding:20px;color:var(--muted)">No rows.</td></tr>';
+      tb.innerHTML = '<tr><td colspan="6" style="padding:20px;color:var(--muted)">No rows.</td></tr>';
       return;
     }
     rows.forEach(function (m) {
@@ -232,18 +289,19 @@
         '<td><span class="chatlog-role ' + roleClass + '">' + esc(m.role) + '</span></td>' +
         '<td class="chatlog-meta">' + esc((m.studentName || '').slice(0, 40)) + '<br>' + esc((m.studentEmail || '').slice(0, 42)) + '</td>' +
         '<td class="chatlog-text">' + esc(m.content) + '</td>' +
-        '<td class="chatlog-meta">' + esc(sid) + '</td>';
+        '<td class="chatlog-meta">' + esc(sid) + '</td>' +
+        '<td class="col-actions">' + rowDelButton(m.id) + '</td>';
       tb.appendChild(tr);
     });
   }
 
   function renderGuest(rows) {
     document.getElementById('log-thead').innerHTML =
-      '<tr><th>Time (server)</th><th>Role</th><th>Conversation ID</th><th>Message</th></tr>';
+      '<tr><th>Time (server)</th><th>Role</th><th>Conversation ID</th><th>Message</th><th class="col-actions">Del</th></tr>';
     var tb = document.getElementById('log-body');
     tb.innerHTML = '';
     if (!rows || !rows.length) {
-      tb.innerHTML = '<tr><td colspan="4" style="padding:20px;color:var(--muted)">No rows.</td></tr>';
+      tb.innerHTML = '<tr><td colspan="5" style="padding:20px;color:var(--muted)">No rows.</td></tr>';
       return;
     }
     rows.forEach(function (m) {
@@ -254,7 +312,8 @@
         '<td class="chatlog-meta">' + esc(t) + '</td>' +
         '<td><span class="chatlog-role ' + rc + '">' + esc(m.role) + '</span></td>' +
         '<td class="chatlog-meta">' + esc(String(m.conversationId || '').slice(0, 56)) + '</td>' +
-        '<td class="chatlog-text">' + esc(m.content) + '</td>';
+        '<td class="chatlog-text">' + esc(m.content) + '</td>' +
+        '<td class="col-actions">' + rowDelButton(m.id) + '</td>';
       tb.appendChild(tr);
     });
   }
@@ -263,6 +322,34 @@
     var guest = document.getElementById('f-source').value === 'guest';
     document.getElementById('f-id-label').textContent = guest ? 'Conversation ID' : 'Session ID (UUID)';
     document.getElementById('f-role-system').disabled = !guest;
+    document.getElementById('btn-delete-id-label').textContent = guest
+      ? 'Delete this conversation'
+      : 'Delete this session';
+  }
+
+  function refreshBulkButtons() {
+    var guest = document.getElementById('f-source').value === 'guest';
+    var filterId = String(document.getElementById('f-session').value || '').trim();
+    var rowCount = lastRows.length;
+    var btnId = document.getElementById('btn-delete-id');
+    var btnShown = document.getElementById('btn-delete-shown');
+    btnId.disabled = !filterId;
+    btnId.title = filterId
+      ? (guest ? 'Delete every row for conversation_id=' + filterId : 'Delete every row for session_id=' + filterId)
+      : (guest ? 'Type a Conversation ID above first' : 'Type a Session ID above first');
+    btnShown.disabled = rowCount === 0;
+    var heroMsgs = document.getElementById('hero-stat-msgs');
+    if (heroMsgs) heroMsgs.textContent = rowCount;
+    var heroKicker = document.getElementById('hero-stat-kicker');
+    if (heroKicker) {
+      heroKicker.textContent = guest
+        ? 'Source: chatbot_conversation_memory (guest)'
+        : 'Source: chat_messages (OTP verified)';
+    }
+    var rowLine = document.getElementById('row-count-line');
+    if (rowLine) {
+      rowLine.textContent = rowCount + ' row' + (rowCount === 1 ? '' : 's') + ' shown';
+    }
   }
 
   async function loadLogs() {
@@ -302,7 +389,9 @@
         document.getElementById('log-thead').innerHTML = '';
         document.getElementById('log-body').innerHTML = '';
         lastPayload = null;
+        lastRows = [];
         document.getElementById('json-out').value = raw.slice(0, 4000);
+        refreshBulkButtons();
         return;
       }
       if (!r.ok || !j.success) {
@@ -310,19 +399,93 @@
         document.getElementById('log-thead').innerHTML = '';
         document.getElementById('log-body').innerHTML = '';
         lastPayload = null;
+        lastRows = [];
         document.getElementById('json-out').value = '';
+        refreshBulkButtons();
         return;
       }
       lastPayload = j;
+      lastRows = Array.isArray(j.messages) ? j.messages : [];
       document.getElementById('json-out').value = JSON.stringify(j, null, 2);
       var note = j.note ? (' ' + j.note) : '';
       status.textContent = 'Showing ' + j.count + ' message(s) (limit ' + j.limit + ').' + note;
-      if (guest) renderGuest(j.messages || []);
-      else renderOtp(j.messages || []);
+      if (guest) renderGuest(lastRows);
+      else renderOtp(lastRows);
+      refreshBulkButtons();
     } catch (e) {
       status.textContent = 'Network error: ' + (e && e.message);
       document.getElementById('log-body').innerHTML = '';
+      lastRows = [];
+      refreshBulkButtons();
     }
+  }
+
+  async function deleteRequest(query) {
+    var guest = document.getElementById('f-source').value === 'guest';
+    var url = (guest
+      ? API + '/admin/chat/logs/guest'
+      : API + '/admin/chat/logs') + '?' + query;
+    var r = await fetch(url, {
+      method: 'DELETE',
+      headers: { 'x-admin-key': adminKey() },
+      cache: 'no-store'
+    });
+    var raw = await r.text();
+    var j = {};
+    try { j = raw ? JSON.parse(raw) : {}; } catch (_e) {}
+    if (!r.ok || j.success !== true) {
+      throw new Error(j.message || ('HTTP ' + r.status));
+    }
+    return j;
+  }
+
+  async function deleteOne(id) {
+    if (!id) return;
+    if (!window.confirm('Delete this message permanently?')) return;
+    try {
+      var res = await deleteRequest('id=' + encodeURIComponent(id));
+      var status = document.getElementById('status-line');
+      status.textContent = 'Deleted ' + (res.deleted || 0) + ' row. Refreshing…';
+      await loadLogs();
+    } catch (err) {
+      window.alert('Delete failed: ' + (err && err.message));
+    }
+  }
+
+  async function deleteByFilterId() {
+    var guest = document.getElementById('f-source').value === 'guest';
+    var filterId = String(document.getElementById('f-session').value || '').trim();
+    if (!filterId) return;
+    var label = guest ? 'conversation' : 'session';
+    if (!window.confirm('Delete EVERY message for this ' + label + '?\n\n' + filterId + '\n\nThis cannot be undone.')) return;
+    try {
+      var key = guest ? 'conversation_id' : 'session_id';
+      var res = await deleteRequest(key + '=' + encodeURIComponent(filterId));
+      var status = document.getElementById('status-line');
+      status.textContent = 'Deleted ' + (res.deleted || 0) + ' row(s) for that ' + label + '. Refreshing…';
+      await loadLogs();
+    } catch (err) {
+      window.alert('Delete failed: ' + (err && err.message));
+    }
+  }
+
+  async function deleteAllShown() {
+    if (!lastRows.length) return;
+    if (!window.confirm('Delete ALL ' + lastRows.length + ' rows currently shown?\n\nThis cannot be undone.')) return;
+    var status = document.getElementById('status-line');
+    var ok = 0;
+    var fail = 0;
+    for (var i = 0; i < lastRows.length; i++) {
+      try {
+        var res = await deleteRequest('id=' + encodeURIComponent(lastRows[i].id));
+        ok += res.deleted || 0;
+      } catch (_e) {
+        fail += 1;
+      }
+      status.textContent = 'Deleting… ' + (i + 1) + ' / ' + lastRows.length;
+    }
+    status.textContent = 'Deleted ' + ok + ' row(s)' + (fail ? ' (' + fail + ' failed)' : '') + '. Refreshing…';
+    await loadLogs();
   }
 
   document.getElementById('f-source').addEventListener('change', function () {
@@ -330,10 +493,18 @@
     if (this.value !== 'guest' && sel.value === 'system') sel.value = '';
     loadLogs();
   });
+  document.getElementById('f-session').addEventListener('input', refreshBulkButtons);
   document.getElementById('btn-refresh').addEventListener('click', loadLogs);
   document.getElementById('btn-apply').addEventListener('click', loadLogs);
   document.getElementById('btn-toggle-json').addEventListener('click', function () {
     document.getElementById('json-panel').classList.toggle('open');
+  });
+  document.getElementById('btn-delete-id').addEventListener('click', deleteByFilterId);
+  document.getElementById('btn-delete-shown').addEventListener('click', deleteAllShown);
+  document.getElementById('log-body').addEventListener('click', function (ev) {
+    var btn = ev.target.closest && ev.target.closest('[data-del-id]');
+    if (!btn) return;
+    deleteOne(btn.getAttribute('data-del-id'));
   });
 
   loadLogs();
