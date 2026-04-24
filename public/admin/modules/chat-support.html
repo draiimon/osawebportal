@@ -383,9 +383,16 @@
     .btn-resolve:hover { background: #15803d; }
     .btn-resolve:disabled { opacity: 0.5; cursor: not-allowed; }
 
+    /* Short / full labels for action buttons. Full label on wide screens,
+       compact label on tablets/phones to avoid wrap and overflow. */
+    .btn-resolve .btn-label-short { display: none; }
+    .btn-resolve .btn-label-full { display: inline; }
+
     @media (max-width: 1100px) {
       .convo-topbar { align-items: flex-start; }
       .convo-topbar__actions { max-width: 320px; }
+      .btn-resolve .btn-label-full { display: none; }
+      .btn-resolve .btn-label-short { display: inline; }
     }
 
     @media (max-width: 900px) {
@@ -400,12 +407,14 @@
       .convo-topbar__actions {
         width: 100%;
         max-width: none;
-        justify-content: flex-start;
+        justify-content: stretch;
+        gap: 6px;
       }
       .convo-topbar__actions .btn-resolve {
-        flex: 1 1 140px;
-        padding: 8px 10px;
-        font-size: 11px;
+        flex: 1 1 0;
+        min-width: 0;
+        padding: 9px 8px;
+        font-size: 12px;
       }
       #session-limit-panel {
         gap: 6px !important;
@@ -425,12 +434,32 @@
     }
 
     @media (max-width: 560px) {
+      .convo-topbar {
+        padding: 8px 10px;
+        gap: 6px;
+      }
+      .convo-topbar__avatar {
+        width: 32px;
+        height: 32px;
+        font-size: 12px;
+      }
+      .convo-topbar__name {
+        font-size: 13px;
+      }
       .convo-topbar__sub {
         gap: 4px;
         font-size: 10.5px;
       }
+      /* On very small phones the topbar info wraps under the avatar; keep
+         actions on their own row, evenly distributed, no full-width stack. */
+      .convo-topbar__actions {
+        gap: 5px;
+      }
       .convo-topbar__actions .btn-resolve {
-        flex: 1 1 100%;
+        flex: 1 1 0;
+        padding: 9px 6px;
+        font-size: 11.5px;
+        letter-spacing: 0;
       }
       #session-limit-panel > strong {
         width: 100%;
@@ -924,10 +953,13 @@
             </div>
           </div>
           <div class="convo-topbar__actions">
-            <button type="button" class="btn-resolve" id="btn-approve-appt" style="background:#0f766e">Approve Appointment</button>
-            <button type="button" class="btn-resolve" id="btn-end-session" style="background:#9f1239">End Session</button>
-            <button type="button" class="btn-resolve" id="btn-resolve-ticket">Resolve Ticket</button>
-            <button type="button" class="btn-resolve hidden" id="btn-delete-ticket" style="background:#7f1d1d">Delete Ticket</button>
+            <button type="button" class="btn-resolve btn-approve-appt" id="btn-approve-appt" style="background:#0f766e"><span class="btn-label-full">Approve Appointment</span><span class="btn-label-short">Approve</span></button>
+            <!-- "End Session" removed from the UI: it duplicated "Resolve Ticket"
+                 (both close the live chat) and confused staff. The Resolve flow
+                 already ends the session when the staff submits the resolution. -->
+            <button type="button" class="btn-resolve hidden" id="btn-end-session" style="background:#9f1239" hidden>End Session</button>
+            <button type="button" class="btn-resolve" id="btn-resolve-ticket"><span class="btn-label-full">Resolve Ticket</span><span class="btn-label-short">Resolve</span></button>
+            <button type="button" class="btn-resolve hidden" id="btn-delete-ticket" style="background:#7f1d1d"><span class="btn-label-full">Delete Ticket</span><span class="btn-label-short">Delete</span></button>
           </div>
         </div>
         <div id="session-limit-panel" class="hidden" style="padding:10px 14px;border-bottom:1px solid var(--line);background:#fffbeb;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
@@ -1465,9 +1497,10 @@
       var lfBadge = (t.ticket_type === 'claim')
         ? '<span style="font-size:10px;font-weight:800;background:#fde68a;color:#78350f;padding:2px 7px;border-radius:99px;margin-left:6px;letter-spacing:0.04em">LF CLAIM</span>'
         : '';
-      var approvedBadge = (String(t.appointment_status || '').toLowerCase() === 'approved')
-        ? '<span style="font-size:10px;font-weight:800;background:#dcfce7;color:#166534;padding:2px 7px;border-radius:99px;margin-left:6px;letter-spacing:0.04em">APPROVED</span>'
-        : '';
+      // Note: when an appointment is approved we surface that through the
+      // status badge below (statusBadgeLabel + .approved class). The previous
+      // version also rendered a separate APPROVED pill here, which made the
+      // card show "Approved" twice. Kept to a single badge for clarity.
       var statusClass = (String(t.appointment_status || '').toLowerCase() === 'approved') ? 'approved' : (t.status || 'open');
       var endPrompt = t.needs_end_session_prompt
         ? '<div class="ticket-item__time" style="margin-top:6px;color:#b45309;font-weight:700">Idle live chat. Type <code>/end session</code> to close.</div>'
@@ -1475,7 +1508,7 @@
 
       item.innerHTML =
         '<div class="ticket-item__head">' +
-          '<div class="ticket-item__name">' + activeDot + escapeHtml(t.student_name) + lfBadge + approvedBadge + '</div>' +
+          '<div class="ticket-item__name">' + activeDot + escapeHtml(t.student_name) + lfBadge + '</div>' +
           '<span class="ticket-status-badge ' + statusClass + '">' + statusBadgeLabel(t) + '</span>' +
         '</div>' +
         '<div class="ticket-item__case">' + escapeHtml(t.case_id) + '</div>' +
