@@ -1,6 +1,6 @@
 const { Pool } = require("pg");
 
-const connectionString = process.env.DATABASE_URL || "";
+const connectionString = process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL || "";
 const sslEnabled = String(process.env.DB_SSL || "").toLowerCase() === "true";
 
 const pool = connectionString
