@@ -1137,9 +1137,34 @@
     restoredLastCaseAttempted: false,
     restoreProbeInFlight: false,
     lastStudentSeenAtMs: 0,
+    // Render bookkeeping for differential updates (avoids destructive innerHTML wipes
+    // that made the UI appear to "auto-refresh by itself").
+    renderedTicketsByCase: Object.create(null),
+    renderedTicketsOrder: [],
+    renderedMessagesSessionId: '',
+    renderedMessagesCount: 0,
+    renderedConcernText: '',
+    // Coalesce SSE-driven loadMessages calls — bursts of events used to trigger
+    // overlapping fetches and rapid re-renders.
+    loadMessagesDebounceTimer: null,
+    cosmeticTimer: null,
+    safetyNetTimer: null,
   };
   var adminTicketStream = null;
   var adminStreamReconnectTimer = null;
+
+  /* ── Scroll preservation helpers ───────────────────────────────
+   * Auto-scroll to bottom only if the staff was already near the bottom.
+   * If they scrolled up to read older messages, keep their position. */
+  function isNearBottom(el, slack) {
+    if (!el) return true;
+    var s = (typeof slack === 'number') ? slack : 60;
+    return (el.scrollHeight - el.scrollTop - el.clientHeight) <= s;
+  }
+  function scrollThreadToBottom() {
+    if (!convoThread) return;
+    convoThread.scrollTop = convoThread.scrollHeight;
+  }
 
   /* ── DOM refs ── */
   var ticketList     = document.getElementById('ticket-list');
@@ -1366,7 +1391,10 @@
     var searchSnapshot = String(state.currentSearch || '');
     state.ticketsLoadSeq += 1;
     var reqSeq = state.ticketsLoadSeq;
-    if (!options.quiet) ticketList.innerHTML = '<div class="empty-tickets">Loading…</div>';
+    if (!options.quiet) {
+      invalidateTicketCache();
+      ticketList.innerHTML = '<div class="empty-tickets">Loading…</div>';
+    }
     var url = API + '/chat/tickets?status=' + encodeURIComponent(statusSnapshot);
     if (searchSnapshot) {
       url += '&q=' + encodeURIComponent(searchSnapshot);
@@ -1380,10 +1408,12 @@
           return;
         }
         if (data && data.success === false && /unauthorized/i.test(String(data.message || ''))) {
+          invalidateTicketCache();
           ticketList.innerHTML = '<div class="empty-tickets">Admin session expired. Please sign in again.</div>';
           return;
         }
         if (!data.success || !data.tickets.length) {
+          invalidateTicketCache();
           ticketList.innerHTML = '<div class="empty-tickets">No ' + state.currentStatus.replace('_', ' ') + ' tickets.</div>';
           openCount.textContent = '0';
           if (!state.currentCaseId) probeAndRestoreLastCaseAcrossTabs();
@@ -1407,6 +1437,7 @@
         }
       })
       .catch(function () {
+        invalidateTicketCache();
         ticketList.innerHTML = '<div class="empty-tickets">Failed to load tickets.</div>';
       });
   }
@@ -1467,7 +1498,8 @@
       var shouldRefreshList = (!state.currentCaseId || sameCaseAsFocused) && !skipListRefreshForFocusedInProgress;
       if (shouldRefreshList) loadTickets({ quiet: true });
       if (state.currentSessionId && (!payload.case_id || payload.case_id === state.currentCaseId)) {
-        loadMessages(state.currentSessionId, state.currentConcern);
+        // Debounced — coalesces a burst of SSE events into one fetch + diff
+        loadMessagesSoon();
       }
     };
 
@@ -1479,49 +1511,138 @@
     };
   }
 
-  function renderTickets(tickets) {
-    ticketList.innerHTML = '';
-    tickets.forEach(function (t) {
-      var item = document.createElement('div');
-      item.className = 'ticket-item' + (t.case_id === state.currentCaseId ? ' selected' : '');
-      item.dataset.caseId = t.case_id;
-      item.dataset.sessionId = t.session_id;
-      item.dataset.studentName = t.student_name;
-      item.dataset.studentEmail = t.student_email;
-      item.dataset.concern = t.concern;
-      item.dataset.status = t.status;
+  /* ── Differential ticket render ──────────────────────────────────
+   * Previously: ticketList.innerHTML = '' on every refresh, then re-create
+   * every card. That caused visible flicker every 2-3 seconds (the bug the
+   * staff noticed as "the UI keeps refreshing itself"), and dropped any
+   * hover/focus state on the cards.
+   *
+   * Now: keep a map of caseId → DOM node. On each refresh we (a) remove cards
+   * whose tickets have disappeared, (b) update only the cards whose data hash
+   * changed, (c) reorder the list to match the server, (d) append new cards.
+   * Untouched cards keep their identity, so no flicker, no scroll jump. */
+  // Invalidate the differential ticket cache whenever something replaces
+  // ticketList contents wholesale (loading state, empty state, errors).
+  function invalidateTicketCache() {
+    state.renderedTicketsByCase = Object.create(null);
+    state.renderedTicketsOrder = [];
+  }
 
-      var activeDot = t.is_student_active
-        ? '<span class="active-dot" title="Student is online"></span>'
-        : '';
-      var lfBadge = (t.ticket_type === 'claim')
-        ? '<span style="font-size:10px;font-weight:800;background:#fde68a;color:#78350f;padding:2px 7px;border-radius:99px;margin-left:6px;letter-spacing:0.04em">LF CLAIM</span>'
-        : '';
-      // Note: when an appointment is approved we surface that through the
-      // status badge below (statusBadgeLabel + .approved class). The previous
-      // version also rendered a separate APPROVED pill here, which made the
-      // card show "Approved" twice. Kept to a single badge for clarity.
-      var statusClass = (String(t.appointment_status || '').toLowerCase() === 'approved') ? 'approved' : (t.status || 'open');
-      var endPrompt = t.needs_end_session_prompt
-        ? '<div class="ticket-item__time" style="margin-top:6px;color:#b45309;font-weight:700">Idle live chat. Type <code>/end session</code> to close.</div>'
-        : '';
-
-      item.innerHTML =
-        '<div class="ticket-item__head">' +
-          '<div class="ticket-item__name">' + activeDot + escapeHtml(t.student_name) + lfBadge + '</div>' +
-          '<span class="ticket-status-badge ' + statusClass + '">' + statusBadgeLabel(t) + '</span>' +
-        '</div>' +
-        '<div class="ticket-item__case">' + escapeHtml(t.case_id) + '</div>' +
-        '<div class="ticket-item__concern">' + escapeHtml(t.concern) + '</div>' +
-        '<div class="ticket-item__time" style="margin-top:5px">' + fmtDate(t.created_at) + '</div>' +
-        endPrompt;
-
-      item.addEventListener('click', function () {
-        selectTicket(t);
-      });
-
-      ticketList.appendChild(item);
+  function buildTicketCard(t) {
+    var item = document.createElement('div');
+    item.className = 'ticket-item' + (t.case_id === state.currentCaseId ? ' selected' : '');
+    item.dataset.caseId = t.case_id;
+    item.dataset.sessionId = t.session_id;
+    item.dataset.studentName = t.student_name;
+    item.dataset.studentEmail = t.student_email;
+    item.dataset.concern = t.concern;
+    item.dataset.status = t.status;
+    item.addEventListener('click', function () {
+      selectTicket(t);
     });
+    return item;
+  }
+
+  function ticketRenderKey(t) {
+    return [
+      t.case_id,
+      t.status || '',
+      t.appointment_status || '',
+      t.is_student_active ? 1 : 0,
+      t.needs_end_session_prompt ? 1 : 0,
+      t.ticket_type || '',
+      String(t.concern || '').slice(0, 80),
+      t.student_name || '',
+      t.created_at || '',
+      (t.case_id === state.currentCaseId) ? 1 : 0,
+    ].join('|');
+  }
+
+  function paintTicketCard(item, t) {
+    item.className = 'ticket-item' + (t.case_id === state.currentCaseId ? ' selected' : '');
+    item.dataset.sessionId = t.session_id;
+    item.dataset.studentName = t.student_name;
+    item.dataset.studentEmail = t.student_email;
+    item.dataset.concern = t.concern;
+    item.dataset.status = t.status;
+
+    var activeDot = t.is_student_active
+      ? '<span class="active-dot" title="Student is online"></span>'
+      : '';
+    var lfBadge = (t.ticket_type === 'claim')
+      ? '<span style="font-size:10px;font-weight:800;background:#fde68a;color:#78350f;padding:2px 7px;border-radius:99px;margin-left:6px;letter-spacing:0.04em">LF CLAIM</span>'
+      : '';
+    var statusClass = (String(t.appointment_status || '').toLowerCase() === 'approved') ? 'approved' : (t.status || 'open');
+    var endPrompt = t.needs_end_session_prompt
+      ? '<div class="ticket-item__time" style="margin-top:6px;color:#b45309;font-weight:700">Idle live chat. Type <code>/end session</code> to close.</div>'
+      : '';
+
+    item.innerHTML =
+      '<div class="ticket-item__head">' +
+        '<div class="ticket-item__name">' + activeDot + escapeHtml(t.student_name) + lfBadge + '</div>' +
+        '<span class="ticket-status-badge ' + statusClass + '">' + statusBadgeLabel(t) + '</span>' +
+      '</div>' +
+      '<div class="ticket-item__case">' + escapeHtml(t.case_id) + '</div>' +
+      '<div class="ticket-item__concern">' + escapeHtml(t.concern) + '</div>' +
+      '<div class="ticket-item__time" style="margin-top:5px">' + fmtDate(t.created_at) + '</div>' +
+      endPrompt;
+  }
+
+  function renderTickets(tickets) {
+    var rendered = state.renderedTicketsByCase;
+    var nextOrder = [];
+    var seenIds = Object.create(null);
+
+    tickets.forEach(function (t) {
+      var caseId = String(t.case_id || '');
+      if (!caseId) return;
+      seenIds[caseId] = true;
+      nextOrder.push(caseId);
+
+      var entry = rendered[caseId];
+      var key = ticketRenderKey(t);
+      if (!entry) {
+        var item = buildTicketCard(t);
+        paintTicketCard(item, t);
+        rendered[caseId] = { node: item, key: key, ticket: t };
+      } else if (entry.key !== key) {
+        // In-place repaint — keeps the same DOM node, no flicker
+        paintTicketCard(entry.node, t);
+        entry.key = key;
+        entry.ticket = t;
+      } else {
+        // Even if hash unchanged, refresh the cached ticket so the click
+        // handler created on the original mount can still see latest props.
+        entry.ticket = t;
+      }
+    });
+
+    // Drop tickets that disappeared from the server response
+    Object.keys(rendered).forEach(function (caseId) {
+      if (!seenIds[caseId]) {
+        var node = rendered[caseId] && rendered[caseId].node;
+        if (node && node.parentNode === ticketList) ticketList.removeChild(node);
+        delete rendered[caseId];
+      }
+    });
+
+    // Reorder DOM only where it doesn't match desired order. We walk the
+    // desired list and append nodes; appendChild on an existing child moves
+    // it without recreating it, so this is cheap and flicker-free.
+    var prevOrder = state.renderedTicketsOrder || [];
+    var orderChanged = (prevOrder.length !== nextOrder.length);
+    if (!orderChanged) {
+      for (var i = 0; i < nextOrder.length; i++) {
+        if (prevOrder[i] !== nextOrder[i]) { orderChanged = true; break; }
+      }
+    }
+    if (orderChanged) {
+      nextOrder.forEach(function (caseId) {
+        var node = rendered[caseId] && rendered[caseId].node;
+        if (node) ticketList.appendChild(node);
+      });
+    }
+    state.renderedTicketsOrder = nextOrder;
   }
 
   /* ── Select ticket ── */
@@ -1603,26 +1724,82 @@
       .catch(function () {});
   }
 
-  function renderMessages(messages, concern) {
-    convoThread.innerHTML = '';
+  /* ── Differential message render ─────────────────────────────────
+   * Previously: convoThread.innerHTML = '' on every poll/SSE event, then
+   * rebuild the entire thread from scratch. That triggered a visible flicker
+   * on every refresh and reset the staff's scroll position to the bottom even
+   * if they were reading older messages. Now:
+   *   - When session changes → wipe and rebuild once.
+   *   - When session is the same and message count grew → append only the
+   *     new messages (no DOM destruction).
+   *   - When nothing changed → no-op.
+   *   - Preserve scroll position unless the staff was already at the bottom.
+   */
+  function renderConcernCard(concern) {
+    var existing = convoThread.querySelector('.concern-card');
+    if (!concern) {
+      if (existing) existing.parentNode.removeChild(existing);
+      return;
+    }
+    if (existing) {
+      var t = existing.querySelector('.concern-card__text');
+      if (t && t.textContent !== concern) t.textContent = concern;
+      return;
+    }
+    var card = document.createElement('div');
+    card.className = 'concern-card';
+    card.innerHTML =
+      '<div class="concern-card__label">Student\'s Escalation Concern</div>' +
+      '<div class="concern-card__text"></div>';
+    card.querySelector('.concern-card__text').textContent = concern;
+    convoThread.insertBefore(card, convoThread.firstChild);
+  }
 
-    // Concern card at top
-    if (concern) {
-      var card = document.createElement('div');
-      card.className = 'concern-card';
-      card.innerHTML =
-        '<div class="concern-card__label">Student\'s Escalation Concern</div>' +
-        '<div class="concern-card__text">' + escapeHtml(concern) + '</div>';
-      convoThread.appendChild(card);
+  function renderMessages(messages, concern) {
+    var sessionId = String(state.currentSessionId || '');
+    var msgs = Array.isArray(messages) ? messages : [];
+    var prevCount = state.renderedMessagesCount;
+    var prevSession = state.renderedMessagesSessionId;
+    var sameSession = (prevSession === sessionId);
+    var grew = sameSession && msgs.length > prevCount;
+    var shrunk = sameSession && msgs.length < prevCount;
+    var unchanged = sameSession && msgs.length === prevCount && state.renderedConcernText === (concern || '');
+
+    if (unchanged) return;
+
+    var stickToBottom = isNearBottom(convoThread);
+
+    if (!sameSession || shrunk) {
+      // Session change OR server returned fewer messages (rare, e.g. moderation
+      // delete) — safe to rebuild from scratch.
+      convoThread.innerHTML = '';
+      renderConcernCard(concern);
+      msgs.forEach(function (m) { appendMsg(m.role, m.content, m.created_at, false); });
+    } else if (grew) {
+      // Same session, only new messages — append the delta without touching
+      // existing bubbles. No flicker, no scroll jump.
+      renderConcernCard(concern);
+      for (var i = prevCount; i < msgs.length; i++) {
+        var m = msgs[i];
+        appendMsg(m.role, m.content, m.created_at, false);
+      }
+    } else {
+      // Same count but concern text changed — just refresh the concern card
+      renderConcernCard(concern);
     }
 
-    messages.forEach(function (m) {
-      appendMsg(m.role, m.content, m.created_at, false);
-    });
+    state.renderedMessagesSessionId = sessionId;
+    state.renderedMessagesCount = msgs.length;
+    state.renderedConcernText = concern || '';
+    // Cache the last message timestamp so the cosmetic ticker can compute
+    // "idle time since last message" without re-fetching every 5 seconds.
+    var lastMsg = msgs.length ? msgs[msgs.length - 1] : null;
+    state.lastMessageTs = lastMsg && lastMsg.created_at
+      ? new Date(lastMsg.created_at).getTime()
+      : 0;
 
-    convoThread.scrollTop = convoThread.scrollHeight;
-    // If a student-seen ack arrived earlier, re-stamp the indicator on the
-    // freshly rendered last staff bubble.
+    if (stickToBottom) scrollThreadToBottom();
+
     if (state.lastStudentSeenAtMs) {
       try { renderStaffSeenIndicator(); } catch (_) {}
     }
@@ -1661,79 +1838,117 @@
     if (scroll !== false) convoThread.scrollTop = convoThread.scrollHeight;
   }
 
-  /* ── Polling for new messages ── */
-  var lastMsgCount = 0;
-
-  function startPolling() {
-    stopPolling();
-    lastMsgCount = 0;
-    state.pollTimer = setInterval(function () {
-      if (!state.currentSessionId || !state.currentCaseId) return;
-
-      // Poll messages
+  /* ── Realtime updates: SSE + lightweight cosmetic ticker ────────
+   *
+   * Previously this was a single 2-second setInterval that fetched messages,
+   * ticket status, and the active-indicator on every tick — and re-rendered
+   * the entire thread / ticket list each time. That caused a visible
+   * "the UI keeps refreshing itself" flicker (the bug staff reported).
+   *
+   * Now we rely on the existing admin SSE stream for realtime data
+   * (messages, ticket status, presence) and only run two tiny timers:
+   *   1. A 5-second cosmetic ticker that updates the auto-close hint and
+   *      refreshes the active-indicator. Both are non-destructive (text +
+   *      classList only, no innerHTML wipes).
+   *   2. A 30-second safety-net that re-syncs messages + tickets in case
+   *      the SSE stream silently dropped. Both renders are differential,
+   *      so they're invisible when nothing changed.
+   *
+   * SSE-driven loadMessages calls are also debounced (180ms) so that a
+   * burst of events doesn't fire overlapping fetches.
+   */
+  function loadMessagesSoon() {
+    if (state.loadMessagesDebounceTimer) {
+      clearTimeout(state.loadMessagesDebounceTimer);
+    }
+    state.loadMessagesDebounceTimer = setTimeout(function () {
+      state.loadMessagesDebounceTimer = null;
+      if (!state.currentSessionId) return;
+      var prevCount = state.renderedMessagesCount;
       fetch(API + '/chat/session/' + encodeURIComponent(state.currentSessionId) + '/messages?_ts=' + Date.now(), { cache: 'no-store' })
         .then(function (r) { return r.json(); })
         .then(function (data) {
-          if (!data.success) return;
-          if (data.messages.length !== lastMsgCount) {
-            var grew = data.messages.length > lastMsgCount;
-            // Detect new student message (role==='user') in the delta.
-            var newStudentMessage = false;
-            if (grew) {
-              for (var i = lastMsgCount; i < data.messages.length; i++) {
-                if (data.messages[i] && data.messages[i].role === 'user') {
-                  newStudentMessage = true;
-                  break;
-                }
+          if (!data || !data.success || !Array.isArray(data.messages)) return;
+          // Detect a new student bubble in the delta so we can ack as "seen".
+          var sawNewStudentMsg = false;
+          if (data.messages.length > prevCount) {
+            for (var i = prevCount; i < data.messages.length; i++) {
+              if (data.messages[i] && data.messages[i].role === 'user') {
+                sawNewStudentMsg = true; break;
               }
             }
-            lastMsgCount = data.messages.length;
-            var concern = document.querySelector('.concern-card .concern-card__text');
-            renderMessages(data.messages, concern ? concern.textContent : '');
-            if (newStudentMessage) {
-              // Staff is actively viewing — ack as seen.
-              setTimeout(notifyStaffSeen, 100);
-            }
           }
+          renderMessages(data.messages, state.currentConcern || '');
+          if (sawNewStudentMsg) setTimeout(notifyStaffSeen, 100);
           maybeAutoClose(data.messages);
         })
         .catch(function () {});
+    }, 180);
+  }
 
-      // Poll ticket status — detect external resolve (another tab, auto-close, backend)
-      if (state.currentTicketStatus !== 'resolved') {
-        fetch(API + '/chat/tickets/' + encodeURIComponent(state.currentCaseId) + '/status?_ts=' + Date.now(), { headers: apiHeaders(), cache: 'no-store' })
-          .then(function (r) { return r.json(); })
-          .catch(function () { return null; })
-          .then(function (d) {
-            if (!d || !d.success || !d.ticket) return;
-            if (d.ticket.status === 'resolved' && state.currentTicketStatus !== 'resolved') {
-              state.currentTicketStatus = 'resolved';
-              btnResolve.disabled = true;
-              if (btnApproveAppt) btnApproveAppt.disabled = true;
-              if (btnEndSession) btnEndSession.disabled = true;
-              convoComposer.classList.add('hidden');
-              if (sessionLimitPanel) sessionLimitPanel.classList.add('hidden');
-              appendSystemPill('Session was closed externally');
-              loadTickets({ quiet: true });
-            }
-          });
-      }
+  function refreshActiveIndicator() {
+    if (!state.currentSessionId || !convoActive) return;
+    fetch(API + '/chat/session/' + encodeURIComponent(state.currentSessionId) + '/active?_ts=' + Date.now(), { cache: 'no-store' })
+      .then(function (r) { return r.json(); })
+      .then(function (s) {
+        convoActive.classList.toggle('hidden', !s.active);
+      })
+      .catch(function () {});
+  }
 
-      // Update student online indicator
-      fetch(API + '/chat/session/' + encodeURIComponent(state.currentSessionId) + '/active?_ts=' + Date.now(), { cache: 'no-store' })
-        .then(function (r) { return r.json(); })
-        .then(function (s) {
-          if (s.active) {
-            convoActive.classList.remove('hidden');
-          } else {
-            convoActive.classList.add('hidden');
-          }
-        }).catch(function () {});
-    }, 2000);
+  function refreshTicketStatusOnce() {
+    if (!state.currentCaseId || state.currentTicketStatus === 'resolved') return;
+    fetch(API + '/chat/tickets/' + encodeURIComponent(state.currentCaseId) + '/status?_ts=' + Date.now(), { headers: apiHeaders(), cache: 'no-store' })
+      .then(function (r) { return r.json(); })
+      .catch(function () { return null; })
+      .then(function (d) {
+        if (!d || !d.success || !d.ticket) return;
+        if (d.ticket.status === 'resolved' && state.currentTicketStatus !== 'resolved') {
+          state.currentTicketStatus = 'resolved';
+          btnResolve.disabled = true;
+          if (btnApproveAppt) btnApproveAppt.disabled = true;
+          if (btnEndSession) btnEndSession.disabled = true;
+          convoComposer.classList.add('hidden');
+          if (sessionLimitPanel) sessionLimitPanel.classList.add('hidden');
+          appendSystemPill('Session was closed externally');
+          loadTickets({ quiet: true });
+        }
+      });
+  }
+
+  function startPolling() {
+    stopPolling();
+    // Immediate one-shot refresh so the panel feels responsive on selection.
+    refreshActiveIndicator();
+
+    // Cosmetic ticker: only updates text/classList — never re-renders the thread.
+    state.cosmeticTimer = setInterval(function () {
+      if (!state.currentSessionId || !state.currentCaseId) return;
+      // The auto-close hint reads from cached state.renderedMessagesCount-derived
+      // info, so we just look up the last known message bag from the DOM rather
+      // than re-fetching. We pass an empty array to maybeAutoClose only when
+      // we have nothing newer; in practice SSE keeps things fresh.
+      maybeAutoClose([]);
+      refreshActiveIndicator();
+    }, 5000);
+
+    // Safety net: in case the SSE stream silently drops, re-sync every 30s.
+    // Both calls are differential — invisible when nothing changed.
+    state.safetyNetTimer = setInterval(function () {
+      if (!state.currentSessionId || !state.currentCaseId) return;
+      loadMessagesSoon();
+      refreshTicketStatusOnce();
+    }, 30000);
   }
 
   function stopPolling() {
     if (state.pollTimer) { clearInterval(state.pollTimer); state.pollTimer = null; }
+    if (state.cosmeticTimer) { clearInterval(state.cosmeticTimer); state.cosmeticTimer = null; }
+    if (state.safetyNetTimer) { clearInterval(state.safetyNetTimer); state.safetyNetTimer = null; }
+    if (state.loadMessagesDebounceTimer) {
+      clearTimeout(state.loadMessagesDebounceTimer);
+      state.loadMessagesDebounceTimer = null;
+    }
   }
 
   function readAutoCloseConfig() {
@@ -1757,9 +1972,14 @@
     if (cfg.mode === 'absolute') {
       elapsedMs = Math.max(0, now - (state.ticketSelectedAtMs || now));
     } else {
+      // Prefer the last message timestamp from the supplied array; otherwise
+      // fall back to the cached one set by renderMessages, then to the time
+      // the ticket was selected. This lets the lightweight cosmetic ticker
+      // call maybeAutoClose() without re-fetching messages every 5 seconds.
       var last = (messages && messages.length) ? messages[messages.length - 1] : null;
-      var lastTs = last ? new Date(last.created_at).getTime() : state.ticketSelectedAtMs;
-      if (!Number.isFinite(lastTs)) lastTs = state.ticketSelectedAtMs || now;
+      var lastTs = last ? new Date(last.created_at).getTime() : 0;
+      if (!Number.isFinite(lastTs) || !lastTs) lastTs = state.lastMessageTs || 0;
+      if (!lastTs) lastTs = state.ticketSelectedAtMs || now;
       elapsedMs = Math.max(0, now - lastTs);
     }
     var remaining = Math.max(0, Math.ceil((limitMs - elapsedMs) / 1000));
@@ -1892,7 +2112,10 @@
           // Append the end-session message to thread immediately
           var endContent = '[OSA Staff · ' + staffName() + ']\n\n' + text;
           appendMsg('assistant', endContent, new Date().toISOString(), true);
-          lastMsgCount++;
+          // Keep the differential render bookkeeping in sync with the
+          // optimistic local append, so the next SSE-triggered fetch sees
+          // count parity and no-ops instead of duplicating the bubble.
+          state.renderedMessagesCount += 1;
           markClosedUi();
           return;
         }
@@ -1900,7 +2123,7 @@
         // Immediately append own message
         var msgContent = '[OSA Staff · ' + staffName() + ']\n\n' + text;
         appendMsg('assistant', msgContent, new Date().toISOString(), true);
-        lastMsgCount++;
+        state.renderedMessagesCount += 1;
 
         // Update ticket to in_progress in list
         var item = ticketList.querySelector('[data-case-id="' + state.currentCaseId + '"]');
@@ -2033,7 +2256,6 @@
           return;
         }
         loadMessages(state.currentSessionId, state.currentConcern);
-        lastMsgCount = 0;
         fetch(API + '/chat/tickets?status=' + encodeURIComponent(state.currentStatus) + '&_ts=' + Date.now(), { headers: apiHeaders(), cache: 'no-store' })
           .then(function (r) { return r.json(); })
           .then(function (d) {
