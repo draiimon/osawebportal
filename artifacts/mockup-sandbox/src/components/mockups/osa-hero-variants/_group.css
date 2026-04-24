@@ -1,0 +1,59 @@
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
+
+:root {
+  --osa-maroon: #841a2d;
+  --osa-maroon-soft: rgba(132, 26, 45, 0.14);
+  --osa-gold: #c79a49;
+  --osa-gold-soft: rgba(199, 154, 73, 0.18);
+  --osa-cream: #fffdf9;
+  --osa-cream-tint: rgba(255, 253, 249, 0.72);
+  --osa-ink: #2c1a15;
+  --osa-ink-soft: #66534a;
+  --osa-line: rgba(132, 26, 45, 0.14);
+  --osa-shadow: 0 14px 32px rgba(50, 25, 14, 0.14);
+  --osa-bg-radial:
+    radial-gradient(circle at 20% 20%, rgba(132, 26, 45, 0.14), transparent 52%),
+    radial-gradient(circle at 80% 0%, rgba(199, 154, 73, 0.16), transparent 48%),
+    rgba(255, 253, 249, 0.72);
+  --osa-font: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Arial, sans-serif;
+}
+
+.osa-root {
+  font-family: var(--osa-font);
+  color: var(--osa-ink);
+  background: var(--osa-bg-radial);
+  min-height: 100%;
+}
+
+.osa-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0;
+  font-weight: 600;
+  font-size: 0.92rem;
+  letter-spacing: 0.01em;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+.osa-btn:hover { transform: translateY(-1px); }
+
+.osa-btn--primary {
+  background: var(--osa-maroon);
+  color: #fff;
+  border-color: var(--osa-maroon);
+  box-shadow: 0 6px 14px rgba(132, 26, 45, 0.22);
+}
+.osa-btn--neutral {
+  background: #fff;
+  color: var(--osa-ink);
+  border-color: var(--osa-line);
+}
+.osa-btn--ghost {
+  background: transparent;
+  color: var(--osa-maroon);
+  border-color: var(--osa-maroon);
+}
