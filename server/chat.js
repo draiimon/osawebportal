@@ -617,9 +617,13 @@ async function loadSessionRow(sessionId) {
   const session = sessionResult.rows[0];
   if (!isSessionExpired(session)) return { found: true, expired: false, session };
 
-  // On expiry, remove both the session and its messages so stale rows don't keep
-  // returning `expired: true` forever. ON DELETE CASCADE clears chat_messages.
-  await db.query(`DELETE FROM chat_sessions WHERE id = $1`, [sessionId]);
+  // On idle expiry, DO NOT delete the chat_session row. Doing so used to cascade
+  // through the FK and wipe escalation_tickets + chat_messages — destroying OSA
+  // data such as resolved/approved tickets and the conversation history that
+  // belongs to them. The session is simply marked expired here; the student is
+  // forced to re-verify their email and will be issued a new session_id, while
+  // the historical session, its messages, and any related tickets remain intact
+  // for OSA records.
   return { found: true, expired: true, session: null };
 }
 

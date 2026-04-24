@@ -100,7 +100,9 @@ CREATE TABLE IF NOT EXISTS chat_sessions (
 
 CREATE TABLE IF NOT EXISTS chat_messages (
   id BIGSERIAL PRIMARY KEY,
-  session_id UUID NOT NULL REFERENCES chat_sessions(id) ON DELETE CASCADE,
+  -- session_id is nullable + ON DELETE SET NULL so the conversation history
+  -- is preserved for OSA records even if the chat_session row is later removed.
+  session_id UUID REFERENCES chat_sessions(id) ON DELETE SET NULL,
   role TEXT NOT NULL CHECK (role IN ('user', 'assistant')),
   content TEXT NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -143,7 +145,9 @@ CREATE INDEX IF NOT EXISTS idx_manual_chunks_keywords ON student_manual_chunks U
 CREATE TABLE IF NOT EXISTS escalation_tickets (
   id BIGSERIAL PRIMARY KEY,
   case_id TEXT UNIQUE NOT NULL,
-  session_id UUID NOT NULL REFERENCES chat_sessions(id) ON DELETE CASCADE,
+  -- session_id is nullable + ON DELETE SET NULL so the ticket (which is OSA
+  -- data) survives if the originating chat_session row is later removed.
+  session_id UUID REFERENCES chat_sessions(id) ON DELETE SET NULL,
   student_email TEXT NOT NULL,
   student_name TEXT NOT NULL,
   concern TEXT NOT NULL,

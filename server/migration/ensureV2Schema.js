@@ -95,6 +95,35 @@ const statements = [
   `ALTER TABLE IF EXISTS escalation_tickets ADD COLUMN IF NOT EXISTS appointment_notes TEXT`,
   `ALTER TABLE IF EXISTS escalation_tickets ADD COLUMN IF NOT EXISTS appointment_approved_at TIMESTAMPTZ`,
   `ALTER TABLE IF EXISTS escalation_tickets ADD COLUMN IF NOT EXISTS appointment_approved_by TEXT`,
+  // Preserve OSA data: drop the original ON DELETE CASCADE on session_id and
+  // replace with ON DELETE SET NULL, so resolved/approved tickets and chat
+  // history survive any cleanup of the originating chat_sessions row.
+  `ALTER TABLE IF EXISTS escalation_tickets ALTER COLUMN session_id DROP NOT NULL`,
+  `ALTER TABLE IF EXISTS escalation_tickets DROP CONSTRAINT IF EXISTS escalation_tickets_session_id_fkey`,
+  `DO $$
+   BEGIN
+     IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='escalation_tickets')
+        AND EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='chat_sessions') THEN
+       BEGIN
+         EXECUTE 'ALTER TABLE escalation_tickets ADD CONSTRAINT escalation_tickets_session_id_fkey FOREIGN KEY (session_id) REFERENCES chat_sessions(id) ON DELETE SET NULL';
+       EXCEPTION WHEN duplicate_object THEN
+         NULL;
+       END;
+     END IF;
+   END $$;`,
+  `ALTER TABLE IF EXISTS chat_messages ALTER COLUMN session_id DROP NOT NULL`,
+  `ALTER TABLE IF EXISTS chat_messages DROP CONSTRAINT IF EXISTS chat_messages_session_id_fkey`,
+  `DO $$
+   BEGIN
+     IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='chat_messages')
+        AND EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name='chat_sessions') THEN
+       BEGIN
+         EXECUTE 'ALTER TABLE chat_messages ADD CONSTRAINT chat_messages_session_id_fkey FOREIGN KEY (session_id) REFERENCES chat_sessions(id) ON DELETE SET NULL';
+       EXCEPTION WHEN duplicate_object THEN
+         NULL;
+       END;
+     END IF;
+   END $$;`,
   // Legacy table already exists; add v2 columns without removing current fields.
   `ALTER TABLE announcements ADD COLUMN IF NOT EXISTS content TEXT`,
   `ALTER TABLE announcements ADD COLUMN IF NOT EXISTS type TEXT`,
