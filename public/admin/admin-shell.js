@@ -628,19 +628,28 @@
     backdrop.id = id;
     backdrop.className = 'modal-backdrop open';
     backdrop.innerHTML = `
-      <div class="modal" style="max-width:400px;font-family:var(--font-body)">
-        <div class="modal-head">
-          <h2 style="color:var(--ink);font-family:var(--font-body);font-weight:700">Confirm Delete</h2>
-          <button class="modal-close" onclick="closeModal('${id}')">
+      <div class="modal confirm-delete-modal" style="max-width:440px;font-family:var(--font-body);border-top:3px solid var(--brand)">
+        <div class="modal-head" style="gap:12px;align-items:flex-start">
+          <div style="width:38px;height:38px;flex:0 0 38px;border-radius:50%;background:linear-gradient(135deg, rgba(132,26,45,0.12), rgba(199,154,73,0.18));display:flex;align-items:center;justify-content:center;color:var(--brand)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:0.66rem;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:var(--brand);margin-bottom:4px">Confirm Delete</div>
+            <h2 style="color:var(--ink);font-family:'Libre Baskerville',serif;font-weight:700;font-size:1.15rem;line-height:1.25;margin:0">Are you sure?</h2>
+          </div>
+          <button class="modal-close" onclick="closeModal('${id}')" style="margin-top:-4px">
             <svg viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="M6 6 18 18"/></svg>
           </button>
         </div>
-        <div class="modal-body">
-          <p style="font-size:0.88rem;color:var(--muted);line-height:1.65">${msg}</p>
+        <div class="modal-body" style="padding-top:4px">
+          <div style="font-size:0.88rem;color:var(--muted);line-height:1.65">${msg}</div>
         </div>
-        <div class="modal-foot">
+        <div class="modal-foot" style="border-top:1px solid var(--line);padding-top:14px;gap:8px">
           <button class="btn btn-ghost" onclick="closeModal('${id}')">Cancel</button>
-          <button id="${id}-confirm" style="min-height:36px;padding:0 14px;border:1px solid #1d4ed8;background:#2563eb;color:#fff;font:inherit;font-weight:700;border-radius:6px;cursor:pointer">Yes, Delete</button>
+          <button id="${id}-confirm" style="min-height:38px;padding:0 18px;border:1px solid var(--brand-deep, #6b0e1e);background:linear-gradient(135deg, var(--brand) 0%, var(--brand-deep, #6b0e1e) 100%);color:#fff;font:inherit;font-weight:700;letter-spacing:0.01em;border-radius:6px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(132,26,45,0.28)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+            Yes, Delete
+          </button>
         </div>
       </div>
     `;
