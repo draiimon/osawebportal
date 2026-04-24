@@ -278,6 +278,58 @@
         return null;
     }
 
+    /**
+     * Quick-pick panel listing currently-unclaimed Lost & Found items as
+     * clickable buttons. Each button auto-fires the existing claim flow so
+     * students don't have to type the LF-#### number themselves.
+     */
+    function lfPickerPanelHtml(items) {
+        if (!items || !items.length) {
+            return '' +
+                '<div class="osa-ai-rich" style="margin-top:6px">' +
+                '<p style="margin:0 0 6px"><strong>Lost &amp; Found</strong></p>' +
+                '<p style="margin:0;font-size:13px;color:#675a4f">Walang available na claimable item ngayon. Try again later o bisitahin ang ' +
+                '<a href="/lost-and-found" target="_blank" rel="noopener">Lost &amp; Found page</a>.</p>' +
+                '</div>';
+        }
+        var max = 12;
+        var visible = items.slice(0, max);
+        var rows = visible.map(function (it) {
+            var num   = escapeHtml(String(it.itemNumber || ''));
+            var title = escapeHtml(String(it.title || 'Recovered Item'));
+            var tag   = escapeHtml(String(it.tag || 'Personal Item'));
+            var date  = escapeHtml(String(it.date || ''));
+            if (!num) return '';
+            return '' +
+                '<button type="button" class="osa-lf-claim-btn" ' +
+                'data-lf-item="' + num + '" data-lf-title="' + title + '" ' +
+                'style="display:block;width:100%;text-align:left;background:#fffaf6;border:1px solid #e7d9cf;border-radius:10px;padding:10px 12px;margin:0 0 8px;cursor:pointer;font:inherit;color:#1c1917;transition:background 0.15s,border-color 0.15s" ' +
+                'onmouseover="this.style.background=\'#fff3ea\';this.style.borderColor=\'#841a2d\'" ' +
+                'onmouseout="this.style.background=\'#fffaf6\';this.style.borderColor=\'#e7d9cf\'">' +
+                '<div style="font-weight:700;font-size:13px;color:#841a2d">' + num + ' &middot; ' + title + '</div>' +
+                '<div style="font-size:12px;color:#65574d;margin-top:2px">' + tag + (date ? ' &middot; ' + date : '') + '</div>' +
+                '</button>';
+        }).join('');
+        var more = items.length > max
+            ? '<p style="margin:6px 0 0;font-size:12px;color:#65574d">Ipinapakita ' + visible.length + ' sa ' + items.length + ' items. ' +
+              '<a href="/lost-and-found" target="_blank" rel="noopener">Tingnan lahat sa Lost &amp; Found page</a>.</p>'
+            : '';
+        return '' +
+            '<div>' +
+            '<p style="margin:0 0 8px"><strong>Pumili ng item para mag-claim:</strong></p>' +
+            rows +
+            more +
+            '</div>';
+    }
+
+    /** True for L&F intent that does NOT already include a specific LF-#### number. */
+    function isLostFoundPickerIntent(text) {
+        var raw = String(text || '');
+        if (parseItemNumber(raw)) return false;
+        var t = raw.toLowerCase();
+        return /(lost\s*(and|&)?\s*found|claim|lost\s+item|found\s+item|nahanap|nawala|na\s*claim)/.test(t);
+    }
+
     function pushQueue(entry) {
         var q = getLS(QUEUE_KEY, []);
         if (!Array.isArray(q)) q = [];
@@ -1723,6 +1775,28 @@
                 return;
             }
 
+            // Quick-pick: student says something L&F related but did not type a
+            // specific LF-#### number → render a clickable list of currently
+            // unclaimed items so they don't have to hunt for the number.
+            if (!itemNumber && isLostFoundPickerIntent(message)) {
+                var typingPicker = showTyping('lf-picker');
+                try {
+                    var pickerData = await getApi('/lost-found/items');
+                    var allItems = (pickerData && Array.isArray(pickerData.data) ? pickerData.data : []);
+                    var openItems = allItems.filter(function (it) {
+                        return String((it && it.status) || '').toLowerCase() !== 'claimed';
+                    });
+                    appendBubble('assistant', lfPickerPanelHtml(openItems));
+                } catch (_pickerErr) {
+                    appendBubble('assistant', '<p style="margin:0">Could not load Lost &amp; Found items right now. Please try again or visit the <a href="/lost-and-found" target="_blank" rel="noopener">Lost &amp; Found page</a>.</p>');
+                } finally {
+                    hideTyping(typingPicker, 'lf-picker:finally');
+                }
+                sendBtn.disabled = false;
+                input.focus();
+                return;
+            }
+
             if (itemNumber && message.toLowerCase().indexOf('claim') >= 0) {
                 // Server is the single source of truth for L&F item validity.
                 // The cached localStorage view (LF_KEY) is only used to enrich the
@@ -2046,6 +2120,21 @@
                 ev.preventDefault();
                 if (cancelEscBtn.disabled) return;
                 cancelEscalation(waitingState.caseId);
+                return;
+            }
+
+            // Quick-pick claim: clicking an item card auto-fires the claim flow
+            // (no typing needed). Re-uses the same code path as a typed claim.
+            var lfPickBtn = ev.target && ev.target.closest && ev.target.closest('.osa-lf-claim-btn');
+            if (lfPickBtn && widget.contains(lfPickBtn)) {
+                ev.preventDefault();
+                if (lfPickBtn.disabled) return;
+                var pickedNum = (lfPickBtn.getAttribute('data-lf-item') || '').trim();
+                if (!pickedNum) return;
+                lfPickBtn.disabled = true;
+                lfPickBtn.style.opacity = '0.6';
+                input.value = 'I want to claim ' + pickedNum;
+                handleSend();
                 return;
             }
 
