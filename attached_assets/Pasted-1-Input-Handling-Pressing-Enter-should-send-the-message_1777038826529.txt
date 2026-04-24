@@ -1,0 +1,60 @@
+1. Input Handling
+Pressing Enter should send the message reliably.
+Prevent duplicate submissions or UI glitches.
+Support Shift + Enter for multi-line messages.
+2. User Typing Indicator
+Detect when the user is actively typing.
+Emit a “user typing” event in real time.
+Use debouncing (300–500ms) to prevent excessive updates.
+Display “User is typing…” to the other party.
+3. AI Typing Indicator
+Show “AI is typing…” immediately after a message is sent.
+Keep it visible while waiting for the response.
+Automatically hide it once the response is rendered.
+4. Live Typing (Real-Time)
+Implement real-time typing indicators using WebSockets (preferred) or polling as fallback.
+Emit events:
+typing_start
+typing_stop
+Ensure efficient event handling to avoid spamming the server.
+Handle reconnection and stale typing states properly.
+5. Seen / Read Receipts
+Track message status:
+sent
+delivered
+seen
+Update UI when the message is read (e.g., “Seen” or checkmarks).
+Trigger “seen” event when:
+The message is visible in the viewport, or
+The chat is active and focused.
+Sync read status in real time via WebSockets.
+6. State Management
+Maintain clear separation of states:
+userTyping (true/false)
+aiTyping (true/false)
+messageStatus (sent/delivered/seen)
+Avoid race conditions and overlapping UI states.
+7. Backend/Event Design (Suggestion)
+Create lightweight socket events:
+message_send
+message_receive
+typing_start
+typing_stop
+message_seen
+Ensure events are scoped per conversation/session.
+8. Performance & Safety
+Throttle typing events to reduce server load.
+Avoid unnecessary re-renders.
+Ensure fallback behavior if WebSocket connection fails.
+9. Code Quality
+Remove redundant and unused code.
+Consolidate duplicate logic.
+Keep the implementation clean, modular, and maintainable.
+Add console logs for debugging key events (typing, message send, seen).
+
+Optional Enhancements:
+
+Show animated typing dots (e.g., “...”)
+Add message timestamps
+Add delivery delay simulation for realism
+Support multiple users in future (scalable design)
