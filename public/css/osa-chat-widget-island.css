@@ -273,7 +273,7 @@
             rgba(132, 26, 45, 0.05) 100%) !important;
     background-blend-mode: normal, normal;
     position: relative;
-    padding: 18px 14px 12px !important;
+    padding: 32px 14px 12px !important;
     overflow: hidden !important;
     z-index: 1 !important;
 }
