@@ -319,7 +319,8 @@
   let editId = null;
   let currentView = 'grid';
   let lostFoundState = [];
-  const baseCategories = ['Wallet','Bag','Electronics','Personal Item','Documents','Accessories','Books','Clothing','Other'];
+  let categoryState = [];
+  const defaultCategories = ['Wallet','Bag','Electronics','Personal Item','Documents','Accessories','Books','Clothing','Other'];
 
   const getData = () => lostFoundState;
   const saveData = (arr) => { lostFoundState = Array.isArray(arr) ? arr : []; };
@@ -349,15 +350,17 @@
   function refreshCategoryFilters() {
     const filterSelect = document.getElementById('lf-filter-cat');
     const current = filterSelect.value;
-    const categories = [...new Set(getData().map(i => normalizeCategory(i.category)).filter(Boolean))];
-    const merged = [...new Set([...baseCategories, ...categories])];
+    const categories = [...new Set(categoryState.map(normalizeCategory).filter(Boolean))];
+    const merged = [...new Set([...defaultCategories, ...categories])];
     filterSelect.innerHTML = '<option value=\"\">All Categories</option>' + merged.map(c => `<option>${c}</option>`).join('');
     filterSelect.value = merged.includes(current) ? current : '';
   }
 
   async function loadFromDb() {
     const response = await adminApi.get('/admin/lost-found');
-    saveData(Array.isArray(response.data) ? response.data : []);
+    const rows = Array.isArray(response.data) ? response.data : [];
+    saveData(rows);
+    categoryState = rows.map((item) => item.category).filter(Boolean);
   }
 
   async function migrateLegacyLocalData() {
@@ -483,7 +486,7 @@
     const categorySelect = document.getElementById('lf-category');
     const customInput = document.getElementById('lf-category-custom');
     const itemCategory = normalizeCategory(item.category);
-    const isKnown = baseCategories.map(c => c.toLowerCase()).includes(itemCategory.toLowerCase());
+    const isKnown = [...defaultCategories, ...categoryState].map(c => c.toLowerCase()).includes(itemCategory.toLowerCase());
     categorySelect.value = isKnown ? itemCategory : 'Other';
     customInput.value = isKnown ? '' : itemCategory;
     syncCategoryCustomUI();
