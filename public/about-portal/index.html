@@ -1,17 +1,1010 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <meta name="color-scheme" content="light">
+
+    <!-- Primary Meta Tags -->
+    <title>About · OSA Transaction Guide Portal</title>
+    <meta name="title" content="About · OSA Transaction Guide Portal">
+    <meta name="description"
+        content="Learn about the EAC Cavite Office of Student Affairs philosophy, vision, mission, and Core services provided to the student community.">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/assets/images/eac-emblem.png">
+    <link rel="apple-touch-icon" href="/assets/images/eac-emblem.png">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="/about-portal/">
+    <meta property="og:title" content="About · OSA Transaction Guide Portal">
+    <meta property="og:description"
+        content="Learn about the EAC Cavite Office of Student Affairs philosophy, vision, mission, and Core services provided to the student community.">
+    <meta property="og:image" content="/assets/images/eac-social-card-alt.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="/about-portal/">
+    <meta property="twitter:title" content="About · OSA Transaction Guide Portal">
+    <meta property="twitter:description"
+        content="Learn about the EAC Cavite Office of Student Affairs philosophy, vision, mission, and Core services provided to the student community.">
+    <meta property="twitter:image" content="/assets/images/eac-social-card-alt.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap"
+        rel="stylesheet">
+
+    <link rel="preload" href="/css/osa-design.css?v=40" as="style">
+    <link rel="preload" href="/css/osa-ai.css?v=45" as="style">
     <link rel="stylesheet" href="/css/osa-design.css?v=40">
     <link rel="stylesheet" href="/css/osa-ai.css?v=45">
     <link rel="stylesheet" href="/css/osa-chat-widget-island.min.css?v=4">
     <script src="/assets/js/portal-shell.js?v=44" defer></script>
     <script src="/assets/js/osa-chat-loader.js?v=66" defer></script>
     <style>
-        body { margin: 0; }
+        /* ── Hero ── */
+        .about-hero {
+            position: relative;
+            overflow: hidden;
+            isolation: isolate;
+            min-height: 540px;
+            display: flex;
+            align-items: flex-end;
+            background: linear-gradient(145deg, #3d0812 0%, #6e1124 55%, #841a2d 100%);
+            color: #fffaf3;
+            margin-top: calc(var(--nav-h) * -1);
+            padding-top: var(--nav-h);
+        }
+
+        .about-hero::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            z-index: -2;
+            background: url("/assets/images/eac-photo.png") center / cover no-repeat;
+            opacity: 0.14;
+            transform: scale(1.04);
+        }
+
+        .about-hero::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            z-index: -1;
+            background: linear-gradient(180deg, rgba(55, 8, 18, 0.42) 0%, rgba(80, 13, 24, 0.58) 45%, rgba(22, 4, 8, 0.88) 100%);
+        }
+
+        .about-hero__inner {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            padding: 48px 0 72px;
+        }
+
+        .about-hero__kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 12px 4px 10px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            background: rgba(255, 255, 255, 0.07);
+            font-size: 0.68rem;
+            font-weight: 800;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: rgba(255, 228, 190, 0.88);
+            margin-bottom: 22px;
+        }
+
+        .about-hero__kicker::before {
+            content: "";
+            width: 5px;
+            height: 5px;
+            background: var(--gold);
+            flex-shrink: 0;
+        }
+
+        .about-hero__title {
+            font-size: clamp(2.2rem, 5vw, 3.8rem);
+            font-weight: 800;
+            line-height: 1.06;
+            letter-spacing: -0.025em;
+            color: #fffaf3;
+            margin: 0 0 16px;
+            max-width: 700px;
+        }
+
+        @keyframes heroContentIn {
+            from {
+                opacity: 0;
+                transform: translateY(18px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes heroPanelIn {
+            from {
+                opacity: 0;
+                transform: translateY(14px) scale(0.985);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .about-hero .lead {
+            color: rgba(255, 248, 239, 0.96);
+            font-family: Georgia, "Times New Roman", serif;
+            font-weight: 400;
+            font-size: clamp(1rem, 1.25vw, 1.12rem);
+            line-height: 1.82;
+            text-align: justify;
+            text-justify: inter-word;
+            max-width: 920px;
+        }
+
+        .about-hero .badge.about-badge {
+            border-color: rgba(255, 214, 161, 0.45);
+            background: linear-gradient(135deg, rgba(132, 26, 45, 0.38), rgba(199, 154, 73, 0.24));
+            color: #fff4de;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+        }
+
+        .osa-link-gradient {
+            font-weight: 800;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+            color: var(--brand);
+        }
+
+        .osa-link-gradient:hover {
+            color: var(--brand-deep);
+        }
+
+        .about-hero__meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            align-items: center;
+            padding-top: 28px;
+            border-top: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .about-hero__meta-item {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .about-hero__meta-item strong {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--gold);
+            font-family: Georgia, serif;
+        }
+
+        .about-hero__meta-item span {
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: rgba(255, 225, 190, 0.55);
+        }
+
+        .about-hero__meta-sep {
+            width: 1px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.14);
+            flex-shrink: 0;
+        }
+
+        /* ── Lead ── */
+        .about-lead {
+            padding: 72px 0;
+            background: var(--paper-strong);
+            border-top: 4px solid var(--gold);
+        }
+
+        .about-lead__text {
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: clamp(1.25rem, 2.2vw, 1.75rem);
+            font-weight: 400;
+            line-height: 1.56;
+            color: var(--ink);
+            max-width: 800px;
+        }
+
+        .about-lead__text em {
+            font-style: italic;
+            color: var(--brand);
+        }
+
+        /* ── Creds ── */
+        .creds-section {
+            padding: 40px 0;
+            background: #fffaf3;
+            border-bottom: 1px solid rgba(90, 62, 40, 0.1);
+        }
+
+        .creds-inner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 48px;
+            flex-wrap: wrap;
+        }
+
+        .cred-badge {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .cred-badge img {
+            height: 48px;
+            width: auto;
+            object-fit: contain;
+            filter: opacity(0.82);
+        }
+
+        .cred-badge span {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--muted);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            line-height: 1.5;
+        }
+
+        /* ── PVM ── */
+        .pvm-section {
+            padding: 88px 0;
+            background: linear-gradient(180deg, #faf5ee 0%, #f3ede3 100%);
+        }
+
+        .pvm-header {
+            margin-bottom: 56px;
+        }
+
+        .pvm-header h2 {
+            font-size: clamp(1.5rem, 2.5vw, 2.1rem);
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            position: relative;
+        }
+
+        .pvm-header h2::after {
+            content: "";
+            display: block;
+            margin-top: 10px;
+            width: 36px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--brand), var(--gold));
+        }
+
+        .pvm-stack {
+            display: grid;
+            gap: 0;
+        }
+
+        .pvm-item {
+            display: grid;
+            grid-template-columns: 148px 1fr;
+            border-top: 1px solid rgba(90, 62, 40, 0.1);
+            padding: 40px 0;
+        }
+
+        .pvm-item:last-child {
+            border-bottom: 1px solid rgba(90, 62, 40, 0.1);
+        }
+
+        .pvm-item__label {
+            font-size: 0.66rem;
+            font-weight: 800;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--brand);
+            padding-top: 6px;
+            position: relative;
+        }
+
+        .pvm-item__label::after {
+            content: "";
+            position: absolute;
+            top: 8px;
+            right: 0;
+            width: 1px;
+            height: 32px;
+            background: rgba(132, 26, 45, 0.18);
+        }
+
+        .pvm-item__body {
+            padding-left: 40px;
+            font-size: clamp(0.94rem, 1.2vw, 1.06rem);
+            color: #3a2e28;
+            line-height: 1.75;
+        }
+
+        /* ── Values ── */
+        .values-section {
+            padding: 88px 0;
+            background: linear-gradient(145deg, #5c101d 0%, #841a2d 50%, #9e2038 100%);
+            color: #fffaf3;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .values-section::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: url("/assets/images/eac-emblem-large.png") right -60px center / 480px no-repeat;
+            opacity: 0.04;
+            pointer-events: none;
+        }
+
+        .values-section .container {
+            position: relative;
+            z-index: 1;
+        }
+
+        .values-header {
+            margin-bottom: 56px;
+        }
+
+        .values-header .eyebrow {
+            color: rgba(255, 208, 150, 0.65);
+        }
+
+        .values-header h2 {
+            color: #fffaf3;
+            font-size: clamp(1.5rem, 2.5vw, 2.1rem);
+            position: relative;
+        }
+
+        .values-header h2::after {
+            content: "";
+            display: block;
+            margin-top: 10px;
+            width: 36px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--gold), transparent);
+        }
+
+        .values-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2px;
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .value-block {
+            padding: 52px 40px;
+            background: rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: background 240ms ease;
+        }
+
+        .value-block:hover {
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .value-block__num {
+            display: block;
+            font-size: 3.8rem;
+            font-weight: 800;
+            font-family: Georgia, serif;
+            color: rgba(199, 154, 73, 0.16);
+            line-height: 1;
+            margin-bottom: 14px;
+            letter-spacing: -0.04em;
+        }
+
+        .value-block__name {
+            display: block;
+            font-size: clamp(1.5rem, 2.2vw, 2rem);
+            font-weight: 800;
+            font-family: Georgia, "Times New Roman", serif;
+            color: #fffaf3;
+            letter-spacing: -0.02em;
+            margin-bottom: 14px;
+        }
+
+        .value-block__desc {
+            font-size: 0.88rem;
+            color: rgba(255, 235, 210, 0.7);
+            line-height: 1.7;
+        }
+
+        /* ── Portal section ── */
+        .portal-section {
+            padding: 88px 0;
+            background: var(--paper-strong);
+        }
+
+        .portal-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            gap: 72px;
+            align-items: start;
+        }
+
+        .portal-intro h2 {
+            font-size: clamp(1.5rem, 2.5vw, 2.1rem);
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-bottom: 16px;
+            position: relative;
+        }
+
+        .portal-intro h2::after {
+            content: "";
+            display: block;
+            margin-top: 10px;
+            width: 36px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--brand), var(--gold));
+        }
+
+        .portal-intro p {
+            color: var(--muted);
+            font-size: 0.97rem;
+            line-height: 1.72;
+            margin-bottom: 14px;
+        }
+
+        .process-flow {
+            display: grid;
+            gap: 0;
+        }
+
+        .process-step {
+            display: grid;
+            grid-template-columns: 38px 1fr;
+            gap: 18px;
+            padding: 22px 0;
+            border-bottom: 1px solid rgba(90, 62, 40, 0.08);
+            align-items: start;
+        }
+
+        .process-step:last-child {
+            border-bottom: none;
+        }
+
+        .process-step__num {
+            width: 38px;
+            height: 38px;
+            background: var(--brand);
+            color: #fffaf3;
+            font-size: 0.78rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .process-step__body strong {
+            display: block;
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: var(--ink);
+            margin-bottom: 4px;
+        }
+
+        .process-step__body span {
+            font-size: 0.83rem;
+            color: var(--muted);
+            line-height: 1.65;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1px;
+            background: rgba(90, 62, 40, 0.1);
+            border: 1px solid rgba(90, 62, 40, 0.1);
+            margin-top: 72px;
+        }
+
+        .feature-item {
+            display: grid;
+            grid-template-columns: 44px 1fr;
+            gap: 16px;
+            padding: 24px;
+            background: var(--paper-strong);
+            align-items: start;
+        }
+
+        .feature-item__icon {
+            width: 44px;
+            height: 44px;
+            background: rgba(132, 26, 45, 0.07);
+            border: 1px solid rgba(132, 26, 45, 0.12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            flex-shrink: 0;
+        }
+
+        .feature-item__body strong {
+            display: block;
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: var(--ink);
+            margin-bottom: 4px;
+        }
+
+        .feature-item__body span {
+            font-size: 0.83rem;
+            color: var(--muted);
+            line-height: 1.65;
+        }
+
+        /* ── CTA ── */
+        .about-cta {
+            padding: 60px 0;
+            background: linear-gradient(135deg, #3d0812 0%, #841a2d 100%);
+            color: #fffaf3;
+            border-top: 1px solid rgba(199, 154, 73, 0.28);
+        }
+
+        .about-cta__inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 32px;
+            flex-wrap: wrap;
+        }
+
+        .about-cta h2 {
+            color: #fffaf3;
+            font-size: clamp(1.3rem, 2.2vw, 1.75rem);
+            margin: 0 0 6px;
+        }
+
+        .about-cta p {
+            color: rgba(255, 235, 210, 0.68);
+            font-size: 0.93rem;
+            margin: 0;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 900px) {
+            .pvm-item {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .pvm-item__label::after {
+                display: none;
+            }
+
+            .pvm-item__body {
+                padding-left: 0;
+            }
+
+            .values-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .portal-layout {
+                grid-template-columns: 1fr;
+                gap: 48px;
+            }
+
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .about-cta__inner {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .creds-inner {
+                gap: 28px;
+                justify-content: flex-start;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .about-hero__meta-sep {
+                display: none;
+            }
+
+            .value-block {
+                padding: 36px 24px;
+            }
+        }
+
+        /* ── Platform Guide Box UI for Cards ── */
+        .page-section .card {
+            padding: 2.25rem;
+            border-radius: 0 !important;
+            border: 1px solid rgba(132, 26, 45, 0.08);
+            border-left: 4px solid var(--gold);
+            background: rgba(255, 253, 249, 0.85);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            box-shadow: 0 8px 24px rgba(54, 29, 16, 0.04);
+            transition: transform 250ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 250ms ease;
+        }
+
+        .page-section .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 14px 32px rgba(54, 29, 16, 0.08);
+        }
+
+        .page-section .card--amber {
+            border-left-color: var(--brand);
+        }
+
+        .page-section .card .eyebrow {
+            font-size: 0.75rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            font-weight: 800;
+            color: var(--gold-deep);
+            border-bottom: 1px solid rgba(132, 26, 45, 0.08);
+            padding-bottom: 10px;
+            display: inline-block;
+            margin-bottom: 16px;
+        }
+
+        .page-section .card p {
+            color: #5a4d44;
+            line-height: 1.65;
+            font-size: 0.92rem;
+        }
+
+        .page-section .card ul {
+            list-style: none;
+            padding-left: 0;
+            margin-top: 0.75rem;
+        }
+
+        .page-section .card ul li {
+            position: relative;
+            padding-left: 1.25rem;
+            margin-bottom: 0.65rem;
+            color: #5a4d44;
+            font-size: 0.92rem;
+            line-height: 1.55;
+        }
+
+        .page-section .card ul li strong {
+            color: var(--brand);
+        }
+
+        .page-section .card p strong {
+            color: var(--brand);
+        }
+
+        .page-section .card ul li::before {
+            content: '\203A';
+            /* Chevron icon */
+            position: absolute;
+            left: 0;
+            top: 0px;
+            color: var(--gold-deep);
+            font-size: 1.3rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+
+            .about-hero-introblock .about-hero__title,
+            .about-hero-introblock .lead,
+            .about-hero-actions {
+                animation: none !important;
+            }
+        }
     </style>
 </head>
-<body></body>
+
+<body>
+    <div class="page">
+        <div data-portal-shell data-active="about-portal"></div>
+
+        <main class="page-main">
+
+            <!-- ══ HERO ══ -->
+            <section class="about-hero">
+                <div class="about-hero__inner container">
+                    <div class="about-hero-introblock" style="animation: heroContentIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;">
+                        <h1 class="about-hero__title" id="about-portal-title">OSA Transaction<br>Guide Portal</h1>
+                        <p class="lead" id="about-portal-desc">The OSA Transaction Guide Portal is designed to support students in navigating
+                            Office of Student Affairs services with clarity and ease. It provides structured guidance
+                            for
+                            common transactions, along with an integrated chat assistant that offers real-time support
+                            and
+                            answers to frequently asked questions.
+
+                            With a focus on accessibility and efficiency, the portal ensures that students can quickly
+                            understand requirements, follow proper procedures, and complete their requests with
+                            confidence.
+                            All features are aligned with institutional standards to maintain accuracy, reliability, and
+                            a
+                            secure user experience.</p>
+                    </div>
+                    <div class="about-hero-actions inline-actions mt-lg" style="animation: heroPanelIn 0.85s cubic-bezier(0.2, 0.8, 0.2, 1) 0.15s both;">
+                        <a class="btn btn-primary" id="about-college-link" href="https://www.eac.edu.ph/about-eac/" target="_blank"
+                            rel="noopener noreferrer">About Emilio Aguinaldo College</a>
+                    </div>
+                </div>
+            </section>
+
+            <section class="page-section branded-surface">
+                <div class="container">
+                    <div>
+                        <p class="eyebrow" id="eac-institutional-heading">Emilio Aguinaldo College</p>
+                        <p class="lead mt-sm" id="about-institutional-intro">Mission, vision, and philosophy are stated as published on the College
+                            website.</p>
+                    </div>
+
+                    <div class="grid grid--2 mt-lg">
+                        <article class="card">
+                            <span class="eyebrow">Mission</span>
+                            <p class="mt-sm" id="about-mission">Emilio Aguinaldo College provides a learner-centered, inquiry-based, and
+                                socially relevant academic community.</p>
+                        </article>
+                        <article class="card card--amber">
+                            <span class="eyebrow">Vision</span>
+                            <p class="mt-sm" id="about-vision">Emilio Aguinaldo College envisions itself as an internationally recognized
+                                private non-sectarian academic institution rooted in the Filipino nationalist tradition
+                                that consistently pursues the advancement and welfare of humanity.</p>
+                        </article>
+                        <article class="card col-span-2">
+                            <span class="eyebrow">Philosophy</span>
+                            <p class="mt-sm" id="about-philosophy">Emilio Aguinaldo College is a private, non-sectarian, co-educational
+                                institution of learning that fosters equal and fair opportunities of education, the
+                                total development of our students, conscious of their national identity and their role
+                                in the global community.</p>
+                        </article>
+                        <article class="card col-span-2">
+                            <span class="eyebrow">Core values</span>
+                            <p class="mt-sm" id="about-core-values">As stated on the institutional site: <strong>Virtue</strong>,
+                                <strong>Excellence</strong>, and <strong>Service</strong>.
+                            </p>
+                        </article>
+                    </div>
+                    <div class="note mt-lg" id="about-eac-source-note">
+                        <strong>Source:</strong> Content above is taken from the official <a
+                            href="https://www.eac.edu.ph/about-eac/" target="_blank" rel="noopener noreferrer">About
+                            EAC</a> page. For the full institutional narrative, history, and updates, click the link
+                        above.
+                    </div>
+                </div>
+            </section>
+
+            <section class="page-section">
+                <div class="container">
+                    <div>
+                        <p class="eyebrow">OSA Cavite Campus</p>
+                        <h2 class="section-heading">Official Office of Student Affairs Summary (Cavite-Focused)</h2>
+                        <p class="lead mt-sm" id="about-osa-summary">
+                            The Office of Student Affairs (OSA) is an academic-support unit responsible for programs and
+                            services that develop the non-academic aspects of student life.
+                            Each school year, OSA conducts need-based and student-focused activities designed to
+                            strengthen Emilian values and life skills in alignment with institutional goals.
+                        </p>
+                    </div>
+
+                    <div class="grid grid--2 mt-lg">
+                        <article class="card">
+                            <span class="eyebrow">Duties and functions</span>
+                            <ul id="about-duties-list">
+                                <li>Acts as the link between EAC administration and the student body.</li>
+                                <li>Creates opportunities for active student participation in college affairs.</li>
+                                <li>Oversees student councils and organizations with guidance on leadership and
+                                    development.</li>
+                                <li>Coordinates with recognized organizations to ensure alignment with school rules and
+                                    policies.</li>
+                            </ul>
+                        </article>
+
+                        <article class="card">
+                            <span class="eyebrow">Core services offered</span>
+                            <p class="mt-sm" id="about-osa-services-desc">OSA administers a wide range of services that support student welfare, discipline, guidance, and co-curricular development across the Cavite campus.</p>
+                            <ul id="about-services-list">
+                                <li>Student Orientation</li>
+                                <li>Scholarship Applications and Inquiries</li>
+                                <li>Accreditation of Student Councils and Student Organizations</li>
+                                <li>Student Conduct and Discipline</li>
+                                <li>Student Manual Development and Review</li>
+                                <li>Issuance of Clearance and Good Moral Character Certificate</li>
+                                <li>Lost and Found Item Documentation</li>
+                            </ul>
+                        </article>
+
+                        <article class="card">
+                            <span class="eyebrow">Cavite contact details</span>
+                            <p id="about-contact-phone"><strong>Telephone:</strong> (046) 416-43-41 local 115</p>
+                            <p class="mt-sm" id="about-contact-email"><strong>Email:</strong> <a
+                                    href="mailto:studentaffairs.cvt@eac.edu.ph">studentaffairs.cvt@eac.edu.ph</a></p>
+                            <p class="mt-sm" id="about-contact-address"><strong>Address:</strong> Gov. D. Mangubat Ave., Brgy. Burol Main, City of
+                                Dasmariñas, Cavite 4114, Philippines</p>
+                        </article>
+
+                        <article class="card">
+                            <span class="eyebrow">Cavite files and forms</span>
+                            <ul id="about-files-list">
+                                <li><a href="https://drive.google.com/file/d/1Sk4s2GnO7SGkEaDnmXNBqjZP1a10Y9qR/view?usp=sharing"
+                                        target="_blank" rel="noopener noreferrer" class="osa-link-gradient"
+                                        style="font-size: 0.92rem;">EAC-C Student Manual</a></li>
+                                <li><a href="https://www.eac.edu.ph/wp-content/uploads/2021/01/EAC-STUDENT-SOCIAL-MEDIA-POLICY-FINAL1.pdf"
+                                        target="_blank" rel="noopener noreferrer" class="osa-link-gradient"
+                                        style="font-size: 0.92rem;">EAC-C Social Media Policy</a></li>
+                                <li><a href="https://www.eac.edu.ph/wp-content/uploads/2021/08/QF-OSA-010-07.15.2021-Rev.01-Scholarship-Application-OSA-FORMS-2021-2.doc"
+                                        target="_blank" rel="noopener noreferrer" class="osa-link-gradient"
+                                        style="font-size: 0.92rem;">EAC-C Scholarship Application</a></li>
+                                <li><a href="https://www.eac.edu.ph/wp-content/uploads/2021/08/QF-OSA-012-07.15.2021-Rev.01-Incident-Report.doc"
+                                        target="_blank" rel="noopener noreferrer" class="osa-link-gradient"
+                                        style="font-size: 0.92rem;">EAC-C Incident Report</a></li>
+                                <li><a href="https://www.eac.edu.ph/wp-content/uploads/2021/08/QF-OSA-013-07.15.2021-Rev.0Academic-Leave-of-Absence-Application-Form.doc"
+                                        target="_blank" rel="noopener noreferrer" class="osa-link-gradient"
+                                        style="font-size: 0.92rem;">EAC-C Academic Leave Application</a></li>
+                            </ul>
+                        </article>
+                    </div>
+
+                    <div class="note mt-lg" id="about-reference-note">
+                        <strong>Reference:</strong> This section summarizes official OSA information with a
+                        Cavite-campus focus.
+                        For full details, policies, and updates, visit
+                        <a class="osa-link-gradient" id="about-reference-link" href="https://www.eac.edu.ph/osa/" target="_blank"
+                            rel="noopener noreferrer">Office of Student Affairs</a>.
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            function readAboutContent() {
+                try {
+                    return JSON.parse(localStorage.getItem("osaAboutContent") || "{}");
+                } catch (e) {
+                    return {};
+                }
+            }
+
+            var saved = readAboutContent();
+            if (!saved || typeof saved !== "object") return;
+
+            var school = saved.school || {};
+            var portal = saved.portal || {};
+            var coreValues = Array.isArray(saved.coreValues) ? saved.coreValues.filter(function (item) {
+                return item && (item.label || item.desc);
+            }) : [];
+
+            var portalTitle = document.getElementById("about-portal-title");
+            var portalDesc = document.getElementById("about-portal-desc");
+            var institutionalHeading = document.getElementById("eac-institutional-heading");
+            var institutionalIntro = document.getElementById("about-institutional-intro");
+            var collegeLink = document.getElementById("about-college-link");
+            var mission = document.getElementById("about-mission");
+            var vision = document.getElementById("about-vision");
+            var philosophy = document.getElementById("about-philosophy");
+            var values = document.getElementById("about-core-values");
+            var osaSummary = document.getElementById("about-osa-summary");
+            var osaServicesDesc = document.getElementById("about-osa-services-desc");
+            var dutiesList = document.getElementById("about-duties-list");
+            var servicesList = document.getElementById("about-services-list");
+            var filesList = document.getElementById("about-files-list");
+            var phone = document.getElementById("about-contact-phone");
+            var email = document.getElementById("about-contact-email");
+            var address = document.getElementById("about-contact-address");
+            var eacSourceNote = document.getElementById("about-eac-source-note");
+            var referenceNote = document.getElementById("about-reference-note");
+            var referenceLink = document.getElementById("about-reference-link");
+            function isSafeExternalLink(url) {
+                return /^https?:\/\//i.test(String(url || "").trim());
+            }
+
+            if (portalTitle && portal.title) {
+                portalTitle.innerHTML = String(portal.title).replace(/\n/g, "<br>");
+            }
+            if (portalDesc && portal.desc) {
+                portalDesc.textContent = portal.desc;
+            }
+            if (institutionalHeading) {
+                institutionalHeading.textContent = school.name || school.abbr || institutionalHeading.textContent;
+            }
+            if (institutionalIntro && saved.institutionalIntro) {
+                institutionalIntro.textContent = saved.institutionalIntro;
+            }
+            if (collegeLink && saved.collegeLink) {
+                collegeLink.href = saved.collegeLink;
+            }
+            if (mission && saved.mission) {
+                mission.textContent = saved.mission;
+            }
+            if (vision && saved.vision) {
+                vision.textContent = saved.vision;
+            }
+            if (philosophy && saved.philosophy) {
+                philosophy.textContent = saved.philosophy;
+            }
+            if (values && saved.coreValuesText) {
+                values.textContent = saved.coreValuesText;
+            } else if (values && coreValues.length) {
+                values.innerHTML = coreValues.map(function (item) {
+                    var label = item.label ? "<strong>" + item.label + "</strong>" : "";
+                    var desc = item.desc ? " - " + item.desc : "";
+                    return label + desc;
+                }).join("<br>");
+            }
+            if (osaSummary && saved.osaSummary) {
+                osaSummary.textContent = saved.osaSummary;
+            }
+            if (osaServicesDesc && saved.osaServicesDesc) {
+                osaServicesDesc.textContent = saved.osaServicesDesc;
+            }
+            if (dutiesList && Array.isArray(saved.duties) && saved.duties.length) {
+                dutiesList.innerHTML = saved.duties.map(function (item) {
+                    return "<li>" + item + "</li>";
+                }).join("");
+            }
+            if (servicesList && Array.isArray(saved.services) && saved.services.length) {
+                servicesList.innerHTML = saved.services.map(function (item) {
+                    return "<li>" + item + "</li>";
+                }).join("");
+            }
+            if (filesList && Array.isArray(saved.files) && saved.files.length) {
+                filesList.innerHTML = saved.files.map(function (item) {
+                    if (!item || !item.title) return "";
+                    var href = isSafeExternalLink(item.link) ? item.link : "";
+                    if (!href) return "";
+                    return '<li><a href="' + href + '" target="_blank" rel="noopener noreferrer" class="osa-link-gradient" style="font-size: 0.92rem;">' + item.title + '</a></li>';
+                }).join("");
+            }
+            if (phone && school.phone) {
+                phone.innerHTML = "<strong>Telephone:</strong> " + school.phone;
+            }
+            if (email && school.email) {
+                email.innerHTML = '<strong>Email:</strong> <a href="mailto:' + school.email + '">' + school.email + "</a>";
+            }
+            if (address && school.address) {
+                address.innerHTML = "<strong>Address:</strong> " + school.address;
+            }
+            if (eacSourceNote && saved.eacSourceNote) {
+                eacSourceNote.innerHTML = saved.eacSourceNote;
+            }
+            if (referenceNote) {
+                if (saved.referenceVisible === false) {
+                    referenceNote.style.display = "none";
+                } else {
+                    referenceNote.style.display = "";
+                    var refText = String(saved.referenceNote || "").trim()
+                        .replace(/^reference:\s*/i, "")
+                        .replace(/\s*office of student affairs\.?\s*$/i, "")
+                        .replace(/\s+$/, "");
+                    var refHref = isSafeExternalLink(saved.referenceLink) ? saved.referenceLink : "https://www.eac.edu.ph/osa/";
+                    referenceNote.innerHTML =
+                        '<strong>Reference:</strong> ' +
+                        (refText || "This section summarizes official OSA information with a Cavite-campus focus. For full details, policies, and updates, visit ") +
+                        ' <a class="osa-link-gradient" id="about-reference-link" href="' + refHref + '" target="_blank" rel="noopener noreferrer">Office of Student Affairs</a>.';
+                }
+            }
+            if (referenceLink && isSafeExternalLink(saved.referenceLink)) {
+                referenceLink.href = saved.referenceLink;
+            }
+        });
+    </script>
+</body>
+
 </html>

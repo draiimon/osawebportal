@@ -1,15 +1,1521 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light">
+    <title>Announcements · OSA Transaction Guide Portal</title>
+    <link rel="icon" type="image/png" href="/assets/images/eac-emblem.png">
+    <link rel="apple-touch-icon" href="/assets/images/eac-emblem.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="/css/osa-design.css?v=40">
     <link rel="stylesheet" href="/css/osa-ai.css?v=45">
     <link rel="stylesheet" href="/css/osa-chat-widget-island.min.css?v=4">
     <script src="/assets/js/portal-shell.js?v=44" defer></script>
     <script src="/assets/js/osa-chat-loader.js?v=66" defer></script>
     <script src="/assets/js/osa-api-client.js?v=2" defer></script>
+
+    <style>
+        :root {
+            --ann-edge: clamp(8px, 1.4vw, 18px);
+            --ann-edge-mobile: 10px;
+            --ann-brand: #841a2d;
+            --ann-brand-deep: #5c101d;
+            --ann-gold: #c79a49;
+            --ann-ink: #1c1917;
+            --ann-muted: #675a4f;
+            --ann-paper: #fffdf9;
+            --ann-line: rgba(90, 62, 40, 0.12);
+            --ann-shadow: 0 18px 42px rgba(54, 29, 16, 0.08);
+            --ann-font: 'Plus Jakarta Sans', -apple-system, sans-serif;
+            --ann-serif: Georgia, 'Times New Roman', serif;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: linear-gradient(180deg, rgba(255, 252, 248, 0.98), rgba(251, 246, 238, 0.96));
+            color: var(--ann-ink);
+            font-family: var(--ann-font);
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        img {
+            display: block;
+            max-width: 100%;
+        }
+
+        .page {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .page-main {
+            flex: 1;
+            padding: 0;
+        }
+
+        .ann-hero {
+            position: relative;
+            overflow: hidden;
+            isolation: isolate;
+            background: linear-gradient(180deg, rgba(255, 252, 248, 0.97), rgba(251, 246, 238, 0.94));
+            border-bottom: 1px solid rgba(90, 62, 40, 0.08);
+            margin-top: calc(var(--nav-h) * -1);
+            padding: var(--nav-h) var(--ann-edge) 18px;
+        }
+
+        .ann-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            z-index: -2;
+            background:
+                linear-gradient(135deg, rgba(132, 26, 45, 0.09), transparent 54%),
+                url("/assets/images/eac-photo.png") center/cover no-repeat;
+            opacity: 0.28;
+            pointer-events: none;
+        }
+
+        .ann-hero::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            z-index: -1;
+            background:
+                radial-gradient(circle at right 18%, rgba(199, 154, 73, 0.18), transparent 30%),
+                linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(250, 244, 236, 0.92));
+            pointer-events: none;
+        }
+
+        .ann-hero-inner {
+            width: 100%;
+            display: block;
+        }
+
+        .ann-hero-copy {
+            padding: 16px 0 12px;
+            max-width: 860px;
+            background: transparent;
+            border: none;
+            box-shadow: none;
+        }
+
+        .ann-kicker {
+            display: inline-block;
+            margin-bottom: 14px;
+            font-size: 0.92rem;
+            font-weight: 900;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: var(--ann-brand);
+        }
+
+        .ann-hero h1 {
+            font-family: var(--ann-serif);
+            font-size: clamp(1.85rem, 3vw, 2.45rem);
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+            margin-bottom: 10px;
+            color: var(--ann-ink);
+        }
+
+        .ann-hero p {
+            max-width: 62ch;
+            font-size: 0.92rem;
+            line-height: 1.58;
+            color: #5b4d44;
+        }
+
+        .ann-hero p strong {
+            color: var(--ann-ink);
+            font-weight: 800;
+        }
+
+        .ann-hero-actions {
+            margin-top: 16px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .ann-primary,
+        .ann-secondary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 42px;
+            padding: 0 18px;
+            border: none;
+            cursor: pointer;
+            font-family: var(--ann-font);
+            font-size: 0.8rem;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+            transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease, border-color 180ms ease;
+            white-space: nowrap;
+        }
+
+        .ann-primary {
+            background: var(--ann-gold);
+            color: #2f1908;
+            box-shadow: 0 14px 30px rgba(199, 154, 73, 0.28);
+        }
+
+        .ann-primary:hover {
+            background: #d3a752;
+            transform: translateY(-2px);
+            box-shadow: 0 18px 34px rgba(199, 154, 73, 0.36);
+        }
+
+        .ann-secondary {
+            background: rgba(255, 253, 249, 0.76);
+            color: var(--ann-brand);
+            border: 1px solid rgba(132, 26, 45, 0.14);
+        }
+
+        .ann-secondary:hover {
+            background: rgba(132, 26, 45, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .ann-toolbar {
+            width: 100%;
+            padding: 22px var(--ann-edge) 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: stretch;
+            align-items: stretch;
+        }
+
+        .ann-toolbar--search {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .ann-search-block {
+            width: 100%;
+            max-width: 920px;
+        }
+
+        .ann-search-label {
+            display: block;
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--ann-brand);
+            margin-bottom: 8px;
+        }
+
+        .ann-search {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            min-width: 0;
+            padding: 12px 18px;
+            background: rgba(255, 253, 249, 0.98);
+            border: 1.5px solid var(--ann-line);
+            border-radius: 0 !important;
+            transition: border-color 0.18s ease, box-shadow 0.18s ease;
+            box-shadow: 0 10px 28px rgba(54, 29, 16, 0.06);
+        }
+
+        .ann-search:focus-within {
+            border-color: rgba(132, 26, 45, 0.32);
+            box-shadow: 0 0 0 3px rgba(132, 26, 45, 0.1), 0 14px 36px rgba(54, 29, 16, 0.08);
+        }
+
+        .ann-search svg {
+            color: var(--ann-muted);
+            flex-shrink: 0;
+            width: 18px;
+            height: 18px;
+        }
+
+        .ann-search input {
+            width: 100%;
+            min-width: 0;
+            border: none;
+            outline: none;
+            background: transparent;
+            color: var(--ann-ink);
+            font-family: var(--ann-font);
+            font-size: 1.02rem;
+            font-weight: 500;
+        }
+
+        .ann-search input::placeholder {
+            color: var(--ann-muted);
+            font-weight: 400;
+        }
+
+        .ann-section {
+            width: 100%;
+            padding: 20px var(--ann-edge) 80px;
+        }
+
+        .ann-meta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .ann-count {
+            font-size: 0.82rem;
+            color: var(--ann-muted);
+            font-weight: 500;
+        }
+
+        .ann-count strong {
+            color: var(--ann-ink);
+        }
+
+        .ann-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 22px;
+        }
+
+        .ann-card {
+            background: linear-gradient(180deg, #fffdfb, #faf4ec);
+            border: 1px solid rgba(90, 62, 40, 0.1);
+            border-top: 3px solid var(--ann-brand);
+            border-radius: 0 !important;
+            box-shadow: 0 18px 42px rgba(54, 29, 16, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 220ms ease, border-color 220ms ease,
+                border-top-color 220ms ease;
+            animation: cardUp 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+
+        .ann-card:hover {
+            transform: translateY(-8px) scale(1.01);
+            box-shadow: 0 28px 56px rgba(54, 29, 16, 0.16);
+            border-color: rgba(132, 26, 45, 0.22);
+            border-top-color: var(--ann-gold);
+        }
+
+        @keyframes heroContentIn {
+            from {
+                opacity: 0;
+                transform: translateY(18px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes cardUp {
+            from {
+                opacity: 0;
+                transform: translateY(14px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .ann-card-top {
+            position: absolute;
+            inset: auto 16px 16px 16px;
+            z-index: 2;
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+            padding: 0;
+            border: none;
+        }
+
+        .ann-card-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--ann-brand);
+            margin-bottom: 6px;
+            flex-shrink: 0;
+            border-radius: 999px !important;
+            box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.14);
+        }
+
+        .ann-card-top-main {
+            min-width: 0;
+            flex: 1;
+            display: grid;
+            gap: 5px;
+        }
+
+        .ann-card-pub {
+            font-size: 0.66rem;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: rgba(255, 241, 224, 0.9);
+        }
+
+        .ann-card-date {
+            font-size: 0.74rem;
+            color: rgba(255, 239, 220, 0.78);
+        }
+
+        .ann-card-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: flex-end;
+            align-self: flex-start;
+        }
+
+        .ann-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 11px;
+            font-size: 0.62rem;
+            font-weight: 800;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            border-radius: 999px !important;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        .ann-pill.category {
+            background: rgba(255, 250, 244, 0.88);
+            color: var(--ann-brand);
+            border: 1px solid rgba(255, 250, 244, 0.5);
+        }
+
+        .ann-media {
+            position: relative;
+            overflow: hidden;
+            background: rgba(132, 26, 45, 0.06);
+            min-height: 290px;
+        }
+
+        .ann-media img {
+            width: 100%;
+            height: 290px;
+            object-fit: cover;
+            transition: transform 0.36s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .ann-card:hover .ann-media img {
+            transform: scale(1.07);
+        }
+
+        .ann-media-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.7fr) minmax(88px, 0.9fr);
+            gap: 2px;
+            height: 290px;
+            background: rgba(132, 26, 45, 0.06);
+        }
+
+        .ann-media-grid.is-double {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .ann-media-grid.is-double .ann-media-grid-cell {
+            grid-row: 1 / span 2;
+        }
+
+        .ann-media-grid-cell {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ann-media-grid-cell.is-featured {
+            grid-row: 1 / span 2;
+        }
+
+        .ann-media-grid.is-triple .ann-media-grid-cell.is-stack:last-child {
+            grid-column: 2;
+            grid-row: 2;
+        }
+
+        .ann-media-grid-cell img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .ann-card:hover .ann-media-grid-cell img {
+            transform: scale(1.05);
+        }
+
+        .ann-more-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(28, 25, 23, 0.52);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 800;
+        }
+
+        .ann-media-fade {
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(180deg, rgba(10, 8, 8, 0.02) 0%, rgba(10, 8, 8, 0.08) 38%, rgba(18, 12, 10, 0.84) 100%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .ann-card-body {
+            padding: 16px 16px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .ann-card-title {
+            font-family: var(--ann-serif);
+            font-size: 1.16rem;
+            line-height: 1.16;
+            color: var(--ann-ink);
+        }
+
+        .ann-card-summary {
+            font-size: 0.84rem;
+            color: var(--ann-muted);
+            line-height: 1.58;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .ann-card-foot {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 0 16px 16px;
+            flex-wrap: wrap;
+        }
+
+        .ann-view-btn,
+        .ann-share-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            min-height: 38px;
+            padding: 0 14px;
+            font-family: var(--ann-font);
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.18s ease;
+            border-radius: 0 !important;
+        }
+
+        .ann-view-btn {
+            background: rgba(132, 26, 45, 0.08);
+            color: var(--ann-brand);
+            border: 1px solid rgba(132, 26, 45, 0.14);
+            font-weight: 800;
+        }
+
+        .ann-view-btn:hover {
+            background: rgba(132, 26, 45, 0.13);
+            border-color: rgba(132, 26, 45, 0.28);
+            transform: translateY(-1px);
+        }
+
+        .ann-share-btn {
+            background: rgba(255, 253, 249, 0.76);
+            color: var(--ann-muted);
+            border: 1px solid var(--ann-line);
+            font-weight: 700;
+        }
+
+        .ann-share-btn:hover {
+            color: var(--ann-ink);
+            border-color: rgba(90, 62, 40, 0.22);
+        }
+
+        .ann-empty {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 72px 20px;
+            border: 1.5px dashed rgba(90, 62, 40, 0.18);
+            background: rgba(255, 253, 249, 0.5);
+        }
+
+        .ann-empty-icon {
+            font-size: 2.4rem;
+            margin-bottom: 12px;
+            opacity: 0.45;
+        }
+
+        .ann-empty p {
+            font-size: 0.9rem;
+            color: var(--ann-muted);
+        }
+
+        #announcement-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            pointer-events: none;
+            background: rgba(14, 10, 8, 0);
+            transition: opacity 0.28s ease, background 0.28s ease;
+        }
+
+        #announcement-modal.open {
+            opacity: 1;
+            pointer-events: all;
+            background: rgba(14, 10, 8, 0.96);
+        }
+
+        .ann-modal-chrome {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 22px 14px;
+            background: linear-gradient(180deg, rgba(14, 10, 8, 0.88) 0%, transparent 100%);
+            flex-shrink: 0;
+        }
+
+        .ann-modal-info {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .ann-modal-counter {
+            font-size: 0.68rem;
+            font-weight: 800;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--ann-gold);
+        }
+
+        .ann-modal-name {
+            font-family: var(--ann-serif);
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1.2;
+        }
+
+        .ann-modal-ref {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.45);
+        }
+
+        .ann-modal-close {
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
+            min-height: 40px;
+            aspect-ratio: 1 / 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #fff;
+            cursor: pointer;
+            padding: 0;
+            border-radius: 999px !important;
+            flex: 0 0 40px;
+            line-height: 1;
+            transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+        }
+
+        .ann-modal-close:hover {
+            background: rgba(255, 255, 255, 0.18);
+            border-color: rgba(255, 255, 255, 0.22);
+            transform: scale(1.04);
+        }
+
+        .ann-modal-close svg {
+            width: 16px;
+            height: 16px;
+            stroke: currentColor;
+            stroke-width: 2.2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+        }
+
+        .ann-modal-stage {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            padding: 0 max(18px, 3vw);
+        }
+
+        .ann-modal-img-wrap {
+            position: relative;
+            max-width: 100%;
+            max-height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ann-modal-img-wrap img {
+            max-width: min(94vw, 1320px);
+            max-height: 58vh;
+            object-fit: contain;
+            box-shadow: 0 24px 72px rgba(0, 0, 0, 0.7);
+            transition: opacity 0.22s ease, transform 0.22s ease;
+        }
+
+        .ann-modal-img-wrap img.transitioning {
+            opacity: 0;
+            transform: scale(0.96);
+        }
+
+        .ann-modal-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            color: #fff;
+            cursor: pointer;
+            padding: 0;
+            border-radius: 999px !important;
+            transition: background 0.18s ease, border-color 0.18s ease;
+            z-index: 2;
+        }
+
+        .ann-modal-nav:hover {
+            background: rgba(255, 255, 255, 0.18);
+            border-color: rgba(255, 255, 255, 0.24);
+        }
+
+        .ann-modal-nav:disabled {
+            opacity: 0.18;
+            cursor: default;
+        }
+
+        .ann-modal-nav svg {
+            width: 18px;
+            height: 18px;
+            stroke: currentColor;
+            stroke-width: 2.2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+        }
+
+        .ann-modal-prev {
+            left: 12px;
+        }
+
+        .ann-modal-next {
+            right: 12px;
+        }
+
+        .ann-modal-strip {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px 4px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            flex-shrink: 0;
+        }
+
+        .ann-modal-strip::-webkit-scrollbar {
+            display: none;
+        }
+
+        .ann-modal-thumb {
+            width: 52px;
+            height: 52px;
+            object-fit: cover;
+            flex-shrink: 0;
+            border: 2px solid transparent;
+            opacity: 0.52;
+            cursor: pointer;
+            transition: opacity 0.18s ease, border-color 0.18s ease;
+        }
+
+        .ann-modal-thumb.active {
+            border-color: var(--ann-gold);
+            opacity: 1;
+        }
+
+        .ann-modal-details {
+            width: 100%;
+            padding: 12px max(14px, 2vw) 20px;
+            flex-shrink: 0;
+        }
+
+        .ann-modal-card {
+            max-width: 1120px;
+            margin: 0 auto;
+            background: rgba(255, 253, 249, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid var(--ann-brand);
+            overflow: hidden;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .ann-modal-top {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            padding: 12px 16px 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .ann-modal-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 5px 10px;
+            font-size: 0.66rem;
+            font-weight: 800;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            border-radius: 999px !important;
+        }
+
+        .ann-modal-pill.date {
+            color: var(--ann-gold);
+            background: rgba(199, 154, 73, 0.12);
+            border: 1px solid rgba(199, 154, 73, 0.22);
+        }
+
+        .ann-modal-pill.category {
+            color: rgba(255, 255, 255, 0.7);
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .ann-modal-body {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(180px, 240px);
+            gap: 18px;
+            padding: 16px;
+            align-items: start;
+        }
+
+        .ann-modal-copy {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .ann-modal-label {
+            font-size: 0.6rem;
+            font-weight: 800;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: rgba(199, 154, 73, 0.8);
+        }
+
+        .ann-modal-text {
+            font-size: 0.92rem;
+            color: rgba(255, 255, 255, 0.82);
+            line-height: 1.7;
+            white-space: pre-line;
+        }
+
+        .ann-modal-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .ann-modal-meta-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .ann-modal-meta-label {
+            font-size: 0.58rem;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.32);
+        }
+
+        .ann-modal-meta-value {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.84);
+        }
+
+        .ann-modal-foot {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding: 12px 16px 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.07);
+        }
+
+        .ann-modal-hint {
+            font-size: 0.74rem;
+            color: rgba(255, 255, 255, 0.36);
+            line-height: 1.4;
+        }
+
+        .ann-modal-share {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            min-height: 38px;
+            padding: 0 18px;
+            background: var(--ann-gold);
+            color: #2f1908;
+            border: none;
+            font-family: var(--ann-font);
+            font-size: 0.8rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: background 0.18s ease, transform 0.18s ease;
+        }
+
+        .ann-modal-share:hover {
+            background: #d3a752;
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 1120px) {
+            .ann-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 800px) {
+            .ann-hero,
+            .ann-toolbar,
+            .ann-section {
+                padding-left: var(--ann-edge-mobile);
+                padding-right: var(--ann-edge-mobile);
+            }
+
+            .ann-hero {
+                padding-top: var(--nav-h);
+                padding-bottom: 14px;
+            }
+
+            .ann-hero-copy {
+                padding: 12px 0 10px;
+            }
+
+            .ann-search-block {
+                max-width: none;
+            }
+
+            .ann-search {
+                padding: 11px 14px;
+            }
+
+            .ann-search input {
+                font-size: 0.98rem;
+            }
+
+            .ann-grid {
+                grid-template-columns: 1fr;
+                gap: 14px;
+            }
+
+            .ann-media img,
+            .ann-media-grid {
+                height: 260px;
+                min-height: 260px;
+            }
+
+            .ann-media-grid-cell img {
+                height: 100%;
+            }
+
+            .ann-view-btn,
+            .ann-share-btn {
+                flex: 1 1 calc(50% - 4px);
+            }
+
+            #announcement-modal {
+                display: block;
+                overflow-y: auto;
+            }
+
+            .ann-modal-chrome {
+                position: sticky;
+                top: 0;
+                background: rgba(14, 10, 8, 0.95);
+                backdrop-filter: blur(10px);
+                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            }
+
+            .ann-modal-stage {
+                min-height: 50vh;
+                padding: 16px 8px;
+            }
+
+            .ann-modal-img-wrap {
+                width: 100%;
+                height: 100%;
+            }
+
+            .ann-modal-img-wrap img {
+                max-width: 96vw;
+                max-height: 48vh;
+            }
+
+            .ann-modal-details {
+                padding: 10px 10px 40px;
+            }
+
+            .ann-modal-nav {
+                width: 36px;
+                height: 36px;
+            }
+
+            .ann-modal-close {
+                width: 36px;
+                height: 36px;
+                min-width: 36px;
+                min-height: 36px;
+                flex-basis: 36px;
+            }
+
+            .ann-modal-prev {
+                left: 4px;
+            }
+
+            .ann-modal-next {
+                right: 48px;
+            }
+
+            .ann-modal-body {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .ann-kicker {
+                font-size: 0.82rem;
+                letter-spacing: 0.18em;
+            }
+
+            .ann-hero h1 {
+                font-size: clamp(1.55rem, 7vw, 2rem);
+                margin-bottom: 8px;
+            }
+
+            .ann-hero p {
+                font-size: 0.86rem;
+            }
+
+            .ann-media img,
+            .ann-media-grid {
+                height: 236px;
+                min-height: 236px;
+            }
+
+            .ann-card-foot {
+                padding: 0 12px 12px;
+            }
+
+            .ann-card-top {
+                inset: auto 12px 12px 12px;
+            }
+
+            .ann-card-body {
+                padding: 12px 12px 8px;
+            }
+
+            .ann-modal-foot {
+                align-items: stretch;
+            }
+
+            .ann-modal-share {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
 </head>
-<body></body>
+
+<body>
+    <div class="page">
+        <div data-portal-shell data-active="announcements"></div>
+
+        <main class="page-main">
+            <section class="ann-hero">
+                <div class="ann-hero-inner">
+                    <div class="ann-hero-copy" data-animate="hero-copy">
+                        <div style="animation: heroContentIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;">
+                            <div class="ann-kicker">Announcement</div>
+                            <h1>OSA News Room</h1>
+                            <p><strong>All posts</strong> are listed below—advisories, schedules, events, and reminders together.
+                                Use <strong>search</strong> to find what you need by title, date, category, or any keyword.</p>
+                        </div>
+                        <div class="ann-hero-actions" style="animation: heroPanelIn 0.85s cubic-bezier(0.2, 0.8, 0.2, 1) 0.15s both;">
+                            <button type="button" class="ann-primary" data-chat-open>Open Ask OSA</button>
+                            <a class="ann-secondary" href="/lost-and-found/">Open Lost &amp; Found</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="ann-toolbar ann-toolbar--search" data-animate="reveal" role="search">
+                <div class="ann-search-block">
+                    <label class="ann-search-label" for="ann-search">Search all posts</label>
+                    <div class="ann-search">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <circle cx="11" cy="11" r="8" />
+                            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                        </svg>
+                        <input type="search" id="ann-search"
+                            placeholder="Try a title, date, category (e.g. advisory), or keyword…" autocomplete="off"
+                            enterkeyhint="search">
+                    </div>
+                </div>
+            </div>
+
+            <section class="ann-section" data-animate="reveal">
+                <div class="ann-meta">
+                    <p class="ann-count" id="ann-count"></p>
+                </div>
+                <div class="ann-grid" id="announcement-page-list"></div>
+            </section>
+        </main>
+    </div>
+
+    <div id="announcement-modal" role="dialog" aria-modal="true" aria-label="Announcement viewer">
+        <div class="ann-modal-chrome">
+            <div class="ann-modal-info">
+                <div class="ann-modal-counter" id="ann-modal-counter">Announcement 1 of 1</div>
+                <div class="ann-modal-name" id="ann-modal-name"></div>
+                <div class="ann-modal-ref" id="ann-modal-ref"></div>
+            </div>
+            <button class="ann-modal-close" id="ann-modal-close" aria-label="Close viewer">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M18 6 6 18"></path>
+                    <path d="M6 6 18 18"></path>
+                </svg>
+            </button>
+        </div>
+
+        <div class="ann-modal-stage">
+            <button class="ann-modal-nav ann-modal-prev" id="ann-modal-prev" aria-label="Previous image">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M15 18 9 12l6-6"></path>
+                </svg>
+            </button>
+            <div class="ann-modal-img-wrap">
+                <img id="ann-modal-img" src="" alt="">
+            </div>
+            <button class="ann-modal-nav ann-modal-next" id="ann-modal-next" aria-label="Next image">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="m9 6 6 6-6 6"></path>
+                </svg>
+            </button>
+        </div>
+
+        <div class="ann-modal-strip" id="ann-modal-strip"></div>
+
+        <div class="ann-modal-details">
+            <div class="ann-modal-card">
+                <div class="ann-modal-top" id="ann-modal-top"></div>
+                <div class="ann-modal-body">
+                    <div class="ann-modal-copy">
+                        <div class="ann-modal-label">Full Update</div>
+                        <p class="ann-modal-text" id="ann-modal-text"></p>
+                    </div>
+                    <div class="ann-modal-meta" id="ann-modal-meta"></div>
+                </div>
+                <div class="ann-modal-foot">
+                    <p class="ann-modal-hint">Share this advisory if classmates need the same update.</p>
+                    <button class="ann-modal-share" id="ann-modal-share" type="button">Share Announcement</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var ANNOUNCEMENTS = [];
+
+        function hydrateAnnouncementsFromApi() {
+            if (!window.OSAApiClient || typeof window.OSAApiClient.loadAnnouncements !== 'function') {
+                return Promise.resolve();
+            }
+            return window.OSAApiClient.loadAnnouncements()
+                .then(function (apiAnnouncements) {
+                    if (!Array.isArray(apiAnnouncements) || !apiAnnouncements.length) return;
+                    ANNOUNCEMENTS = apiAnnouncements.map(function (item) {
+                        return {
+                            title: item.title || 'Announcement',
+                            category: item.category || 'Advisory',
+                            urgency: item.urgency || '',
+                            date: item.date || '',
+                            time: item.time || '',
+                            details: item.body || item.details || '',
+                            images: item.images || (item.imageUrl ? [item.imageUrl] : [])
+                        };
+                    });
+                })
+                .catch(function () {
+                    ANNOUNCEMENTS = [];
+                });
+        }
+
+        var currentAnnouncementSearch = '';
+        var ANN_MODAL = { items: [], itemIndex: 0, imgIndex: 0 };
+
+        function escapeHtml(value) {
+            return String(value == null ? '' : value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        function getFilteredAnnouncements() {
+            return ANNOUNCEMENTS.filter(function (item) {
+                var q = currentAnnouncementSearch.toLowerCase().trim();
+                if (!q) return true;
+                var hay = [
+                    item.title,
+                    item.details,
+                    item.date,
+                    item.time,
+                    item.category,
+                    item.urgency
+                ].map(function (s) { return (s || '').toLowerCase(); }).join(' ');
+                return hay.indexOf(q) >= 0;
+            });
+        }
+
+        function renderAnnouncementGrid() {
+            var list = document.getElementById('announcement-page-list');
+            var countEl = document.getElementById('ann-count');
+            var items = getFilteredAnnouncements();
+
+            var q = currentAnnouncementSearch.trim();
+            var countLine = '<strong>' + items.length + '</strong> announcement' + (items.length !== 1 ? 's' : '');
+            countLine += q ? ' matching “' + escapeHtml(q) + '”' : ' — search to narrow results';
+            countEl.innerHTML = countLine;
+
+            if (!items.length) {
+                list.innerHTML = '<div class="ann-empty"><div class="ann-empty-icon">🗞️</div><p>No announcements match your search.</p></div>';
+                return;
+            }
+
+            list.innerHTML = items.map(function (item, index) {
+                var imgs = item.images || [];
+                var isMulti = imgs.length > 1;
+                var delay = (index * 0.055).toFixed(2);
+                var mediaBlock = '';
+
+                if (!imgs.length) {
+                    mediaBlock = '<div style="display:flex;align-items:center;justify-content:center;height:100%;"><span style="font-size:2rem;opacity:0.3">🖼️</span></div>';
+                } else if (!isMulti) {
+                    mediaBlock = '<img src="' + imgs[0] + '" alt="' + item.title + '" loading="lazy" decoding="async">';
+                } else {
+                    var gridClass = 'ann-media-grid';
+                    if (imgs.length === 2) gridClass += ' is-double';
+                    if (imgs.length === 3) gridClass += ' is-triple';
+                    var extraCount = imgs.length - 3;
+                    var featured = '<div class="ann-media-grid-cell is-featured"><img src="' + imgs[0] + '" alt="' + item.title + '" loading="lazy" decoding="async"></div>';
+                    var stacked = imgs.slice(1, 3).map(function (src, idx) {
+                        var overlay = (idx === 1 && extraCount > 0)
+                            ? '<div class="ann-more-overlay">+' + extraCount + '</div>' : '';
+                        return '<div class="ann-media-grid-cell is-stack"><img src="' + src + '" alt="" loading="lazy" decoding="async">' + overlay + '</div>';
+                    }).join('');
+                    mediaBlock = '<div class="' + gridClass + '">' + featured + stacked + '</div>';
+                }
+
+                var badges = '<span class="ann-pill category">' + (item.category || 'Advisory') + '</span>';
+
+                return '<article class="ann-card" data-announcement-index="' + index + '" style="animation-delay:' + delay + 's">'
+                    + '<div class="ann-media">'
+                    + mediaBlock
+                    + '<div class="ann-media-fade"></div>'
+                    + '<div class="ann-card-top">'
+                    + '<div class="ann-card-dot"></div>'
+                    + '<div class="ann-card-top-main">'
+                    + '<span class="ann-card-pub">OSA Bulletin</span>'
+                    + '<span class="ann-card-date">' + (item.date || '') + ((item.time || '') ? ' · ' + item.time : '') + '</span>'
+                    + '</div>'
+                    + '<div class="ann-card-badges">' + badges + '</div>'
+                    + '</div>'
+                    + '</div>'
+                    + '<div class="ann-card-body">'
+                    + '<h2 class="ann-card-title">' + (item.title || '') + '</h2>'
+                    + '<p class="ann-card-summary">' + (item.details || '') + '</p>'
+                    + '</div>'
+                    + '<div class="ann-card-foot">'
+                    + '<button class="ann-view-btn" type="button" data-open-announcement="' + index + '">'
+                    + 'View Bulletin'
+                    + '</button>'
+                    + '<button class="ann-share-btn" type="button" data-share-announcement="' + index + '">'
+                    + '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>'
+                    + 'Share'
+                    + '</button>'
+                    + '</div>'
+                    + '</article>';
+            }).join('');
+
+            list.querySelectorAll('[data-announcement-index]').forEach(function (card) {
+                card.addEventListener('click', function (event) {
+                    if (event.target.closest('[data-share-announcement]')) return;
+                    var idx = parseInt(card.getAttribute('data-announcement-index'), 10);
+                    openAnnouncementModal(items, idx);
+                });
+            });
+
+            list.querySelectorAll('[data-open-announcement]').forEach(function (button) {
+                button.addEventListener('click', function (event) {
+                    event.stopPropagation();
+                    var idx = parseInt(button.getAttribute('data-open-announcement'), 10);
+                    openAnnouncementModal(items, idx);
+                });
+            });
+
+            list.querySelectorAll('[data-share-announcement]').forEach(function (button) {
+                button.addEventListener('click', function (event) {
+                    event.stopPropagation();
+                    var idx = parseInt(button.getAttribute('data-share-announcement'), 10);
+                    shareAnnouncement(items[idx], button);
+                });
+            });
+        }
+
+        function shareAnnouncement(item, trigger) {
+            var title = (item && item.title) || 'Announcement';
+            var text = 'OSA Announcement: ' + title;
+            if (navigator.share) {
+                navigator.share({ title: title, text: text, url: window.location.href });
+            } else {
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(text + ' — ' + window.location.href);
+                }
+                if (trigger) {
+                    var previous = trigger.innerHTML;
+                    trigger.textContent = 'Copied!';
+                    setTimeout(function () { trigger.innerHTML = previous; }, 1800);
+                }
+            }
+        }
+
+        function openAnnouncementModal(items, itemIndex) {
+            ANN_MODAL.items = items;
+            ANN_MODAL.itemIndex = itemIndex;
+            ANN_MODAL.imgIndex = 0;
+            document.body.style.overflow = 'hidden';
+            document.getElementById('announcement-modal').classList.add('open');
+            renderAnnouncementModal();
+        }
+
+        function closeAnnouncementModal() {
+            document.getElementById('announcement-modal').classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        function renderAnnouncementModal() {
+            var item = ANN_MODAL.items[ANN_MODAL.itemIndex];
+            if (!item) return;
+            var imgs = item.images || [];
+            var cur = ANN_MODAL.imgIndex;
+            var modalImg = document.getElementById('ann-modal-img');
+            var src = imgs[cur] || '';
+            var preload = new Image();
+
+            document.getElementById('ann-modal-counter').textContent = 'Announcement ' + (ANN_MODAL.itemIndex + 1) + ' of ' + ANN_MODAL.items.length;
+            document.getElementById('ann-modal-name').textContent = item.title || '';
+            document.getElementById('ann-modal-ref').textContent = (item.date || '') + ((item.time || '') ? ' · ' + item.time : '');
+
+            modalImg.classList.add('transitioning');
+            preload.onload = function () {
+                modalImg.src = src;
+                modalImg.alt = item.title || '';
+                setTimeout(function () { modalImg.classList.remove('transitioning'); }, 30);
+            };
+            preload.onerror = function () {
+                modalImg.src = src;
+                modalImg.classList.remove('transitioning');
+            };
+            preload.src = src;
+
+            document.getElementById('ann-modal-prev').disabled = cur === 0;
+            document.getElementById('ann-modal-next').disabled = cur >= imgs.length - 1;
+
+            var strip = document.getElementById('ann-modal-strip');
+            if (imgs.length > 1) {
+                strip.style.display = 'flex';
+                strip.innerHTML = imgs.map(function (image, index) {
+                    return '<img class="ann-modal-thumb' + (index === cur ? ' active' : '') + '" src="' + image + '" alt="Announcement image ' + (index + 1) + '" data-ann-thumb="' + index + '" loading="lazy">';
+                }).join('');
+                strip.querySelectorAll('[data-ann-thumb]').forEach(function (thumb) {
+                    thumb.addEventListener('click', function () {
+                        ANN_MODAL.imgIndex = parseInt(thumb.getAttribute('data-ann-thumb'), 10);
+                        renderAnnouncementModal();
+                    });
+                });
+            } else {
+                strip.style.display = 'none';
+                strip.innerHTML = '';
+            }
+
+            var topHtml = '<span class="ann-modal-pill date">' + (item.date || '') + ((item.time || '') ? ' · ' + item.time : '') + '</span>'
+                + '<span class="ann-modal-pill category">' + (item.category || 'Advisory') + '</span>';
+            document.getElementById('ann-modal-top').innerHTML = topHtml;
+
+            document.getElementById('ann-modal-text').textContent = item.details || 'No announcement details available.';
+
+            document.getElementById('ann-modal-meta').innerHTML =
+                '<div class="ann-modal-meta-item"><div class="ann-modal-meta-label">Category</div><div class="ann-modal-meta-value">' + (item.category || '—') + '</div></div>'
+                + '<div class="ann-modal-meta-item"><div class="ann-modal-meta-label">Urgency</div><div class="ann-modal-meta-value">' + (item.urgency || 'Standard') + '</div></div>'
+                + '<div class="ann-modal-meta-item"><div class="ann-modal-meta-label">Posted</div><div class="ann-modal-meta-value">' + (item.date || '—') + ((item.time || '') ? ' · ' + item.time : '') + '</div></div>'
+                + '<div class="ann-modal-meta-item"><div class="ann-modal-meta-label">Attachments</div><div class="ann-modal-meta-value">' + (imgs.length || 0) + ' image' + ((imgs.length || 0) !== 1 ? 's' : '') + '</div></div>';
+
+            document.getElementById('ann-modal-share').onclick = function () {
+                shareAnnouncement(item);
+            };
+        }
+
+        function announcementModalGo(direction) {
+            var item = ANN_MODAL.items[ANN_MODAL.itemIndex];
+            if (!item) return;
+            var imgs = item.images || [];
+            var nextIndex = ANN_MODAL.imgIndex + direction;
+            if (nextIndex < 0 || nextIndex >= imgs.length) return;
+            ANN_MODAL.imgIndex = nextIndex;
+            renderAnnouncementModal();
+        }
+
+        document.getElementById('ann-modal-close').addEventListener('click', closeAnnouncementModal);
+        document.getElementById('ann-modal-prev').addEventListener('click', function () { announcementModalGo(-1); });
+        document.getElementById('ann-modal-next').addEventListener('click', function () { announcementModalGo(1); });
+        document.getElementById('announcement-modal').addEventListener('click', function (event) {
+            if (event.target === this) closeAnnouncementModal();
+        });
+
+        document.addEventListener('keydown', function (event) {
+            var modal = document.getElementById('announcement-modal');
+            if (!modal.classList.contains('open')) return;
+            if (event.key === 'Escape') closeAnnouncementModal();
+            if (event.key === 'ArrowLeft') announcementModalGo(-1);
+            if (event.key === 'ArrowRight') announcementModalGo(1);
+        });
+
+        (function () {
+            var modal = document.getElementById('announcement-modal');
+            var startX = 0;
+            var startY = 0;
+            var trackingSwipe = false;
+            var swipeCanceled = false;
+            var ANN_SWIPE_MIN_X = 68;
+            var ANN_SWIPE_MAX_Y = 52;
+            var ANN_SWIPE_RATIO = 1.45;
+
+            modal.addEventListener('touchstart', function (event) {
+                if (event.touches.length !== 1) return;
+                startX = event.touches[0].clientX;
+                startY = event.touches[0].clientY;
+                trackingSwipe = true;
+                swipeCanceled = false;
+            }, { passive: true });
+
+            modal.addEventListener('touchmove', function (event) {
+                if (!trackingSwipe || swipeCanceled) return;
+                if (event.touches.length !== 1) return;
+
+                var moveX = event.touches[0].clientX - startX;
+                var moveY = event.touches[0].clientY - startY;
+                if (Math.abs(moveY) > ANN_SWIPE_MAX_Y && Math.abs(moveY) >= Math.abs(moveX)) {
+                    swipeCanceled = true;
+                }
+            }, { passive: true });
+
+            modal.addEventListener('touchend', function (event) {
+                if (!trackingSwipe) return;
+                trackingSwipe = false;
+                if (event.changedTouches.length !== 1) return;
+                if (!modal.classList.contains('open')) return;
+                if (swipeCanceled) return;
+
+                var item = ANN_MODAL.items[ANN_MODAL.itemIndex];
+                var imgs = item && item.images ? item.images : [];
+                if (imgs.length <= 1) return;
+
+                var dx = event.changedTouches[0].clientX - startX;
+                var dy = event.changedTouches[0].clientY - startY;
+                var absDx = Math.abs(dx);
+                var absDy = Math.abs(dy);
+                if (absDx >= ANN_SWIPE_MIN_X && absDy <= ANN_SWIPE_MAX_Y && absDx > absDy * ANN_SWIPE_RATIO) {
+                    announcementModalGo(dx < 0 ? 1 : -1);
+                }
+            }, { passive: true });
+
+            modal.addEventListener('touchcancel', function () {
+                trackingSwipe = false;
+                swipeCanceled = false;
+            }, { passive: true });
+        })();
+
+        document.getElementById('ann-search').addEventListener('input', function (event) {
+            currentAnnouncementSearch = event.target.value || '';
+            renderAnnouncementGrid();
+        });
+
+        window.addEventListener('DOMContentLoaded', function () {
+            hydrateAnnouncementsFromApi().finally(function () {
+                renderAnnouncementGrid();
+            });
+        });
+    </script>
+</body>
+
 </html>
