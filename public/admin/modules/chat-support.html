@@ -330,6 +330,7 @@
     .ticket-status-badge.in_progress { background: #dbeafe; color: #1e40af; }
     .ticket-status-badge.resolved { background: #dcfce7; color: #166534; }
     .ticket-status-badge.approved { background: #dcfce7; color: #166534; }
+    .ticket-status-badge.waiting { background: #fae8ff; color: #7e22ce; }
 
     .empty-tickets {
       padding: 50px 24px;
@@ -1179,8 +1180,9 @@
         <div class="status-tabs">
           <button type="button" class="status-tab active" data-status="open">Open</button>
           <button type="button" class="status-tab" data-status="in_progress">In Progress</button>
-          <button type="button" class="status-tab" data-status="resolved">Resolved</button>
           <button type="button" class="status-tab" data-status="approved">Approved</button>
+          <button type="button" class="status-tab" data-status="waiting">Waiting at OSA</button>
+          <button type="button" class="status-tab" data-status="resolved">Resolved</button>
         </div>
         <div style="padding:10px 12px;border-bottom:1px solid var(--line);background:#fff">
           <input id="ticket-search" type="search" placeholder="Search by case ID or student name" style="width:100%;border:1.5px solid var(--line);padding:8px 10px;font:inherit;font-size:12.5px;border-radius:2px;outline:none">
@@ -1225,6 +1227,7 @@
                  (both close the live chat) and confused staff. The Resolve flow
                  already ends the session when the staff submits the resolution. -->
             <button type="button" class="btn-resolve hidden" id="btn-end-session" style="background:#9f1239" hidden>End Session</button>
+            <button type="button" class="btn-resolve hidden" id="btn-complete-visit" style="background:#7e22ce"><span class="btn-label-full">Mark Visit Completed</span><span class="btn-label-short">Done</span></button>
             <button type="button" class="btn-resolve" id="btn-resolve-ticket"><span class="btn-label-full">Resolve Ticket</span><span class="btn-label-short">Resolve</span></button>
             <button type="button" class="btn-resolve hidden" id="btn-delete-ticket" style="background:#7f1d1d"><span class="btn-label-full">Delete Ticket</span><span class="btn-label-short">Delete</span></button>
           </div>
@@ -1481,6 +1484,7 @@
   var btnEndSession  = document.getElementById('btn-end-session');
   var btnResolve     = document.getElementById('btn-resolve-ticket');
   var btnDeleteTicket= document.getElementById('btn-delete-ticket');
+  var btnCompleteVisit = document.getElementById('btn-complete-visit');
   var btnRefresh     = document.getElementById('btn-refresh');
   var btnBack        = document.getElementById('btn-back');
   var ticketSearch   = document.getElementById('ticket-search');
@@ -1583,8 +1587,16 @@
   }
 
   function statusBadgeLabel(t) {
+    if (t.arrived_at && !t.visit_completed_at && String(t.status || '') !== 'resolved') {
+      return t.queue_position ? ('waiting · #' + t.queue_position) : 'waiting at OSA';
+    }
     if (String(t.appointment_status || '').toLowerCase() === 'approved') return 'approved';
     return String(t.status || '').replace('_', ' ');
+  }
+  function statusBadgeClass(t) {
+    if (t.arrived_at && !t.visit_completed_at && String(t.status || '') !== 'resolved') return 'waiting';
+    if (String(t.appointment_status || '').toLowerCase() === 'approved') return 'approved';
+    return String(t.status || 'open');
   }
 
   function toDatetimeLocalValue(iso) {
@@ -1888,9 +1900,15 @@
     var lfBadge = (t.ticket_type === 'claim')
       ? '<span style="font-size:10px;font-weight:800;background:#fde68a;color:#78350f;padding:2px 7px;border-radius:99px;margin-left:6px;letter-spacing:0.04em">LF CLAIM</span>'
       : '';
-    var statusClass = (String(t.appointment_status || '').toLowerCase() === 'approved') ? 'approved' : (t.status || 'open');
+    var statusClass = statusBadgeClass(t);
     var endPrompt = t.needs_end_session_prompt
       ? '<div class="ticket-item__time" style="margin-top:6px;color:#b45309;font-weight:700">Idle live chat. Type <code>/end session</code> to close.</div>'
+      : '';
+    // Highlight waiting students with arrival time + queue position so staff
+    // can pull them up in arrival order.
+    var arrivedRow = (t.arrived_at && !t.visit_completed_at && t.status !== 'resolved')
+      ? '<div class="ticket-item__time" style="margin-top:6px;color:#7e22ce;font-weight:700">Arrived ' + fmtDate(t.arrived_at) +
+        (t.queue_position ? ' · Queue #' + t.queue_position + ' of ' + t.queue_total : '') + '</div>'
       : '';
 
     item.innerHTML =
@@ -1901,6 +1919,7 @@
       '<div class="ticket-item__case">' + escapeHtml(t.case_id) + '</div>' +
       '<div class="ticket-item__concern">' + escapeHtml(t.concern) + '</div>' +
       '<div class="ticket-item__time" style="margin-top:5px">' + fmtDate(t.created_at) + '</div>' +
+      arrivedRow +
       endPrompt;
   }
 
@@ -2008,6 +2027,11 @@
     if (btnApproveAppt) btnApproveAppt.disabled = t.status === 'resolved' || String(t.appointment_status || '').toLowerCase() === 'approved';
     if (btnEndSession) btnEndSession.disabled = t.status === 'resolved';
     if (btnDeleteTicket) btnDeleteTicket.classList.toggle('hidden', t.status !== 'resolved');
+    if (btnCompleteVisit) {
+      var canCompleteVisit = !!(t.arrived_at && !t.visit_completed_at && t.status !== 'resolved');
+      btnCompleteVisit.classList.toggle('hidden', !canCompleteVisit);
+      btnCompleteVisit.disabled = !canCompleteVisit;
+    }
 
     // Show panels
     convoEmpty.classList.add('hidden');
@@ -2601,6 +2625,46 @@
           state.busy = false;
           btnApproveAppt.disabled = false;
           showToast('Network error while approving appointment.', { variant: 'danger', duration: 4500 });
+        });
+      });
+    });
+  }
+
+  if (btnCompleteVisit) {
+    btnCompleteVisit.addEventListener('click', function () {
+      if (!state.currentCaseId || state.busy) return;
+      openActionModal({
+        variant: 'success',
+        title: 'Mark visit as completed?',
+        message: 'This advances the student\u2019s visit timeline to "Completed" and notifies them in chat. The ticket stays open so you can still resolve it formally afterwards.',
+        confirmText: 'Mark Completed',
+        cancelText: 'Cancel',
+      }).then(function (result) {
+        if (!result) return;
+        state.busy = true;
+        btnCompleteVisit.disabled = true;
+        fetch(API + '/chat/tickets/' + encodeURIComponent(state.currentCaseId) + '/complete-visit', {
+          method: 'POST',
+          headers: apiHeaders(),
+          body: JSON.stringify({ staff_name: staffName() }),
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          state.busy = false;
+          if (!data.success) {
+            btnCompleteVisit.disabled = false;
+            showToast('Could not mark visit completed: ' + (data.message || 'Unknown error'), { variant: 'danger', duration: 4500 });
+            return;
+          }
+          btnCompleteVisit.classList.add('hidden');
+          loadMessages(state.currentSessionId, state.currentConcern);
+          loadTickets({ quiet: true });
+          showToast('Visit marked as completed.', { variant: 'success', duration: 2400 });
+        })
+        .catch(function () {
+          state.busy = false;
+          btnCompleteVisit.disabled = false;
+          showToast('Network error while marking visit completed.', { variant: 'danger', duration: 4500 });
         });
       });
     });

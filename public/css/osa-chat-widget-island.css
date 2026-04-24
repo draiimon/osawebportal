@@ -679,3 +679,115 @@
         bottom: calc(14px + env(safe-area-inset-bottom, 0px)) !important;
     }
 }
+
+/* ── Visit timeline (4-stage progress card inside chat) ─────────── */
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-visit-timeline {
+    background: rgba(255, 255, 255, 0.92) !important;
+    border: 0.5px solid rgba(132, 26, 45, 0.18) !important;
+    box-shadow: 0 6px 20px rgba(132, 26, 45, 0.08) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 14px 14px 12px !important;
+    margin: 10px auto !important;
+    width: 100%;
+    max-width: 320px;
+    border-radius: 4px;
+    color: #4a2a30;
+    font-size: 12.5px;
+    line-height: 1.45;
+}
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-visit-timeline__title {
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-size: 10.5px;
+    color: #841a2d;
+    margin-bottom: 10px;
+}
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-visit-timeline__steps {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0;
+    margin-bottom: 10px;
+}
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-visit-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    flex: 0 0 auto;
+    text-align: center;
+    width: 56px;
+}
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-visit-step__dot {
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
+    background: #f3e3e6;
+    color: #841a2d;
+    font-size: 11px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid #e1c5cb;
+}
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-visit-step.is-done .osa-visit-step__dot {
+    background: #166534;
+    color: #fff;
+    border-color: #166534;
+}
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-visit-step.is-current .osa-visit-step__dot {
+    background: #841a2d;
+    color: #fff;
+    border-color: #841a2d;
+    box-shadow: 0 0 0 3px rgba(132, 26, 45, 0.15);
+}
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-visit-step__label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #6b4840;
+    letter-spacing: 0.02em;
+}
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-visit-step.is-current .osa-visit-step__label,
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-visit-step.is-done .osa-visit-step__label {
+    color: #4a2a30;
+}
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-visit-step__bar {
+    flex: 1 1 auto;
+    height: 2px;
+    background: #e1c5cb;
+    margin: 10px 2px 0;
+    border-radius: 2px;
+    align-self: flex-start;
+}
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-visit-timeline__detail {
+    color: #4a2a30;
+    font-size: 12px;
+    line-height: 1.5;
+}
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-visit-timeline__actions {
+    margin-top: 10px;
+}
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-visit-arrive-btn {
+    display: block;
+    width: 100%;
+    background: #841a2d;
+    color: #fff;
+    border: 0;
+    padding: 10px 14px;
+    font-weight: 700;
+    font-size: 12.5px;
+    letter-spacing: 0.02em;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-visit-arrive-btn:hover:not(:disabled) {
+    background: #6b1424;
+}
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-visit-arrive-btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}

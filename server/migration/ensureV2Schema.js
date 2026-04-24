@@ -95,6 +95,13 @@ const statements = [
   `ALTER TABLE IF EXISTS escalation_tickets ADD COLUMN IF NOT EXISTS appointment_notes TEXT`,
   `ALTER TABLE IF EXISTS escalation_tickets ADD COLUMN IF NOT EXISTS appointment_approved_at TIMESTAMPTZ`,
   `ALTER TABLE IF EXISTS escalation_tickets ADD COLUMN IF NOT EXISTS appointment_approved_by TEXT`,
+  // Visit-status timeline: students tap "I'm here" once they arrive at OSA;
+  // staff can mark the visit completed. Both timestamps drive the derived
+  // visit_state (submitted → scheduled → waiting → completed) shown in chat
+  // and the new "Waiting at OSA" admin filter.
+  `ALTER TABLE IF EXISTS escalation_tickets ADD COLUMN IF NOT EXISTS arrived_at TIMESTAMPTZ`,
+  `ALTER TABLE IF EXISTS escalation_tickets ADD COLUMN IF NOT EXISTS visit_completed_at TIMESTAMPTZ`,
+  `CREATE INDEX IF NOT EXISTS idx_escalation_tickets_arrived ON escalation_tickets (arrived_at) WHERE arrived_at IS NOT NULL AND visit_completed_at IS NULL`,
   // Preserve OSA data: drop the original ON DELETE CASCADE on session_id and
   // replace with ON DELETE SET NULL, so resolved/approved tickets and chat
   // history survive any cleanup of the originating chat_sessions row.

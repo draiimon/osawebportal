@@ -38,7 +38,27 @@ through the existing SSE infrastructure (no WebSocket layer). Endpoints in
 Per-message status (queued → sent → delivered → seen) is rendered as small
 checkmarks under user bubbles in `public/assets/js/osa-chat-widget.js` and
 persisted in the `osaChatThread` localStorage record. Cache-bust pins:
-loader `v=70`, widget `v=70`, `osa-ai.css?v=46`, island css `v=17`.
+loader `v=70`, widget `v=75`, `osa-ai.css?v=46`, island css `v=18`.
+
+## Visit Status (4-stage timeline)
+After OSA approves an appointment, the widget renders an in-thread "Visit Status"
+card with four steps: Submitted → Scheduled → Waiting at OSA → Completed.
+The card is updated in place from `visit_status` SSE events keyed by `case_id`.
+
+- Schema: `escalation_tickets.arrived_at`, `visit_completed_at` (see
+  `server/migration/ensureV2Schema.js`) plus a partial index for the live queue.
+- Endpoints (in `server/chat.js`):
+  - `POST /api/v1/chat/visit/arrive` — student taps "I'm here / Waiting at OSA"
+    on the timeline card; sets `arrived_at` and broadcasts queue positions.
+  - `GET  /api/v1/chat/visit/status?case_id=…` — returns `visit_state`,
+    `queue_position`, `queue_total`; used on widget reload.
+  - `POST /api/v1/chat/tickets/:caseId/complete-visit` (admin) — sets
+    `visit_completed_at`, advances the timeline to "Completed", and re-broadcasts
+    queue numbers so remaining waiters move up.
+- Admin UI (`public/admin/modules/chat-support.html`): new "Waiting at OSA"
+  status tab, purple `waiting · #N` badge, "Arrived HH:MM · Queue #N of M" row
+  on the ticket card, and a "Mark Visit Completed" topbar button visible only
+  while `arrived_at && !visit_completed_at`.
 
 ## Admin Chat Support page (`/admin/modules/chat-support`)
 Full-bleed, mobile-first redesign lives in the inline `<style>` block of

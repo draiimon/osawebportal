@@ -1195,6 +1195,125 @@
             scrollThread();
         }
 
+        // ── Visit timeline ────────────────────────────────────────
+        // A 4-stage progress bubble that lives inside the chat thread for an
+        // approved appointment. Re-rendered in place whenever we get a new
+        // `visit_status` SSE event so the student always sees their current
+        // queue position.
+        function visitTimelineId(caseId) {
+            return 'osa-visit-timeline-' + String(caseId || '').replace(/[^a-zA-Z0-9_-]/g, '');
+        }
+
+        function renderVisitTimeline(caseId, info) {
+            if (!caseId) return;
+            info = info || {};
+            var state = String(info.visit_state || info.state || 'submitted').toLowerCase();
+            var order = ['submitted', 'scheduled', 'waiting', 'completed'];
+            var labels = {
+                submitted: 'Submitted',
+                scheduled: 'Scheduled',
+                waiting: 'Waiting at OSA',
+                completed: 'Completed'
+            };
+            var activeIdx = Math.max(0, order.indexOf(state));
+            var stepsHtml = order.map(function (key, idx) {
+                var cls = 'osa-visit-step';
+                if (idx < activeIdx) cls += ' is-done';
+                else if (idx === activeIdx) cls += ' is-current';
+                return (
+                    '<div class="' + cls + '">' +
+                        '<div class="osa-visit-step__dot">' + (idx < activeIdx ? '&#10003;' : (idx + 1)) + '</div>' +
+                        '<div class="osa-visit-step__label">' + escapeHtml(labels[key]) + '</div>' +
+                    '</div>'
+                );
+            }).join('<div class="osa-visit-step__bar"></div>');
+
+            var detail = '';
+            if (state === 'scheduled') {
+                detail = 'Tap "I\u2019m here" once you arrive at the OSA office so we can add you to the queue.';
+            } else if (state === 'waiting') {
+                if (info.queue_position && info.queue_total) {
+                    detail = 'You are <strong>#' + Number(info.queue_position) + '</strong> of <strong>' + Number(info.queue_total) + '</strong> in the queue. Please wait nearby — staff will call you shortly.';
+                } else {
+                    detail = 'You are checked in. Please wait — staff will call you shortly.';
+                }
+            } else if (state === 'completed') {
+                detail = 'Your visit has been marked as completed. Salamat sa pagdaan sa OSA!';
+            } else {
+                detail = 'Your appointment request has been submitted. We will notify you here once it is approved and scheduled.';
+            }
+
+            var actions = '';
+            if (state === 'scheduled') {
+                actions = '<button type="button" class="osa-visit-arrive-btn" data-case="' + escapeHtml(caseId) + '">I\u2019m here / Waiting at OSA</button>';
+            }
+
+            var html =
+                '<div class="osa-visit-timeline">' +
+                    '<div class="osa-visit-timeline__title">Visit Status &middot; ' + escapeHtml(caseId) + '</div>' +
+                    '<div class="osa-visit-timeline__steps">' + stepsHtml + '</div>' +
+                    '<div class="osa-visit-timeline__detail">' + detail + '</div>' +
+                    (actions ? '<div class="osa-visit-timeline__actions">' + actions + '</div>' : '') +
+                '</div>';
+
+            var domId = visitTimelineId(caseId);
+            var existing = document.getElementById(domId);
+            if (existing) {
+                existing.innerHTML = html;
+                return;
+            }
+            var row = document.createElement('div');
+            row.className = 'osa-ai-msg osa-ai-msg--system';
+            row.id = domId;
+            row.innerHTML = html;
+            thread.appendChild(row);
+            revealRow(row);
+            scrollThread();
+        }
+
+        function requestVisitStatus(caseId) {
+            if (!caseId) return;
+            var bases = getApiBases();
+            if (!bases.length) return;
+            var qs = '?case_id=' + encodeURIComponent(caseId);
+            if (chatSessionId) qs += '&session_id=' + encodeURIComponent(chatSessionId);
+            fetch(bases[0] + '/api/v1/chat/visit/status' + qs, { credentials: 'same-origin' })
+                .then(function (r) { return r.ok ? r.json() : null; })
+                .then(function (data) {
+                    if (!data || !data.success) return;
+                    renderVisitTimeline(caseId, data);
+                })
+                .catch(function () {});
+        }
+
+        // Delegated click for the "I'm here" arrival button.
+        if (thread) {
+            thread.addEventListener('click', function (ev) {
+                var btn = ev.target && ev.target.closest && ev.target.closest('.osa-visit-arrive-btn');
+                if (!btn) return;
+                ev.preventDefault();
+                var caseId = btn.getAttribute('data-case');
+                if (!caseId || btn.disabled) return;
+                btn.disabled = true;
+                btn.textContent = 'Checking in…';
+                presenceFetch('/chat/visit/arrive', { case_id: caseId, session_id: chatSessionId || '' })
+                .then(function (data) {
+                    if (!data || !data.success) {
+                        btn.disabled = false;
+                        btn.textContent = 'I\u2019m here / Waiting at OSA';
+                        renderSystemBubble(String((data && data.message) || 'Hindi ka ma-check-in. Subukan ulit.'));
+                        return;
+                    }
+                    renderVisitTimeline(caseId, data);
+                })
+                .catch(function () {
+                    btn.disabled = false;
+                    btn.textContent = 'I\u2019m here / Waiting at OSA';
+                    renderSystemBubble('Network error. Subukan ulit ang check-in.');
+                });
+            });
+        }
+
         function parseStaffMessage(content, payload) {
             var raw = String(content || '').trim();
             if (!raw) return { label: '', text: '' };
@@ -1312,6 +1431,12 @@
                     return;
                 }
 
+                if (payload.type === 'visit_status') {
+                    var vCase = String(payload.case_id || '').trim();
+                    if (vCase) renderVisitTimeline(vCase, payload);
+                    return;
+                }
+
                 if (payload.type === 'staff_message') {
                     clearWaitingBanner();
                     setMode('staff');
@@ -1329,6 +1454,14 @@
 
                     if (payload.appointment_approved) {
                         setMode('staff');
+                        // Surface the 4-stage visit timeline as soon as OSA
+                        // approves the appointment so the student knows what
+                        // step is next (tap "I'm here" upon arrival).
+                        var apptCase = String(payload.case_id || '').trim();
+                        if (apptCase) {
+                            renderVisitTimeline(apptCase, { state: 'scheduled' });
+                            requestVisitStatus(apptCase);
+                        }
                     }
 
                     if (payload.session_closed) {
