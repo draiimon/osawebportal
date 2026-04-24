@@ -1,5 +1,5 @@
-const CACHE_VERSION = "osa-static-v1.0.13";
-const RUNTIME_CACHE = "osa-runtime-v1.0.13";
+const CACHE_VERSION = "osa-static-v1.0.12";
+const RUNTIME_CACHE = "osa-runtime-v1.0.12";
 
 const PRECACHE_URLS = [
   "/",
@@ -12,11 +12,10 @@ const PRECACHE_URLS = [
   "/about-portal",
   "/css/osa-design.css?v=40",
   "/css/osa-ai.css?v=45",
-  "/css/osa-chat-widget-island.min.css?v=4",
   "/assets/js/portal-shell.js?v=44",
   "/assets/js/osa-api-client.js?v=2",
-  "/assets/js/osa-chat-loader.js?v=66",
-  "/assets/js/osa-chat-widget.js?v=66",
+  "/assets/js/osa-chat-loader.js?v=65",
+  "/assets/js/osa-chat-widget.js?v=64",
   "/assets/images/eac-emblem.png",
 ];
 
@@ -78,7 +77,12 @@ self.addEventListener("fetch", (event) => {
             return (await caches.match("/preview")) || (await caches.match("/"));
           }
           const fallbackRoute = url.pathname.replace(/\/$/, "");
-          return (await caches.match(fallbackRoute)) || Response.error();
+          return (
+            (await caches.match(fallbackRoute)) ||
+            (await caches.match(`${fallbackRoute}/`)) ||
+            (await caches.match("/")) ||
+            (await caches.match("/preview"))
+          );
         })
     );
     return;
@@ -86,11 +90,25 @@ self.addEventListener("fetch", (event) => {
 
   if (isStaticAsset(url.pathname)) {
     event.respondWith(
-      caches.match(request).then((cached) => cached || fetch(request).then((response) => {
-        const clone = response.clone();
-        caches.open(RUNTIME_CACHE).then((cache) => cache.put(request, clone));
-        return response;
-      }))
+      caches.match(request).then((cached) => {
+        const networkFetch = fetch(request)
+          .then((response) => {
+            const clone = response.clone();
+            caches.open(RUNTIME_CACHE).then((cache) => cache.put(request, clone));
+            return response;
+          })
+          .catch(() => cached);
+        return cached || networkFetch;
+      })
     );
+    return;
   }
+
+  event.respondWith(
+    fetch(request).catch(async () => {
+      const cached = await caches.match(request);
+      if (cached) return cached;
+      throw new Error("Network unavailable and no cached response.");
+    })
+  );
 });
