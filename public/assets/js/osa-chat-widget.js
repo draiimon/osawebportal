@@ -243,29 +243,31 @@
         return m ? 'LF-' + m[1] : '';
     }
 
-    /** Buttons for claim visit type / day / time window (delegated `.osa-lf-appt-btn`). */
+    /**
+     * Buttons for claim visit type / time window (delegated `.osa-lf-appt-btn`).
+     * Preferred day is typed in chat — chip row removed because it overflowed
+     * the narrow bubble width on common screens. Server parses typed day names
+     * (Mon/Monday/etc.) directly from the next message in human-mode.
+     * Chip rows use flex-wrap inline so labels never get clipped.
+     */
     function lfPreferencePanelHtml(caseId) {
         var c = escapeHtml(caseId);
-        var days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
-        var dayBtns = days.map(function (d) {
-            return '<button type="button" class="osa-ai-chip osa-lf-appt-btn" data-lf-case="' + c + '" data-lf-field="day" data-lf-value="' + d + '">' + d + '</button>';
-        }).join('');
+        var wrapStyle = 'display:flex;flex-wrap:wrap;gap:6px;overflow:visible;margin-bottom:12px;padding:0';
         return '' +
             '<details class="osa-ai-rich" open style="margin-top:6px">' +
             '<summary>Claim visit preferences</summary>' +
-            '<p style="margin:0 0 10px;font-size:13px;color:#675a4f;">Choose visit type, weekday, and time window. OSA staff will confirm the final schedule.</p>' +
+            '<p style="margin:0 0 10px;font-size:13px;color:#675a4f;">Choose a visit type and time window below. For your <strong>preferred day</strong>, simply type it in the chat (e.g., Mon, Tue, Wed, Thu, or Fri). OSA staff will confirm the final schedule.</p>' +
             '<p style="margin:0 0 6px;font-size:12px;font-weight:700;color:#1c1917">Visit type</p>' +
-            '<div class="osa-ai-chips" style="margin-bottom:12px">' +
+            '<div class="osa-ai-chips" style="' + wrapStyle + '">' +
             '<button type="button" class="osa-ai-chip osa-lf-appt-btn" data-lf-case="' + c + '" data-lf-field="track" data-lf-value="claiming">Claiming appointment</button>' +
             '<button type="button" class="osa-ai-chip osa-lf-appt-btn" data-lf-case="' + c + '" data-lf-field="track" data-lf-value="private">Private appointment</button>' +
             '</div>' +
-            '<p style="margin:0 0 6px;font-size:12px;font-weight:700;color:#1c1917">Preferred day</p>' +
-            '<div class="osa-ai-chips" style="margin-bottom:12px">' + dayBtns + '</div>' +
             '<p style="margin:0 0 6px;font-size:12px;font-weight:700;color:#1c1917">Time window</p>' +
-            '<div class="osa-ai-chips">' +
+            '<div class="osa-ai-chips" style="' + wrapStyle + ';margin-bottom:0">' +
             '<button type="button" class="osa-ai-chip osa-lf-appt-btn" data-lf-case="' + c + '" data-lf-field="window" data-lf-value="Morning">Morning</button>' +
             '<button type="button" class="osa-ai-chip osa-lf-appt-btn" data-lf-case="' + c + '" data-lf-field="window" data-lf-value="Afternoon">Afternoon</button>' +
             '</div>' +
+            '<p style="margin:10px 0 0;font-size:12px;color:#65574d"><em>Tip: type your preferred day here in the chat (Mon / Tue / Wed / Thu / Fri).</em></p>' +
             '</details>';
     }
 
@@ -288,7 +290,7 @@
             return '' +
                 '<div class="osa-ai-rich" style="margin-top:6px">' +
                 '<p style="margin:0 0 6px"><strong>Lost &amp; Found</strong></p>' +
-                '<p style="margin:0;font-size:13px;color:#675a4f">Walang available na claimable item ngayon. Try again later o bisitahin ang ' +
+                '<p style="margin:0;font-size:13px;color:#675a4f">No claimable items are available right now. Please try again later or visit the ' +
                 '<a href="/lost-and-found" target="_blank" rel="noopener">Lost &amp; Found page</a>.</p>' +
                 '</div>';
         }
@@ -311,12 +313,12 @@
                 '</button>';
         }).join('');
         var more = items.length > max
-            ? '<p style="margin:6px 0 0;font-size:12px;color:#65574d">Ipinapakita ' + visible.length + ' sa ' + items.length + ' items. ' +
-              '<a href="/lost-and-found" target="_blank" rel="noopener">Tingnan lahat sa Lost &amp; Found page</a>.</p>'
+            ? '<p style="margin:6px 0 0;font-size:12px;color:#65574d">Showing ' + visible.length + ' of ' + items.length + ' items. ' +
+              '<a href="/lost-and-found" target="_blank" rel="noopener">View all on the Lost &amp; Found page</a>.</p>'
             : '';
         return '' +
             '<div>' +
-            '<p style="margin:0 0 8px"><strong>Pumili ng item para mag-claim:</strong></p>' +
+            '<p style="margin:0 0 8px"><strong>Tap an item to start your claim:</strong></p>' +
             rows +
             more +
             '</div>';

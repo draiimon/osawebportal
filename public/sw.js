@@ -15,7 +15,7 @@ const PRECACHE_URLS = [
   "/assets/js/portal-shell.js?v=44",
   "/assets/js/osa-api-client.js?v=2",
   "/assets/js/osa-chat-loader.js?v=70",
-  "/assets/js/osa-chat-widget.js?v=73",
+  "/assets/js/osa-chat-widget.js?v=74",
   "/assets/images/eac-emblem.png",
 ];
 

@@ -1538,13 +1538,73 @@ function registerChatRoutes(app, apiPrefix) {
               : `Your session is now in live human support mode (Case ID: ${activeHumanTicket.case_id}). ` +
                 `AI is paused while OSA staff handles this concern.`;
 
+          // Inline parse of typed claim-visit preferences while in human-mode.
+          // The student widget no longer renders Mon–Fri chips (they overflowed
+          // the bubble), so the student types the day instead — we accept day
+          // and time-window words here so the ticket is updated without
+          // requiring a separate button tap.
+          if (
+            activeHumanTicket.ticket_type === "claim" &&
+            activeHumanTicket.appointment_track &&
+            (!activeHumanTicket.preferred_day || !activeHumanTicket.preferred_time_window)
+          ) {
+            const lcMsg = String(message || "").toLowerCase();
+            const dayMap = {
+              mon: "Mon", monday: "Mon",
+              tue: "Tue", tues: "Tue", tuesday: "Tue",
+              wed: "Wed", weds: "Wed", wednesday: "Wed",
+              thu: "Thu", thur: "Thu", thurs: "Thu", thursday: "Thu",
+              fri: "Fri", friday: "Fri",
+            };
+            let parsedDay = null;
+            const dayMatch = lcMsg.match(/\b(monday|tuesday|wednesday|thursday|friday|mon|tues?|weds?|thurs?|thu|fri)\b/);
+            if (dayMatch) parsedDay = dayMap[dayMatch[1]] || null;
+            let parsedWindow = null;
+            if (/\b(morning|am|a\.m\.)\b/.test(lcMsg)) parsedWindow = "Morning";
+            else if (/\b(afternoon|pm|p\.m\.)\b/.test(lcMsg)) parsedWindow = "Afternoon";
+
+            const updates = [];
+            const params = [];
+            let p = 1;
+            if (parsedDay && !activeHumanTicket.preferred_day) {
+              updates.push(`preferred_day = $${p++}`);
+              params.push(parsedDay);
+            }
+            if (parsedWindow && !activeHumanTicket.preferred_time_window) {
+              updates.push(`preferred_time_window = $${p++}`);
+              params.push(parsedWindow);
+            }
+            if (updates.length) {
+              params.push(activeHumanTicket.case_id);
+              await db.query(
+                `UPDATE escalation_tickets SET ${updates.join(", ")}, updated_at = NOW() WHERE case_id = $${p}`,
+                params
+              );
+              if (parsedDay) activeHumanTicket.preferred_day = parsedDay;
+              if (parsedWindow) activeHumanTicket.preferred_time_window = parsedWindow;
+              try {
+                pushToAdminTickets({
+                  type: "ticket_updated",
+                  case_id: activeHumanTicket.case_id,
+                  preferred_day: activeHumanTicket.preferred_day,
+                  preferred_time_window: activeHumanTicket.preferred_time_window,
+                });
+              } catch (_) {}
+            }
+          }
+
           if (activeHumanTicket.appointment_status === "approved") {
             humanReply += ` ✅ Appointment Approved for Case ID ${activeHumanTicket.case_id}. Please wait for final schedule details from OSA staff in this chat.`;
           } else if (activeHumanTicket.ticket_type === "claim" && !activeHumanTicket.appointment_track) {
             humanReply +=
               ` For your visit, choose **Claiming Appointment** or **Private Appointment** using the chat buttons (or type those words).`;
           } else if (activeHumanTicket.ticket_type === "claim" && activeHumanTicket.appointment_track && (!activeHumanTicket.preferred_day || !activeHumanTicket.preferred_time_window)) {
-            humanReply += ` Please pick a preferred weekday and Morning or Afternoon using the buttons.`;
+            const need = [];
+            if (!activeHumanTicket.preferred_day) need.push("preferred weekday (type Mon, Tue, Wed, Thu, or Fri)");
+            if (!activeHumanTicket.preferred_time_window) need.push("time window (Morning or Afternoon — tap the button or type the word)");
+            humanReply += ` Please share your ${need.join(" and ")}.`;
+          } else if (activeHumanTicket.ticket_type === "claim" && activeHumanTicket.appointment_track && activeHumanTicket.preferred_day && activeHumanTicket.preferred_time_window) {
+            humanReply += ` Recorded preferences — Day: **${activeHumanTicket.preferred_day}**, Time: **${activeHumanTicket.preferred_time_window}**. OSA staff will confirm the final schedule in this chat.`;
           }
 
           await persistReply(sessionId, humanReply);
