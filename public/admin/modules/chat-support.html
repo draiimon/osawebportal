@@ -997,6 +997,61 @@
       opacity: 0.5; cursor: not-allowed; box-shadow: none;
     }
 
+    /* Action-modal variants (Approve / End / Delete confirmation) */
+    .modal-box--action {
+      max-width: 460px;
+      text-align: left;
+    }
+    .osa-action-modal__icon {
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 0 14px;
+      background: rgba(245,158,11,0.14);
+      color: #b45309;
+      box-shadow: inset 0 0 0 1px rgba(245,158,11,0.22);
+    }
+    .osa-action-modal__icon svg { width: 26px; height: 26px; }
+
+    .osa-action-modal--success .osa-action-modal__icon {
+      background: rgba(15,118,110,0.12);
+      color: #0f766e;
+      box-shadow: inset 0 0 0 1px rgba(15,118,110,0.22);
+    }
+    .osa-action-modal--danger .osa-action-modal__icon {
+      background: rgba(159,18,57,0.12);
+      color: #9f1239;
+      box-shadow: inset 0 0 0 1px rgba(159,18,57,0.22);
+    }
+    .osa-action-modal--info .osa-action-modal__icon {
+      background: var(--brand-soft);
+      color: var(--brand);
+      box-shadow: inset 0 0 0 1px rgba(132,26,45,0.18);
+    }
+
+    .osa-action-modal__hint {
+      margin-top: 6px;
+      font-size: 11.5px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    /* Confirm-button color variants */
+    .btn-action-confirm--success {
+      background: #0f766e !important;
+      box-shadow: 0 4px 14px rgba(15,118,110,0.3) !important;
+    }
+    .btn-action-confirm--danger {
+      background: #9f1239 !important;
+      box-shadow: 0 4px 14px rgba(159,18,57,0.3) !important;
+    }
+    .btn-action-confirm--brand {
+      background: var(--brand) !important;
+      box-shadow: 0 4px 14px rgba(132,26,45,0.3) !important;
+    }
+
     /* Bottom-sheet style modal on phones */
     @media (max-width: 560px) {
       .modal-bg {
@@ -1187,6 +1242,29 @@
     <div class="modal-actions">
       <button type="button" class="btn-cancel-modal" id="btn-cancel-resolve">Cancel</button>
       <button type="button" class="btn-submit-resolve" id="btn-submit-resolve">Resolve &amp; Notify Student</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Generic action modal (approve / end / delete confirmation) ── -->
+<div id="osa-action-modal" class="modal-bg hidden" role="dialog" aria-modal="true" aria-labelledby="osa-action-title">
+  <div class="modal-box modal-box--action">
+    <div class="osa-action-modal__icon" id="osa-action-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 9v4"/><path d="M12 17h.01"/>
+        <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+      </svg>
+    </div>
+    <h3 id="osa-action-title">Confirm action</h3>
+    <p id="osa-action-message">Are you sure you want to continue?</p>
+    <div class="field-group" id="osa-action-note-wrap" style="display:none">
+      <label for="osa-action-note" id="osa-action-note-label">Note (optional)</label>
+      <textarea id="osa-action-note" rows="3" maxlength="500" placeholder=""></textarea>
+      <div class="osa-action-modal__hint" id="osa-action-note-hint">This note will be visible to the student.</div>
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn-cancel-modal" id="osa-action-cancel">Cancel</button>
+      <button type="button" class="btn-submit-resolve" id="osa-action-confirm">Confirm</button>
     </div>
   </div>
 </div>
@@ -2326,8 +2404,16 @@
   if (btnEndSession) {
     btnEndSession.addEventListener('click', function () {
       if (!state.currentCaseId) return;
-      if (!confirm('End this live chat session now?')) return;
-      endCurrentSession('ended manually by staff');
+      openActionModal({
+        variant: 'danger',
+        title: 'End live chat session?',
+        message: 'This closes the live conversation with the student. They will be notified that the session has ended and can start a new one if needed.',
+        confirmText: 'End Session',
+        cancelText: 'Keep Open',
+      }).then(function (result) {
+        if (!result) return;
+        endCurrentSession('ended manually by staff');
+      });
     });
   }
 
@@ -2339,14 +2425,21 @@
         alert('Only resolved tickets can be deleted.');
         return;
       }
-      if (!confirm('Delete this resolved ticket permanently from the list?')) return;
-      state.busy = true;
-      state.deleteInFlightCaseId = state.currentCaseId;
-      btnDeleteTicket.disabled = true;
-      fetch(API + '/chat/tickets/' + encodeURIComponent(state.currentCaseId), {
-        method: 'DELETE',
-        headers: apiHeaders(),
-      })
+      openActionModal({
+        variant: 'danger',
+        title: 'Delete this ticket permanently?',
+        message: 'This action cannot be undone. The ticket and its conversation history will be removed from the database.',
+        confirmText: 'Delete Permanently',
+        cancelText: 'Cancel',
+      }).then(function (result) {
+        if (!result) return;
+        state.busy = true;
+        state.deleteInFlightCaseId = state.currentCaseId;
+        btnDeleteTicket.disabled = true;
+        fetch(API + '/chat/tickets/' + encodeURIComponent(state.currentCaseId), {
+          method: 'DELETE',
+          headers: apiHeaders(),
+        })
         .then(function (r) { return r.json(); })
         .then(function (data) {
           state.busy = false;
@@ -2365,23 +2458,36 @@
           btnDeleteTicket.disabled = false;
           alert('Network error while deleting ticket.');
         });
+      });
     });
   }
 
   if (btnApproveAppt) {
     btnApproveAppt.addEventListener('click', function () {
       if (!state.currentCaseId || state.busy) return;
-      var note = window.prompt('Optional approval note for student (leave blank if none):', '') || '';
-      state.busy = true;
-      btnApproveAppt.disabled = true;
-      fetch(API + '/chat/tickets/' + encodeURIComponent(state.currentCaseId) + '/approve-appointment', {
-        method: 'POST',
-        headers: apiHeaders(),
-        body: JSON.stringify({
-          staff_name: staffName(),
-          note: String(note || '').trim(),
-        }),
-      })
+      openActionModal({
+        variant: 'success',
+        title: 'Approve appointment?',
+        message: 'Confirm this student\u2019s appointment. They will be notified by email and in-chat. You can include an optional note (e.g. reminders or what to bring).',
+        withNote: true,
+        noteLabel: 'Approval note (optional)',
+        notePlaceholder: 'e.g. Please bring a valid school ID and arrive 10 minutes early.',
+        noteHint: 'Visible to the student in the chat and email notification.',
+        confirmText: 'Approve & Notify',
+        cancelText: 'Cancel',
+      }).then(function (result) {
+        if (!result) return;
+        var note = String(result.note || '').trim();
+        state.busy = true;
+        btnApproveAppt.disabled = true;
+        fetch(API + '/chat/tickets/' + encodeURIComponent(state.currentCaseId) + '/approve-appointment', {
+          method: 'POST',
+          headers: apiHeaders(),
+          body: JSON.stringify({
+            staff_name: staffName(),
+            note: note,
+          }),
+        })
         .then(function (r) { return r.json(); })
         .then(function (data) {
           state.busy = false;
@@ -2400,6 +2506,7 @@
           btnApproveAppt.disabled = false;
           alert('Network error while approving appointment.');
         });
+      });
     });
   }
 
@@ -2689,6 +2796,116 @@
       }
     }, 400);
   })();
+
+  /* ── Generic action modal helper ──────────────────────────────────
+     Promise-based confirmation/note prompt, replaces window.confirm()
+     and window.prompt(). Resolves with `null` on cancel/escape, or
+     `{ note: string }` on confirm. */
+  var actionModal = document.getElementById('osa-action-modal');
+  function openActionModal(opts) {
+    opts = opts || {};
+    return new Promise(function (resolve) {
+      if (!actionModal) {
+        // Hard fallback: never block the user if the modal node is missing.
+        resolve(opts.withNote ? { note: '' } : { note: '' });
+        return;
+      }
+      var titleEl    = document.getElementById('osa-action-title');
+      var messageEl  = document.getElementById('osa-action-message');
+      var noteWrap   = document.getElementById('osa-action-note-wrap');
+      var noteEl     = document.getElementById('osa-action-note');
+      var noteLabel  = document.getElementById('osa-action-note-label');
+      var noteHint   = document.getElementById('osa-action-note-hint');
+      var cancelBtn  = document.getElementById('osa-action-cancel');
+      var confirmBtn = document.getElementById('osa-action-confirm');
+
+      // Variant theming (success / danger / info / warning default)
+      actionModal.classList.remove(
+        'osa-action-modal--success',
+        'osa-action-modal--danger',
+        'osa-action-modal--info'
+      );
+      confirmBtn.classList.remove(
+        'btn-action-confirm--success',
+        'btn-action-confirm--danger',
+        'btn-action-confirm--brand'
+      );
+      var variant = String(opts.variant || 'warning').toLowerCase();
+      if (variant === 'success') {
+        actionModal.classList.add('osa-action-modal--success');
+        confirmBtn.classList.add('btn-action-confirm--success');
+      } else if (variant === 'danger') {
+        actionModal.classList.add('osa-action-modal--danger');
+        confirmBtn.classList.add('btn-action-confirm--danger');
+      } else if (variant === 'info') {
+        actionModal.classList.add('osa-action-modal--info');
+        confirmBtn.classList.add('btn-action-confirm--brand');
+      }
+
+      titleEl.textContent = String(opts.title || 'Confirm action');
+      if (opts.message) {
+        messageEl.textContent = String(opts.message);
+        messageEl.style.display = '';
+      } else {
+        messageEl.style.display = 'none';
+      }
+
+      if (opts.withNote) {
+        noteWrap.style.display = '';
+        noteLabel.textContent = String(opts.noteLabel || 'Note (optional)');
+        noteEl.value = String(opts.noteValue || '');
+        noteEl.placeholder = String(opts.notePlaceholder || '');
+        if (opts.noteHint) {
+          noteHint.textContent = String(opts.noteHint);
+          noteHint.style.display = '';
+        } else {
+          noteHint.style.display = 'none';
+        }
+      } else {
+        noteWrap.style.display = 'none';
+        noteEl.value = '';
+      }
+
+      confirmBtn.textContent = String(opts.confirmText || 'Confirm');
+      cancelBtn.textContent  = String(opts.cancelText  || 'Cancel');
+
+      function cleanup(result) {
+        actionModal.classList.add('hidden');
+        cancelBtn.removeEventListener('click', onCancel);
+        confirmBtn.removeEventListener('click', onConfirm);
+        actionModal.removeEventListener('click', onBackdrop);
+        document.removeEventListener('keydown', onKey);
+        resolve(result);
+      }
+      function onCancel()  { cleanup(null); }
+      function onConfirm() {
+        cleanup(opts.withNote
+          ? { note: String(noteEl.value || '').trim() }
+          : { note: '' });
+      }
+      function onBackdrop(e) {
+        if (e.target === actionModal) cleanup(null);
+      }
+      function onKey(e) {
+        if (e.key === 'Escape') { cleanup(null); }
+        else if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { onConfirm(); }
+      }
+
+      cancelBtn.addEventListener('click', onCancel);
+      confirmBtn.addEventListener('click', onConfirm);
+      actionModal.addEventListener('click', onBackdrop);
+      document.addEventListener('keydown', onKey);
+
+      actionModal.classList.remove('hidden');
+      // Focus the note textarea if present, otherwise the confirm button.
+      setTimeout(function () {
+        try {
+          if (opts.withNote && noteEl) noteEl.focus();
+          else confirmBtn.focus();
+        } catch (_e) { /* no-op */ }
+      }, 30);
+    });
+  }
 
   /* ── Initial load ── */
   document.querySelectorAll('.status-tab').forEach(function (t) {
