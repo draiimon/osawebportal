@@ -143,6 +143,19 @@
     flex-shrink: 0;
 }
 
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-header__status-line::after {
+    content: "\23F0";
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    margin-left: 2px;
+    font-size: 10px;
+    line-height: 1;
+    color: rgba(255, 255, 255, 0.88);
+}
+
 [data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-header__status-line.is-staff {
     color: #fde68a !important;
 }
@@ -428,7 +441,7 @@
 
 /* Quick-topic chips — keep design (user said OK) but ensure pill shape */
 [data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-chip {
-    border-radius: 0 !important;
+    border-radius: 999px !important;
     padding: 7px 14px !important;
     font-size: 12.5px !important;
     font-weight: 600 !important;
@@ -446,6 +459,15 @@
     background: #fff !important;
     box-shadow: 0 3px 10px rgba(132, 26, 45, 0.14) !important;
     transform: translateY(-1px);
+}
+
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-chip::before {
+    content: "\203A";
+    display: inline-block;
+    margin-right: 6px;
+    font-size: 15px;
+    line-height: 1;
+    color: inherit;
 }
 
 [data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-chip:active {
