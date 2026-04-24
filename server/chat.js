@@ -1422,6 +1422,28 @@ function registerChatRoutes(app, apiPrefix) {
           [sessionId, message]
         );
 
+        // Real-time push to the admin chat-support panel: if this session has an
+        // active human-support ticket, notify admins so the focused conversation
+        // refreshes immediately instead of waiting for the 30 s safety-net poll.
+        try {
+          const tk = (await db.query(
+            `SELECT case_id FROM escalation_tickets
+             WHERE session_id = $1 AND status IN ('open','in_progress')
+             ORDER BY created_at DESC LIMIT 1`,
+            [sessionId]
+          )).rows[0];
+          if (tk && tk.case_id) {
+            pushToAdminTickets({
+              type: "ticket_updated",
+              case_id: tk.case_id,
+              session_id: sessionId,
+              status: "in_progress",
+              new_message_role: "user",
+              timestamp: new Date().toISOString(),
+            });
+          }
+        } catch (_) { /* non-fatal */ }
+
         if (isInappropriatePortalMessage(message)) {
           const refusal =
             "I can only help with official OSA topics (announcements, Lost & Found, services, forms, and appointments). " +
@@ -2312,7 +2334,8 @@ function registerChatRoutes(app, apiPrefix) {
         `Case ID: ${caseId}\n` +
         `Ticket type: ${String(row.ticket_type || "general").replace("_", " ")}\n` +
         (note ? `\nNote: ${note}\n` : "\n") +
-        `\nAn OSA staff member will provide your final schedule details in this chat.`;
+        `\nAn OSA staff member will provide your final schedule details in this chat.\n` +
+        `\n— OSA staff has stepped away from this chat for now. They will return here once the final schedule is ready.`;
 
       await db.query(
         `INSERT INTO chat_messages (session_id, role, content) VALUES ($1, 'assistant', $2)`,
@@ -2388,6 +2411,19 @@ function registerChatRoutes(app, apiPrefix) {
         [session_id, staffMsg]
       );
 
+      // Resolving a ticket also ends the live support session for the student.
+      // Persist a closing system note so both the student widget and the admin
+      // history make it clear that OSA staff has stepped out of the chat.
+      const closingMsg =
+        `[system] OSA staff has ended this live support session. ` +
+        `Case ${caseId} is now marked resolved. ` +
+        `You may open a new concern anytime if you need further help.`;
+      await db.query(
+        `INSERT INTO chat_messages (session_id, role, content) VALUES ($1, 'assistant', $2)`,
+        [session_id, closingMsg]
+      );
+      await db.query(`UPDATE chat_sessions SET last_active_at = NOW() WHERE id = $1`, [session_id]);
+
       // ── Self-learning loop: promote to FAQ ──────────────────
       if (promoteToFaq && faqAnswer) {
         const question = faqQuestion || `[From resolved ticket ${caseId}]`;
@@ -2404,6 +2440,18 @@ function registerChatRoutes(app, apiPrefix) {
           [question, faqAnswer, faqCategory, keywords]
         );
       }
+
+      // Notify the student widget in real time that the session is closed so
+      // it immediately switches back to AI mode and shows the closing banner.
+      pushToSession(session_id, {
+        type: "staff_message",
+        content: staffMsg,
+        staff_name: "OSA Staff",
+        case_id: caseId,
+        timestamp: new Date().toISOString(),
+        session_closed: true,
+      });
+
       pushToAdminTickets({
         type: "ticket_updated",
         case_id: caseId,
@@ -2415,6 +2463,7 @@ function registerChatRoutes(app, apiPrefix) {
         success: true,
         message: "Ticket resolved." + (promoteToFaq ? " Answer added to FAQ." : ""),
         promoted_to_faq: promoteToFaq,
+        session_closed: true,
       });
     } catch (error) {
       return genericError(res, "chat", error);
