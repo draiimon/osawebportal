@@ -53,10 +53,8 @@
             '      </button>' +
             '    </div>' +
             '  </header>' +
-            '  <button type="button" class="osa-ai-scroll-bottom" id="osa-chat-scroll-bottom" aria-label="Scroll to latest" hidden>' +
-            '    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>' +
-            '  </button>' +
-            '  <div class="osa-ai-thread" id="osa-chat-thread" role="log" aria-live="polite"></div>' +
+            // Verified ribbon sits flush under the header so it reads as part
+            // of the brand strip — same maroon-to-cream tone, gold accent.
             '  <div class="osa-ai-verified-bar" id="osa-chat-verified-bar" hidden role="status" aria-live="polite">' +
             '    <div class="osa-ai-verified-bar__left">' +
             '      <span class="osa-ai-verified-bar__shield" aria-hidden="true">' +
@@ -73,6 +71,10 @@
             '      <span>End session</span>' +
             '    </button>' +
             '  </div>' +
+            '  <button type="button" class="osa-ai-scroll-bottom" id="osa-chat-scroll-bottom" aria-label="Scroll to latest" hidden>' +
+            '    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>' +
+            '  </button>' +
+            '  <div class="osa-ai-thread" id="osa-chat-thread" role="log" aria-live="polite"></div>' +
             '  <div class="osa-ai-chips-wrapper">' +
             '    <div class="osa-ai-chips" id="osa-chat-chips">' +
             '      <button type="button" class="osa-ai-chip" data-prompt="I need an appointment with OSA. Please guide me on scheduling a visit or meeting.">Appointment</button>' +
@@ -91,7 +93,6 @@
             '        <svg viewBox="0 0 24 24"><path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z"/></svg>' +
             '      </button>' +
             '    </div>' +
-            '    <p class="osa-ai-composer__hint" id="osa-chat-hint">Quick guide: try an appointment, Lost &amp; Found, announcements, or human support. OTP may appear for sensitive requests. You can skip these and just type below.</p>' +
             '    <div class="osa-ai-quota" id="osa-chat-quota" aria-live="polite" hidden><span class="osa-ai-quota__dot" aria-hidden="true"></span><span class="osa-ai-quota__text" id="osa-chat-quota-text">-- / -- today</span></div>' +
             '  </div>' +
             '</div>' +
@@ -473,15 +474,22 @@
         function updateVerifiedBar(name) {
             var bar = document.getElementById('osa-chat-verified-bar');
             var nameEl = document.getElementById('osa-chat-verified-name');
-            if (!bar) return;
             var first = getFirstName(name);
             var canShow = !!(otpVerified && chatSessionId && first);
-            if (canShow) {
-                if (nameEl) nameEl.textContent = first;
-                bar.hidden = false;
-            } else {
-                bar.hidden = true;
+            if (bar) {
+                if (canShow) {
+                    if (nameEl) nameEl.textContent = first;
+                    bar.hidden = false;
+                } else {
+                    bar.hidden = true;
+                }
             }
+            // Hide Quick topics for OTP-verified students — they already have
+            // a personalised flow; the generic chips become redundant clutter.
+            try {
+                var chipsWrap = document.querySelector('.osa-ai-chips-wrapper');
+                if (chipsWrap) chipsWrap.classList.toggle('is-hidden-verified', !!(otpVerified && chatSessionId));
+            } catch (_) {}
         }
         // Restore the personalized header on page load for an already-verified
         // browser (avoids flashing "Ask OSA" before the user sees their name).
@@ -857,6 +865,7 @@
                 +     '<div class="osa-welcome-dots" role="tablist" aria-label="Welcome tips">' + dots + '</div>'
                 +     '<button type="button" class="osa-welcome-skip" data-osa-welcome-skip="1" aria-label="Skip tips">Skip</button>'
                 +   '</div>'
+                +   '<span class="osa-welcome-loop" aria-hidden="true"></span>'
                 + '</div>';
         }
 
@@ -922,7 +931,7 @@
             });
             setLS(THREAD_KEY, arr);
             if (!arr.length) {
-                appendBubble('assistant', welcomeCarouselHtml(), { persist: true });
+                appendBubble('assistant', welcomeCarouselHtml(), { persist: true, rowClass: 'osa-ai-msg--welcome' });
                 window.requestAnimationFrame(startWelcomeCarousel);
                 return;
             }
@@ -1412,16 +1421,6 @@
         var statusLineEl = document.getElementById('osa-chat-status-line');
         var headerEl = widget ? widget.querySelector('.osa-ai-header') : null;
         var chipsWrapEl = widget ? widget.querySelector('.osa-ai-chips-wrapper') : null;
-        var hintEl = document.getElementById('osa-chat-hint');
-        var DEFAULT_HINT = hintEl ? hintEl.textContent : '';
-        var STAFF_HINT = 'Quick topics above are hidden while OSA Staff is with you.';
-        var GUIDE_HINTS = [
-            'Quick guide: try an appointment, Lost &amp; Found, announcements, or human support.',
-            'OTP may appear for sensitive requests. You can skip these and just type below.',
-            'If OSA Staff joins, quick topics will hide automatically.'
-        ];
-        var guideHintIndex = 0;
-        var guideHintTimer = null;
         var MODE_COPY = {
             faq:   { label: 'Guide', cls: 'osa-ai-mode--faq' },
             ai:    { label: 'OSA',   cls: 'osa-ai-mode--ai' },
@@ -1438,29 +1437,13 @@
                 statusLineEl.textContent = next === 'staff' ? 'Live OSA Staff' : (next === 'faq' ? 'Guided Flow' : 'Ready');
                 statusLineEl.classList.toggle('is-staff', next === 'staff');
             }
-            // Talking with admin: hide quick topics, animate header,
-            // and swap the composer hint to a staff-aware copy.
+            // Talking with admin: hide quick topics + animate header.
             var isStaff = next === 'staff';
             if (chipsWrapEl) chipsWrapEl.classList.toggle('is-hidden-staff', isStaff);
             if (headerEl) headerEl.classList.toggle('is-staff-live', isStaff);
-            if (hintEl) {
-                if (guideHintTimer) {
-                    window.clearInterval(guideHintTimer);
-                    guideHintTimer = null;
-                }
-                if (isStaff) {
-                    hintEl.textContent = STAFF_HINT;
-                } else {
-                    guideHintIndex = 0;
-                    hintEl.textContent = GUIDE_HINTS[guideHintIndex];
-                    guideHintTimer = window.setInterval(function () {
-                        if (currentMode === 'staff' || !hintEl) return;
-                        guideHintIndex = (guideHintIndex + 1) % GUIDE_HINTS.length;
-                        hintEl.textContent = GUIDE_HINTS[guideHintIndex];
-                    }, 4500);
-                }
-                hintEl.classList.toggle('is-staff', isStaff);
-            }
+            // Re-evaluate verified-state chip hiding so toggling staff mode
+            // doesn't leak the chips back into view for an OTP-verified user.
+            try { updateVerifiedBar(getLS(NAME_KEY, '')); } catch (_) {}
         }
         setMode('ai');
 
