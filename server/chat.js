@@ -1627,6 +1627,28 @@ function registerChatRoutes(app, apiPrefix) {
           [String(CHAT_SESSION_TTL_MS + 1000), sessionId]
         );
         try { clearSessionVerified(sessionId); } catch (_) {}
+        // Notify any admin watching this session/case so they see "User ended
+        // the session" inline in the staff portal without waiting for a poll.
+        try {
+          const cancelledIds = (cancelled || []).map((r) => r.case_id);
+          if (cancelledIds.length === 0) {
+            pushToAdminTickets({
+              type: "session_ended_by_user",
+              session_id: sessionId,
+              case_id: null,
+              ended_at: new Date().toISOString(),
+            });
+          } else {
+            cancelledIds.forEach((cid) => {
+              pushToAdminTickets({
+                type: "session_ended_by_user",
+                session_id: sessionId,
+                case_id: cid,
+                ended_at: new Date().toISOString(),
+              });
+            });
+          }
+        } catch (_) {}
         return res.json({ success: true, cancelled_tickets: cancelled.map((r) => r.case_id) });
       } catch (error) {
         return genericError(res, "chat-session-end", error);

@@ -1473,7 +1473,6 @@
         }
         if (thread) thread.addEventListener('scroll', function () {
             updateScrollBtn();
-            debugLayoutOnScroll();
         });
         if (scrollBtn) scrollBtn.addEventListener('click', function () {
             thread.scrollTop = thread.scrollHeight;
@@ -2499,6 +2498,15 @@
         var endSessionBtn = document.getElementById('osa-chat-end-session');
         endSessionBtn && endSessionBtn.addEventListener('click', function () {
             if (!otpVerified && !chatSessionId) return;
+            // If staff is currently engaged, confirm first — student should not
+            // accidentally cancel an active conversation with a real human.
+            if (hasActiveStaffCase()) {
+                showEndSessionConfirm();
+                return;
+            }
+            if (chatSessionId) {
+                try { postApi('/chat/session/end', { session_id: chatSessionId }).catch(function () {}); } catch (_) {}
+            }
             expireSecureSessionLocal();
             appendBubble(
                 'assistant',
