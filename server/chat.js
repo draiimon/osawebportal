@@ -70,7 +70,11 @@ const _sessionQueues = new Map();
 
 function enqueueForSession(sessionId, fn) {
   const prev = _sessionQueues.get(sessionId) || Promise.resolve();
-  const next = prev.then(() => fn()).finally(() => {
+  // Insulate the next job from a previous job's rejection. Without the
+  // .catch() shim, a single failing message handler poisons the entire
+  // session queue: every subsequent enqueued call inherits the rejection
+  // and skips its own handler, returning a generic error instead.
+  const next = prev.catch(() => null).then(() => fn()).finally(() => {
     if (_sessionQueues.get(sessionId) === next) _sessionQueues.delete(sessionId);
   });
   _sessionQueues.set(sessionId, next);
@@ -1910,7 +1914,7 @@ function registerChatRoutes(app, apiPrefix) {
         return res.status(401).json({
           success: false,
           code: "SESSION_EXPIRED",
-          message: "Secure chat session expired after 5 minutes. Please verify your email again.",
+          message: "Secure chat session expired. Please verify your email again.",
         });
       }
       const { email, student_name } = loaded.session;
@@ -1990,6 +1994,9 @@ function registerChatRoutes(app, apiPrefix) {
         `INSERT INTO chat_messages (session_id, role, content) VALUES ($1, 'assistant', $2)`,
         [sessionId, botMsg]
       );
+      // Bump session activity so the secure window does not expire mid-flow
+      // right after the student just escalated.
+      await db.query(`UPDATE chat_sessions SET last_active_at = NOW() WHERE id = $1`, [sessionId]);
 
       return res.json({
         success: true,
@@ -2139,7 +2146,7 @@ function registerChatRoutes(app, apiPrefix) {
           return res.status(401).json({
             success: false,
             code: "SESSION_EXPIRED",
-            message: "Secure chat session expired after 5 minutes. Please verify your email again.",
+            message: "Secure chat session expired. Please verify your email again.",
           });
         }
         const { email, student_name } = loaded.session;
@@ -2244,7 +2251,7 @@ function registerChatRoutes(app, apiPrefix) {
           return res.status(401).json({
             success: false,
             code: "SESSION_EXPIRED",
-            message: "Secure chat session expired after 5 minutes. Please verify your email again.",
+            message: "Secure chat session expired. Please verify your email again.",
           });
         }
 
@@ -2650,17 +2657,33 @@ function registerChatRoutes(app, apiPrefix) {
     }
 
     try {
+      // Guard against double-resolve (staff double-click): only flip a ticket
+      // that is still open/in_progress. Without this filter, a second click
+      // re-runs the closing-message insert and the FAQ promotion insert,
+      // duplicating both rows. Distinguish between "not found at all" (404)
+      // and "already resolved" (409) so the UI can react cleanly.
       const ticketResult = await db.query(
         `UPDATE escalation_tickets
          SET status = 'resolved', staff_reply = $1, promote_to_faq = $2,
              faq_question = $3, faq_answer = $4, faq_category = $5, updated_at = NOW()
-         WHERE case_id = $6
+         WHERE case_id = $6 AND status IN ('open','in_progress')
          RETURNING session_id, student_email, student_name`,
         [staffReply || null, promoteToFaq, faqQuestion || null, faqAnswer || null, faqCategory, caseId]
       );
 
       if (!ticketResult.rows.length) {
-        return res.status(404).json({ success: false, message: "Ticket not found." });
+        const exists = await db.query(
+          `SELECT status FROM escalation_tickets WHERE case_id = $1`,
+          [caseId]
+        );
+        if (!exists.rows.length) {
+          return res.status(404).json({ success: false, message: "Ticket not found." });
+        }
+        return res.status(409).json({
+          success: false,
+          code: "ALREADY_RESOLVED",
+          message: "This ticket has already been resolved.",
+        });
       }
 
       const { session_id, student_name } = ticketResult.rows[0];
@@ -3035,6 +3058,17 @@ function registerChatRoutes(app, apiPrefix) {
       }
 
       const { session_id, status: prevStatus } = ticketResult.rows[0];
+      // Refuse to post staff messages into a resolved/closed ticket — the
+      // session is already shut down and the student widget is back in AI
+      // mode. Without this guard, staff can leak orphan bubbles into a
+      // closed conversation thread.
+      if (prevStatus === "resolved") {
+        return res.status(409).json({
+          success: false,
+          code: "TICKET_RESOLVED",
+          message: "This support session is already closed. Reopen a new ticket to continue.",
+        });
+      }
       const firstStaffReply = prevStatus === "open";
       const normalized = content.toLowerCase();
       const isEndSessionCmd = normalized === "/end session" || normalized === "/endsession";
@@ -3254,7 +3288,7 @@ function registerChatRoutes(app, apiPrefix) {
         return res.status(401).json({
           success: false,
           code: "SESSION_EXPIRED",
-          message: "Secure chat session expired after 5 minutes. Please verify your email again.",
+          message: "Secure chat session expired. Please verify your email again.",
         });
       }
       const msgs = await db.query(
