@@ -78,13 +78,29 @@
     }
 
     @media (max-width: 768px) {
+      /* On phones we keep BOTH panels visible at once via a vertical split:
+         the ticket list sits in a compact top row (≈38% of viewport) and
+         the conversation fills the rest. Selecting a ticket no longer
+         hides the list — the staff can always see what they're switching
+         between, which was the previous source of confusion. */
       .chat-support-wrap {
         grid-template-columns: 1fr;
+        grid-template-rows: minmax(140px, 38dvh) minmax(0, 1fr);
         height: calc(100dvh - var(--shell-top));
       }
-      .convo-panel { display: none; }
-      .convo-panel.active { display: flex; }
-      .ticket-panel.hidden { display: none; }
+      /* Force both panels visible regardless of the .hidden / .active
+         classes the JS toggles for the desktop slide behavior. */
+      .ticket-panel,
+      .ticket-panel.hidden { display: flex !important; }
+      .convo-panel,
+      .convo-panel.active { display: flex !important; }
+      .ticket-panel {
+        border-right: none;
+        border-bottom: 2px solid var(--line);
+      }
+      /* The mobile back-arrow is no longer needed once both panels are
+         simultaneously visible — hide it to reclaim header space. */
+      .convo-topbar__back { display: none !important; }
     }
 
     /* ── LEFT: Ticket panel ─────────────────────────────── */
