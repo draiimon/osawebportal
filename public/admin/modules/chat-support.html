@@ -3240,7 +3240,16 @@
       tab.classList.add('active');
       state.currentStatus = tab.dataset.status;
       saveStatus(state.currentStatus);
-      state.restoredLastCaseAttempted = false;
+      // The user explicitly chose this tab — do NOT let the async
+      // "restore last viewed case across tabs" probe second-guess them by
+      // teleporting back to whatever tab their last viewed case happens to
+      // live in. Setting the flag to TRUE suppresses the probe for the rest
+      // of the session, while leaving the on-load restore behaviour intact.
+      // Also clear any pending restore state so an in-flight probe that
+      // completes after this click cannot still trigger a tab switch.
+      state.restoredLastCaseAttempted = true;
+      state.pendingFocusCaseId = '';
+      state.pendingFocusUntilMs = 0;
       loadTickets();
     });
   });
