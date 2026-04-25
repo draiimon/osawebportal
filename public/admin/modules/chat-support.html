@@ -1782,11 +1782,23 @@
   }
 
   function statusBadgeLabel(t) {
-    // Approved appointments no longer get their own badge; the ticket keeps
-    // its underlying status (typically 'in progress') until resolved.
+    // While a ticket is open / in progress, the underlying status drives
+    // the badge — even if the appointment has already been approved, the
+    // ticket itself is not yet "approved". Inside the Resolved view we
+    // split the badge so staff can tell at a glance whether a closed
+    // ticket was a regular resolution or an approved appointment that
+    // was then completed.
+    var status = String(t.status || '').toLowerCase();
+    if (status === 'resolved' && String(t.appointment_status || '').toLowerCase() === 'approved') {
+      return 'approved';
+    }
     return String(t.status || '').replace('_', ' ');
   }
   function statusBadgeClass(t) {
+    var status = String(t.status || 'open').toLowerCase();
+    if (status === 'resolved' && String(t.appointment_status || '').toLowerCase() === 'approved') {
+      return 'approved';
+    }
     return String(t.status || 'open');
   }
 
