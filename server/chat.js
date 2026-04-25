@@ -2033,12 +2033,21 @@ function registerChatRoutes(app, apiPrefix) {
       }
       const ticket = await getActiveHumanTicket(sessionId);
       if (!ticket) return res.json({ success: true, ticket: null });
+      // Surface appointment_status so the widget can decide whether to
+      // re-show the "Waiting for OSA staff" banner on hydrate. Once the
+      // visit ticket has been approved or fully scheduled by staff, the
+      // banner must NOT come back on refresh — it would falsely tell the
+      // student that staff hasn't responded yet.
       return res.json({
         success: true,
         ticket: {
           case_id: ticket.case_id,
           status: ticket.status,
           ticket_type: ticket.ticket_type,
+          appointment_status: ticket.appointment_status || null,
+          appointment_datetime: ticket.appointment_datetime || null,
+          preferred_day: ticket.preferred_day || null,
+          preferred_time_window: ticket.preferred_time_window || null,
           created_at: ticket.created_at,
           updated_at: ticket.updated_at,
           cancellable: ticket.status === "open",
@@ -2423,7 +2432,7 @@ function registerChatRoutes(app, apiPrefix) {
         }
 
         const ticketRow = await db.query(
-          `SELECT ticket_type, status FROM escalation_tickets WHERE case_id = $1 AND session_id = $2`,
+          `SELECT ticket_type, status, appointment_status FROM escalation_tickets WHERE case_id = $1 AND session_id = $2`,
           [caseId, sessionId]
         );
         if (!ticketRow.rows.length || ticketRow.rows[0].ticket_type !== "appointment") {
@@ -2431,6 +2440,21 @@ function registerChatRoutes(app, apiPrefix) {
         }
         if (ticketRow.rows[0].status === "resolved") {
           return res.status(400).json({ success: false, message: "This case is already resolved." });
+        }
+        // Once OSA has approved or scheduled the visit, the day/time chips
+        // must lock — otherwise a stale chip click on a refreshed page would
+        // (a) overwrite the preference OSA already acted on, and (b) post a
+        // duplicate "Preference saved" bubble even though nothing changed.
+        const apptStatus = String(ticketRow.rows[0].appointment_status || "").toLowerCase();
+        if (apptStatus === "approved" || apptStatus === "scheduled") {
+          return res.status(409).json({
+            success: false,
+            code: "APPOINTMENT_LOCKED",
+            message:
+              apptStatus === "scheduled"
+                ? "Your visit is already scheduled. Please check the confirmed date and time above."
+                : "OSA has already approved this visit. The schedule will be sent in this chat shortly.",
+          });
         }
 
         const updates = [];

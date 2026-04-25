@@ -1493,17 +1493,56 @@
 
         // On page load with a restored session, ask the server if there's an
         // active ticket for this session and re-render the waiting banner.
+        //
+        // The banner must ONLY appear when the ticket is genuinely waiting:
+        //   - status === 'open' (no staff reply yet)               AND
+        //   - appointment_status is NOT 'approved' or 'scheduled'  (for visits)
+        // Otherwise (staff already engaged, or visit already approved/scheduled)
+        // we still mark the widget as 'staff' mode (AI stays paused) but skip
+        // the misleading "Waiting for OSA staff" banner — the conversation
+        // history already shows the approved/scheduled bubbles, no need to
+        // claim staff hasn't responded.
         function hydrateActiveTicketBanner() {
             if (!chatSessionId) return;
             getApi('/chat/session/' + encodeURIComponent(chatSessionId) + '/ticket')
                 .then(function (res) {
-                    if (res && res.ticket) {
-                        var startedAt = Date.parse(res.ticket.created_at) || Date.now();
-                        renderWaitingBanner(res.ticket.case_id, startedAt, !!res.ticket.cancellable);
-                        setMode('staff');
+                    if (!res || !res.ticket) return;
+                    var ticket = res.ticket;
+                    var apptStatus = String(ticket.appointment_status || '').toLowerCase();
+                    var isApproved = apptStatus === 'approved' || apptStatus === 'scheduled';
+                    var isStaffEngaged = String(ticket.status || '') === 'in_progress';
+
+                    if (isApproved) {
+                        // Visit is approved/scheduled — lock any stale day/time
+                        // chips left in the restored thread so a re-tap can't
+                        // post a duplicate "Preference saved" bubble.
+                        lockVisitChipsInThread(ticket.case_id);
                     }
+
+                    if (!isApproved && !isStaffEngaged) {
+                        var startedAt = Date.parse(ticket.created_at) || Date.now();
+                        renderWaitingBanner(ticket.case_id, startedAt, !!ticket.cancellable);
+                    }
+                    setMode('staff');
                 })
                 .catch(function () { /* non-fatal */ });
+        }
+
+        // Disable every visit-pref chip (Mon/Tue/.../Morning/Afternoon) for the
+        // given case in the rendered thread. Used after the appointment is
+        // approved/scheduled so a stale chip click is impossible. If caseId is
+        // empty, lock all visit chips for any case currently in the thread.
+        function lockVisitChipsInThread(caseId) {
+            var sel = caseId
+                ? '.osa-visit-appt-btn[data-visit-case="' + String(caseId).replace(/"/g, '\\"') + '"]'
+                : '.osa-visit-appt-btn';
+            var btns = thread.querySelectorAll(sel);
+            for (var i = 0; i < btns.length; i++) {
+                btns[i].disabled = true;
+                btns[i].setAttribute('aria-disabled', 'true');
+                btns[i].style.opacity = '0.5';
+                btns[i].style.cursor = 'not-allowed';
+            }
         }
 
         function routeConcern(message) {
