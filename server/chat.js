@@ -337,6 +337,27 @@ const sseClients = new Map();
 // Admin dashboard ticket stream clients
 const adminTicketClients = new Set();
 
+// ── Per-key in-memory mutex ────────────────────────────────────
+// Serializes concurrent handlers that share a key (e.g. two rapid
+// visit POSTs from the same session). Required because the visit
+// endpoint does check-then-create: without this, two requests can
+// both run findOpenTicketByType before either inserts, and both
+// will create new duplicate tickets.
+const _keyedLocks = new Map();
+async function withKeyedLock(key, fn) {
+  const prev = _keyedLocks.get(key) || Promise.resolve();
+  let release;
+  const next = new Promise((r) => { release = r; });
+  _keyedLocks.set(key, next);
+  try {
+    await prev;
+    return await fn();
+  } finally {
+    release();
+    if (_keyedLocks.get(key) === next) _keyedLocks.delete(key);
+  }
+}
+
 function pushToSession(sessionId, payload) {
   const clients = sseClients.get(sessionId);
   if (!clients || !clients.size) return false;
@@ -2767,44 +2788,56 @@ function registerChatRoutes(app, apiPrefix) {
         }
         const { email, student_name } = loaded.session;
 
-        const existing = await findOpenTicketByType(sessionId, "appointment");
-        let caseId = existing;
-        const concern = purposeRaw
-          ? `OSA visit request — Purpose: ${purposeRaw}`
-          : `Student requests a visit or appointment with OSA.`;
+        // Per-session mutex: serializes concurrent visit POSTs (rapid
+        // double-click, client-side network retry of an already-applied
+        // request, etc.) so the second caller correctly sees the first
+        // caller's just-created ticket and reuses it instead of
+        // creating a duplicate.
+        const result = await withKeyedLock(`visit:${sessionId}`, async () => {
+          const existing = await findOpenTicketByType(sessionId, "appointment");
+          let caseId = existing;
+          const concern = purposeRaw
+            ? `OSA visit request — Purpose: ${purposeRaw}`
+            : `Student requests a visit or appointment with OSA.`;
 
-        if (!caseId) {
-          const sameDayTicket = await findTodayAppointmentTicketByEmail(email);
-          if (sameDayTicket) {
-            const lockedReply =
-              `You already have an appointment request for today (Case ID: ${sameDayTicket.case_id}). ` +
-              `Please wait for OSA to confirm your schedule, or email OSA for urgent follow-up.`;
-            await db.query(
-              `INSERT INTO chat_messages (session_id, role, content) VALUES ($1, 'assistant', $2)`,
-              [sessionId, lockedReply]
-            );
-            await db.query(`UPDATE chat_sessions SET last_active_at = NOW() WHERE id = $1`, [sessionId]);
-            return res.json({ success: false, code: "VISIT_LOCKED_TODAY", message: lockedReply, case_id: sameDayTicket.case_id });
+          if (!caseId) {
+            const sameDayTicket = await findTodayAppointmentTicketByEmail(email);
+            if (sameDayTicket) {
+              const lockedReply =
+                `You already have an appointment request for today (Case ID: ${sameDayTicket.case_id}). ` +
+                `Please wait for OSA to confirm your schedule, or email OSA for urgent follow-up.`;
+              await db.query(
+                `INSERT INTO chat_messages (session_id, role, content) VALUES ($1, 'assistant', $2)`,
+                [sessionId, lockedReply]
+              );
+              await db.query(`UPDATE chat_sessions SET last_active_at = NOW() WHERE id = $1`, [sessionId]);
+              return { kind: "locked", case_id: sameDayTicket.case_id, message: lockedReply };
+            }
+            caseId = await createEscalationTicket(sessionId, email, student_name, concern, { ticket_type: "appointment" });
           }
-          caseId = await createEscalationTicket(sessionId, email, student_name, concern, { ticket_type: "appointment" });
+
+          const botMsg = existing
+            ? `You already have an open visit request.\n\n📋 Case ID: **${caseId}**\n\nUse the buttons below to update your preferred day and time. OSA staff will confirm the final schedule.`
+            : `Your visit request has been submitted.\n\n📋 Case ID: **${caseId}**\n\nChoose your preferred day and time below. OSA staff will confirm the schedule.`;
+
+          await db.query(
+            `INSERT INTO chat_messages (session_id, role, content) VALUES ($1, 'assistant', $2)`,
+            [sessionId, botMsg]
+          );
+          await db.query(`UPDATE chat_sessions SET last_active_at = NOW() WHERE id = $1`, [sessionId]);
+
+          return { kind: "ok", case_id: caseId, botMsg, reused: !!existing };
+        });
+
+        if (result.kind === "locked") {
+          return res.json({ success: false, code: "VISIT_LOCKED_TODAY", message: result.message, case_id: result.case_id });
         }
-
-        const botMsg = existing
-          ? `You already have an open visit request.\n\n📋 Case ID: **${caseId}**\n\nUse the buttons below to update your preferred day and time. OSA staff will confirm the final schedule.`
-          : `Your visit request has been submitted.\n\n📋 Case ID: **${caseId}**\n\nChoose your preferred day and time below. OSA staff will confirm the schedule.`;
-
-        await db.query(
-          `INSERT INTO chat_messages (session_id, role, content) VALUES ($1, 'assistant', $2)`,
-          [sessionId, botMsg]
-        );
-        await db.query(`UPDATE chat_sessions SET last_active_at = NOW() WHERE id = $1`, [sessionId]);
-
         return res.json({
           success: true,
-          case_id: caseId,
-          assistant_message: botMsg,
+          case_id: result.case_id,
+          assistant_message: result.botMsg,
           ticket_type: "appointment",
-          reused_case: !!existing,
+          reused_case: result.reused,
         });
       } catch (error) {
         return genericError(res, "chat-visit", error);
