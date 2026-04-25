@@ -764,6 +764,60 @@
     cursor: not-allowed;
 }
 
+/* Daily-quota pill — sits below the composer hint, lives quietly. */
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-quota {
+    margin: 4px auto 0 !important;
+    padding: 3px 10px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    font-size: 10.5px !important;
+    font-weight: 600 !important;
+    color: rgba(103, 90, 79, 0.78) !important;
+    background: rgba(255, 255, 255, 0.7) !important;
+    border: 0.5px solid rgba(132, 26, 45, 0.10) !important;
+    border-radius: 999px !important;
+    backdrop-filter: blur(8px) saturate(1.05) !important;
+    -webkit-backdrop-filter: blur(8px) saturate(1.05) !important;
+    letter-spacing: 0.01em !important;
+    width: fit-content !important;
+    align-self: center !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-composer {
+    text-align: center !important;
+}
+
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-quota__dot {
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 999px !important;
+    background: #4ade80 !important;
+    box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.22) !important;
+    flex: 0 0 auto !important;
+}
+
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-quota.is-low {
+    color: #8a5a16 !important;
+    background: rgba(254, 243, 218, 0.85) !important;
+    border-color: rgba(199, 154, 73, 0.35) !important;
+}
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-quota.is-low .osa-ai-quota__dot {
+    background: #fbbf24 !important;
+    box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.28) !important;
+}
+
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-quota.is-empty {
+    color: var(--ask-brand-deep) !important;
+    background: rgba(255, 240, 242, 0.9) !important;
+    border-color: rgba(132, 26, 45, 0.28) !important;
+}
+[data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-quota.is-empty .osa-ai-quota__dot {
+    background: var(--ask-brand) !important;
+    box-shadow: 0 0 0 2px rgba(132, 26, 45, 0.22) !important;
+}
+
 /* Bottom hint — refined to a subtle, tasteful caption (was the ugly one) */
 [data-osa-chat-root] .osa-launcher-panel--chat-ui .osa-ai-composer__hint {
     margin: 6px 4px 0 !important;

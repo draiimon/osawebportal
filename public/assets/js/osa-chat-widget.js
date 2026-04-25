@@ -1100,6 +1100,7 @@
                         err.status = res.status;
                         err.code = data.code;
                         err.retryAfterSeconds = data.retryAfterSeconds;
+                        err.body = data;
                         throw err;
                     }
                     return data;
@@ -1124,6 +1125,7 @@
                             var err = new Error(data.message || ('HTTP ' + res.status));
                             err.status = res.status;
                             err.code = data.code;
+                            err.body = data;
                             throw err;
                         }
                         return data;
@@ -1187,8 +1189,12 @@
                 var reply = String((body && (body.answer || body.response)) || '').trim();
                 var escalate = !!(body && body.escalate);
                 var otpAction = !!(body && body.otp_action);
+                // Quota lives at top-level of the envelope (added by server middleware).
+                if (payload && payload.quota) {
+                    try { updateQuotaPill(payload.quota); } catch (_) {}
+                }
                 if (!reply) throw new Error('Empty chatbot response.');
-                return { reply: reply, escalate: escalate, otpAction: otpAction };
+                return { reply: reply, escalate: escalate, otpAction: otpAction, quota: payload && payload.quota };
             });
         }
 
@@ -1994,7 +2000,14 @@
                     var guestReply = await postChatbotApi(message);
                     appendGuestChatbotTurn(guestReply);
                 } catch (_guestErr) {
-                    appendLocalAssistantReply(message, true);
+                    if (_guestErr && _guestErr.body && _guestErr.body.quota) {
+                        try { updateQuotaPill(_guestErr.body.quota); } catch (_) {}
+                    }
+                    if (_guestErr && (_guestErr.code === 'DAILY_LIMIT_REACHED' || _guestErr.code === 'BURST_LIMIT_REACHED')) {
+                        appendBubble('assistant', '<p style="margin:0">' + escapeHtml(_guestErr.message || 'You have reached your daily limit. Try again tomorrow.') + '</p>');
+                    } else {
+                        appendLocalAssistantReply(message, true);
+                    }
                 } finally {
                     hideTyping(typingGuest, 'guest-chatbot:finally');
                 }
@@ -2133,6 +2146,11 @@
                         var chatApiStartMs = Date.now();
                         var payload = await postApi('/chat/message', { session_id: chatSessionId, message: message });
 
+                        // Update quota pill from the server-attached snapshot.
+                        if (payload && payload.quota) {
+                            try { updateQuotaPill(payload.quota); } catch (_) {}
+                        }
+
                         // The AI tier has read our message and is replying; in
                         // human-mode the message is queued for staff and only
                         // reaches `delivered` until staff_seen arrives via SSE.
@@ -2214,6 +2232,15 @@
                 }
             } catch (_err) {
                 hideTyping(typingAI, 'secure-chat-message:catch');
+                if (_err && _err.body && _err.body.quota) {
+                    try { updateQuotaPill(_err.body.quota); } catch (_) {}
+                }
+                if (_err && (_err.code === 'DAILY_LIMIT_REACHED' || _err.code === 'BURST_LIMIT_REACHED')) {
+                    appendBubble('assistant', '<p style="margin:0">' + escapeHtml(_err.message || 'You have reached your daily limit. Try again tomorrow.') + '</p>');
+                    sendBtn.disabled = false;
+                    input.focus();
+                    return;
+                }
                 if (_err && (_err.code === 'SESSION_EXPIRED' || _err.status === 401)) {
                     expireSecureSessionLocal();
                     appendBubble('assistant', '<p style="margin:0">Your secure chat expired after 5 minutes. Please request and verify a new OTP code.</p>');
