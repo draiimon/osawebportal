@@ -2158,6 +2158,31 @@
     min-height: 0.95rem !important;
 }
 
+/* ── Locked chip group (after preference is chosen) ─── */
+.osa-ai-chip.is-chosen {
+    background: linear-gradient(135deg, #a4203a 0%, var(--brand) 100%) !important;
+    color: #fff !important;
+    border-color: var(--brand) !important;
+    cursor: default !important;
+    box-shadow: 0 2px 8px rgba(132,26,45,0.18) !important;
+}
+
+.osa-ai-chip.is-chosen::after {
+    content: " \2713";
+    font-weight: 700;
+}
+
+.osa-ai-chip.is-locked {
+    opacity: 0.45 !important;
+    cursor: not-allowed !important;
+    pointer-events: none;
+}
+
+.osa-ai-chip[disabled],
+.osa-ai-chip[aria-disabled="true"] {
+    pointer-events: none;
+}
+
 /* ── Actions / inline buttons ─── */
 .osa-launcher-panel--chat-ui .osa-ai-actions button {
     border-radius: 8px !important;

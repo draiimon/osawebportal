@@ -1751,6 +1751,47 @@
             }
         }
 
+        // Lock every sibling chip in the same logical group (same case + same
+        // field, e.g. "day" or "window") right after the student picks one.
+        // Marks the chosen chip and disables the rest so the request cannot
+        // be spammed while the network call is in flight or after a value
+        // was already chosen for that field. Returns an `unlock()` callback
+        // to call on error so the student can retry.
+        function lockChipGroup(btn, caseAttr, fieldAttr) {
+            var caseId = btn.getAttribute(caseAttr) || '';
+            var field = btn.getAttribute(fieldAttr) || '';
+            var cls = btn.classList && btn.classList[0] ? btn.classList[0] : '';
+            var classSel = btn.classList.contains('osa-visit-appt-btn') ? 'osa-visit-appt-btn'
+                          : btn.classList.contains('osa-lf-appt-btn') ? 'osa-lf-appt-btn'
+                          : cls;
+            var safeCase = String(caseId).replace(/"/g, '\\"');
+            var safeField = String(field).replace(/"/g, '\\"');
+            var sel = '.' + classSel + '[' + caseAttr + '="' + safeCase + '"][' + fieldAttr + '="' + safeField + '"]';
+            var sibs = thread.querySelectorAll(sel);
+            var snapshot = [];
+            for (var i = 0; i < sibs.length; i++) {
+                var b = sibs[i];
+                snapshot.push({ el: b, disabled: b.disabled, aria: b.getAttribute('aria-disabled') });
+                b.disabled = true;
+                b.setAttribute('aria-disabled', 'true');
+                if (b === btn) {
+                    b.classList.add('is-chosen');
+                } else {
+                    b.classList.add('is-locked');
+                }
+            }
+            return function unlock() {
+                for (var j = 0; j < snapshot.length; j++) {
+                    var s = snapshot[j];
+                    s.el.disabled = !!s.disabled;
+                    if (s.aria == null) s.el.removeAttribute('aria-disabled');
+                    else s.el.setAttribute('aria-disabled', s.aria);
+                    s.el.classList.remove('is-chosen');
+                    s.el.classList.remove('is-locked');
+                }
+            };
+        }
+
         function routeConcern(message) {
             var text = message.toLowerCase();
             if (text.indexOf('manual') >= 0 || text.indexOf('policy') >= 0 || text.indexOf('handbook') >= 0) {
@@ -2642,6 +2683,7 @@
             var lfBtn = ev.target && ev.target.closest && ev.target.closest('.osa-lf-appt-btn');
             if (lfBtn && widget.contains(lfBtn)) {
                 ev.preventDefault();
+                if (lfBtn.disabled || lfBtn.getAttribute('aria-disabled') === 'true') return;
                 var cid = (lfBtn.getAttribute('data-lf-case') || '').trim();
                 var field = (lfBtn.getAttribute('data-lf-field') || '').trim();
                 var val = (lfBtn.getAttribute('data-lf-value') || '').trim();
@@ -2650,6 +2692,7 @@
                 if (field === 'track') body.appointment_track = val;
                 else if (field === 'day') body.preferred_day = val;
                 else if (field === 'window') body.preferred_time_window = val;
+                var unlockLf = lockChipGroup(lfBtn, 'data-lf-case', 'data-lf-field');
                 postApi('/chat/claim/appointment-preference', body)
                     .then(function (data) {
                         var summary = String((data && data.summary) || 'Preference saved.');
@@ -2660,6 +2703,7 @@
                             expireSecureSessionLocal();
                             appendBubble('assistant', '<p style="margin:0">Session expired. Verify OTP again to continue.</p>');
                         } else {
+                            try { unlockLf(); } catch (_) {}
                             appendBubble('assistant', '<p style="margin:0">' + escapeHtml(err.message || 'Could not save preference.') + '</p>');
                         }
                     });
@@ -2669,6 +2713,7 @@
             var visitBtn = ev.target && ev.target.closest && ev.target.closest('.osa-visit-appt-btn');
             if (visitBtn && widget.contains(visitBtn)) {
                 ev.preventDefault();
+                if (visitBtn.disabled || visitBtn.getAttribute('aria-disabled') === 'true') return;
                 var vcid = (visitBtn.getAttribute('data-visit-case') || '').trim();
                 var vfield = (visitBtn.getAttribute('data-visit-field') || '').trim();
                 var vval = (visitBtn.getAttribute('data-visit-value') || '').trim();
@@ -2676,6 +2721,7 @@
                 var vbody = { session_id: chatSessionId, case_id: vcid };
                 if (vfield === 'day') vbody.preferred_day = vval;
                 else if (vfield === 'window') vbody.preferred_time_window = vval;
+                var unlockVisit = lockChipGroup(visitBtn, 'data-visit-case', 'data-visit-field');
                 postApi('/chat/visit/appointment-preference', vbody)
                     .then(function (data) {
                         var summary = String((data && data.summary) || 'Preference saved.');
@@ -2686,6 +2732,7 @@
                             expireSecureSessionLocal();
                             appendBubble('assistant', '<p style="margin:0">Session expired. Verify OTP again to continue.</p>');
                         } else {
+                            try { unlockVisit(); } catch (_) {}
                             appendBubble('assistant', '<p style="margin:0">' + escapeHtml(err.message || 'Could not save preference.') + '</p>');
                         }
                     });
