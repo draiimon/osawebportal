@@ -622,12 +622,19 @@
         }
         function showEndSessionConfirm() {
             if (document.getElementById('osa-end-confirm')) return;
+            // If staff already approved/scheduled the appointment, ending the
+            // chat is harmless — no in-flight reply can be lost. Show a
+            // friendlier confirmation in that case.
+            var bodyHtml = lastApptApproved
+                ? '<p style="margin:0 0 8px">Your appointment is already <strong>confirmed by OSA staff</strong>. Ending this chat is safe — your scheduled appointment stays.</p>' +
+                  '<p style="margin:0 0 10px;font-size:12px;color:#65574d">You can verify your email again anytime to start a new case.</p>'
+                : '<p style="margin:0 0 8px">You are still chatting with <strong>OSA Staff</strong>. If you end the session now, your case will be cancelled and their replies will no longer reach you here.</p>' +
+                  '<p style="margin:0 0 10px;font-size:12px;color:#65574d">You can verify your email again anytime to start a new case.</p>';
             appendBubble(
                 'assistant',
                 '<details class="osa-ai-rich" id="osa-end-confirm" open>' +
                 '<summary>End this conversation?</summary>' +
-                '<p style="margin:0 0 8px">You are still chatting with <strong>OSA Staff</strong>. If you end the session now, your case will be cancelled and their replies will no longer reach you here.</p>' +
-                '<p style="margin:0 0 10px;font-size:12px;color:#65574d">If you really need to leave, you can resume the same case within 24 hours by re-verifying your email.</p>' +
+                bodyHtml +
                 '<div class="osa-ai-actions">' +
                 '<button type="button" class="osa-escalate-btn" data-osa-end-confirm>Yes, end session</button>' +
                 '<button type="button" class="osa-escalate-btn" data-osa-end-cancel>Stay in chat</button>' +
@@ -1303,6 +1310,8 @@
             // in the header until the page is refreshed.
             try { setMode('ai'); } catch (_) {}
             try { clearWaitingBanner(); } catch (_) {}
+            // Clear approval cache so the next case starts fresh.
+            lastApptApproved = false;
             // Reset guest memory id so the next guest turn starts a fresh
             // context-aware conversation rather than inheriting OTP-era memory.
             clearGuestConvoId();
@@ -1450,6 +1459,11 @@
             staff:   { label: 'Staff', cls: 'osa-ai-mode--staff' }
         };
         var currentMode = 'ai';
+        // Tracks whether the active case already has an approved/scheduled
+        // appointment. Used to make the End-session confirmation and the
+        // post-end notice context-aware: if staff already approved, ending
+        // the chat doesn't actually cancel anything.
+        var lastApptApproved = false;
         function setMode(next) {
             if (!modeBadgeEl) return;
             var target = MODE_COPY[next] || MODE_COPY.ai;
@@ -1775,6 +1789,10 @@
                     var apptStatus = String(ticket.appointment_status || '').toLowerCase();
                     var isApproved = apptStatus === 'approved' || apptStatus === 'scheduled';
                     var isStaffEngaged = String(ticket.status || '') === 'in_progress';
+
+                    // Cache approval state so the End-session confirmation
+                    // and post-end notice can adapt without another fetch.
+                    lastApptApproved = !!isApproved;
 
                     if (isApproved) {
                         // Visit is approved/scheduled — lock any stale day/time
@@ -2610,8 +2628,14 @@
                     if (chatSessionId) {
                         try { postApi('/chat/session/end', { session_id: chatSessionId }).catch(function () {}); } catch (_) {}
                     }
+                    // Capture approval state BEFORE clearing local session,
+                    // since expireSecureSessionLocal() resets the flag.
+                    var endedWithApproval = !!lastApptApproved;
                     try { expireSecureSessionLocal(); } catch (_) {}
-                    appendBubble('assistant', '<p style="margin:0">You ended your session. Verify your email again anytime within 24 hours to resume the same case.</p>');
+                    var endedMsg = endedWithApproval
+                        ? 'Session ended. Your appointment stays scheduled — see you on the agreed date. Verify your email anytime to start a new case.'
+                        : 'Session ended. Verify your email again anytime to start a new case.';
+                    appendBubble('assistant', '<p style="margin:0">' + endedMsg + '</p>');
                     forceCloseNext = true;
                     closeWidget();
                     return;
