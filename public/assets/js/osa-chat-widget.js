@@ -681,7 +681,33 @@
             window.setTimeout(function () { input && input.focus(); }, 80);
             try { fetchQuotaAndRender(); } catch (_) {}
         }
-        function closeWidget() {
+        var forceCloseNext = false;
+        function hasActiveStaffCase() {
+            return !!(chatSessionId && otpVerified && currentMode === 'staff');
+        }
+        function showEndSessionConfirm() {
+            if (document.getElementById('osa-end-confirm')) return;
+            appendBubble(
+                'assistant',
+                '<details class="osa-ai-rich" id="osa-end-confirm" open>' +
+                '<summary>End this conversation?</summary>' +
+                '<p style="margin:0 0 8px">Kausap mo pa si <strong>OSA Staff</strong>. Kapag ineend mo agad, your case will be cancelled at hindi na mararating ang reply nila dito.</p>' +
+                '<p style="margin:0 0 10px;font-size:12px;color:#65574d">If you really need to leave, you can resume the same case within 24 hours by re-verifying your email.</p>' +
+                '<div class="osa-ai-actions">' +
+                '<button type="button" class="osa-escalate-btn" data-osa-end-confirm>Yes, end session</button>' +
+                '<button type="button" class="osa-escalate-btn" data-osa-end-cancel>Stay in chat</button>' +
+                '</div></details>',
+                { persist: false }
+            );
+        }
+        function closeWidget(opts) {
+            var fromUser = !(opts && opts.silent);
+            if (fromUser && !forceCloseNext && hasActiveStaffCase()) {
+                if (!widget.classList.contains('is-open')) openWidget();
+                showEndSessionConfirm();
+                return;
+            }
+            forceCloseNext = false;
             widget.classList.remove('is-open');
             fab.classList.remove('is-hidden');
             setTriggerState(false);
@@ -1262,9 +1288,68 @@
                 hydrateActiveTicketBanner();
                 // Refresh the "Verified as <Name>" bar above Quick topics.
                 updateVerifiedBar(String(getLS(NAME_KEY, '') || ''));
+                // Offer to resume any unfinished case from a prior dead/orphaned
+                // session — student picks up exactly where they left off.
+                try { maybeOfferResumableTicket(payload && payload.resumable_ticket); } catch (_) {}
                 return payload;
             });
         }
+
+        function maybeOfferResumableTicket(t) {
+            if (!t || !t.case_id) return;
+            if (document.getElementById('osa-resume-card')) return;
+            var label = t.ticket_type === 'claim' ? 'Lost & Found claim'
+                       : t.ticket_type === 'appointment' ? 'Visit / appointment request'
+                       : 'Concern';
+            var sub = t.status === 'cancelled'
+                ? 'It was paused when your previous session ended.'
+                : 'It is still active and waiting for OSA staff.';
+            appendBubble(
+                'assistant',
+                '<details class="osa-ai-rich" id="osa-resume-card" open>' +
+                '<summary>Welcome back — pick up your unfinished case?</summary>' +
+                '<p style="margin:0 0 6px"><strong>' + escapeHtml(label) + '</strong> — Case ID: <strong>' + escapeHtml(t.case_id) + '</strong></p>' +
+                '<p style="margin:0 0 10px;font-size:12px;color:#65574d">' + escapeHtml(sub) + '</p>' +
+                '<div class="osa-ai-actions">' +
+                '<button type="button" class="osa-escalate-btn" data-osa-resume-case="' + escapeHtml(t.case_id) + '">Resume this case</button>' +
+                '<button type="button" class="osa-escalate-btn" data-osa-skip-resume>Start a new conversation</button>' +
+                '</div></details>',
+                { persist: false }
+            );
+        }
+
+        // ── AFK / inactivity guard ────────────────────────────────
+        var lastUserActivityMs = Date.now();
+        var afkWarningShown = false;
+        var AFK_WARN_AFTER_MS = 4 * 60 * 1000;
+        function bumpUserActivity() {
+            lastUserActivityMs = Date.now();
+            if (afkWarningShown) {
+                afkWarningShown = false;
+                var card = document.getElementById('osa-afk-card');
+                if (card) card.remove();
+            }
+        }
+        function showAfkWarning() {
+            if (document.getElementById('osa-afk-card')) return;
+            afkWarningShown = true;
+            appendBubble(
+                'assistant',
+                '<details class="osa-ai-rich" id="osa-afk-card" open>' +
+                '<summary>Still there?</summary>' +
+                '<p style="margin:0 0 8px">Wala kang activity for a while. To avoid losing your case, tap below within the next minute.</p>' +
+                '<div class="osa-ai-actions">' +
+                '<button type="button" class="osa-escalate-btn" data-osa-still-here>I\'m still here</button>' +
+                '</div></details>',
+                { persist: false }
+            );
+        }
+        setInterval(function () {
+            if (!chatSessionId || !otpVerified) return;
+            if (currentMode !== 'staff') return;
+            var idleFor = Date.now() - lastUserActivityMs;
+            if (!afkWarningShown && idleFor >= AFK_WARN_AFTER_MS) showAfkWarning();
+        }, 15000);
 
         // ── Session countdown timer ───────────────────────────────
         // Reads `session_expires_at` (set by the server on every success
@@ -1942,6 +2027,7 @@
         async function handleSend() {
             var message = input.value.trim();
             if (!message) return;
+            try { bumpUserActivity(); } catch (_) {}
 
             // Confirm before requesting a new OTP while the student is still
             // in a verified session — re-verifying logs them out of the
@@ -2374,6 +2460,70 @@
             var escBtn = ev.target && ev.target.closest && ev.target.closest('.osa-escalate-btn');
             if (escBtn && widget.contains(escBtn)) {
                 ev.preventDefault();
+                if (escBtn.getAttribute('data-osa-end-confirm') != null) {
+                    var endCard = document.getElementById('osa-end-confirm');
+                    if (endCard) {
+                        var endActions = endCard.querySelector('.osa-ai-actions');
+                        if (endActions) endActions.remove();
+                        var endSummary = endCard.querySelector('summary');
+                        if (endSummary) endSummary.textContent = 'Session ended';
+                    }
+                    if (chatSessionId) {
+                        try { postApi('/chat/session/end', { session_id: chatSessionId }).catch(function () {}); } catch (_) {}
+                    }
+                    try { expireSecureSessionLocal(); } catch (_) {}
+                    appendBubble('assistant', '<p style="margin:0">You ended your session. Verify your email again anytime within 24 hours to resume the same case.</p>');
+                    forceCloseNext = true;
+                    closeWidget();
+                    return;
+                }
+                if (escBtn.getAttribute('data-osa-end-cancel') != null) {
+                    var endCard2 = document.getElementById('osa-end-confirm');
+                    if (endCard2) endCard2.remove();
+                    try { bumpUserActivity(); } catch (_) {}
+                    return;
+                }
+                if (escBtn.getAttribute('data-osa-still-here') != null) {
+                    try { bumpUserActivity(); } catch (_) {}
+                    if (chatSessionId) {
+                        try { postApi('/chat/session/heartbeat', { session_id: chatSessionId }).catch(function () {}); } catch (_) {}
+                    }
+                    var afkCard = document.getElementById('osa-afk-card');
+                    if (afkCard) afkCard.remove();
+                    appendBubble('assistant', '<p style="margin:0">Got it — keeping your case active. Reply when staff posts an update.</p>');
+                    return;
+                }
+                var resumeAttr = escBtn.getAttribute('data-osa-resume-case');
+                if (resumeAttr != null && resumeAttr !== '') {
+                    var resumeCard = document.getElementById('osa-resume-card');
+                    if (resumeCard) {
+                        var rActions = resumeCard.querySelector('.osa-ai-actions');
+                        if (rActions) rActions.remove();
+                        var rSummary = resumeCard.querySelector('summary');
+                        if (rSummary) rSummary.textContent = 'Resuming your case…';
+                    }
+                    try {
+                        postApi('/chat/resume-ticket', { session_id: chatSessionId, case_id: resumeAttr })
+                            .then(function (r) {
+                                appendBubble('assistant',
+                                    '<p style="margin:0"><strong>Resumed Case ' + escapeHtml(resumeAttr) + '.</strong> Type your next message and OSA staff will see it on the same case.</p>');
+                                try { setMode('staff'); } catch (_) {}
+                                try { hydrateActiveTicketBanner(); } catch (_) {}
+                                try { bumpUserActivity(); } catch (_) {}
+                            })
+                            .catch(function (err) {
+                                appendBubble('assistant',
+                                    '<p style="margin:0">Sorry — could not resume case ' + escapeHtml(resumeAttr) + ': ' + escapeHtml((err && err.message) || 'Unknown error') + '</p>');
+                            });
+                    } catch (_) {}
+                    return;
+                }
+                if (escBtn.getAttribute('data-osa-skip-resume') != null) {
+                    var resumeCard2 = document.getElementById('osa-resume-card');
+                    if (resumeCard2) resumeCard2.remove();
+                    appendBubble('assistant', '<p style="margin:0">Sige — fresh start. Type your new question below whenever ready.</p>');
+                    return;
+                }
                 if (escBtn.getAttribute('data-osa-confirm-otp-relogin') != null) {
                     var hostDetails = escBtn.closest('details.osa-ai-rich');
                     if (hostDetails) {

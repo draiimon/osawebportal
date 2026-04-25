@@ -1475,6 +1475,42 @@ function registerChatRoutes(app, apiPrefix) {
         );
         const sessionRow = created.rows[0];
 
+        // Look for a recently-cancelled / still-open ticket the student can
+        // pick up from this same email — gives them a chance to resume the
+        // case they were on before the previous session died.
+        let resumableTicket = null;
+        try {
+          const resumable = await db.query(
+            `SELECT case_id, ticket_type, status, concern, created_at,
+                    cancelled_at, cancelled_reason, appointment_status,
+                    preferred_day, preferred_time_window
+               FROM escalation_tickets
+              WHERE student_email = $1
+                AND (
+                  (status = 'cancelled' AND cancelled_at >= NOW() - INTERVAL '24 hours')
+                  OR status IN ('open','in_progress')
+                )
+              ORDER BY COALESCE(cancelled_at, updated_at, created_at) DESC
+              LIMIT 1`,
+            [email]
+          );
+          if (resumable.rows.length) {
+            const r = resumable.rows[0];
+            resumableTicket = {
+              case_id: r.case_id,
+              ticket_type: r.ticket_type,
+              status: r.status,
+              concern: r.concern,
+              created_at: r.created_at,
+              cancelled_at: r.cancelled_at,
+              cancelled_reason: r.cancelled_reason,
+              appointment_status: r.appointment_status,
+              preferred_day: r.preferred_day,
+              preferred_time_window: r.preferred_time_window,
+            };
+          }
+        } catch (_) {}
+
         return res.json({
           success: true,
           session_id: sessionRow.id,
@@ -1482,9 +1518,137 @@ function registerChatRoutes(app, apiPrefix) {
           email,
           session_expires_at: sessionExpiresAtIso(sessionRow),
           session_ttl_ms: CHAT_SESSION_TTL_MS,
+          resumable_ticket: resumableTicket,
         });
       } catch (error) {
         return genericError(res, "chat", error);
+      }
+    }
+  );
+
+  // Resume a previously-cancelled (or still-open) ticket and re-link it to
+  // the student's brand-new session. Used after the OTP card flow when the
+  // server returned `resumable_ticket` in the session payload.
+  app.post(
+    `${apiPrefix}/chat/resume-ticket`,
+    async (req, res) => {
+      const sessionId = String((req.body && req.body.session_id) || "").trim();
+      const caseId = String((req.body && req.body.case_id) || "").trim();
+      if (!sessionId || !caseId) {
+        return res.status(400).json({ success: false, message: "session_id and case_id are required." });
+      }
+      if (!isValidSessionId(sessionId)) {
+        return res.status(400).json({ success: false, message: "Invalid session_id format." });
+      }
+      try {
+        const loaded = await loadSessionRow(sessionId);
+        if (!loaded.found || loaded.expired) {
+          return res.status(401).json({ success: false, code: "SESSION_EXPIRED", message: "Session is not active." });
+        }
+        const sessionEmail = String((loaded.session && loaded.session.email) || "").toLowerCase();
+        const ticketResult = await db.query(
+          `SELECT case_id, status, ticket_type, student_email, session_id
+             FROM escalation_tickets
+            WHERE case_id = $1
+            LIMIT 1`,
+          [caseId]
+        );
+        if (!ticketResult.rows.length) {
+          return res.status(404).json({ success: false, message: "Ticket not found." });
+        }
+        const ticket = ticketResult.rows[0];
+        if (String(ticket.student_email || "").toLowerCase() !== sessionEmail) {
+          return res.status(403).json({ success: false, message: "This ticket is registered to a different email." });
+        }
+        if (ticket.status === "resolved") {
+          return res.status(400).json({ success: false, message: "This case is already resolved." });
+        }
+
+        // Restore status: cancelled → open. Re-link session_id so the new
+        // session sees this as its active ticket.
+        const restoreStatus = ticket.status === "in_progress" ? "in_progress" : "open";
+        await db.query(
+          `UPDATE escalation_tickets
+              SET status = $2,
+                  session_id = $3,
+                  cancelled_at = NULL,
+                  cancelled_reason = NULL,
+                  updated_at = NOW()
+            WHERE case_id = $1`,
+          [caseId, restoreStatus, sessionId]
+        );
+        await db.query(`UPDATE chat_sessions SET last_active_at = NOW() WHERE id = $1`, [sessionId]);
+
+        try {
+          pushToAdminTickets({
+            type: "ticket_updated",
+            case_id: caseId,
+            session_id: sessionId,
+            status: restoreStatus,
+            resumed: true,
+          });
+        } catch (_) {}
+
+        return res.json({
+          success: true,
+          case_id: caseId,
+          status: restoreStatus,
+          ticket_type: ticket.ticket_type,
+        });
+      } catch (error) {
+        return genericError(res, "chat-resume-ticket", error);
+      }
+    }
+  );
+
+  // Student explicitly ends their session (e.g. clicked "End session" in the
+  // confirmation modal). Idempotent: cancels any orphan tickets and bumps the
+  // session into the expired state.
+  app.post(
+    `${apiPrefix}/chat/session/end`,
+    async (req, res) => {
+      const sessionId = String((req.body && req.body.session_id) || "").trim();
+      if (!sessionId) {
+        return res.status(400).json({ success: false, message: "session_id is required." });
+      }
+      if (!isValidSessionId(sessionId)) {
+        return res.status(400).json({ success: false, message: "Invalid session_id format." });
+      }
+      try {
+        const cancelled = await cancelOrphanedTickets(sessionId, "user_ended_session");
+        // Force-expire the session by backdating last_active_at.
+        await db.query(
+          `UPDATE chat_sessions SET last_active_at = NOW() - ($1 || ' milliseconds')::interval WHERE id = $2`,
+          [String(CHAT_SESSION_TTL_MS + 1000), sessionId]
+        );
+        return res.json({ success: true, cancelled_tickets: cancelled.map((r) => r.case_id) });
+      } catch (error) {
+        return genericError(res, "chat-session-end", error);
+      }
+    }
+  );
+
+  // Lightweight heartbeat — bumps last_active_at so the dead-air sweeper does
+  // not cancel an active staff ticket while the student is reading replies.
+  // Used by the AFK "I'm still here" button.
+  app.post(
+    `${apiPrefix}/chat/session/heartbeat`,
+    async (req, res) => {
+      const sessionId = String((req.body && req.body.session_id) || "").trim();
+      if (!sessionId || !isValidSessionId(sessionId)) {
+        return res.status(400).json({ success: false, message: "Invalid session_id." });
+      }
+      try {
+        const r = await db.query(
+          `UPDATE chat_sessions SET last_active_at = NOW() WHERE id = $1 RETURNING id`,
+          [sessionId]
+        );
+        if (!r.rowCount) {
+          return res.status(404).json({ success: false, message: "Session not found." });
+        }
+        return res.json({ success: true });
+      } catch (error) {
+        return genericError(res, "chat-session-heartbeat", error);
       }
     }
   );
