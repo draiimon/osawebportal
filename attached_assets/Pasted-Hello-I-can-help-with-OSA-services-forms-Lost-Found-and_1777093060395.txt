@@ -1,0 +1,85 @@
+Hello! I can help with OSA services, forms, Lost & Found, and policies. How can I help today?
+
+Skip
+Assistant
+12:55 PM
+Welcome, rerer! Your session is verified — you can continue with protected actions like appointments, claims, and human escalation.
+
+Assistant
+12:55 PM
+I need help with lost and found claim.
+
+You
+12:55 PM
+Tap an item to start your claim:
+
+
+LF-1002 · Black Backpack
+Bag · April 19, 2025
+
+LF-1001 · Black Leather Wallet
+Wallet · April 18, 2025
+
+LF-2026-103 · Navy Blue Stainless Tumbler
+Personal Item · 2026-04-23
+
+LF-2026-102 · Apple AirPods (2nd Gen) in White Case
+Electronics · 2026-04-23
+Assistant
+12:55 PM
+I want to claim LF-1002
+
+You
+12:55 PM
+Your Lost & Found claim was submitted.
+
+📋 Case ID: OSA-MODV9GGA-535DEA
+
+OSA staff will confirm your visit schedule. Use the buttons below to choose appointment type and preferred day/time.
+
+Assistant
+12:55 PM
+Claim visit preferences
+Naka-set na ito as Claiming appointment. Pumili lang ng time window — type your preferred day (Mon–Fri) sa chat below. OSA staff will confirm the final schedule.
+
+Time window
+
+Morning
+Afternoon
+Tip: type your preferred day here in the chat (Mon / Tue / Wed / Thu / Fri).
+
+Assistant
+12:55 PM
+Recorded: Claiming Appointment. Time window: Morning.
+
+Assistant
+12:56 PM
+Monday
+
+You
+12:56 PM
+Your inquiry is already escalated to OSA staff (Case ID: OSA-MODV9GGA-535DEA). AI is now paused for this case while waiting for human support. If there is no staff reply yet, we send a follow-up reminder after 5 minutes. If you prefer, you can also request an appointment schedule in this same chat. Recorded preferences — Day: Mon, Time: Morning. OSA staff will confirm the final schedule in this chat.
+
+OSA Staff
+12:56 PM
+OSA Staff has joined the chat.
+sure
+
+OSA Staff
+12:56 PM
+okay
+
+You
+12:56 PM
+okay
+
+You
+12:57 PM
+Session ended
+Kausap mo pa si OSA Staff. Kapag ineend mo agad, your case will be cancelled at hindi na mararating ang reply nila dito.
+
+If you really need to leave, you can resume the same case within 24 hours by re-verifying your email.
+
+Assistant
+12:57 PM
+You ended your session. Verify your email again anytime within 24 hours to resume the same case.

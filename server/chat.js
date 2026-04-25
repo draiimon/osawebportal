@@ -344,6 +344,10 @@ const adminTicketClients = new Set();
 // both run findOpenTicketByType before either inserts, and both
 // will create new duplicate tickets.
 const _keyedLocks = new Map();
+// Tracks the last successful "appointment confirmed" notification per
+// case_id, so a duplicate confirm within a short window is suppressed
+// (no second chat message, no second SSE push to the student).
+const _lastApptConfirmAt = new Map();
 async function withKeyedLock(key, fn) {
   const prev = _keyedLocks.get(key) || Promise.resolve();
   let release;
@@ -2970,63 +2974,87 @@ function registerChatRoutes(app, apiPrefix) {
     }
 
     try {
-      const ticketResult = await db.query(
-        `UPDATE escalation_tickets
-         SET appointment_datetime = $1,
-             appointment_location = $2,
-             appointment_notes = coalesce($3, appointment_notes),
-             appointment_status = 'scheduled',
-             status = CASE WHEN status = 'open' THEN 'in_progress' ELSE status END,
-             updated_at = NOW()
-         WHERE case_id = $4 AND status IN ('open','in_progress')
-         RETURNING session_id, ticket_type`,
-        [when.toISOString(), location, notes || null, caseId]
-      );
+      // Per-case mutex + short-window dedupe so a rapid double-confirm
+      // (duplicate listener attachment, accidental double-click, panel
+      // re-render, network retry) doesn't spam the student with two
+      // "Your OSA visit is confirmed" messages for the same case.
+      const result = await withKeyedLock(`appt:${caseId}`, async () => {
+        const ticketResult = await db.query(
+          `UPDATE escalation_tickets
+           SET appointment_datetime = $1,
+               appointment_location = $2,
+               appointment_notes = coalesce($3, appointment_notes),
+               appointment_status = 'scheduled',
+               status = CASE WHEN status = 'open' THEN 'in_progress' ELSE status END,
+               updated_at = NOW()
+           WHERE case_id = $4 AND status IN ('open','in_progress')
+           RETURNING session_id, ticket_type`,
+          [when.toISOString(), location, notes || null, caseId]
+        );
 
-      if (!ticketResult.rows.length) {
+        if (!ticketResult.rows.length) {
+          return { kind: "notfound" };
+        }
+
+        const { session_id } = ticketResult.rows[0];
+
+        // Suppress duplicate confirmation chat messages within a short
+        // window — but the ticket UPDATE above is still applied so a
+        // legitimate reschedule still persists the new datetime.
+        const now = Date.now();
+        const last = _lastApptConfirmAt.get(caseId) || 0;
+        const APPT_CONFIRM_DEDUPE_MS = 8000;
+        if (now - last < APPT_CONFIRM_DEDUPE_MS) {
+          return { kind: "ok-deduped", session_id };
+        }
+        _lastApptConfirmAt.set(caseId, now);
+
+        const dtLabel = when.toLocaleString("en-PH", {
+          weekday: "long", year: "numeric", month: "long", day: "numeric",
+          hour: "numeric", minute: "2-digit", hour12: true,
+          timeZone: "Asia/Manila",
+        });
+
+        const msgContent =
+          `[OSA Staff · ${staffName}]\n\n` +
+          `Your OSA visit is confirmed:\n\n` +
+          `When: ${dtLabel}\n` +
+          `Where: ${location}\n` +
+          (notes ? `Notes: ${notes}\n` : "") +
+          `\nPlease arrive on time and bring your school ID and Case ID (${caseId}).`;
+
+        await db.query(
+          `INSERT INTO chat_messages (session_id, role, content) VALUES ($1, 'assistant', $2)`,
+          [session_id, msgContent]
+        );
+
+        await db.query(`UPDATE chat_sessions SET last_active_at = NOW() WHERE id = $1`, [session_id]);
+
+        const delivered = pushToSession(session_id, {
+          type: "staff_message",
+          content: msgContent,
+          staff_name: staffName,
+          case_id: caseId,
+          timestamp: new Date().toISOString(),
+        });
+        pushToAdminTickets({
+          type: "ticket_updated",
+          case_id: caseId,
+          status: "in_progress",
+          appointment_status: "scheduled",
+          timestamp: new Date().toISOString(),
+        });
+
+        return { kind: "ok", delivered };
+      });
+
+      if (result.kind === "notfound") {
         return res.status(404).json({ success: false, message: "Ticket not found or already resolved." });
       }
-
-      const { session_id, ticket_type } = ticketResult.rows[0];
-      const isVisitTicket = String(ticket_type || "").toLowerCase() === "appointment";
-
-      const dtLabel = when.toLocaleString("en-PH", {
-        weekday: "long", year: "numeric", month: "long", day: "numeric",
-        hour: "numeric", minute: "2-digit", hour12: true,
-        timeZone: "Asia/Manila",
-      });
-
-      const msgContent =
-        `[OSA Staff · ${staffName}]\n\n` +
-        `Your OSA visit is confirmed:\n\n` +
-        `When: ${dtLabel}\n` +
-        `Where: ${location}\n` +
-        (notes ? `Notes: ${notes}\n` : "") +
-        `\nPlease arrive on time and bring your school ID and Case ID (${caseId}).`;
-
-      await db.query(
-        `INSERT INTO chat_messages (session_id, role, content) VALUES ($1, 'assistant', $2)`,
-        [session_id, msgContent]
-      );
-
-      await db.query(`UPDATE chat_sessions SET last_active_at = NOW() WHERE id = $1`, [session_id]);
-
-      const delivered = pushToSession(session_id, {
-        type: "staff_message",
-        content: msgContent,
-        staff_name: staffName,
-        case_id: caseId,
-        timestamp: new Date().toISOString(),
-      });
-      pushToAdminTickets({
-        type: "ticket_updated",
-        case_id: caseId,
-        status: "in_progress",
-        appointment_status: "scheduled",
-        timestamp: new Date().toISOString(),
-      });
-
-      return res.json({ success: true, delivered });
+      if (result.kind === "ok-deduped") {
+        return res.json({ success: true, delivered: false, deduped: true });
+      }
+      return res.json({ success: true, delivered: result.delivered });
     } catch (error) {
       return genericError(res, "chat", error);
     }
