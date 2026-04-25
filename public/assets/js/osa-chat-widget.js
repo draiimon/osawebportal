@@ -1297,6 +1297,11 @@
             setLS(NAME_KEY, '');
             savedName = '';
             applyVerifiedHeader('');
+            // Reset header mode badge — without this, ending a session
+            // while in human-support mode leaves "Live OSA Staff" stuck
+            // in the header until the page is refreshed.
+            try { setMode('ai'); } catch (_) {}
+            try { clearWaitingBanner(); } catch (_) {}
             // Reset guest memory id so the next guest turn starts a fresh
             // context-aware conversation rather than inheriting OTP-era memory.
             clearGuestConvoId();
