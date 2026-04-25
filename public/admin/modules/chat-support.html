@@ -1716,6 +1716,16 @@
       .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
+  /* Render a small subset of inline markdown used by OSA chat content
+   * (currently just **bold**) safely. Always escapes HTML first so user
+   * input or staff text can't inject raw tags, then re-applies the
+   * marker for **…** as <strong>…</strong>. Newlines are preserved by
+   * the bubble's CSS (white-space: pre-wrap).
+   */
+  function renderInlineMd(s) {
+    return escapeHtml(s).replace(/\*\*([\s\S]+?)\*\*/g, '<strong>$1</strong>');
+  }
+
   function initials(name) {
     return String(name || '?').split(' ').map(function (w) { return w[0]; }).slice(0, 2).join('').toUpperCase();
   }
@@ -2431,7 +2441,10 @@
 
     var bubble = document.createElement('div');
     bubble.className = 'cmsg__bubble';
-    bubble.textContent = staffInfo ? staffInfo.body : content;
+    // Render **bold** markdown safely (HTML is escaped first inside
+    // renderInlineMd) so case IDs and emphasised words sent in chat
+    // appear bold instead of literal asterisks.
+    bubble.innerHTML = renderInlineMd(staffInfo ? staffInfo.body : content);
     div.appendChild(bubble);
 
     var ts = document.createElement('div');
