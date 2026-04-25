@@ -1213,6 +1213,25 @@ function isNameQuery(message) {
   return false;
 }
 
+function isChatSummaryQuery(message) {
+  const m = String(message || "").toLowerCase().replace(/[?!.,]+/g, " ").replace(/\s+/g, " ").trim();
+  if (!m) return false;
+  // English: summarize / summary / recap / what did we talk about / what have we discussed
+  if (/\b(summari[sz]e|summary|recap|tldr|tl\s*;?\s*dr)\b.*\b(chat|convo|conversation|talk|discussion|usapan)\b/.test(m)) return true;
+  if (/\b(summari[sz]e|recap|tldr)\s+(this|the|our|na\s+)?(chat|convo|conversation|usapan)?\b/.test(m)) return true;
+  if (/\b(what|ano)\s+(did|have)\s+we\s+(talk|talked|discuss|discussed)\s+(about)?\b/.test(m)) return true;
+  if (/\b(give|show)\s+(me\s+)?(a\s+)?(brief\s+|short\s+|quick\s+)?(summary|recap|overview)\s+(of\s+)?(this|our|the)?\s*(chat|convo|conversation)?\b/.test(m)) return true;
+  // Tagalog/Taglish: "paki summarize", "i-summarize mo", "buod ng usapan", "ano usapan natin",
+  // "summary ng chat naten/natin", "pakirecap"
+  if (/\b(paki|pa-?ki|pwede|puwede|paki(?:usap|hingi)?)\s+(summari[sz]e|summary|recap|i-?summarize|i-?recap)\b/.test(m)) return true;
+  if (/\b(i-?summarize|i-?recap|mag-?summarize|magbigay\s+ng\s+(summary|buod))\b/.test(m)) return true;
+  if (/\b(buod|bu-?od)\s+(ng\s+)?(usapan|chat|conversation|napag-?usapan)\b/.test(m)) return true;
+  if (/\b(summary|recap)\s+(ng\s+|of\s+)?(chat|usapan|conversation|napag-?usapan)\s+(natin|namin|naten)?\b/.test(m)) return true;
+  if (/\b(ano|anong)\s+(ang\s+)?(napag-?usapan|pinag-?usapan|usapan)\s+(natin|namin|naten)\b/.test(m)) return true;
+  if (/\b(ano|anong)\s+(ang\s+)?(napag-?usapan|pinag-?usapan)\b/.test(m)) return true;
+  return false;
+}
+
 function hasOsaScopeSignals(message) {
   return /\b(eac|osa|student manual|manual|scholarship|tuition|clearance|enrollment|enroll|lost\s*(and|&)?\s*found|announcement|good moral|discipline|attendance|grading|uniform|cashier|registrar|school id|student id|office hours|campus pass)\b/i
     .test(String(message || ""));
@@ -1483,6 +1502,104 @@ function registerChatRoutes(app, apiPrefix) {
             tier: 2,
             suggest_escalation: false,
           });
+        }
+
+        // Chat summary / recap — pull this session's history from DB so
+        // the bot can actually summarize what was discussed instead of
+        // claiming "I don't have memory of past conversations".
+        if (isChatSummaryQuery(message)) {
+          try {
+            const histResult = await db.query(
+              `SELECT role, content, created_at
+                 FROM chat_messages
+                WHERE session_id = $1
+                ORDER BY created_at ASC
+                LIMIT 80`,
+              [sessionId]
+            );
+            const allRows = histResult.rows || [];
+            // Drop the just-inserted summary request itself so it isn't
+            // included as a topic of the conversation.
+            const priorRows = allRows.filter((r) => {
+              if (r.role !== "user") return true;
+              return String(r.content || "").trim() !== String(message || "").trim();
+            });
+
+            if (priorRows.length === 0) {
+              const emptyReply =
+                `We've just started — there's nothing to summarize yet. ` +
+                `Once we exchange a few messages, ask again and I'll give you a clean recap of what we discussed.`;
+              await persistReply(sessionId, emptyReply);
+              return res.json({
+                success: true,
+                reply: emptyReply,
+                tier: 2,
+                suggest_escalation: false,
+              });
+            }
+
+            const transcript = priorRows
+              .map((r) => {
+                const who = r.role === "user" ? "Student" : (r.role === "assistant" ? "Assistant" : String(r.role || "system"));
+                const text = String(r.content || "").replace(/\s+/g, " ").trim();
+                return `${who}: ${text}`;
+              })
+              .join("\n");
+
+            const safeName = String(student_name || "Student").trim() || "Student";
+            const summarySystemPrompt =
+              `You are the OSA (Office of Student Affairs) Assistant for EAC Cavite.\n\n` +
+              `The student "${safeName}" (${email}) has asked you to summarize this chat session. ` +
+              `You DO have access to the full conversation transcript below — never claim you lack memory ` +
+              `or cannot recall past messages. The transcript IS your memory for this request.\n\n` +
+              `TRANSCRIPT (chronological, oldest first):\n${transcript}\n\n` +
+              `RULES:\n` +
+              `- Write the entire reply in clear English, even if the student writes in Filipino or Taglish.\n` +
+              `- Produce a concise recap: 3–6 short bullet points covering the main topics, questions asked, ` +
+              `  and any actions taken (e.g. OTP verification, appointments, escalations, advice given).\n` +
+              `- Skip greetings, confirmations, and small talk unless they were the only content.\n` +
+              `- Do not invent anything that isn't in the transcript. Do not repeat the transcript verbatim.\n` +
+              `- End with one short line offering to continue or clarify any topic.\n` +
+              `- Never say "I don't have memory", "as an AI", "I cannot recall", or similar disclaimers.`;
+
+            let summaryReply = "";
+            try {
+              summaryReply = (await generateLlmText({
+                systemPrompt: summarySystemPrompt,
+                messages: [{ role: "user", content: "Please summarize our chat so far." }],
+                temperature: 0.3,
+                maxOutputTokens: 600,
+              })) || "";
+            } catch (sumErr) {
+              // eslint-disable-next-line no-console
+              console.warn("[chat-summary] LLM failed:", sumErr?.message || sumErr);
+            }
+
+            if (!summaryReply.trim()) {
+              // Deterministic fallback if LLM is unavailable: list distinct user topics.
+              const userTopics = priorRows
+                .filter((r) => r.role === "user")
+                .map((r) => String(r.content || "").replace(/\s+/g, " ").trim())
+                .filter(Boolean)
+                .slice(-8);
+              summaryReply =
+                `Here's a quick recap of our chat so far:\n\n` +
+                userTopics.map((t, i) => `${i + 1}. ${t.length > 140 ? t.slice(0, 137) + "…" : t}`).join("\n") +
+                `\n\nLet me know which item you'd like to revisit.`;
+            }
+
+            await persistReply(sessionId, summaryReply);
+            return res.json({
+              success: true,
+              reply: summaryReply,
+              tier: 2,
+              suggest_escalation: false,
+            });
+          } catch (sumOuterErr) {
+            // eslint-disable-next-line no-console
+            console.warn("[chat-summary] outer failure:", sumOuterErr?.message || sumOuterErr);
+            // Fall through to normal pipeline if anything blows up.
+          }
         }
 
         // OTP / re-verification UX (not a knowledge-base question).
