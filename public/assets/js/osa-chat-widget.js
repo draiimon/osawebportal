@@ -269,7 +269,7 @@
         return '' +
             '<details class="osa-ai-rich" open style="margin-top:6px">' +
             '<summary>Claim visit preferences</summary>' +
-            '<p style="margin:0 0 10px;font-size:13px;color:#675a4f;">Choose a visit type and time window below. For your <strong>preferred day</strong>, simply type it in the chat (e.g., Mon, Tue, Wed, Thu, or Fri). OSA staff will confirm the final schedule.</p>' +
+            '<p style="margin:0 0 10px;font-size:13px;color:#675a4f;">Choose your visit type and time window. Your preferred day can be typed in chat. OSA staff will confirm the final schedule.</p>' +
             '<p style="margin:0 0 6px;font-size:12px;font-weight:700;color:#1c1917">Visit type</p>' +
             '<div class="osa-ai-chips" style="' + wrapStyle + '">' +
             '<button type="button" class="osa-ai-chip osa-lf-appt-btn" data-lf-case="' + c + '" data-lf-field="track" data-lf-value="claiming">Claiming appointment</button>' +
@@ -396,7 +396,6 @@
         }
 
         // #region agent log
-        fetch('http://127.0.0.1:7583/ingest/0b5f4c8a-4bec-4e5e-bd89-fa937b11a18b',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'48e504'},body:JSON.stringify({sessionId:'48e504',runId:'run1',hypothesisId:'H0',location:'public/assets/js/osa-chat-widget.js:init',message:'instrumented widget initialized',data:{hasWidget:!!widget,hasThread:!!thread},timestamp:Date.now()})}).catch(()=>{});
         // #endregion
 
         emailStore.value = String(getLS(EMAIL_KEY, '') || '');
@@ -604,52 +603,6 @@
             window.scrollTo(0, pageScrollLockY);
         }
 
-        function debugLayoutSnapshot(source, hypothesisId) {
-            var headerEl = widget ? widget.querySelector('.osa-ai-header') : null;
-            var firstMsgEl = thread ? thread.querySelector('.osa-ai-msg') : null;
-            var firstBubbleEl = firstMsgEl ? firstMsgEl.querySelector('.osa-ai-msg__bubble') : null;
-            var threadStyles = thread ? window.getComputedStyle(thread) : null;
-            var firstMsgStyles = firstMsgEl ? window.getComputedStyle(firstMsgEl) : null;
-            var bubbleStyles = firstBubbleEl ? window.getComputedStyle(firstBubbleEl) : null;
-            var headerRect = headerEl ? headerEl.getBoundingClientRect() : null;
-            var firstMsgRect = firstMsgEl ? firstMsgEl.getBoundingClientRect() : null;
-            var overlapPx = (headerRect && firstMsgRect) ? Math.max(0, headerRect.bottom - firstMsgRect.top) : null;
-            var snapshotData = {
-                source: source,
-                threadPaddingTop: threadStyles ? threadStyles.paddingTop : null,
-                threadOverflowY: threadStyles ? threadStyles.overflowY : null,
-                threadScrollTop: thread ? thread.scrollTop : null,
-                threadClientHeight: thread ? thread.clientHeight : null,
-                threadScrollHeight: thread ? thread.scrollHeight : null,
-                firstMsgCount: thread ? thread.querySelectorAll('.osa-ai-msg').length : 0,
-                firstMsgOffsetTop: firstMsgEl ? firstMsgEl.offsetTop : null,
-                firstMsgMarginTop: firstMsgStyles ? firstMsgStyles.marginTop : null,
-                firstMsgPaddingTop: firstMsgStyles ? firstMsgStyles.paddingTop : null,
-                bubbleMarginTop: bubbleStyles ? bubbleStyles.marginTop : null,
-                headerBottom: headerRect ? Math.round(headerRect.bottom) : null,
-                firstMsgTop: firstMsgRect ? Math.round(firstMsgRect.top) : null,
-                overlapPx: overlapPx
-            };
-            var line = 'gap=' + String(snapshotData.overlapPx) +
-                ' padTop=' + String(snapshotData.threadPaddingTop) +
-                ' firstOff=' + String(snapshotData.firstMsgOffsetTop) +
-                ' firstM=' + String(snapshotData.firstMsgMarginTop) +
-                ' sTop=' + String(snapshotData.threadScrollTop);
-            var probe = document.getElementById('osa-gap-debug-probe');
-            if (probe) probe.textContent = line;
-            var probe2 = document.getElementById('osa-gap-debug-probe-inline');
-            if (probe2) probe2.textContent = line;
-            // #region agent log
-            fetch('http://127.0.0.1:7583/ingest/0b5f4c8a-4bec-4e5e-bd89-fa937b11a18b',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'48e504'},body:JSON.stringify({sessionId:'48e504',runId:'run2',hypothesisId:hypothesisId,location:'public/assets/js/osa-chat-widget.js:debugLayoutSnapshot',message:'chat layout snapshot',data:snapshotData,timestamp:Date.now()})}).catch(()=>{});
-            // #endregion
-        }
-        var debugScrollLogCount = 0;
-        function debugLayoutOnScroll() {
-            if (debugScrollLogCount >= 6) return;
-            debugScrollLogCount += 1;
-            debugLayoutSnapshot('thread:scroll#' + debugScrollLogCount, 'H5');
-        }
-
         function openWidget() {
             widget.classList.add('is-open');
             fab.classList.add('is-hidden');
@@ -657,29 +610,7 @@
             lockPageScroll();
             // Ack any pending staff messages as seen now that the widget is visible.
             try { notifySeen(); } catch (_) {}
-            var headerBrand = widget.querySelector('.osa-ai-header__brand');
-            if (headerBrand && !document.getElementById('osa-gap-debug-probe')) {
-                var probe = document.createElement('small');
-                probe.id = 'osa-gap-debug-probe';
-                probe.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none;';
-                probe.textContent = 'gap probe init';
-                headerBrand.appendChild(probe);
-            }
-            if (thread && !document.getElementById('osa-gap-debug-probe-inline')) {
-                var probeInline = document.createElement('div');
-                probeInline.id = 'osa-gap-debug-probe-inline';
-                probeInline.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none;';
-                probeInline.textContent = 'gap probe inline init';
-                thread.appendChild(probeInline);
-            }
-            window.requestAnimationFrame(function () {
-                debugLayoutSnapshot('openWidget:raf', 'H1');
-            });
-            window.setTimeout(function () {
-                debugLayoutSnapshot('openWidget:120ms', 'H6');
-            }, 120);
             window.setTimeout(function () { input && input.focus(); }, 80);
-            try { fetchQuotaAndRender(); } catch (_) {}
         }
         var forceCloseNext = false;
         function hasActiveStaffCase() {
@@ -825,9 +756,6 @@
                 stopWelcomeCarousel();
             }
             renderBubble(role, html, opts);
-            if (role === 'assistant') {
-                debugLayoutSnapshot('appendBubble:assistant', 'H2');
-            }
             if (opts.persist !== false) {
                 var arr = getLS(THREAD_KEY, []);
                 if (!Array.isArray(arr)) arr = [];
@@ -989,7 +917,6 @@
             var raw = getLS(THREAD_KEY, []);
             var arr = Array.isArray(raw) ? raw : [];
             // #region agent log
-            fetch('http://127.0.0.1:7583/ingest/0b5f4c8a-4bec-4e5e-bd89-fa937b11a18b',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'48e504'},body:JSON.stringify({sessionId:'48e504',runId:'run1',hypothesisId:'H3',location:'public/assets/js/osa-chat-widget.js:restoreThread',message:'restoreThread start',data:{storedThreadCount:arr.length},timestamp:Date.now()})}).catch(()=>{});
             // #endregion
             arr = arr.filter(function (m) {
                 if (!m.html) return true;
@@ -1021,7 +948,6 @@
                     status: m.role === 'user' ? (m.status || 'sent') : undefined
                 });
             });
-            debugLayoutSnapshot('restoreThread:end', 'H4');
         }
 
         // ── Presence: typing + seen receipts ─────────────────────────
