@@ -61,6 +61,18 @@
             '    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>' +
             '  </button>' +
             '  <div class="osa-ai-thread" id="osa-chat-thread" role="log" aria-live="polite"></div>' +
+            '  <div class="osa-ai-verified-bar" id="osa-chat-verified-bar" hidden role="status" aria-live="polite">' +
+            '    <div class="osa-ai-verified-bar__left">' +
+            '      <span class="osa-ai-verified-bar__shield" aria-hidden="true">' +
+            '        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 9.5 8 11 4.6-1.5 8-6 8-11V5l-8-3z"/><polyline points="9 12 11 14 15 10"/></svg>' +
+            '      </span>' +
+            '      <span class="osa-ai-verified-bar__text">Verified as <strong id="osa-chat-verified-name">student</strong></span>' +
+            '    </div>' +
+            '    <button type="button" class="osa-ai-verified-bar__end" id="osa-chat-end-session" aria-label="End verified session">' +
+            '      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>' +
+            '      <span>End session</span>' +
+            '    </button>' +
+            '  </div>' +
             '  <div class="osa-ai-chips-wrapper">' +
             '    <div class="osa-ai-chips" id="osa-chat-chips">' +
             '      <button type="button" class="osa-ai-chip" data-prompt="I need an appointment with OSA. Please guide me on scheduling a visit or meeting.">Appointment</button>' +
@@ -453,9 +465,26 @@
         }
         function applyVerifiedHeader(name) {
             var titleEl = document.getElementById('osa-chat-title');
-            if (!titleEl) return;
+            if (titleEl) {
+                var first = getFirstName(name);
+                titleEl.textContent = first ? ('Hi, ' + first) : 'Ask OSA';
+            }
+            updateVerifiedBar(name);
+        }
+        // Show / hide the "Verified as <Name> · End session" bar
+        // that sits above the Quick topics.
+        function updateVerifiedBar(name) {
+            var bar = document.getElementById('osa-chat-verified-bar');
+            var nameEl = document.getElementById('osa-chat-verified-name');
+            if (!bar) return;
             var first = getFirstName(name);
-            titleEl.textContent = first ? ('Hi, ' + first) : 'Ask OSA';
+            var canShow = !!(otpVerified && chatSessionId && first);
+            if (canShow) {
+                if (nameEl) nameEl.textContent = first;
+                bar.hidden = false;
+            } else {
+                bar.hidden = true;
+            }
         }
         // Restore the personalized header on page load for an already-verified
         // browser (avoids flashing "Ask OSA" before the user sees their name).
@@ -1188,6 +1217,8 @@
                 }
                 startSSE();
                 hydrateActiveTicketBanner();
+                // Refresh the "Verified as <Name>" bar above Quick topics.
+                updateVerifiedBar(String(getLS(NAME_KEY, '') || ''));
                 return payload;
             });
         }
@@ -2199,6 +2230,18 @@
             if (widget.classList.contains('is-open')) closeWidget(); else openWidget();
         }, { passive: false, capture: true });
         closeBtn && closeBtn.addEventListener('click', closeWidget);
+
+        // Manual "End session" — student can sign out of their verified
+        // session at any time without waiting for the 10-minute timer.
+        var endSessionBtn = document.getElementById('osa-chat-end-session');
+        endSessionBtn && endSessionBtn.addEventListener('click', function () {
+            if (!otpVerified && !chatSessionId) return;
+            expireSecureSessionLocal();
+            appendBubble(
+                'assistant',
+                '<p style="margin:0">You ended your verified session. Sensitive actions (claims, appointments, escalations) will need a fresh OTP next time.</p>'
+            );
+        });
         window.addEventListener('keydown', function (e) {
             if (e.key === 'Escape' && widget.classList.contains('is-open')) closeWidget();
         });
