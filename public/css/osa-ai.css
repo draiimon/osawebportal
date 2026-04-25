@@ -1767,12 +1767,37 @@
 }
 
 .osa-launcher-panel--chat-ui .osa-ai-header__status-line.is-staff {
+    color: rgba(255,255,255,0.92);
+}
+
+/* Live OSA Staff — bright green dot, fires only after `staff_joined` /
+   `staff_message` SSE events. */
+.osa-launcher-panel--chat-ui .osa-ai-header__status-line.is-staff::before {
+    background: #22c55e;
+    box-shadow: 0 0 0 3px rgba(34,197,94,0.32);
+    animation: osaiStaffDotPulse 1.4s ease-in-out infinite;
+}
+
+/* Waiting for OSA Staff — calmer amber dot, used while the ticket has
+   been created but no staff member has joined yet. */
+.osa-launcher-panel--chat-ui .osa-ai-header__status-line.is-waiting {
     color: rgba(255,255,255,0.88);
 }
 
-.osa-launcher-panel--chat-ui .osa-ai-header__status-line.is-staff::before {
-    background: #fb923c;
-    box-shadow: 0 0 0 3px rgba(251,146,60,0.28);
+.osa-launcher-panel--chat-ui .osa-ai-header__status-line.is-waiting::before {
+    background: #fbbf24;
+    box-shadow: 0 0 0 3px rgba(251,191,36,0.30);
+    animation: osaiWaitingDotPulse 1.6s ease-in-out infinite;
+}
+
+@keyframes osaiStaffDotPulse {
+    0%, 100% { box-shadow: 0 0 0 3px rgba(34,197,94,0.32); }
+    50%      { box-shadow: 0 0 0 5px rgba(34,197,94,0.18); }
+}
+
+@keyframes osaiWaitingDotPulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 3px rgba(251,191,36,0.30); }
+    50%      { opacity: 0.6; box-shadow: 0 0 0 4px rgba(251,191,36,0.16); }
 }
 
 /* Session timer — inline pill, warm translucent on dark header */
@@ -1823,10 +1848,18 @@
     border-color: rgba(134,239,172,0.28) !important;
 }
 
+/* Live staff badge — green to match the live status dot. */
 .osa-launcher-panel--chat-ui .osa-ai-mode--staff {
-    background: rgba(251,146,60,0.2) !important;
-    color: #fdba74 !important;
-    border-color: rgba(251,146,60,0.28) !important;
+    background: rgba(34,197,94,0.22) !important;
+    color: #86efac !important;
+    border-color: rgba(34,197,94,0.34) !important;
+}
+
+/* Waiting badge — amber to match the waiting status dot. */
+.osa-launcher-panel--chat-ui .osa-ai-mode--waiting {
+    background: rgba(251,191,36,0.20) !important;
+    color: #fcd34d !important;
+    border-color: rgba(251,191,36,0.32) !important;
 }
 
 .osa-launcher-panel--chat-ui .osa-launcher-head__close {
@@ -2171,7 +2204,7 @@
 }
 
 .osa-launcher-panel--chat-ui .osa-ai-header.is-staff-live {
-    background: linear-gradient(120deg, #6b1424 0%, #a4203a 18%, #c2410c 38%, #c79a49 52%, #c2410c 66%, #a4203a 82%, #6b1424 100%) !important;
+    background: linear-gradient(120deg, #6b1424 0%, #a4203a 18%, #16a34a 38%, #4ade80 52%, #16a34a 66%, #a4203a 82%, #6b1424 100%) !important;
     background-size: 320% 320% !important;
     animation: osaStaffHeaderShimmer 3.2s ease-in-out infinite, osaStaffHeaderGlow 1.6s ease-in-out infinite !important;
 }
@@ -2180,6 +2213,17 @@
     background: rgba(255,255,255,0.28) !important;
     border-color: rgba(255,255,255,0.48) !important;
     animation: osaStaffHeaderGlow 1.6s ease-in-out infinite !important;
+}
+
+/* Waiting header — quiet amber accent strip on top of the maroon, no
+   shimmer animation. The user is still waiting, so the header should
+   feel calm, not celebratory. */
+.osa-launcher-panel--chat-ui .osa-ai-header.is-staff-waiting {
+    box-shadow:
+        inset 0 2px 0 rgba(251, 191, 36, 0.55),
+        0 3px 14px rgba(132, 26, 45, 0.45),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.10) !important;
+    animation: none !important;
 }
 
 /* ── Verified ribbon — light strip just above the composer ──────
@@ -2289,11 +2333,16 @@
     opacity: 0.9;
 }
 
-/* When staff is live, just deepen the maroon accent slightly so the
-   row still reads as part of the same brand without going dark. */
+/* When staff is live, give the verified strip a faint green wash. */
 .osa-launcher-panel--chat-ui .osa-ai-header.is-staff-live ~ .osa-ai-verified-bar {
-    background: #fdf1ee !important;
-    border-top-color: rgba(132, 26, 45, 0.18) !important;
+    background: #effaf1 !important;
+    border-top-color: rgba(34, 197, 94, 0.22) !important;
+}
+
+/* When waiting for staff, give the verified strip a faint amber wash. */
+.osa-launcher-panel--chat-ui .osa-ai-header.is-staff-waiting ~ .osa-ai-verified-bar {
+    background: #fdf6e3 !important;
+    border-top-color: rgba(251, 191, 36, 0.30) !important;
 }
 
 .osa-ai-chips-wrapper.is-hidden-staff,

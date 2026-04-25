@@ -1445,8 +1445,9 @@
         var chipsWrapEl = widget ? widget.querySelector('.osa-ai-chips-wrapper') : null;
         var MODE_COPY = {
             faq:   { label: 'Guide', cls: 'osa-ai-mode--faq' },
-            ai:    { label: 'OSA',   cls: 'osa-ai-mode--ai' },
-            staff: { label: 'Staff', cls: 'osa-ai-mode--staff' }
+            ai:      { label: 'OSA',   cls: 'osa-ai-mode--ai' },
+            waiting: { label: 'Wait',  cls: 'osa-ai-mode--waiting' },
+            staff:   { label: 'Staff', cls: 'osa-ai-mode--staff' }
         };
         var currentMode = 'ai';
         function setMode(next) {
@@ -1456,15 +1457,28 @@
             modeBadgeEl.className = 'osa-ai-mode ' + target.cls;
             currentMode = next;
             if (statusLineEl) {
-                statusLineEl.textContent = next === 'staff' ? 'Live OSA Staff' : (next === 'faq' ? 'Guided Flow' : 'Ready');
-                statusLineEl.classList.toggle('is-staff', next === 'staff');
+                statusLineEl.textContent =
+                    next === 'staff'   ? 'Live OSA Staff' :
+                    next === 'waiting' ? 'Waiting for OSA Staff' :
+                    next === 'faq'     ? 'Guided Flow' :
+                                         'Ready';
+                statusLineEl.classList.toggle('is-staff',   next === 'staff');
+                statusLineEl.classList.toggle('is-waiting', next === 'waiting');
             }
-            // Talking with admin: hide quick topics + animate header.
-            var isStaff = next === 'staff';
-            if (chipsWrapEl) chipsWrapEl.classList.toggle('is-hidden-staff', isStaff);
-            if (headerEl) headerEl.classList.toggle('is-staff-live', isStaff);
-            // Re-evaluate verified-state chip hiding so toggling staff mode
-            // doesn't leak the chips back into view for an OTP-verified user.
+            // Hide the quick-topic chips whenever the user is in a human-support
+            // flow (either waiting or actively chatting with staff). Only the
+            // live-staff state animates the header (green shimmer); waiting
+            // gets a calmer amber accent instead.
+            var isStaff   = next === 'staff';
+            var isWaiting = next === 'waiting';
+            var isHuman   = isStaff || isWaiting;
+            if (chipsWrapEl) chipsWrapEl.classList.toggle('is-hidden-staff', isHuman);
+            if (headerEl) {
+                headerEl.classList.toggle('is-staff-live',    isStaff);
+                headerEl.classList.toggle('is-staff-waiting', isWaiting);
+            }
+            // Re-evaluate verified-state chip hiding so toggling modes doesn't
+            // leak the chips back into view for an OTP-verified user.
             try { updateVerifiedBar(getLS(NAME_KEY, '')); } catch (_) {}
         }
         setMode('ai');
@@ -1773,7 +1787,10 @@
                         var startedAt = Date.parse(ticket.created_at) || Date.now();
                         renderWaitingBanner(ticket.case_id, startedAt, !!ticket.cancellable);
                     }
-                    setMode('staff');
+                    // Only show "Live OSA Staff" once a staff member has actually
+                    // engaged (ticket.status === 'in_progress'). Otherwise keep
+                    // the header in the amber "Waiting for OSA Staff" state.
+                    setMode(isStaffEngaged ? 'staff' : 'waiting');
                 })
                 .catch(function () { /* non-fatal */ });
         }
@@ -2305,7 +2322,9 @@
                         var vid = String((visitRes && visitRes.case_id) || '').trim();
                         if (vid) {
                             renderWaitingBanner(vid, Date.now(), true);
-                            setMode('staff');
+                            // Just submitted — staff hasn't picked up yet, so
+                            // show the amber "Waiting for OSA Staff" state.
+                            setMode('waiting');
                             appendBubble('assistant', visitPreferencePanelHtml(vid));
                         }
                     }
@@ -2360,8 +2379,11 @@
                         }
                         // Update header mode badge based on which tier answered.
                         if (payload && payload.human_mode) {
-                            setMode('staff');
                             var humanTicketStatus = String((payload && payload.human_ticket_status) || '').toLowerCase();
+                            // 'open' = ticket created but no staff has joined yet → waiting (amber)
+                            // 'in_progress' = staff actively handling → live (green)
+                            // Anything else (closed/resolved) falls back to live as a safety default.
+                            setMode(humanTicketStatus === 'open' ? 'waiting' : 'staff');
                             if (payload.case_id && humanTicketStatus === 'open') {
                                 var startAt = waitingState.startedAt || Date.now();
                                 renderWaitingBanner(String(payload.case_id), startAt, waitingState.cancellable);
@@ -2388,7 +2410,9 @@
                             }
                             if (payload && payload.auto_escalated && payload.case_id && !(payload && payload.appointment_locked_today) && !(payload && payload.escalation_blocked_resolved)) {
                                 renderWaitingBanner(String(payload.case_id), Date.now(), true);
-                                setMode('staff');
+                                // Just escalated — no staff has joined yet, so
+                                // header reflects the amber "waiting" state.
+                                setMode('waiting');
                                 appendBubble('assistant',
                                     '<div class="osa-ai-handoff">' +
                                     '<p style="margin:0 0 6px"><strong>Forwarded to OSA staff.</strong></p>' +
@@ -2633,7 +2657,10 @@
                             .then(function (r) {
                                 appendBubble('assistant',
                                     '<p style="margin:0"><strong>Resumed Case ' + escapeHtml(resumeAttr) + '.</strong> Type your next message and OSA staff will see it on the same case.</p>');
-                                try { setMode('staff'); } catch (_) {}
+                                // Default to waiting on resume — the ticket
+                                // hydration call below will promote to "live"
+                                // (green) only if the case is in_progress.
+                                try { setMode('waiting'); } catch (_) {}
                                 try { hydrateActiveTicketBanner(); } catch (_) {}
                                 try { bumpUserActivity(); } catch (_) {}
                             })
