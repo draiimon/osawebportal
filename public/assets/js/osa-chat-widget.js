@@ -423,6 +423,27 @@
         if (!otpVerified) setLS(VERIFIED_KEY, false);
         var reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+        // Personalize the chat header once a student is OTP-verified.
+        // Replaces the generic "Ask OSA" title with "Hi, <FirstName>" so
+        // the user immediately sees that the session belongs to them.
+        // Passing an empty / falsy name resets the header back to default.
+        function getFirstName(fullName) {
+            var s = String(fullName || '').trim();
+            if (!s) return '';
+            var first = s.split(/\s+/)[0] || '';
+            // Cap to keep header tidy on iPhone SE width.
+            return first.length > 18 ? first.slice(0, 18) + '\u2026' : first;
+        }
+        function applyVerifiedHeader(name) {
+            var titleEl = document.getElementById('osa-chat-title');
+            if (!titleEl) return;
+            var first = getFirstName(name);
+            titleEl.textContent = first ? ('Hi, ' + first) : 'Ask OSA';
+        }
+        // Restore the personalized header on page load for an already-verified
+        // browser (avoids flashing "Ask OSA" before the user sees their name).
+        if (otpVerified && savedName) applyVerifiedHeader(savedName);
+
         var suppressFabClickFromTouch = false;
 
         // Make FAB draggable on mobile so it doesn't block content
@@ -1793,7 +1814,16 @@
                             restoreThread();
                             st.textContent = 'Verified.';
                             st.className = 'osa-ai-otp__status is-ok';
-                            appendBubble('assistant', '<p style="margin:0">Session verified \u2014 you can continue with protected actions.</p>');
+                            // Personalize header + welcome bubble with the
+                            // student's name (bold) so the verification feels
+                            // tied to *them*, not a generic system message.
+                            applyVerifiedHeader(verifiedName);
+                            var firstNameForGreeting = getFirstName(verifiedName) || 'there';
+                            appendBubble(
+                                'assistant',
+                                '<p style="margin:0">Welcome, <strong>' + escapeHtml(firstNameForGreeting) +
+                                '</strong>! Your session is verified \u2014 you can continue with protected actions like appointments, claims, and human escalation.</p>'
+                            );
                             resolve();
                         })
                         .catch(function (err) {
