@@ -2310,10 +2310,10 @@ function registerChatRoutes(app, apiPrefix) {
         const row = snap.rows[0] || {};
 
         let summary = "Appointment preference saved.";
-        if (row.appointment_track === "claiming") summary = "Recorded: Claiming Appointment.";
-        else if (row.appointment_track === "private") summary = "Recorded: Private Appointment (OSA will handle this discreetly).";
-        if (preferredDay) summary += ` Preferred day: ${preferredDay}.`;
-        if (preferredWindow) summary += ` Time window: ${preferredWindow}.`;
+        if (row.appointment_track === "claiming") summary = "Recorded: **Claiming Appointment**.";
+        else if (row.appointment_track === "private") summary = "Recorded: **Private Appointment** (OSA will handle this discreetly).";
+        if (preferredDay) summary += ` Preferred day: **${preferredDay}**.`;
+        if (preferredWindow) summary += ` Time window: **${preferredWindow}**.`;
         if (scheduleNote) summary += ` Note stored for staff.`;
 
         await db.query(
@@ -2460,15 +2460,17 @@ function registerChatRoutes(app, apiPrefix) {
         );
         const row = snap.rows[0] || {};
 
+        // Wrap the captured values in **bold** so the student widget's
+        // markdown renderer highlights them (Day: **Mon**, Time: **Morning**).
         const parts = [];
-        if (row.preferred_day) parts.push(`Day: ${row.preferred_day}`);
-        if (row.preferred_time_window) parts.push(`Time: ${row.preferred_time_window}`);
+        if (row.preferred_day) parts.push(`Day: **${row.preferred_day}**`);
+        if (row.preferred_time_window) parts.push(`Time: **${row.preferred_time_window}**`);
 
         let summary;
         if (parts.length === 2) {
           summary = `✅ Preference saved — ${parts.join(", ")}. OSA staff will review and confirm the final schedule.`;
         } else if (parts.length === 1) {
-          summary = `Got it — ${parts[0]} noted. ${row.preferred_day ? "Choose a time window (Morning or Afternoon) below." : "Choose your preferred day below."}`;
+          summary = `Got it — ${parts[0]} noted. ${row.preferred_day ? "Choose a time window (**Morning** or **Afternoon**) below." : "Choose your preferred day below."}`;
         } else {
           summary = "Preference saved. OSA staff will confirm your schedule.";
         }
