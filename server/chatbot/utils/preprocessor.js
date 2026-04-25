@@ -278,14 +278,25 @@ function preprocessUserInput(input) {
 function looksLikeOtpHelpIntent(message) {
   const m = String(message || "").toLowerCase();
   const hasOtpSignals = (
+    // English
     /\b(new|another|fresh)\s+(otp|code)\b/i.test(m) ||
     /\botp\s+card\b/i.test(m) ||
     /\b(re-?send|resend)\s+(the\s+)?(otp|code)\b/i.test(m) ||
-    /\bsend\s+(a\s+)?new\s+(otp|code)\b/i.test(m) ||
+    /\bsend\s+(a\s+)?(new\s+)?(otp|code)\b/i.test(m) ||
     /\b(re-?verify|reverify|verify\s+again)\b/i.test(m) ||
     /\b(open|show)\s+(the\s+)?(otp|verification)\b/i.test(m) ||
     /\benter\s+(a\s+)?new\s+otp\b/i.test(m) ||
-    /\bwant\s+to\s+.*\b(otp|verify|verification)\b/i.test(m)
+    /\bwant\s+to\s+.*\b(otp|verify|verification)\b/i.test(m) ||
+    /\b(give|gimme|grant|need|want|request|get|generate|issue)\s+(me\s+)?(a\s+|an\s+|the\s+)?(new\s+|another\s+|fresh\s+)?(otp|code|verification\s+code)\b/i.test(m) ||
+    /\b(i|im|i'm|i\s+am)\s+(need|want|requesting|requestin)\s+.*\botp\b/i.test(m) ||
+    /\botp\s+(po\s+)?(naman|please|pls|plz)\b/i.test(m) ||
+    // Tagalog / Taglish
+    /\b(pahingi|penge|pahing|pwede|puwede|paki|pakibigay|pakihingi|pahinge|hingi|hinge|hingiin|hinging|bigyan|bigyan\s+mo|bigyan\s+ako|ibigay|ibigay\s+mo|ibigay\s+ang)\b.*\botp\b/i.test(m) ||
+    /\b(gusto|kailangan|need|hingi)\s+ko\s+(ng\s+|new\s+|bago\s+|bagong\s+)?(otp|code)\b/i.test(m) ||
+    /\b(bago|bagong|panibago|panibagong|isa\s+pa|isa\s+pang)\s+(otp|code|verification)\b/i.test(m) ||
+    /\botp\s+(po\s+)?(ako|naman|please|pls)\b/i.test(m) ||
+    /\b(send|ipadala|padala|ipasend|i-?send)\s+(mo\s+|niyo\s+|po\s+)?(ang\s+|ng\s+|sa\s+akin\s+)?(otp|code)\b/i.test(m) ||
+    /\b(verify|i-?verify|magverify|mag-?verify|paverify|pa-?verify)\b/i.test(m)
   );
   if (!hasOtpSignals) return false;
   const hasGeneralQuestionCues =
