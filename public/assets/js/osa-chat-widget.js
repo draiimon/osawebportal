@@ -2617,18 +2617,14 @@
                     return;
                 }
                 if (escBtn.getAttribute('data-osa-end-cancel') != null) {
-                    // Keep the confirmation bubble in the thread so the user
-                    // can still see what they cancelled — just disable the
-                    // buttons, swap in a "kept session" label, and collapse
-                    // the card so it tucks out of the way.
+                    // Remove the entire bubble row (card + the small
+                    // "Assistant · time" meta row above it) so nothing is
+                    // left orphaned in the thread after the user cancels.
                     var endCard2 = document.getElementById('osa-end-confirm');
                     if (endCard2) {
-                        var cancelActions = endCard2.querySelector('.osa-ai-actions');
-                        if (cancelActions) cancelActions.remove();
-                        var cancelSummary = endCard2.querySelector('summary');
-                        if (cancelSummary) cancelSummary.textContent = 'Cancelled — session kept';
-                        endCard2.removeAttribute('open');
-                        endCard2.id = '';
+                        var endRow = endCard2.closest('.osa-ai-msg');
+                        if (endRow) endRow.remove();
+                        else endCard2.remove();
                     }
                     try { bumpUserActivity(); } catch (_) {}
                     return;
