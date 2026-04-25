@@ -645,15 +645,17 @@
       .cmsg, .active-dot { animation: none; }
     }
 
-    /* "Seen" indicator under last staff bubble */
+    /* "Seen" indicator under last staff bubble — subtle, Messenger-style */
     .cmsg__seen {
       align-self: flex-end;
       font-size: 10.5px;
-      font-weight: 800;
-      color: var(--brand);
-      margin-top: 4px;
-      padding: 0 4px;
-      letter-spacing: 0.05em;
+      font-weight: 500;
+      color: var(--muted-2);
+      margin-top: 3px;
+      padding: 0 2px;
+      letter-spacing: 0;
+      font-style: italic;
+      opacity: 0.85;
     }
 
     /* ── Lost & Found schedule ──────────────────────────── */
@@ -3056,7 +3058,12 @@
     var last = staffRows[staffRows.length - 1];
     var badge = document.createElement('div');
     badge.className = 'cmsg__seen';
-    badge.textContent = 'Seen';
+    var t = new Date(state.lastStudentSeenAtMs || Date.now());
+    var hh = t.getHours();
+    var mm = String(t.getMinutes()).padStart(2, '0');
+    var ampm = hh >= 12 ? 'PM' : 'AM';
+    hh = hh % 12; if (hh === 0) hh = 12;
+    badge.textContent = 'Seen ' + hh + ':' + mm + ' ' + ampm;
     last.appendChild(badge);
   }
 
