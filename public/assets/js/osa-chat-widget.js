@@ -1099,7 +1099,7 @@
 
             var host = String(loc.hostname || '').toLowerCase();
             var origin = (window.location && window.location.origin) ? window.location.origin : '';
-            if (isLocalHost(String(loc.hostname || '').toLowerCase())) {
+            if (isLocalHost(host)) {
                 // Local static servers commonly return 501 for POST requests; route chat traffic to the Node API.
                 pushUniqueApiBase(bases, 'http://127.0.0.1:' + port);
                 pushUniqueApiBase(bases, 'http://localhost:' + port);
@@ -1107,18 +1107,18 @@
                 return bases;
             }
 
+            // Non-local host (e.g. Replit proxy, custom domain): the API is
+            // always served from the same origin behind the same TLS proxy.
+            // Falling back to ":8787" or "127.0.0.1" produces confusing
+            // "Failed to fetch" errors that mask the real first-base failure.
+            // Only enable cross-port fallbacks for known static-dev setups.
             var currentPort = String(loc.port || '');
-            var staticDevPorts = { '3000': 1, '4173': 1, '5000': 1, '5173': 1, '5500': 1, '5501': 1, '8000': 1, '8888': 1 };
+            var staticDevPorts = { '3000': 1, '4173': 1, '5500': 1, '5501': 1, '8000': 1, '8888': 1 };
             if (currentPort && currentPort !== port && staticDevPorts[currentPort]) {
                 pushUniqueApiBase(bases, loc.protocol + '//' + host + ':' + port);
-                pushUniqueApiBase(bases, 'http://127.0.0.1:' + port);
-                pushUniqueApiBase(bases, 'http://localhost:' + port);
             }
 
             if (origin) pushUniqueApiBase(bases, origin);
-            pushUniqueApiBase(bases, loc.protocol + '//' + host + ':' + port);
-            pushUniqueApiBase(bases, 'http://127.0.0.1:' + port);
-            pushUniqueApiBase(bases, 'http://localhost:' + port);
             return bases;
         }
 
@@ -1127,25 +1127,41 @@
         }
 
         function postJson(base, path, body) {
-            return fetch(base + '/api/v1' + path, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-                body: JSON.stringify(body || {})
-            }).then(function (res) {
-                return res.text().then(function (text) {
-                    var data = {};
-                    try { data = text ? JSON.parse(text) : {}; } catch (_e) { data = {}; }
-                    if (!res.ok || data.success === false) {
-                        var err = new Error(data.message || ('HTTP ' + res.status));
-                        err.status = res.status;
-                        err.code = data.code;
-                        err.retryAfterSeconds = data.retryAfterSeconds;
-                        err.body = data;
-                        throw err;
+            // Inline retry for transient network blips ("Failed to fetch"
+            // TypeErrors) — these have no .status because the request never
+            // reached the server. We retry the SAME base twice with a short
+            // backoff before letting the outer attempt fall through.
+            var MAX_NETWORK_RETRIES = 2;
+            function attemptOnce(retryLeft) {
+                return fetch(base + '/api/v1' + path, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                    body: JSON.stringify(body || {})
+                }).then(function (res) {
+                    return res.text().then(function (text) {
+                        var data = {};
+                        try { data = text ? JSON.parse(text) : {}; } catch (_e) { data = {}; }
+                        if (!res.ok || data.success === false) {
+                            var err = new Error(data.message || ('HTTP ' + res.status));
+                            err.status = res.status;
+                            err.code = data.code;
+                            err.retryAfterSeconds = data.retryAfterSeconds;
+                            err.body = data;
+                            throw err;
+                        }
+                        return data;
+                    });
+                }).catch(function (err) {
+                    var isNetwork = !err || (!err.status && /failed to fetch|networkerror|load failed/i.test(String(err && err.message)));
+                    if (isNetwork && retryLeft > 0) {
+                        var delay = (MAX_NETWORK_RETRIES - retryLeft + 1) * 350;
+                        return new Promise(function (resolve) { setTimeout(resolve, delay); })
+                            .then(function () { return attemptOnce(retryLeft - 1); });
                     }
-                    return data;
+                    throw err;
                 });
-            });
+            }
+            return attemptOnce(MAX_NETWORK_RETRIES);
         }
 
         function getApi(path) {
@@ -2285,7 +2301,12 @@
                         appendBubble('assistant', '<p style="margin:0">Your secure chat expired. Please verify your email again.</p>');
                         await injectOtp();
                     } else {
-                        appendBubble('assistant', '<p style="margin:0">Could not submit visit request: ' + escapeHtml(err.message || 'Unknown error') + '</p>');
+                        var rawMsg = String((err && err.message) || 'Unknown error');
+                        var isNetwork = !(err && err.status) && /failed to fetch|networkerror|load failed|could not reach/i.test(rawMsg);
+                        var friendly = isNetwork
+                            ? 'Network hiccup while submitting your appointment request. Please check your connection and try again.'
+                            : ('Could not submit visit request: ' + rawMsg);
+                        appendBubble('assistant', '<p style="margin:0">' + escapeHtml(friendly) + '</p>');
                     }
                 } finally {
                     hideTyping(typingVisit, 'visit-submit:finally');
