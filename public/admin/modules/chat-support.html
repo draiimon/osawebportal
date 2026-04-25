@@ -3026,7 +3026,8 @@
           message:
             'You haven\u2019t approved this visit request yet. ' +
             'Please tap "Approve Appointment" at the top of the conversation first, ' +
-            'then come back here to confirm the date & time and notify the student.',
+            'then come back here to confirm the date & time and notify the student.\n\n' +
+            'Tip: While you\u2019re here, try messaging the student in the chat to confirm they\u2019re available before locking the schedule \u2014 that way the appointment is mutually agreed before you notify them.',
           confirmText: 'Got it',
           cancelText: '',
         });
@@ -3441,6 +3442,10 @@
       titleEl.textContent = String(opts.title || 'Confirm action');
       if (opts.message) {
         messageEl.textContent = String(opts.message);
+        // Preserve `\n` as visible line breaks so multi-paragraph warnings
+        // (e.g. the "Approve appointment first" tip) read as separate
+        // paragraphs instead of one wall of text.
+        messageEl.style.whiteSpace = 'pre-line';
         messageEl.style.display = '';
       } else {
         messageEl.style.display = 'none';
