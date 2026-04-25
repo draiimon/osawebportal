@@ -815,6 +815,61 @@
       .btn-lf-schedule { width: 100%; }
     }
 
+    /* ── iPhone SE / very narrow phones (≤ 420px) ──
+       Two real problems on tiny screens:
+       1. iOS Safari auto-zooms whenever a focused input has font-size < 16px,
+          which throws the whole admin layout off and is jarring inside the
+          chat-support iframe. Bumping inputs (incl. the datetime-local that
+          opens the native date "dropdown") to 16px disables that zoom.
+       2. The 18px horizontal padding on the schedule panel body eats too much
+          width — the date field ends up <300px wide and the calendar dropdown
+          on iOS Safari clips against the convo pane edge. Trim padding and
+          give inputs a comfortable 46px touch height. */
+    @media (max-width: 420px) {
+      .lf-schedule-panel__title { padding: 11px 14px; }
+      .lf-schedule-panel__body  { padding: 0 14px 14px; }
+      .lf-schedule-panel input[type="datetime-local"],
+      .lf-schedule-panel input[type="text"],
+      .lf-schedule-panel textarea {
+        font-size: 16px;
+        padding: 11px 12px;
+        min-height: 46px;
+        /* Stop iOS from rendering its compressed "wheel" form of the
+           datetime-local field — keep the full tappable bar visible. */
+        -webkit-appearance: none;
+        appearance: none;
+      }
+      .lf-schedule-panel input[type="datetime-local"] {
+        /* Make sure the date picker icon stays inside the field on iOS */
+        line-height: 1.2;
+      }
+      .lf-schedule-panel textarea { min-height: 72px; }
+      .lf-schedule-panel label {
+        font-size: 11.5px;
+        margin-bottom: 6px;
+      }
+      .lf-schedule-panel__meta { font-size: 12px; }
+      #visit-schedule-panel .lf-schedule-panel__meta {
+        /* The 2-column grid of chips collapses to a single column so labels
+           and values do not get squeezed onto one cramped line. */
+        grid-template-columns: 1fr;
+        padding: 9px 10px;
+      }
+      .visit-pref-chip { font-size: 12px; padding: 5px 11px; }
+      .btn-lf-schedule { padding: 13px 16px; font-size: 14px; min-height: 48px; }
+
+      /* Resolve / Action modal: same 16px rule for the <select> dropdown
+         (Category) and inputs so iOS does not zoom when the staff member
+         opens the resolve sheet from the bottom. */
+      .field-group input,
+      .field-group textarea,
+      .field-group select {
+        font-size: 16px;
+        padding: 12px 13px;
+        min-height: 46px;
+      }
+    }
+
     /* ── Visit / Appointment schedule panel (modern redesign) ── */
     #visit-schedule-panel {
       background: #f8faff;
