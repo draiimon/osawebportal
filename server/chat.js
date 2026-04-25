@@ -815,7 +815,7 @@ function buildNoKbGuidancePrompt(name, email) {
     `- Never invent specific EAC figures, dates, names, or requirements.\n` +
     `- Always end by directing the student to contact OSA for official confirmation:\n` +
     `  "For the exact details, please visit the OSA office or type /chat staff to connect with a staff member directly."\n` +
-    `- Reply in the same language/mix the student used (Filipino, English, or Taglish).\n` +
+    `- Always write the entire reply in clear English, even if the student writes in Filipino, Taglish, or any other language. Do not switch to Filipino or any non-English language.\n` +
     `- Be warm and helpful — not dismissive.\n` +
     `- Do not mention "knowledge base", "retrieval", "based on", "according to our data", or internal processes.\n\n` +
     `Current student: ${name} (${email})`
