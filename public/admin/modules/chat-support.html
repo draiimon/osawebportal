@@ -676,16 +676,84 @@
       flex-shrink: 0;
       border-bottom: 1px solid var(--line);
       background: linear-gradient(180deg, #fffbeb 0%, #fff 100%);
-      padding: 14px 18px 16px;
+      padding: 0;
     }
     .lf-schedule-panel.hidden { display: none; }
+    /* Collapsible header (whole bar is the toggle) */
     .lf-schedule-panel__title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      width: 100%;
+      box-sizing: border-box;
       font-size: 11.5px;
       font-weight: 800;
       letter-spacing: 0.08em;
       text-transform: uppercase;
       color: #92400e;
-      margin: 0 0 8px;
+      margin: 0;
+      padding: 12px 18px;
+      background: transparent;
+      border: 0;
+      font-family: inherit;
+      text-align: left;
+      cursor: pointer;
+      user-select: none;
+    }
+    .lf-schedule-panel__title:focus-visible {
+      outline: 2px solid var(--brand);
+      outline-offset: -2px;
+    }
+    .lf-schedule-panel__title:hover {
+      background: rgba(146, 64, 14, 0.06);
+    }
+    .lf-schedule-panel__chevron {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      transition: transform 0.18s ease;
+      color: inherit;
+      flex-shrink: 0;
+    }
+    .lf-schedule-panel.is-open .lf-schedule-panel__chevron {
+      transform: rotate(180deg);
+    }
+    /* Body wrapper — collapsed by default, revealed when .is-open */
+    .lf-schedule-panel__body {
+      display: none;
+      padding: 0 18px 16px;
+    }
+    .lf-schedule-panel.is-open .lf-schedule-panel__body {
+      display: block;
+    }
+    .lf-schedule-panel__title-text {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .lf-schedule-panel__status-pill {
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: none;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #fde68a;
+      color: #92400e;
+    }
+    .lf-schedule-panel__status-pill--ok {
+      background: #dcfce7;
+      color: #166534;
+    }
+    .lf-schedule-panel__status-pill--warn {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+    #visit-schedule-panel .lf-schedule-panel__title:hover {
+      background: rgba(30, 64, 175, 0.06);
     }
     .lf-schedule-panel__meta {
       font-size: 12.5px;
@@ -1312,41 +1380,61 @@
         </div>
 
         <div class="lf-schedule-panel hidden" id="lf-schedule-panel">
-          <div class="lf-schedule-panel__title">Lost &amp; Found · Visit schedule</div>
-          <div class="lf-schedule-panel__meta" id="lf-meta"></div>
-          <div class="lf-schedule-panel__scheduled" id="lf-scheduled-display"></div>
-          <div class="field-row">
-            <label for="lf-appt-when">Visit date &amp; time</label>
-            <input type="datetime-local" id="lf-appt-when" autocomplete="off">
+          <button type="button" class="lf-schedule-panel__title" data-collapsible-toggle="lf-schedule-panel" aria-expanded="false" aria-controls="lf-schedule-panel-body">
+            <span class="lf-schedule-panel__title-text">
+              Lost &amp; Found · Visit schedule
+              <span class="lf-schedule-panel__status-pill" id="lf-status-pill">Tap to schedule</span>
+            </span>
+            <span class="lf-schedule-panel__chevron" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </span>
+          </button>
+          <div class="lf-schedule-panel__body" id="lf-schedule-panel-body">
+            <div class="lf-schedule-panel__meta" id="lf-meta"></div>
+            <div class="lf-schedule-panel__scheduled" id="lf-scheduled-display"></div>
+            <div class="field-row">
+              <label for="lf-appt-when">Visit date &amp; time</label>
+              <input type="datetime-local" id="lf-appt-when" autocomplete="off">
+            </div>
+            <div class="field-row">
+              <label for="lf-appt-loc">Location</label>
+              <input type="text" id="lf-appt-loc" placeholder="OSA Office" maxlength="200" autocomplete="off">
+            </div>
+            <div class="field-row">
+              <label for="lf-appt-notes">Notes (shown to student in chat)</label>
+              <textarea id="lf-appt-notes" maxlength="2000" placeholder="Optional directions or reminders"></textarea>
+            </div>
+            <button type="button" class="btn-lf-schedule" id="btn-lf-schedule">Schedule / update visit</button>
           </div>
-          <div class="field-row">
-            <label for="lf-appt-loc">Location</label>
-            <input type="text" id="lf-appt-loc" placeholder="OSA Office" maxlength="200" autocomplete="off">
-          </div>
-          <div class="field-row">
-            <label for="lf-appt-notes">Notes (shown to student in chat)</label>
-            <textarea id="lf-appt-notes" maxlength="2000" placeholder="Optional directions or reminders"></textarea>
-          </div>
-          <button type="button" class="btn-lf-schedule" id="btn-lf-schedule">Schedule / update visit</button>
         </div>
 
         <div class="lf-schedule-panel hidden" id="visit-schedule-panel">
-          <div class="lf-schedule-panel__title">Visit / Appointment</div>
-          <div class="lf-schedule-panel__meta" id="visit-meta"></div>
-          <div class="lf-schedule-panel__scheduled" id="visit-scheduled-display"></div>
-          <div class="field-row">
-            <label for="visit-appt-when">Date &amp; time</label>
-            <input type="datetime-local" id="visit-appt-when" autocomplete="off">
+          <button type="button" class="lf-schedule-panel__title" data-collapsible-toggle="visit-schedule-panel" aria-expanded="false" aria-controls="visit-schedule-panel-body">
+            <span class="lf-schedule-panel__title-text">
+              Visit / Appointment
+              <span class="lf-schedule-panel__status-pill" id="visit-status-pill">Tap to schedule</span>
+            </span>
+            <span class="lf-schedule-panel__chevron" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </span>
+          </button>
+          <div class="lf-schedule-panel__body" id="visit-schedule-panel-body">
+            <div class="lf-schedule-panel__meta" id="visit-meta"></div>
+            <div class="lf-schedule-panel__scheduled" id="visit-scheduled-display"></div>
+            <div class="field-row">
+              <label for="visit-appt-when">Date &amp; time</label>
+              <input type="datetime-local" id="visit-appt-when" autocomplete="off">
+            </div>
+            <div class="field-row">
+              <label for="visit-appt-loc">Location</label>
+              <input type="text" id="visit-appt-loc" placeholder="OSA Office" maxlength="200" autocomplete="off">
+            </div>
+            <div class="field-row">
+              <label for="visit-appt-notes">Note to student</label>
+              <textarea id="visit-appt-notes" maxlength="2000" placeholder="e.g. Bring your school ID and this Case ID"></textarea>
+            </div>
+            <button type="button" class="btn-lf-schedule" id="btn-visit-schedule">Confirm schedule &amp; notify student</button>
           </div>
-          <div class="field-row">
-            <label for="visit-appt-loc">Location</label>
-            <input type="text" id="visit-appt-loc" placeholder="OSA Office" maxlength="200" autocomplete="off">
-          </div>
-          <div class="field-row">
-            <label for="visit-appt-notes">Note to student</label>
-            <textarea id="visit-appt-notes" maxlength="2000" placeholder="e.g. Bring your school ID and this Case ID"></textarea>
-          </div>
-          <button type="button" class="btn-lf-schedule" id="btn-visit-schedule">Confirm schedule &amp; notify student</button>
         </div>
 
         <div class="convo-thread hidden" id="convo-thread"></div>
@@ -1728,6 +1816,19 @@
     lfApptLoc.value = t.appointment_location || 'OSA Office';
     lfApptNotes.value = t.appointment_notes ? String(t.appointment_notes) : '';
     btnLfSchedule.disabled = t.status === 'resolved';
+
+    // Update the collapsible header pill so staff can see the schedule
+    // status at a glance without needing to expand the panel.
+    var lfPill = document.getElementById('lf-status-pill');
+    if (lfPill) {
+      lfPill.classList.remove('lf-schedule-panel__status-pill--ok', 'lf-schedule-panel__status-pill--warn');
+      if (t.appointment_datetime) {
+        lfPill.textContent = 'Scheduled · ' + fmtDate(t.appointment_datetime);
+        lfPill.classList.add('lf-schedule-panel__status-pill--ok');
+      } else {
+        lfPill.textContent = 'Tap to schedule';
+      }
+    }
   }
 
   function fillVisitSchedulePanel(t) {
@@ -1772,6 +1873,21 @@
     visitApptLoc.value = t.appointment_location || 'OSA Office';
     visitApptNotes.value = t.appointment_notes ? String(t.appointment_notes) : '';
     btnVisitSchedule.disabled = t.status === 'resolved';
+
+    // Update collapsible header pill with at-a-glance schedule status.
+    var visitPill = document.getElementById('visit-status-pill');
+    if (visitPill) {
+      visitPill.classList.remove('lf-schedule-panel__status-pill--ok', 'lf-schedule-panel__status-pill--warn');
+      if (t.appointment_datetime) {
+        visitPill.textContent = 'Confirmed · ' + fmtDate(t.appointment_datetime);
+        visitPill.classList.add('lf-schedule-panel__status-pill--ok');
+      } else if (String(t.appointment_status || '').toLowerCase() === 'pending_staff_schedule') {
+        visitPill.textContent = 'Pending schedule';
+        visitPill.classList.add('lf-schedule-panel__status-pill--warn');
+      } else {
+        visitPill.textContent = 'Tap to schedule';
+      }
+    }
   }
 
   function clearActiveConversationUi(reason) {
@@ -3269,6 +3385,44 @@
       }, 30);
     });
   }
+
+  /* ── Collapsible schedule panels ─────────────────────────────────
+   * Lost & Found and Visit/Appointment panels live ABOVE the chat
+   * thread inside the conversation column. When always-expanded they
+   * eat most of the vertical space and hide the chat. They are now
+   * collapsed by default and toggle open via the header button. The
+   * open/closed state is remembered per panel (per session) so staff
+   * who keep one expanded don't have to re-open it on every ticket
+   * switch.
+   */
+  (function setupCollapsiblePanels() {
+    var COLLAPSE_KEY = 'osa_admin_chat_panel_open';
+    function readState() {
+      try { return JSON.parse(sessionStorage.getItem(COLLAPSE_KEY) || '{}') || {}; }
+      catch (_) { return {}; }
+    }
+    function writeState(obj) {
+      try { sessionStorage.setItem(COLLAPSE_KEY, JSON.stringify(obj || {})); } catch (_) {}
+    }
+    var saved = readState();
+    document.querySelectorAll('[data-collapsible-toggle]').forEach(function (btn) {
+      var panelId = btn.getAttribute('data-collapsible-toggle');
+      var panel = document.getElementById(panelId);
+      if (!panel) return;
+      // Apply persisted state — default is collapsed.
+      var isOpen = !!saved[panelId];
+      panel.classList.toggle('is-open', isOpen);
+      btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      btn.addEventListener('click', function () {
+        var nowOpen = !panel.classList.contains('is-open');
+        panel.classList.toggle('is-open', nowOpen);
+        btn.setAttribute('aria-expanded', nowOpen ? 'true' : 'false');
+        var st = readState();
+        if (nowOpen) st[panelId] = true; else delete st[panelId];
+        writeState(st);
+      });
+    });
+  })();
 
   /* ── Initial load ── */
   document.querySelectorAll('.status-tab').forEach(function (t) {
