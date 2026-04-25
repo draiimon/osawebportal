@@ -2190,7 +2190,14 @@
     // selectTicket() call can't overwrite the now-current thread when the
     // staff quickly switches tickets.
     var sessionAtFetch = String(sessionId || '');
-    fetch(API + '/chat/session/' + encodeURIComponent(sessionAtFetch) + '/messages?_ts=' + Date.now(), { cache: 'no-store' })
+    // Send the admin key so the server bypasses the student-side
+    // SESSION_EXPIRED gate — admins must be able to preview the chat
+    // history of resolved tickets even after the student has logged out
+    // or their secure session has gone idle.
+    fetch(API + '/chat/session/' + encodeURIComponent(sessionAtFetch) + '/messages?_ts=' + Date.now(), {
+      cache: 'no-store',
+      headers: { 'x-admin-key': adminKey() }
+    })
       .then(function (r) { return r.json(); })
       .then(function (data) {
         if (!data.success) return;

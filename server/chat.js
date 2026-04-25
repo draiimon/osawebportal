@@ -3227,12 +3227,20 @@ function registerChatRoutes(app, apiPrefix) {
     if (!isValidSessionId(sessionId)) {
       return res.status(400).json({ success: false, message: "Invalid sessionId format." });
     }
+    // Admins (chat-support / chat-logs panels) need read-only access to the
+    // historical thread of *any* ticket — including resolved cases whose
+    // student session has since gone idle/expired or whose student has logged
+    // out. Detect a valid admin key and bypass the student-side expiry guard.
+    const adminProvided = String((req.headers && req.headers["x-admin-key"]) || "").trim();
+    const isAdminCall =
+      !String(process.env.ADMIN_KEY || "").trim() ||
+      isAdminTokenAuthorized(adminProvided);
     try {
       const loaded = await loadSessionRow(sessionId);
       if (!loaded.found) {
         return res.status(404).json({ success: false, message: "Session not found." });
       }
-      if (loaded.expired) {
+      if (loaded.expired && !isAdminCall) {
         return res.status(401).json({
           success: false,
           code: "SESSION_EXPIRED",
@@ -3243,7 +3251,8 @@ function registerChatRoutes(app, apiPrefix) {
         `SELECT role, content, created_at FROM chat_messages WHERE session_id = $1 ORDER BY created_at ASC`,
         [sessionId]
       );
-      return res.json({ success: true, session: loaded.session, messages: msgs.rows });
+      const sessionPayload = loaded.session || (isAdminCall ? { id: sessionId, expired: true } : null);
+      return res.json({ success: true, session: sessionPayload, messages: msgs.rows });
     } catch (error) {
       return genericError(res, "chat", error);
     }
