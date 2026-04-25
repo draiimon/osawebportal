@@ -348,6 +348,12 @@ const _keyedLocks = new Map();
 // case_id, so a duplicate confirm within a short window is suppressed
 // (no second chat message, no second SSE push to the student).
 const _lastApptConfirmAt = new Map();
+// Tracks the last "Your inquiry is already escalated…" canned reply per
+// case_id, so the student doesn't see the same paragraph repeated on
+// every message they send while waiting for staff (one reply per minute
+// is plenty — staff messages still pass through normally).
+const _lastEscalatedNoticeAt = new Map();
+const ESCALATED_NOTICE_DEDUPE_MS = 60_000;
 async function withKeyedLock(key, fn) {
   const prev = _keyedLocks.get(key) || Promise.resolve();
   let release;
@@ -1964,6 +1970,26 @@ function registerChatRoutes(app, apiPrefix) {
               suggest_escalation: false,
             });
           }
+
+          // Dedupe the canned "already escalated" notice: if we already
+          // sent it for this case within the last minute, just keep the
+          // session in human_mode silently (no second insert, no SSE
+          // duplicate). Prevents the spam the student saw after typing
+          // multiple messages or refreshing and re-typing.
+          const lastEscalatedAt = _lastEscalatedNoticeAt.get(activeHumanTicket.case_id) || 0;
+          if (Date.now() - lastEscalatedAt < ESCALATED_NOTICE_DEDUPE_MS) {
+            await db.query(`UPDATE chat_sessions SET last_active_at = NOW() WHERE id = $1`, [sessionId]);
+            return res.json({
+              success: true,
+              reply: "",
+              tier: 3,
+              human_mode: true,
+              case_id: activeHumanTicket.case_id,
+              human_ticket_status: String(activeHumanTicket.status || "open"),
+              suggest_escalation: false,
+            });
+          }
+          _lastEscalatedNoticeAt.set(activeHumanTicket.case_id, Date.now());
 
           let humanReply =
             activeHumanTicket.status === "open"
