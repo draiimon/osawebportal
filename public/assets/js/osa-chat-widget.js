@@ -417,8 +417,25 @@
             // Do not wipe thread automatically on page load; preserve UX.
         }
 
-        // Do not force local OTP reset just because time elapsed.
-        // Keep the same user session in this browser and let server auth decide.
+        // If the saved session expiry has already passed (10-min window),
+        // clear the personalized identity on page load so we don't greet
+        // the user with "Hi, <Name>" for an expired session.
+        (function clearExpiredIdentityOnLoad() {
+            var iso = String(getLS(SESSION_EXP_KEY, '') || '');
+            if (!iso) return;
+            var expMs = Date.parse(iso);
+            if (!isFinite(expMs)) return;
+            if (Date.now() >= expMs) {
+                chatSessionId = '';
+                otpVerified = false;
+                savedName = '';
+                setLS(SESSION_KEY, '');
+                setLS(SESSION_TS_KEY, 0);
+                setLS(SESSION_EXP_KEY, '');
+                setLS(VERIFIED_KEY, false);
+                setLS(NAME_KEY, '');
+            }
+        })();
 
         if (!otpVerified) setLS(VERIFIED_KEY, false);
         var reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1146,6 +1163,12 @@
             setLS(SESSION_TS_KEY, 0);
             setLS(SESSION_EXP_KEY, '');
             setLS(VERIFIED_KEY, false);
+            // Clear personalized identity so the next page load /
+            // chat open doesn't keep showing "Hi, <Name>" for an
+            // already-expired session.
+            setLS(NAME_KEY, '');
+            savedName = '';
+            applyVerifiedHeader('');
             // Reset guest memory id so the next guest turn starts a fresh
             // context-aware conversation rather than inheriting OTP-era memory.
             clearGuestConvoId();
@@ -1199,10 +1222,13 @@
             timerEl.classList.toggle('is-critical', remaining > 0 && remaining <= 15 * 1000);
 
             if (remaining <= 0) {
-                // Stop the visual countdown only; do not auto-expire user locally.
-                // This prevents repetitive OTP prompts for the same signed-in user.
+                // 10-minute session window is over — actually expire so the
+                // header returns to "Ask OSA" and the next protected action
+                // re-prompts for OTP. Without this, "Hi, <Name>" lingers
+                // even though the session is no longer valid.
                 stopSessionCountdown();
                 timerEl.hidden = true;
+                expireSecureSessionLocal();
             }
         }
 
