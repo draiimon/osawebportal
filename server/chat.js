@@ -2799,19 +2799,19 @@ function registerChatRoutes(app, apiPrefix) {
     const status = String((req.query && req.query.status) || "open").trim().toLowerCase();
     const searchQ = String((req.query && req.query.q) || "").trim().toLowerCase();
 
-    const allowed = { open: 1, in_progress: 1, resolved: 1, approved: 1 };
-    const normalizedStatus = allowed[status] ? status : "open";
+    // 'approved' is no longer a standalone tab. Approved-appointment tickets
+    // now live under 'in_progress' until they are explicitly resolved. Any
+    // legacy ?status=approved request is transparently treated as in_progress.
+    const allowed = { open: 1, in_progress: 1, resolved: 1 };
+    const requested = status === "approved" ? "in_progress" : status;
+    const normalizedStatus = allowed[requested] ? requested : "open";
 
     const where = [];
     const vals = [];
     let p = 1;
 
-    if (normalizedStatus === "approved") {
-      where.push(`t.appointment_status = 'approved' AND t.status <> 'resolved'`);
-    } else {
-      where.push(`t.status = $${p++}`);
-      vals.push(normalizedStatus);
-    }
+    where.push(`t.status = $${p++}`);
+    vals.push(normalizedStatus);
 
     if (searchQ) {
       where.push(
@@ -2855,10 +2855,16 @@ function registerChatRoutes(app, apiPrefix) {
           return Date.now() - lastMs >= STAFF_CHAT_IDLE_MS;
         })(),
       }));
-      // Temporary UX rule requested by admin: hide stale "in progress" rows
-      // when the student session is already offline/disconnected.
+      // Hide stale "in progress" rows whose student session is offline,
+      // EXCEPT when the appointment has already been approved — those need
+      // to remain visible (they live under In Progress until resolved) so
+      // staff can find and close them out even after the student logs off.
       if (normalizedStatus === "in_progress") {
-        tickets = tickets.filter((t) => t.is_student_active);
+        tickets = tickets.filter(
+          (t) =>
+            t.is_student_active ||
+            String(t.appointment_status || "").toLowerCase() === "approved"
+        );
       }
       return res.json({ success: true, tickets });
     } catch (error) {

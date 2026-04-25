@@ -1250,7 +1250,6 @@
         <div class="status-tabs">
           <button type="button" class="status-tab active" data-status="open">Open</button>
           <button type="button" class="status-tab" data-status="in_progress">In Progress</button>
-          <button type="button" class="status-tab" data-status="approved">Approved</button>
           <button type="button" class="status-tab" data-status="resolved">Resolved</button>
         </div>
         <div style="padding:10px 12px;border-bottom:1px solid var(--line);background:#fff">
@@ -1476,7 +1475,11 @@
   /* ── State ── */
   function readSavedStatus() {
     var raw = String(sessionStorage.getItem(STATUS_KEY) || '').trim().toLowerCase();
-    if (raw === 'open' || raw === 'in_progress' || raw === 'resolved' || raw === 'approved') return raw;
+    // 'approved' was an old standalone tab; migrate any persisted value to
+    // 'in_progress' since approved-appointment tickets now stay under In
+    // Progress until they are explicitly resolved.
+    if (raw === 'approved') return 'in_progress';
+    if (raw === 'open' || raw === 'in_progress' || raw === 'resolved') return raw;
     return 'open';
   }
 
@@ -1681,11 +1684,11 @@
   }
 
   function statusBadgeLabel(t) {
-    if (String(t.appointment_status || '').toLowerCase() === 'approved') return 'approved';
+    // Approved appointments no longer get their own badge; the ticket keeps
+    // its underlying status (typically 'in progress') until resolved.
     return String(t.status || '').replace('_', ' ');
   }
   function statusBadgeClass(t) {
-    if (String(t.appointment_status || '').toLowerCase() === 'approved') return 'approved';
     return String(t.status || 'open');
   }
 
@@ -1837,7 +1840,10 @@
         if (!d || !d.success || !d.ticket) return;
         var targetStatus = String((d.ticket.effective_status || d.ticket.status) || '').toLowerCase();
         if (!targetStatus || targetStatus === state.currentStatus) return;
-        if (targetStatus !== 'open' && targetStatus !== 'in_progress' && targetStatus !== 'resolved' && targetStatus !== 'approved') return;
+        // Map any legacy 'approved' effective status back to 'in_progress'
+        // so the restored tab matches the unified tab list.
+        if (targetStatus === 'approved') targetStatus = 'in_progress';
+        if (targetStatus !== 'open' && targetStatus !== 'in_progress' && targetStatus !== 'resolved') return;
         setStatusTab(targetStatus, 'restore-last-viewed-case', rememberedCaseId);
       });
   }
