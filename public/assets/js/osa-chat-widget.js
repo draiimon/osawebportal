@@ -270,7 +270,7 @@
         return '' +
             '<details class="osa-ai-rich" open style="margin-top:6px" data-lf-auto-claim="' + c + '">' +
             '<summary>Claim visit preferences</summary>' +
-            '<p style="margin:0 0 10px;font-size:13px;color:#675a4f;">Naka-set na ito as <strong>Claiming appointment</strong>. Pumili lang ng time window — type your preferred day (Mon&ndash;Fri) sa chat below. OSA staff will confirm the final schedule.</p>' +
+            '<p style="margin:0 0 10px;font-size:13px;color:#675a4f;">This is set as a <strong>Claiming appointment</strong>. Pick a time window below — then type your preferred day (Mon&ndash;Fri) in the chat. OSA staff will confirm the final schedule.</p>' +
             '<p style="margin:0 0 6px;font-size:12px;font-weight:700;color:#1c1917">Time window</p>' +
             '<div class="osa-ai-chips" style="' + wrapStyle + ';margin-bottom:0">' +
             '<button type="button" class="osa-ai-chip osa-lf-appt-btn" data-lf-case="' + c + '" data-lf-field="window" data-lf-value="Morning">Morning</button>' +
@@ -625,7 +625,7 @@
                 'assistant',
                 '<details class="osa-ai-rich" id="osa-end-confirm" open>' +
                 '<summary>End this conversation?</summary>' +
-                '<p style="margin:0 0 8px">Kausap mo pa si <strong>OSA Staff</strong>. Kapag ineend mo agad, your case will be cancelled at hindi na mararating ang reply nila dito.</p>' +
+                '<p style="margin:0 0 8px">You are still chatting with <strong>OSA Staff</strong>. If you end the session now, your case will be cancelled and their replies will no longer reach you here.</p>' +
                 '<p style="margin:0 0 10px;font-size:12px;color:#65574d">If you really need to leave, you can resume the same case within 24 hours by re-verifying your email.</p>' +
                 '<div class="osa-ai-actions">' +
                 '<button type="button" class="osa-escalate-btn" data-osa-end-confirm>Yes, end session</button>' +
@@ -847,10 +847,10 @@
         // ── Welcome carousel (in-bubble auto-rotating tips) ─────
         var WELCOME_TIPS = [
             'Hello! I can help with OSA services, forms, Lost &amp; Found, and policies. How can I help today?',
-            'Tip: Type your concern in your own words — Tagalog, English, or Taglish lahat okay.',
+            'Tip: Type your concern in your own words — English works best, but Tagalog and Taglish are also welcome.',
             'Need an appointment? Just say "book appointment" and I\'ll guide you step by step.',
             'Looking for a form? Ask "good moral request" or "scholarship form" and I\'ll point you to the right link.',
-            'Verify with your school email para unlimited messages, plus pwede mo i-resume ang ticket mo within 24 hours.'
+            'Verify with your school email for unlimited messages, plus you can resume your ticket within 24 hours.'
         ];
         var welcomeCarouselTimer = null;
 
@@ -2635,7 +2635,7 @@
                 if (escBtn.getAttribute('data-osa-skip-resume') != null) {
                     var resumeCard2 = document.getElementById('osa-resume-card');
                     if (resumeCard2) resumeCard2.remove();
-                    appendBubble('assistant', '<p style="margin:0">Sige — fresh start. Type your new question below whenever ready.</p>');
+                    appendBubble('assistant', '<p style="margin:0">Got it — fresh start. Type your new question below whenever ready.</p>');
                     return;
                 }
                 if (escBtn.getAttribute('data-osa-confirm-otp-relogin') != null) {
