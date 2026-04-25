@@ -92,6 +92,7 @@
             '      </button>' +
             '    </div>' +
             '    <p class="osa-ai-composer__hint">Quick topics above send automatically. OTP may appear for sensitive requests (claim, appointment, escalate).</p>' +
+            '    <div class="osa-ai-quota" id="osa-chat-quota" aria-live="polite" hidden><span class="osa-ai-quota__dot" aria-hidden="true"></span><span class="osa-ai-quota__text" id="osa-chat-quota-text">-- / -- today</span></div>' +
             '  </div>' +
             '</div>' +
             '<button class="osa-launcher-fab" id="osa-chat-fab" type="button" aria-controls="osa-chat-widget" aria-expanded="false">' +
@@ -678,12 +679,46 @@
                 debugLayoutSnapshot('openWidget:120ms', 'H6');
             }, 120);
             window.setTimeout(function () { input && input.focus(); }, 80);
+            try { fetchQuotaAndRender(); } catch (_) {}
         }
         function closeWidget() {
             widget.classList.remove('is-open');
             fab.classList.remove('is-hidden');
             setTriggerState(false);
             unlockPageScroll();
+        }
+
+        // ── Daily quota pill ────────────────────────────────────
+        var quotaState = { used: 0, limit: 20, remaining: 20, fetched: false };
+
+        function updateQuotaPill(quota) {
+            if (!quota || typeof quota !== 'object') return;
+            var pill = document.getElementById('osa-chat-quota');
+            var text = document.getElementById('osa-chat-quota-text');
+            if (!pill || !text) return;
+            var limit = Number(quota.limit) || 20;
+            var used = Math.max(0, Math.min(limit, Number(quota.used) || 0));
+            var remaining = (typeof quota.remaining === 'number')
+                ? Math.max(0, Number(quota.remaining))
+                : Math.max(0, limit - used);
+            quotaState = { used: used, limit: limit, remaining: remaining, fetched: true };
+            text.textContent = used + ' / ' + limit + ' today';
+            pill.removeAttribute('hidden');
+            pill.classList.remove('is-low', 'is-empty');
+            if (remaining === 0) {
+                pill.classList.add('is-empty');
+                text.textContent = 'Daily limit reached — try again tomorrow';
+            } else if (remaining <= 3) {
+                pill.classList.add('is-low');
+            }
+        }
+
+        function fetchQuotaAndRender() {
+            try {
+                getApi('/chatbot/quota').then(function (data) {
+                    if (data && data.quota) updateQuotaPill(data.quota);
+                }).catch(function () { /* non-fatal */ });
+            } catch (_) {}
         }
 
         function scrollThread() {

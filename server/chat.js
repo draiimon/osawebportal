@@ -1348,6 +1348,7 @@ function normalizeClaimItemNumber(raw) {
 // ── Route registration ────────────────────────────────────────
 function registerChatRoutes(app, apiPrefix) {
   const { chatSessionLimiter, chatMsgLimiter } = app.locals.limiters || {};
+  const { dailyQuotaMiddleware } = require("./middleware/dailyQuota");
 
   // Create / resume session
   app.post(
@@ -1400,7 +1401,7 @@ function registerChatRoutes(app, apiPrefix) {
   // Send message (3-tier logic)
   app.post(
     `${apiPrefix}/chat/message`,
-    ...[chatMsgLimiter].filter(Boolean),
+    ...[chatMsgLimiter, dailyQuotaMiddleware].filter(Boolean),
     async (req, res) => {
       const sessionId = String((req.body && req.body.session_id) || "").trim();
       const message = String((req.body && req.body.message) || "").trim();
