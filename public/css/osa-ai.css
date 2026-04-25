@@ -2166,19 +2166,94 @@
 }
 
 @keyframes osaStaffHeaderGlow {
-    0%, 100% { box-shadow: 0 3px 14px rgba(132, 26, 45, 0.32), inset 0 1px 0 rgba(255,255,255,0.12), 0 0 0 0 rgba(251,146,60,0.0); }
-    50%      { box-shadow: 0 3px 18px rgba(132, 26, 45, 0.45), inset 0 1px 0 rgba(255,255,255,0.16), 0 0 0 6px rgba(251,146,60,0.10); }
+    0%, 100% { box-shadow: 0 3px 14px rgba(132, 26, 45, 0.45), inset 0 1px 0 rgba(255,255,255,0.18), 0 0 0 0 rgba(251,146,60,0.0); }
+    50%      { box-shadow: 0 6px 22px rgba(199, 154, 73, 0.55), inset 0 1px 0 rgba(255,255,255,0.22), 0 0 0 8px rgba(251,146,60,0.18); }
 }
 
 .osa-launcher-panel--chat-ui .osa-ai-header.is-staff-live {
-    background: linear-gradient(120deg, #841a2d 0%, #a4203a 25%, #c2410c 50%, #a4203a 75%, #841a2d 100%) !important;
-    background-size: 220% 220% !important;
-    animation: osaStaffHeaderShimmer 6s ease-in-out infinite, osaStaffHeaderGlow 2.4s ease-in-out infinite !important;
+    background: linear-gradient(120deg, #6b1424 0%, #a4203a 18%, #c2410c 38%, #c79a49 52%, #c2410c 66%, #a4203a 82%, #6b1424 100%) !important;
+    background-size: 320% 320% !important;
+    animation: osaStaffHeaderShimmer 3.2s ease-in-out infinite, osaStaffHeaderGlow 1.6s ease-in-out infinite !important;
 }
 
 .osa-launcher-panel--chat-ui .osa-ai-header.is-staff-live .osa-ai-header__avatar {
-    background: rgba(255,255,255,0.22) !important;
-    border-color: rgba(255,255,255,0.36) !important;
+    background: rgba(255,255,255,0.28) !important;
+    border-color: rgba(255,255,255,0.48) !important;
+    animation: osaStaffHeaderGlow 1.6s ease-in-out infinite !important;
+}
+
+/* ── Verified bar (Verified as ... + End session) ─── */
+.osa-launcher-panel--chat-ui .osa-ai-verified-bar {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 10px !important;
+    padding: 8px 14px !important;
+    background: linear-gradient(180deg, rgba(132,26,45,0.06) 0%, rgba(132,26,45,0.02) 100%) !important;
+    border-bottom: 1px solid rgba(132,26,45,0.10) !important;
+}
+
+.osa-launcher-panel--chat-ui .osa-ai-verified-bar__left {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+}
+
+.osa-launcher-panel--chat-ui .osa-ai-verified-bar__shield {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #15803d;
+}
+
+.osa-launcher-panel--chat-ui .osa-ai-verified-bar__text {
+    font-size: 12px;
+    color: #5b4a3f;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.osa-launcher-panel--chat-ui .osa-ai-verified-bar__text strong {
+    color: #1c1917;
+    font-weight: 700;
+}
+
+.osa-launcher-panel--chat-ui .osa-ai-verified-bar__end {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 6px 12px !important;
+    border-radius: 999px !important;
+    border: 1px solid rgba(132, 26, 45, 0.25) !important;
+    background: linear-gradient(135deg, #8f1c30 0%, #841a2d 100%) !important;
+    color: #fff !important;
+    font-size: 11.5px !important;
+    font-weight: 600 !important;
+    line-height: 1 !important;
+    cursor: pointer;
+    box-shadow: 0 1px 4px rgba(132, 26, 45, 0.22), inset 0 1px 0 rgba(255,255,255,0.14) !important;
+    transition: transform 120ms ease, box-shadow 160ms ease, background 160ms ease !important;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+}
+
+.osa-launcher-panel--chat-ui .osa-ai-verified-bar__end:hover {
+    background: linear-gradient(135deg, #a4203a 0%, #8f1c30 100%) !important;
+    box-shadow: 0 2px 8px rgba(132, 26, 45, 0.32), inset 0 1px 0 rgba(255,255,255,0.18) !important;
+    transform: translateY(-1px);
+}
+
+.osa-launcher-panel--chat-ui .osa-ai-verified-bar__end:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 3px rgba(132, 26, 45, 0.28), inset 0 1px 2px rgba(0,0,0,0.10) !important;
+}
+
+.osa-launcher-panel--chat-ui .osa-ai-verified-bar__end svg {
+    color: #fff;
+    opacity: 0.92;
 }
 
 .osa-ai-chips-wrapper.is-hidden-staff {
