@@ -2103,9 +2103,17 @@
             });
         }
 
+        // Re-entrance lock: rapid double-clicks on the Send button, the
+        // Quick-topic chips, or repeated Enter presses used to fire multiple
+        // sends back-to-back, posting the same message 2-3x. A short
+        // timestamp gate dedupes those without breaking any legit flow.
+        var lastSendAcceptedAt = 0;
         async function handleSend() {
             var message = input.value.trim();
             if (!message) return;
+            var nowTs = Date.now();
+            if (nowTs - lastSendAcceptedAt < 600) return;
+            lastSendAcceptedAt = nowTs;
             try { bumpUserActivity(); } catch (_) {}
 
             // Confirm before requesting a new OTP while the student is still
@@ -2822,6 +2830,11 @@
 
         // Horizontal drag-to-scroll + delegated chip clicks
         var chipsContainer = document.getElementById('osa-chat-chips');
+        // Per-chip debounce: blocks the same prompt from firing twice
+        // within a short window (rapid double-taps, fat-finger phantom
+        // clicks). Using the prompt text as the key so different chips
+        // can still be tapped back-to-back.
+        var lastChipPromptAt = { prompt: '', ts: 0 };
         if (chipsContainer) {
             chipsContainer.addEventListener('click', function (e) {
                 var btn = e.target && e.target.closest && e.target.closest('.osa-ai-chip');
@@ -2839,6 +2852,13 @@
                 }
                 var prompt = btn.getAttribute('data-prompt') || '';
                 if (!prompt) return;
+                var nowChipTs = Date.now();
+                if (lastChipPromptAt.prompt === prompt && nowChipTs - lastChipPromptAt.ts < 1200) {
+                    e.preventDefault();
+                    return;
+                }
+                lastChipPromptAt.prompt = prompt;
+                lastChipPromptAt.ts = nowChipTs;
                 input.value = prompt;
                 openWidget();
                 input.focus();
