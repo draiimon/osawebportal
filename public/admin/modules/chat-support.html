@@ -78,30 +78,128 @@
     }
 
     @media (max-width: 768px) {
-      /* On phones we keep BOTH panels visible at once via a vertical split:
-         the ticket list sits in a compact top row (≈38% of viewport) and
-         the conversation fills the rest. Selecting a ticket no longer
-         hides the list — the staff can always see what they're switching
-         between, which was the previous source of confusion. */
+      /* On phones the conversation pane goes full-screen and the ticket
+         list becomes a left-side slide-in drawer, opened by a hamburger
+         button in the convo top bar (or a "Show tickets" pill in the
+         empty state). This gives the conversation maximum reading area
+         while keeping the list one tap away. */
       .chat-support-wrap {
         grid-template-columns: 1fr;
-        grid-template-rows: minmax(140px, 38dvh) minmax(0, 1fr);
+        grid-template-rows: 1fr;
         height: calc(100dvh - var(--shell-top));
+        position: relative;
       }
-      /* Force both panels visible regardless of the .hidden / .active
-         classes the JS toggles for the desktop slide behavior. */
-      .ticket-panel,
-      .ticket-panel.hidden { display: flex !important; }
       .convo-panel,
       .convo-panel.active { display: flex !important; }
-      .ticket-panel {
-        border-right: none;
-        border-bottom: 2px solid var(--line);
+
+      /* Ticket panel = fixed slide-in drawer */
+      .ticket-panel,
+      .ticket-panel.hidden {
+        display: flex !important;
+        position: fixed !important;
+        top: var(--shell-top, 0);
+        bottom: 0;
+        left: 0;
+        width: min(86vw, 360px);
+        z-index: 90;
+        transform: translateX(-100%);
+        transition: transform 0.28s cubic-bezier(0.25, 0.85, 0.3, 1);
+        box-shadow: 4px 0 28px rgba(28, 12, 18, 0.22);
+        border-right: 1px solid var(--line);
+        border-bottom: none;
+        background: #fff;
       }
-      /* The mobile back-arrow is no longer needed once both panels are
-         simultaneously visible — hide it to reclaim header space. */
+      .chat-support-wrap.drawer-open .ticket-panel {
+        transform: translateX(0);
+      }
+
+      /* Backdrop behind the drawer */
+      .ticket-drawer-backdrop {
+        display: block;
+        position: fixed;
+        top: var(--shell-top, 0);
+        left: 0; right: 0; bottom: 0;
+        background: rgba(28, 12, 18, 0.5);
+        -webkit-backdrop-filter: blur(2px);
+        backdrop-filter: blur(2px);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.22s ease;
+        z-index: 89;
+      }
+      .chat-support-wrap.drawer-open .ticket-drawer-backdrop {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      /* Hamburger toggles — visible only on mobile */
+      .convo-topbar__menu,
+      .convo-empty__menu { display: inline-flex !important; }
+
+      /* The legacy back-arrow is no longer used on mobile — drawer pattern
+         has its own affordance. */
       .convo-topbar__back { display: none !important; }
     }
+
+    @media (min-width: 769px) {
+      /* Desktop never shows the drawer machinery */
+      .ticket-drawer-backdrop { display: none !important; }
+      .convo-topbar__menu,
+      .convo-empty__menu { display: none !important; }
+    }
+
+    /* Hamburger toggle button (mobile only) — matches the convo topbar
+       button styling so it reads as part of the header. */
+    .convo-topbar__menu {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: var(--brand-soft);
+      border: none;
+      cursor: pointer;
+      color: var(--brand);
+      padding: 0;
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      transition: background 0.15s, transform 0.1s;
+      position: relative;
+    }
+    .convo-topbar__menu:hover { background: rgba(132,26,45,0.15); }
+    .convo-topbar__menu:active { transform: scale(0.94); }
+    .convo-topbar__menu svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+    /* Notification dot when there are open tickets */
+    .convo-topbar__menu[data-has-pending="1"]::after {
+      content: '';
+      position: absolute;
+      top: 6px; right: 6px;
+      width: 9px; height: 9px;
+      background: var(--brand);
+      border: 2px solid #fff;
+      border-radius: 50%;
+      box-shadow: 0 0 0 1px rgba(132,26,45,0.2);
+    }
+
+    /* Empty-state "Show tickets" pill (mobile only) */
+    .convo-empty__menu {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      margin-top: 16px;
+      padding: 10px 18px;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(180deg, var(--brand) 0%, #6f1326 100%);
+      border: none;
+      border-radius: 999px;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(132,26,45,0.32);
+      transition: transform 0.12s ease, box-shadow 0.16s ease;
+    }
+    .convo-empty__menu:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(132,26,45,0.4); }
+    .convo-empty__menu:active { transform: translateY(0); }
 
     /* ── LEFT: Ticket panel ─────────────────────────────── */
     .ticket-panel {
@@ -1395,10 +1493,19 @@
           </div>
           <div class="convo-empty__title">No ticket selected</div>
           <div class="convo-empty__sub">Select a ticket from the list to view the conversation and reply to the student.</div>
+          <!-- Mobile-only: opens the slide-in ticket drawer -->
+          <button type="button" class="convo-empty__menu" id="btn-empty-show-tickets" aria-label="Show tickets">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            <span>Show tickets</span>
+          </button>
         </div>
 
         <!-- Conversation view (hidden until ticket selected) -->
         <div class="convo-topbar hidden" id="convo-topbar">
+          <!-- Mobile-only hamburger that opens the ticket drawer -->
+          <button type="button" class="convo-topbar__menu" id="btn-show-tickets" aria-label="Show tickets" aria-controls="ticket-panel" aria-expanded="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
           <button type="button" class="convo-topbar__back" id="btn-back" aria-label="Back to list">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
           </button>
@@ -1504,6 +1611,9 @@
           </button>
         </div>
       </div>
+
+        <!-- Backdrop behind the mobile slide-in ticket drawer. Tap to close. -->
+        <div class="ticket-drawer-backdrop" id="ticket-drawer-backdrop" aria-hidden="true"></div>
 
         </div><!-- /.chat-support-wrap -->
       </div>
@@ -1720,6 +1830,10 @@
   var btnDeleteTicket= document.getElementById('btn-delete-ticket');
   var btnRefresh     = document.getElementById('btn-refresh');
   var btnBack        = document.getElementById('btn-back');
+  var btnShowTickets       = document.getElementById('btn-show-tickets');
+  var btnEmptyShowTickets  = document.getElementById('btn-empty-show-tickets');
+  var ticketDrawerBackdrop = document.getElementById('ticket-drawer-backdrop');
+  var chatSupportWrap      = document.querySelector('.chat-support-wrap');
   var ticketSearch   = document.getElementById('ticket-search');
   var sessionLimitPanel = document.getElementById('session-limit-panel');
   var autoCloseMode  = document.getElementById('auto-close-mode');
@@ -1788,6 +1902,15 @@
 
   function isMobileLayout() {
     return window.matchMedia('(max-width: 768px)').matches;
+  }
+
+  // Reflect open-ticket count on the mobile hamburger as a small dot. The
+  // CSS only renders the dot when data-has-pending="1", so this is purely
+  // a hint for "there's something waiting in the drawer."
+  function updateDrawerBadge(count) {
+    var btn = document.getElementById('btn-show-tickets');
+    if (!btn) return;
+    btn.setAttribute('data-has-pending', (Number(count) > 0 && state.currentStatus === 'open') ? '1' : '0');
   }
 
   function syncResponsivePanels(hasSelectedTicket) {
@@ -2074,10 +2197,12 @@
           invalidateTicketCache();
           ticketList.innerHTML = '<div class="empty-tickets">No ' + state.currentStatus.replace('_', ' ') + ' tickets.</div>';
           openCount.textContent = '0';
+          updateDrawerBadge(0);
           if (!state.currentCaseId) probeAndRestoreLastCaseAcrossTabs();
           return;
         }
         openCount.textContent = String(data.tickets.length);
+        updateDrawerBadge(data.tickets.length);
         renderTickets(data.tickets);
         if (!state.currentCaseId) {
           if (!tryRestoreLastCaseFromCurrentList(data.tickets)) {
@@ -2373,6 +2498,9 @@
     fillVisitSchedulePanel(t);
 
     syncResponsivePanels(true);
+    // Notify the mobile drawer to slide closed so the staff lands directly
+    // on the conversation they just chose.
+    document.dispatchEvent(new CustomEvent('osa:ticket-selected', { detail: { caseId: t.case_id } }));
 
     state.lastStudentSeenAtMs = 0;
     hideStudentTypingPill();
@@ -3312,7 +3440,7 @@
   /* ── Refresh ── */
   btnRefresh.addEventListener('click', function () { loadTickets(); });
 
-  /* ── Back button (mobile) ── */
+  /* ── Back button (mobile, legacy) ── */
   btnBack.addEventListener('click', function () {
     stopPolling();
     state.currentCaseId = null;
@@ -3321,6 +3449,41 @@
     if (sessionLimitHint) sessionLimitHint.textContent = '';
     syncResponsivePanels(false);
   });
+
+  /* ── Mobile slide-in ticket drawer ──
+     The drawer state is a single `.drawer-open` class on the wrap; CSS
+     handles the slide animation and backdrop fade. Open: hamburger or
+     "Show tickets" pill. Close: backdrop tap, Escape, or selecting a
+     ticket from the list (handled inside selectTicket). */
+  function openTicketDrawer() {
+    if (!chatSupportWrap) return;
+    chatSupportWrap.classList.add('drawer-open');
+    if (btnShowTickets) btnShowTickets.setAttribute('aria-expanded', 'true');
+    if (ticketDrawerBackdrop) ticketDrawerBackdrop.setAttribute('aria-hidden', 'false');
+  }
+  function closeTicketDrawer() {
+    if (!chatSupportWrap) return;
+    chatSupportWrap.classList.remove('drawer-open');
+    if (btnShowTickets) btnShowTickets.setAttribute('aria-expanded', 'false');
+    if (ticketDrawerBackdrop) ticketDrawerBackdrop.setAttribute('aria-hidden', 'true');
+  }
+  function toggleTicketDrawer() {
+    if (!chatSupportWrap) return;
+    if (chatSupportWrap.classList.contains('drawer-open')) closeTicketDrawer();
+    else openTicketDrawer();
+  }
+  if (btnShowTickets)      btnShowTickets.addEventListener('click', toggleTicketDrawer);
+  if (btnEmptyShowTickets) btnEmptyShowTickets.addEventListener('click', openTicketDrawer);
+  if (ticketDrawerBackdrop) ticketDrawerBackdrop.addEventListener('click', closeTicketDrawer);
+  document.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Escape' && chatSupportWrap && chatSupportWrap.classList.contains('drawer-open')) {
+      closeTicketDrawer();
+    }
+  });
+  // Close the drawer automatically once the staff actually picks a ticket
+  // — we want them to see the conversation immediately, not the list they
+  // just acted on. Desktop ignores the class entirely (no drawer there).
+  document.addEventListener('osa:ticket-selected', closeTicketDrawer);
 
   // Debounce resize: mobile browsers fire `resize` on every URL-bar
   // collapse/expand and on virtual-keyboard show/hide. Re-running the
@@ -3562,6 +3725,16 @@
   syncResponsivePanels(false);
   loadTickets();
   startAdminTicketStream();
+
+  // First-load UX on phones: if there's no remembered ticket to restore,
+  // pop the drawer open so the staff sees the list right away. We wait a
+  // beat for the slide-in transition to feel intentional rather than
+  // jumping the panel into place during initial paint.
+  if (isMobileLayout()) {
+    setTimeout(function () {
+      if (!state.currentCaseId) openTicketDrawer();
+    }, 220);
+  }
 
   // Auto-refresh ticket list every 3s when no active conversation is selected
   setInterval(function () {
