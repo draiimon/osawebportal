@@ -1197,17 +1197,20 @@ function normalizeEscalationReply(reply, suggestEscalation, opts) {
 }
 
 function isNameQuery(message) {
-  const m = String(message || "").toLowerCase();
-  if (m.includes("sino ako") || m.includes("who am i")) return true;
-  if (m.includes("who is me")) return true;
-  if (m.includes("anong name ko") || m.includes("ano pangalan ko")) return true;
-  if (m.includes("kilala mo ba ko") || m.includes("do you know me")) return true;
-  return (
-    m.includes("ano name ko") ||
-    m.includes("what is my name") ||
-    m.includes("what's my name") ||
-    m.includes("my name?")
-  );
+  const m = String(message || "").toLowerCase().replace(/[?!.,]+/g, " ").replace(/\s+/g, " ").trim();
+  if (!m) return false;
+  // "Who am I" style
+  if (/\b(sino\s+(po\s+)?ako|sino\s+ba\s+ako|who\s+am\s+i|who\s+is\s+me)\b/.test(m)) return true;
+  // "What's my name" style
+  if (/\b(ano(ng)?\s+(po\s+)?(ang\s+)?(name|pangalan)\s+ko|what(?:'s|\s+is)\s+my\s+name|my\s+name\s*$)\b/.test(m)) return true;
+  // "Do you (still) know / remember me" — English + Tagalog/Taglish
+  if (/\b(do\s+you\s+(still\s+)?(know|remember|recognize)\s+(me|who\s+i\s+am))\b/.test(m)) return true;
+  if (/\b(remember\s+me|know\s+me\s+still)\b/.test(m)) return true;
+  // Tagalog: kilala / naaalala / alam / natatandaan + (pa/pa rin/padin/ba) + ako/ko
+  if (/\b(kilala|naaalala|nakikilala|natatandaan|tanda|alam)\s+(mo\s+)?(pa\s+rin\s+|pa\s+|padin\s+|parin\s+|ba\s+|po\s+)?(ako|ko|kami|aming)\b/.test(m)) return true;
+  // Bare "kilala mo ako", "kilala mo pa ko"
+  if (/\bkilala\s+mo\s+(pa\s+|padin\s+|parin\s+|pa\s+rin\s+)?(ko|ako)\b/.test(m)) return true;
+  return false;
 }
 
 function hasOsaScopeSignals(message) {
@@ -1466,9 +1469,11 @@ function registerChatRoutes(app, apiPrefix) {
         // Direct profile-aware answer for name queries.
         if (isNameQuery(message)) {
           const safeName = String(student_name || "Student").trim() || "Student";
+          const firstName = safeName.split(/\s+/)[0] || safeName;
           const nameReply =
-            `You are currently signed in as ${safeName}. ` +
-            `If this is not your preferred name, re-verify and enter your full name in the OTP card.`;
+            `Yes, of course — you're signed in as **${safeName}**, ${firstName}. ` +
+            `Your verified session is active, so I can help you right away. ` +
+            `If this isn't the name you'd like on file, end your session and re-verify with your preferred full name in the OTP card.`;
 
           await persistReply(sessionId, nameReply);
 
