@@ -424,7 +424,7 @@ async function sendStudentEscalationEmail(caseId, studentName, studentEmail, con
         `<tr><td style="padding:8px 12px;background:#f5ede0;font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#65574d;width:120px">Case ID</td><td style="padding:8px 12px;background:#fffaf3;font-size:14px;font-weight:700;color:#841a2d">${caseId}</td></tr>` +
         `<tr><td style="padding:8px 12px;background:#f5ede0;font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#65574d">Student</td><td style="padding:8px 12px;background:#fffaf3;font-size:14px">${studentName}</td></tr>` +
       `</table>` +
-      `<p style="font-size:13px;color:#191412;margin:0 0 10px">Keep this Case ID for reference. An OSA staff member will respond in chat as soon as available.</p>` +
+      `<p style="font-size:13px;color:#191412;margin:0 0 10px">Keep this Case ID for reference. An OSA staff member will respond in chat as soon as available. If they are unable to reply in chat right away, please wait — OSA may also follow up with the student directly via this email.</p>` +
       `<div style="background:#fff8f0;border-left:4px solid #c79a49;padding:14px 16px;font-size:14px;line-height:1.6;white-space:pre-wrap">${concern}</div>` +
       btnHtml +
       `<p style="font-size:12px;color:#65574d;margin-top:16px">This is an automated message from the OSA Transaction Guide Portal.</p>` +
@@ -1177,7 +1177,8 @@ function normalizeEscalationReply(reply, suggestEscalation, opts) {
   if (badSignals.some((s) => low.includes(s))) {
     text =
       "I recommend escalating this to an OSA staff member. " +
-      "We can do that directly in this same chat—share your concern details and I will forward it for staff review.";
+      "We can do that directly in this same chat — share your concern details and I will forward it for staff review. " +
+      "Once escalated, please wait for a reply here. If staff cannot respond in chat right away, OSA may also follow up with you via your student email.";
   }
 
   // When the message is clearly about an appointment, append a concrete
@@ -1977,10 +1978,13 @@ function registerChatRoutes(app, apiPrefix) {
       const botMsg = reused
         ? `You already have an open ${ticketType.replace("_", " ")} ticket.\n\n` +
           `📋 Case ID: **${caseId}**\n\n` +
-          `OSA staff will respond in this same chat. No new ticket was created.`
+          `OSA staff will continue replying here in this same chat. ` +
+          `If no one is able to respond right away, please wait — OSA may also follow up with you directly via email at your registered student address. No new ticket was created.`
         : `Your concern has been escalated to an OSA staff member.\n\n` +
           `📋 Case ID: **${caseId}** (type: ${ticketType.replace("_", " ")})\n\n` +
-          `A staff member will respond in this same chat. You will also be notified via email once resolved.`;
+          `A staff member will reply here in this same chat as soon as one is available. ` +
+          `If they are unable to respond in chat right away, please wait — OSA may follow up with you directly via email (please check your student email inbox). ` +
+          `You will also be notified via email once the ticket is resolved.`;
 
       await db.query(
         `INSERT INTO chat_messages (session_id, role, content) VALUES ($1, 'assistant', $2)`,
