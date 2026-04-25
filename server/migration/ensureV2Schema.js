@@ -101,6 +101,12 @@ const statements = [
   // and the new "Waiting at OSA" admin filter.
   `ALTER TABLE IF EXISTS escalation_tickets ADD COLUMN IF NOT EXISTS arrived_at TIMESTAMPTZ`,
   `ALTER TABLE IF EXISTS escalation_tickets ADD COLUMN IF NOT EXISTS visit_completed_at TIMESTAMPTZ`,
+  // Allow soft-cancellation of orphaned/dead-air tickets so they disappear
+  // from the admin queue without losing the audit trail.
+  `ALTER TABLE IF EXISTS escalation_tickets DROP CONSTRAINT IF EXISTS escalation_tickets_status_check`,
+  `ALTER TABLE IF EXISTS escalation_tickets ADD CONSTRAINT escalation_tickets_status_check CHECK (status IN ('open','in_progress','resolved','cancelled'))`,
+  `ALTER TABLE IF EXISTS escalation_tickets ADD COLUMN IF NOT EXISTS cancelled_at TIMESTAMPTZ`,
+  `ALTER TABLE IF EXISTS escalation_tickets ADD COLUMN IF NOT EXISTS cancelled_reason TEXT`,
   `CREATE INDEX IF NOT EXISTS idx_escalation_tickets_arrived ON escalation_tickets (arrived_at) WHERE arrived_at IS NOT NULL AND visit_completed_at IS NULL`,
   // Preserve OSA data: drop the original ON DELETE CASCADE on session_id and
   // replace with ON DELETE SET NULL, so resolved/approved tickets and chat

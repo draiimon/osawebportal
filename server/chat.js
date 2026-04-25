@@ -351,6 +351,94 @@ function pushToAdminTickets(payload) {
   return true;
 }
 
+// ── Auto-cancel orphaned / dead-air tickets ─────────────────────
+// Tickets get soft-cancelled (status='cancelled') and removed from the admin
+// queue when the student's session ends or stalls. Approved appointments and
+// `in_progress` cases that staff already engaged in are exempt — those need
+// to stay on the board so OSA can close them out.
+const ORPHAN_TICKET_DEAD_AIR_MS = Math.max(
+  60 * 1000,
+  Number(process.env.CHAT_ORPHAN_TICKET_DEAD_AIR_MS || 5 * 60 * 1000)
+);
+const ORPHAN_TICKET_SSE_GRACE_MS = Math.max(
+  30 * 1000,
+  Number(process.env.CHAT_ORPHAN_TICKET_SSE_GRACE_MS || 60 * 1000)
+);
+const ORPHAN_TICKET_SWEEP_INTERVAL_MS = 30 * 1000;
+
+async function cancelOrphanedTickets(sessionId, reason) {
+  if (!sessionId) return [];
+  try {
+    const result = await db.query(
+      `UPDATE escalation_tickets
+          SET status = 'cancelled',
+              cancelled_at = NOW(),
+              cancelled_reason = $2,
+              updated_at = NOW()
+        WHERE session_id = $1
+          AND status IN ('open','in_progress')
+          AND COALESCE(appointment_status, '') <> 'approved'
+        RETURNING case_id, ticket_type`,
+      [sessionId, String(reason || "session_ended").slice(0, 120)]
+    );
+    const rows = result.rows || [];
+    rows.forEach((row) => {
+      try {
+        pushToAdminTickets({
+          type: "ticket_cancelled",
+          case_id: row.case_id,
+          session_id: sessionId,
+          reason: String(reason || "session_ended"),
+        });
+      } catch (_) {}
+    });
+    return rows;
+  } catch (error) {
+    logError("ticket-auto-cancel", error);
+    return [];
+  }
+}
+
+async function sweepDeadAirTickets() {
+  try {
+    // Open tickets the admin has not engaged with — cancel if either:
+    //   (a) the underlying session has gone idle past CHAT_SESSION_TTL_MS, OR
+    //   (b) the student has had no activity for ORPHAN_TICKET_DEAD_AIR_MS
+    //       AND has no live SSE stream (with a small grace).
+    const result = await db.query(
+      `SELECT t.case_id, t.session_id, s.last_active_at, t.created_at
+         FROM escalation_tickets t
+         LEFT JOIN chat_sessions s ON s.id = t.session_id
+        WHERE t.status = 'open'
+          AND COALESCE(t.appointment_status, '') <> 'approved'`
+    );
+    const now = Date.now();
+    for (const row of result.rows || []) {
+      const sessionId = row.session_id;
+      const lastActiveMs = row.last_active_at ? new Date(row.last_active_at).getTime() : 0;
+      const sessionIdleFor = lastActiveMs ? now - lastActiveMs : Number.POSITIVE_INFINITY;
+      const sessionExpired = sessionIdleFor >= CHAT_SESSION_TTL_MS;
+      const sseClientCount = (sseClients.get(sessionId) || new Set()).size;
+      const studentOffline = sseClientCount === 0;
+      const ageMs = row.created_at ? now - new Date(row.created_at).getTime() : 0;
+      const deadAir =
+        studentOffline &&
+        ageMs >= ORPHAN_TICKET_SSE_GRACE_MS &&
+        sessionIdleFor >= ORPHAN_TICKET_DEAD_AIR_MS;
+
+      if (sessionExpired) {
+        await cancelOrphanedTickets(sessionId, "session_expired");
+      } else if (deadAir) {
+        await cancelOrphanedTickets(sessionId, "dead_air");
+      }
+    }
+  } catch (error) {
+    logError("ticket-sweep", error);
+  }
+}
+
+setInterval(() => { sweepDeadAirTickets(); }, ORPHAN_TICKET_SWEEP_INTERVAL_MS).unref();
+
 // Non-fatal email to OSA staff when a ticket is escalated
 async function sendStaffNotificationEmail(caseId, studentName, studentEmail, concern, variant) {
   try {
@@ -628,6 +716,9 @@ async function loadSessionRow(sessionId) {
   // forced to re-verify their email and will be issued a new session_id, while
   // the historical session, its messages, and any related tickets remain intact
   // for OSA records.
+  // Soft-cancel any unresolved tickets attached to this dead session so they
+  // disappear from the admin queue (approved appointments are preserved).
+  cancelOrphanedTickets(sessionId, "session_expired").catch(() => {});
   return { found: true, expired: true, session: null };
 }
 
