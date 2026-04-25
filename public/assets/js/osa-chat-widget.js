@@ -53,24 +53,6 @@
             '      </button>' +
             '    </div>' +
             '  </header>' +
-            // Verified ribbon sits flush under the header so it reads as part
-            // of the brand strip — same maroon-to-cream tone, gold accent.
-            '  <div class="osa-ai-verified-bar" id="osa-chat-verified-bar" hidden role="status" aria-live="polite">' +
-            '    <div class="osa-ai-verified-bar__left">' +
-            '      <span class="osa-ai-verified-bar__shield" aria-hidden="true">' +
-            '        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 9.5 8 11 4.6-1.5 8-6 8-11V5l-8-3z"/><polyline points="9 12 11 14 15 10"/></svg>' +
-            '      </span>' +
-            '      <span class="osa-ai-verified-bar__text">Verified as <strong id="osa-chat-verified-name">student</strong></span>' +
-            '      <div class="osa-ai-session-timer osa-ai-verified-bar__timer" id="osa-chat-timer" hidden aria-live="polite" title="Session time remaining">' +
-            '        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>' +
-            '        <span id="osa-chat-timer-text">--:--</span>' +
-            '      </div>' +
-            '    </div>' +
-            '    <button type="button" class="osa-ai-verified-bar__end" id="osa-chat-end-session" aria-label="End verified session">' +
-            '      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>' +
-            '      <span>End session</span>' +
-            '    </button>' +
-            '  </div>' +
             '  <button type="button" class="osa-ai-scroll-bottom" id="osa-chat-scroll-bottom" aria-label="Scroll to latest" hidden>' +
             '    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>' +
             '  </button>' +
@@ -83,6 +65,25 @@
             '      <button type="button" class="osa-ai-chip" data-prompt="I need a new OTP code for secure chat verification.">New OTP request</button>' +
             '      <button type="button" class="osa-ai-chip" data-prompt="I need human support">Human support</button>' +
             '    </div>' +
+            '  </div>' +
+            // Verified ribbon — light pill that sits just above the composer
+            // so the student always sees who they are signed in as, the
+            // remaining session time, and a quick way to end the session.
+            '  <div class="osa-ai-verified-bar" id="osa-chat-verified-bar" hidden role="status" aria-live="polite">' +
+            '    <div class="osa-ai-verified-bar__left">' +
+            '      <span class="osa-ai-verified-bar__shield" aria-hidden="true">' +
+            '        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 9.5 8 11 4.6-1.5 8-6 8-11V5l-8-3z"/><polyline points="9 12 11 14 15 10"/></svg>' +
+            '      </span>' +
+            '      <span class="osa-ai-verified-bar__text">Verified as <strong id="osa-chat-verified-name">student</strong></span>' +
+            '      <div class="osa-ai-session-timer osa-ai-verified-bar__timer" id="osa-chat-timer" hidden aria-live="polite" title="Session time remaining">' +
+            '        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>' +
+            '        <span id="osa-chat-timer-text">--:--</span>' +
+            '      </div>' +
+            '    </div>' +
+            '    <button type="button" class="osa-ai-verified-bar__end" id="osa-chat-end-session" aria-label="End verified session">' +
+            '      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>' +
+            '      <span>End session</span>' +
+            '    </button>' +
             '  </div>' +
             '  <div class="osa-ai-composer">' +
             '    <input type="hidden" id="osa-chat-email-store" autocomplete="off">' +

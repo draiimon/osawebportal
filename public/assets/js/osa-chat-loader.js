@@ -19,7 +19,7 @@
         }
     }
 
-    var widgetUrl = '/assets/js/osa-chat-widget.js?v=93';
+    var widgetUrl = '/assets/js/osa-chat-widget.js?v=94';
 
     var done = false;
 

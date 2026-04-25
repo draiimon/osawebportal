@@ -2182,21 +2182,21 @@
     animation: osaStaffHeaderGlow 1.6s ease-in-out infinite !important;
 }
 
-/* ── Verified ribbon — flush under the maroon header ───────────
-   Reads as a continuation of the brand strip: dark maroon base,
-   thin gold accent border on top, light text + cream highlight
-   for the student's first name. */
+/* ── Verified ribbon — light strip just above the composer ──────
+   Sits at the bottom of the panel as a quiet status row: cream
+   background, soft maroon-on-cream text, subtle gold shield. The
+   "End session" button is a discreet ghost pill, not a CTA. */
 .osa-launcher-panel--chat-ui .osa-ai-verified-bar {
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
-    gap: 10px !important;
-    padding: 7px 14px !important;
-    background: linear-gradient(180deg, #6b1424 0%, #841a2d 100%) !important;
-    border-top: 1px solid rgba(199, 154, 73, 0.45) !important;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.18) !important;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
-    color: rgba(255, 253, 249, 0.94) !important;
+    gap: 8px !important;
+    padding: 6px 14px !important;
+    background: #fbf6ee !important;
+    border-top: 1px solid rgba(132, 26, 45, 0.10) !important;
+    border-bottom: 1px solid rgba(132, 26, 45, 0.06) !important;
+    box-shadow: none !important;
+    color: #5a4a3a !important;
     position: relative !important;
     z-index: 2 !important;
 }
@@ -2204,7 +2204,7 @@
 .osa-launcher-panel--chat-ui .osa-ai-verified-bar__left {
     display: inline-flex !important;
     align-items: center !important;
-    gap: 8px !important;
+    gap: 7px !important;
     flex: 1 1 auto !important;
     min-width: 0 !important;
 }
@@ -2214,70 +2214,86 @@
     align-items: center;
     justify-content: center;
     color: #c79a49;
-    filter: drop-shadow(0 0 4px rgba(199, 154, 73, 0.45));
+    filter: none;
+    flex-shrink: 0;
 }
 
 .osa-launcher-panel--chat-ui .osa-ai-verified-bar__text {
-    font-size: 12px;
-    color: rgba(255, 253, 249, 0.85);
+    font-size: 11.5px;
+    color: #6b5847;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    letter-spacing: 0.01em;
+    letter-spacing: 0;
+    font-weight: 500;
 }
 
 .osa-launcher-panel--chat-ui .osa-ai-verified-bar__text strong {
-    color: #fffdf9;
+    color: #841a2d;
     font-weight: 700;
 }
 
 .osa-launcher-panel--chat-ui .osa-ai-verified-bar__timer {
-    color: rgba(255, 253, 249, 0.78) !important;
-    background: rgba(0, 0, 0, 0.18) !important;
-    border: 1px solid rgba(199, 154, 73, 0.35) !important;
+    color: #6b5847 !important;
+    background: rgba(132, 26, 45, 0.06) !important;
+    border: 1px solid rgba(132, 26, 45, 0.12) !important;
+}
+.osa-launcher-panel--chat-ui .osa-ai-verified-bar__timer svg {
+    color: #8a6f5c !important;
+}
+.osa-launcher-panel--chat-ui .osa-ai-verified-bar__timer.is-warning {
+    color: #92400e !important;
+    background: rgba(251, 191, 36, 0.18) !important;
+    border-color: rgba(251, 191, 36, 0.45) !important;
+}
+.osa-launcher-panel--chat-ui .osa-ai-verified-bar__timer.is-critical {
+    color: #991b1b !important;
+    background: rgba(220, 38, 38, 0.10) !important;
+    border-color: rgba(220, 38, 38, 0.40) !important;
 }
 
 .osa-launcher-panel--chat-ui .osa-ai-verified-bar__end {
     display: inline-flex !important;
     align-items: center !important;
-    gap: 6px !important;
-    padding: 5px 11px !important;
+    gap: 5px !important;
+    padding: 4px 10px !important;
     border-radius: 999px !important;
-    border: 1px solid rgba(199, 154, 73, 0.55) !important;
-    background: linear-gradient(135deg, #c79a49 0%, #b6873a 100%) !important;
-    color: #2a0e16 !important;
-    font-size: 11.5px !important;
-    font-weight: 700 !important;
+    border: 1px solid rgba(132, 26, 45, 0.18) !important;
+    background: #ffffff !important;
+    color: #841a2d !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
     line-height: 1 !important;
     cursor: pointer;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
-    transition: transform 120ms ease, box-shadow 160ms ease, background 160ms ease !important;
+    box-shadow: none !important;
+    transition: background 140ms ease, border-color 140ms ease, color 140ms ease !important;
     flex-shrink: 0 !important;
     white-space: nowrap !important;
 }
 
 .osa-launcher-panel--chat-ui .osa-ai-verified-bar__end:hover {
-    background: linear-gradient(135deg, #d6a955 0%, #c79a49 100%) !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.45) !important;
-    transform: translateY(-1px);
+    background: #fdf3f5 !important;
+    border-color: rgba(132, 26, 45, 0.32) !important;
+    box-shadow: none !important;
+    transform: none;
 }
 
 .osa-launcher-panel--chat-ui .osa-ai-verified-bar__end:active {
-    transform: translateY(0);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.28), inset 0 1px 2px rgba(0, 0, 0, 0.12) !important;
+    transform: none;
+    background: #f8e7eb !important;
+    box-shadow: none !important;
 }
 
 .osa-launcher-panel--chat-ui .osa-ai-verified-bar__end svg {
-    color: #2a0e16;
-    opacity: 0.95;
+    color: #841a2d;
+    opacity: 0.9;
 }
 
-/* When staff is live the header runs a shimmer animation. The verified
-   ribbon below should pick up that warm gold glow so the two strips
-   feel continuous instead of stacked. */
-.osa-launcher-panel--chat-ui .osa-ai-header.is-staff-live + .osa-ai-verified-bar {
-    background: linear-gradient(180deg, #5c1020 0%, #7a172a 100%) !important;
-    border-top-color: rgba(199, 154, 73, 0.65) !important;
+/* When staff is live, just deepen the maroon accent slightly so the
+   row still reads as part of the same brand without going dark. */
+.osa-launcher-panel--chat-ui .osa-ai-header.is-staff-live ~ .osa-ai-verified-bar {
+    background: #fdf1ee !important;
+    border-top-color: rgba(132, 26, 45, 0.18) !important;
 }
 
 .osa-ai-chips-wrapper.is-hidden-staff,
