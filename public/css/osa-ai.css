@@ -2364,3 +2364,62 @@
   .osa-staff-typing-pill__dots span,
   .osa-staff-typing-pill { animation: none; }
 }
+
+/* ── Welcome carousel (in-bubble auto-rotating tips) ───────── */
+.osa-welcome-carousel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.osa-welcome-text {
+  margin: 0;
+  transition: opacity 180ms ease;
+  min-height: 2.6em;
+}
+.osa-welcome-text.is-fading { opacity: 0; }
+.osa-welcome-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.osa-welcome-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.osa-welcome-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(132, 26, 45, 0.22);
+  transition: background-color 180ms ease, transform 180ms ease;
+}
+.osa-welcome-dot.is-active {
+  background: #841a2d;
+  transform: scale(1.25);
+}
+.osa-welcome-skip {
+  appearance: none;
+  background: transparent;
+  border: 1px solid rgba(132, 26, 45, 0.25);
+  color: #841a2d;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 3px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+.osa-welcome-skip:hover,
+.osa-welcome-skip:focus-visible {
+  background: rgba(132, 26, 45, 0.08);
+  border-color: rgba(132, 26, 45, 0.45);
+  outline: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .osa-welcome-text { transition: none; }
+  .osa-welcome-dot { transition: none; }
+}

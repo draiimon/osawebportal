@@ -7,6 +7,7 @@ const { buildPortalPageContext, looksLikePortalPageIntent } = require("./chatbot
 const { looksLikeOtpHelpIntent } = require("./chatbot/utils/preprocessor");
 const { searchFaq } = require("./faqSearch");
 const { hasGeminiKeys, runWithGeminiFailover } = require("./services/geminiKeyPool");
+const { clearSessionVerified: _clearSessionVerified } = require("./middleware/dailyQuota");
 
 const GROQ_API_KEY = String(process.env.GROQ_API_KEY || "").trim();
 const GEMINI_MODEL = String(process.env.GEMINI_MODEL || "gemini-2.5-flash").trim();
@@ -719,6 +720,7 @@ async function loadSessionRow(sessionId) {
   // Soft-cancel any unresolved tickets attached to this dead session so they
   // disappear from the admin queue (approved appointments are preserved).
   cancelOrphanedTickets(sessionId, "session_expired").catch(() => {});
+  try { _clearSessionVerified(sessionId); } catch (_) {}
   return { found: true, expired: true, session: null };
 }
 
@@ -1439,7 +1441,7 @@ function normalizeClaimItemNumber(raw) {
 // ── Route registration ────────────────────────────────────────
 function registerChatRoutes(app, apiPrefix) {
   const { chatSessionLimiter, chatMsgLimiter } = app.locals.limiters || {};
-  const { dailyQuotaMiddleware } = require("./middleware/dailyQuota");
+  const { dailyQuotaMiddleware, markSessionVerified, clearSessionVerified } = require("./middleware/dailyQuota");
 
   // Create / resume session
   app.post(
@@ -1510,6 +1512,9 @@ function registerChatRoutes(app, apiPrefix) {
             };
           }
         } catch (_) {}
+
+        // OTP-verified — promote this session to unlimited daily quota.
+        try { markSessionVerified(sessionRow.id); } catch (_) {}
 
         return res.json({
           success: true,
@@ -1621,6 +1626,7 @@ function registerChatRoutes(app, apiPrefix) {
           `UPDATE chat_sessions SET last_active_at = NOW() - ($1 || ' milliseconds')::interval WHERE id = $2`,
           [String(CHAT_SESSION_TTL_MS + 1000), sessionId]
         );
+        try { clearSessionVerified(sessionId); } catch (_) {}
         return res.json({ success: true, cancelled_tickets: cancelled.map((r) => r.case_id) });
       } catch (error) {
         return genericError(res, "chat-session-end", error);

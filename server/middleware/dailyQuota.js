@@ -9,6 +9,23 @@ const BURST_WINDOW_MS = Number(process.env.OSA_CHAT_BURST_WINDOW_MS || 60 * 1000
 
 const store = new Map(); // key -> { count, dayKey, burstTimes: [ms,...] }
 
+// Sessions that have completed OTP verification get unlimited daily messages
+// (they are real, identifiable students). Burst protection still applies so
+// nobody can hammer the API. The set is cleared on session end / expiry.
+const verifiedSessions = new Set();
+
+function markSessionVerified(sessionId) {
+  if (sessionId) verifiedSessions.add(String(sessionId));
+}
+
+function clearSessionVerified(sessionId) {
+  if (sessionId) verifiedSessions.delete(String(sessionId));
+}
+
+function isSessionVerified(sessionId) {
+  return !!sessionId && verifiedSessions.has(String(sessionId));
+}
+
 function todayKey() {
   const d = new Date();
   return (
@@ -56,10 +73,17 @@ function getQuotaSnapshot(req) {
   const rec = readQuota(key);
   const used = rec.count;
   const remaining = Math.max(0, DAILY_LIMIT - used);
+  const sessionId = String(
+    (req && req.body && req.body.session_id) ||
+      (req && req.query && req.query.session_id) ||
+      ""
+  ).trim();
+  const unlimited = isSessionVerified(sessionId);
   return {
     used,
-    limit: DAILY_LIMIT,
-    remaining,
+    limit: unlimited ? null : DAILY_LIMIT,
+    remaining: unlimited ? null : remaining,
+    unlimited,
     burst_used: rec.burstTimes.length,
     burst_limit: BURST_LIMIT,
     burst_window_ms: BURST_WINDOW_MS,
@@ -84,11 +108,12 @@ function incrementQuota(key) {
   }
 }
 
-function buildSnapshotFromRec(rec) {
+function buildSnapshotFromRec(rec, unlimited) {
   return {
     used: rec.count,
-    limit: DAILY_LIMIT,
-    remaining: Math.max(0, DAILY_LIMIT - rec.count),
+    limit: unlimited ? null : DAILY_LIMIT,
+    remaining: unlimited ? null : Math.max(0, DAILY_LIMIT - rec.count),
+    unlimited: !!unlimited,
     burst_used: rec.burstTimes.length,
     burst_limit: BURST_LIMIT,
     burst_window_ms: BURST_WINDOW_MS,
@@ -98,22 +123,29 @@ function buildSnapshotFromRec(rec) {
 
 // Express middleware: blocks request when daily or burst limit is exhausted.
 // Otherwise increments counter and attaches snapshot to req.osaQuota.
+// OTP-verified sessions skip the daily limit (still get burst protection).
 function dailyQuotaMiddleware(req, res, next) {
   try {
     const key = getQuotaKey(req);
     const rec = readQuota(key);
+    const sessionId = String(
+      (req.body && req.body.session_id) ||
+        (req.query && req.query.session_id) ||
+        ""
+    ).trim();
+    const unlimited = isSessionVerified(sessionId);
 
-    // Daily limit gate
-    if (rec.count >= DAILY_LIMIT) {
+    // Daily limit gate — skipped for OTP-verified sessions.
+    if (!unlimited && rec.count >= DAILY_LIMIT) {
       return res.status(429).json({
         success: false,
         code: "DAILY_LIMIT_REACHED",
-        message: "You have reached your daily limit. Try again tomorrow.",
-        quota: buildSnapshotFromRec(rec),
+        message: "You have reached your daily limit. Verify with OTP for unlimited access, or try again tomorrow.",
+        quota: buildSnapshotFromRec(rec, false),
       });
     }
 
-    // Burst limit gate
+    // Burst limit gate — applies to everyone (anti-spam).
     if (rec.burstTimes.length >= BURST_LIMIT) {
       const oldest = rec.burstTimes[0];
       const waitMs = Math.max(0, BURST_WINDOW_MS - (Date.now() - oldest));
@@ -124,14 +156,14 @@ function dailyQuotaMiddleware(req, res, next) {
           "You're sending messages too fast. Please wait " +
           Math.ceil(waitMs / 1000) +
           "s and try again.",
-        quota: buildSnapshotFromRec(rec),
+        quota: buildSnapshotFromRec(rec, unlimited),
         retry_after_ms: waitMs,
       });
     }
 
     incrementQuota(key);
     const after = readQuota(key);
-    req.osaQuota = buildSnapshotFromRec(after);
+    req.osaQuota = buildSnapshotFromRec(after, unlimited);
 
     // Wrap res.json so successful responses carry the quota snapshot.
     const origJson = res.json.bind(res);
@@ -153,4 +185,7 @@ module.exports = {
   DAILY_LIMIT,
   dailyQuotaMiddleware,
   getQuotaSnapshot,
+  markSessionVerified,
+  clearSessionVerified,
+  isSessionVerified,
 };
