@@ -267,14 +267,9 @@
         var c = escapeHtml(caseId);
         var wrapStyle = 'display:flex;flex-wrap:wrap;gap:6px;overflow:visible;margin-bottom:12px;padding:0';
         return '' +
-            '<details class="osa-ai-rich" open style="margin-top:6px">' +
+            '<details class="osa-ai-rich" open style="margin-top:6px" data-lf-auto-claim="' + c + '">' +
             '<summary>Claim visit preferences</summary>' +
-            '<p style="margin:0 0 10px;font-size:13px;color:#675a4f;">Choose your visit type and time window. Your preferred day can be typed in chat. OSA staff will confirm the final schedule.</p>' +
-            '<p style="margin:0 0 6px;font-size:12px;font-weight:700;color:#1c1917">Visit type</p>' +
-            '<div class="osa-ai-chips" style="' + wrapStyle + '">' +
-            '<button type="button" class="osa-ai-chip osa-lf-appt-btn" data-lf-case="' + c + '" data-lf-field="track" data-lf-value="claiming">Claiming appointment</button>' +
-            '<button type="button" class="osa-ai-chip osa-lf-appt-btn" data-lf-case="' + c + '" data-lf-field="track" data-lf-value="private">Private appointment</button>' +
-            '</div>' +
+            '<p style="margin:0 0 10px;font-size:13px;color:#675a4f;">Naka-set na ito as <strong>Claiming appointment</strong>. Pumili lang ng time window — type your preferred day (Mon&ndash;Fri) sa chat below. OSA staff will confirm the final schedule.</p>' +
             '<p style="margin:0 0 6px;font-size:12px;font-weight:700;color:#1c1917">Time window</p>' +
             '<div class="osa-ai-chips" style="' + wrapStyle + ';margin-bottom:0">' +
             '<button type="button" class="osa-ai-chip osa-lf-appt-btn" data-lf-case="' + c + '" data-lf-field="window" data-lf-value="Morning">Morning</button>' +
@@ -2243,6 +2238,14 @@
                     var cid = String((claimRes && claimRes.case_id) || '').trim();
                     if (cid) {
                         appendBubble('assistant', lfPreferencePanelHtml(cid));
+                        // Auto-record this as a Claiming appointment (L&F is always claiming).
+                        try {
+                            postApi('/chat/claim/appointment-preference', {
+                                session_id: chatSessionId,
+                                case_id: cid,
+                                appointment_track: 'claiming'
+                            }).catch(function () {});
+                        } catch (_) {}
                     }
                 } catch (err) {
                     if (err && (err.code === 'SESSION_EXPIRED' || err.status === 401)) {
