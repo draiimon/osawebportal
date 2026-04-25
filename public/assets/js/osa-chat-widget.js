@@ -91,7 +91,7 @@
             '        <svg viewBox="0 0 24 24"><path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z"/></svg>' +
             '      </button>' +
             '    </div>' +
-            '    <p class="osa-ai-composer__hint" id="osa-chat-hint">Quick topics above send automatically. OTP may appear for sensitive requests (claim, appointment, escalate).</p>' +
+            '    <p class="osa-ai-composer__hint" id="osa-chat-hint">Quick guide: try an appointment, Lost &amp; Found, announcements, or human support. OTP may appear for sensitive requests. You can skip these and just type below.</p>' +
             '    <div class="osa-ai-quota" id="osa-chat-quota" aria-live="polite" hidden><span class="osa-ai-quota__dot" aria-hidden="true"></span><span class="osa-ai-quota__text" id="osa-chat-quota-text">-- / -- today</span></div>' +
             '  </div>' +
             '</div>' +
@@ -1493,7 +1493,14 @@
         var chipsWrapEl = widget ? widget.querySelector('.osa-ai-chips-wrapper') : null;
         var hintEl = document.getElementById('osa-chat-hint');
         var DEFAULT_HINT = hintEl ? hintEl.textContent : '';
-        var STAFF_HINT = 'Live OSA Staff is on the line — type your message and they will reply here.';
+        var STAFF_HINT = 'Quick topics above are hidden while OSA Staff is with you.';
+        var GUIDE_HINTS = [
+            'Quick guide: try an appointment, Lost &amp; Found, announcements, or human support.',
+            'OTP may appear for sensitive requests. You can skip these and just type below.',
+            'If OSA Staff joins, quick topics will hide automatically.'
+        ];
+        var guideHintIndex = 0;
+        var guideHintTimer = null;
         var MODE_COPY = {
             faq:   { label: 'Guide', cls: 'osa-ai-mode--faq' },
             ai:    { label: 'OSA',   cls: 'osa-ai-mode--ai' },
@@ -1516,7 +1523,21 @@
             if (chipsWrapEl) chipsWrapEl.classList.toggle('is-hidden-staff', isStaff);
             if (headerEl) headerEl.classList.toggle('is-staff-live', isStaff);
             if (hintEl) {
-                hintEl.textContent = isStaff ? STAFF_HINT : DEFAULT_HINT;
+                if (guideHintTimer) {
+                    window.clearInterval(guideHintTimer);
+                    guideHintTimer = null;
+                }
+                if (isStaff) {
+                    hintEl.textContent = STAFF_HINT;
+                } else {
+                    guideHintIndex = 0;
+                    hintEl.textContent = GUIDE_HINTS[guideHintIndex];
+                    guideHintTimer = window.setInterval(function () {
+                        if (currentMode === 'staff' || !hintEl) return;
+                        guideHintIndex = (guideHintIndex + 1) % GUIDE_HINTS.length;
+                        hintEl.textContent = GUIDE_HINTS[guideHintIndex];
+                    }, 4500);
+                }
                 hintEl.classList.toggle('is-staff', isStaff);
             }
         }
