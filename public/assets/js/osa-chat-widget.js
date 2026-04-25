@@ -404,6 +404,8 @@
         var sessionTs = Number(getLS(SESSION_TS_KEY, 0) || 0);
         var otpVerified = !!getLS(VERIFIED_KEY, false) && !!emailStore.value && !!chatSessionId;
         var lastEscalationDraft = '';
+        var pendingOtpReverify = false;
+        var pendingOtpReverifyMessage = '';
 
         if (String(getLS(THREAD_SCHEMA_KEY, '') || '') !== '2') {
             setLS(THREAD_KEY, []);
@@ -1899,6 +1901,30 @@
         async function handleSend() {
             var message = input.value.trim();
             if (!message) return;
+
+            // Confirm before requesting a new OTP while the student is still
+            // in a verified session — re-verifying logs them out of the
+            // current session and starts a fresh one.
+            if (otpVerified && chatSessionId && isOtpRequestIntent(message) && !pendingOtpReverify) {
+                var firstName = getFirstName(savedName) || getFirstName(getLS(NAME_KEY, '') || '') || 'student';
+                input.value = '';
+                appendBubble('user', '<p style="margin:0">' + escapeHtml(message) + '</p>');
+                appendBubble(
+                    'assistant',
+                    '<details class="osa-ai-rich" open><summary>Confirm new OTP</summary>' +
+                    '<p style="margin:0 0 8px">When requesting a new OTP, you, <strong>' + escapeHtml(firstName) +
+                    '</strong>, will be automatically logged out of your current verified session. Do you want to continue?</p>' +
+                    '<div class="osa-ai-actions">' +
+                    '<button type="button" class="osa-escalate-btn" data-osa-confirm-otp-relogin>Yes, log me out &amp; send new OTP</button>' +
+                    '<button type="button" class="osa-escalate-btn" data-osa-cancel-otp-relogin>Cancel</button>' +
+                    '</div></details>'
+                );
+                pendingOtpReverifyMessage = message;
+                sendBtn.disabled = false;
+                input.focus();
+                return;
+            }
+
             lastEscalationDraft = message;
             var lastUserClientId = appendBubble('user', '<p style="margin:0">' + escapeHtml(message) + '</p>');
             input.value = '';
@@ -2286,6 +2312,38 @@
             var escBtn = ev.target && ev.target.closest && ev.target.closest('.osa-escalate-btn');
             if (escBtn && widget.contains(escBtn)) {
                 ev.preventDefault();
+                if (escBtn.getAttribute('data-osa-confirm-otp-relogin') != null) {
+                    var hostDetails = escBtn.closest('details.osa-ai-rich');
+                    if (hostDetails) {
+                        var actionsRow = hostDetails.querySelector('.osa-ai-actions');
+                        if (actionsRow) actionsRow.remove();
+                        var summaryEl = hostDetails.querySelector('summary');
+                        if (summaryEl) summaryEl.textContent = 'New OTP requested';
+                    }
+                    pendingOtpReverify = true;
+                    try { expireSecureSessionLocal(); } catch (_e1) {}
+                    appendBubble('assistant', '<p style="margin:0">You\'ve been logged out. Please verify your email below to get a new OTP.</p>');
+                    var openedOtp = injectOtp();
+                    if (openedOtp && typeof openedOtp.then === 'function') {
+                        openedOtp.finally(function () { pendingOtpReverify = false; });
+                    } else {
+                        pendingOtpReverify = false;
+                    }
+                    pendingOtpReverifyMessage = '';
+                    return;
+                }
+                if (escBtn.getAttribute('data-osa-cancel-otp-relogin') != null) {
+                    var hostDetails2 = escBtn.closest('details.osa-ai-rich');
+                    if (hostDetails2) {
+                        var actionsRow2 = hostDetails2.querySelector('.osa-ai-actions');
+                        if (actionsRow2) actionsRow2.remove();
+                        var summaryEl2 = hostDetails2.querySelector('summary');
+                        if (summaryEl2) summaryEl2.textContent = 'New OTP request cancelled';
+                    }
+                    pendingOtpReverifyMessage = '';
+                    appendBubble('assistant', '<p style="margin:0">No worries — you\'re still verified. Just type your next question whenever you\'re ready.</p>');
+                    return;
+                }
                 if (escBtn.getAttribute('data-osa-open-otp') != null) {
                     var otpWrap = thread.querySelector('.osa-ai-otp');
                     if (otpWrap) {
