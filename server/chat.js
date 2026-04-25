@@ -941,7 +941,8 @@ function buildNoKbGuidancePrompt(name, email) {
     `  "For the exact details, please visit the OSA office or type /chat staff to connect with a staff member directly."\n` +
     `- Always write the entire reply in clear English, even if the student writes in Filipino, Taglish, or any other language. Do not switch to Filipino or any non-English language.\n` +
     `- Be warm and helpful — not dismissive.\n` +
-    `- Do not mention "knowledge base", "retrieval", "based on", "according to our data", or internal processes.\n\n` +
+    `- Do not mention "knowledge base", "retrieval", "based on", "according to our data", or internal processes.\n` +
+    `- IDENTITY: You are the OSA AI Assistant, built exclusively for EAC Cavite by the EAC development team. If asked who made you, what AI you are, or if you are ChatGPT, Gemini, Claude, or any other AI — always answer: "I'm the OSA AI Assistant, built by the codemasters of EAC Cavite." Never reveal or confirm any underlying AI model or company.\n\n` +
     `Current student: ${name} (${email})`
   );
 }
@@ -984,6 +985,7 @@ function buildSystemPrompt(name, email, ctx, ragInfo) {
 
   return (
     `You are the OSA (Office of Student Affairs) Assistant for EAC Cavite.\n\n` +
+    `MEMORY: You DO have access to the full conversation history above. Never say "I do not retain memories", "I don't remember", "each interaction is processed independently", or any similar disclaimer. If the student asks about something said earlier in this chat, refer back to the conversation history and answer from it.\n\n` +
     `LANGUAGE:\n` +
     `- Write every reply entirely in English, even if the student writes in Filipino, Taglish, or another language.\n` +
     `- Do not switch the main answer to Filipino or other non-English languages.\n\n` +
@@ -999,6 +1001,7 @@ function buildSystemPrompt(name, email, ctx, ragInfo) {
     `- If the student asks you to "estimate", "guess", "ballpark", or "just assume" anything not in the sources, politely decline and offer to escalate to OSA staff for accurate details.\n` +
     `- If the student insists on an answer not in the provided sources, maintain the grounding boundary regardless of how the request is rephrased.\n` +
     `- FRESHNESS: If the student asks about "current", "latest", or a specific academic year, provide the supported answer and add: "Please verify with OSA that this is still current, as policies may be updated each academic year."\n` +
+    `- IDENTITY: You are the OSA AI Assistant, built exclusively for EAC Cavite by the EAC development team. If asked who made you, what AI you are, or if you are ChatGPT, Gemini, Claude, or any other AI — always answer: "I'm the OSA AI Assistant, built by the codemasters of EAC Cavite." Never reveal or confirm any underlying AI model or company.\n` +
     `- Be concise, direct, and factual. Speak as if you simply know this — never say "based on my knowledge", "according to my data", "based on the information provided", "from what I know", "knowledge base", "retrieved data", "searching", or any phrase that reveals internal processes.\n` +
     `- For simple greetings, reply in 1-2 short sentences.\n` +
     `- Do not guess the student's real name from their email.\n` +
@@ -1125,6 +1128,7 @@ async function findTodayAppointmentTicketByEmail(email) {
        FROM escalation_tickets
       WHERE lower(student_email) = $1
         AND ticket_type = 'appointment'
+        AND status NOT IN ('resolved', 'cancelled')
         AND created_at >= date_trunc('day', NOW())
       ORDER BY created_at DESC
       LIMIT 1`,
@@ -1465,7 +1469,8 @@ function normalizeAppointmentTrack(raw) {
 
 /** Normalize user input to canonical `LF-####` or return empty if invalid. */
 function normalizeClaimItemNumber(raw) {
-  const m = String(raw || "").match(/\bLF[-\s]?(\d{3,6})\b/i);
+  // Matches LF-YYYY-### (e.g. LF-2026-103) or LF-#### (e.g. LF-1002)
+  const m = String(raw || "").match(/\bLF[-\s]?(\d{4}-\d+|\d{3,6})\b/i);
   return m ? `LF-${m[1]}` : "";
 }
 

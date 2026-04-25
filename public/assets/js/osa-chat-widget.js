@@ -48,6 +48,13 @@
             '    </div>' +
             '    <div class="osa-ai-header__trailing">' +
             '      <span id="osa-chat-mode-badge" class="osa-ai-mode osa-ai-mode--ai">OSA</span>' +
+            '      <div class="osa-ai-session-timer osa-ai-header-timer" id="osa-chat-timer" hidden aria-live="polite" title="Session time remaining">' +
+            '        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>' +
+            '        <span id="osa-chat-timer-text">--:--</span>' +
+            '      </div>' +
+            '      <button type="button" class="osa-ai-header-signout" id="osa-chat-end-session" hidden aria-label="Sign out">' +
+            '        Sign out' +
+            '      </button>' +
             '      <button type="button" class="osa-launcher-head__close" id="osa-chat-close" aria-label="Close">' +
             '        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
             '      </button>' +
@@ -66,25 +73,7 @@
             '      <button type="button" class="osa-ai-chip" data-prompt="I need human support">Human support</button>' +
             '    </div>' +
             '  </div>' +
-            // Verified ribbon — light pill that sits just above the composer
-            // so the student always sees who they are signed in as, the
-            // remaining session time, and a quick way to end the session.
-            '  <div class="osa-ai-verified-bar" id="osa-chat-verified-bar" hidden role="status" aria-live="polite">' +
-            '    <div class="osa-ai-verified-bar__left">' +
-            '      <span class="osa-ai-verified-bar__shield" aria-hidden="true">' +
-            '        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 9.5 8 11 4.6-1.5 8-6 8-11V5l-8-3z"/><polyline points="9 12 11 14 15 10"/></svg>' +
-            '      </span>' +
-            '      <span class="osa-ai-verified-bar__text">Verified as <strong id="osa-chat-verified-name">student</strong></span>' +
-            '      <div class="osa-ai-session-timer osa-ai-verified-bar__timer" id="osa-chat-timer" hidden aria-live="polite" title="Session time remaining">' +
-            '        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>' +
-            '        <span id="osa-chat-timer-text">--:--</span>' +
-            '      </div>' +
-            '    </div>' +
-            '    <button type="button" class="osa-ai-verified-bar__end" id="osa-chat-end-session" aria-label="End verified session">' +
-            '      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>' +
-            '      <span>End session</span>' +
-            '    </button>' +
-            '  </div>' +
+            '  <span id="osa-chat-verified-name" hidden></span>' +
             '  <div class="osa-ai-composer">' +
             '    <input type="hidden" id="osa-chat-email-store" autocomplete="off">' +
             '    <div class="osa-ai-composer__row">' +
@@ -94,7 +83,7 @@
             '        <svg viewBox="0 0 24 24"><path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z"/></svg>' +
             '      </button>' +
             '    </div>' +
-            '    <div class="osa-ai-quota" id="osa-chat-quota" aria-live="polite" hidden><span class="osa-ai-quota__dot" aria-hidden="true"></span><span class="osa-ai-quota__text" id="osa-chat-quota-text">-- / -- today</span></div>' +
+            '    <div class="osa-ai-quota" id="osa-chat-quota" aria-live="polite" hidden style="display:none!important"></div>' +
             '  </div>' +
             '</div>' +
             '<button class="osa-launcher-fab" id="osa-chat-fab" type="button" aria-controls="osa-chat-widget" aria-expanded="false">' +
@@ -254,7 +243,7 @@
     }
 
     function parseItemNumber(text) {
-        var m = (text || '').match(/\bLF[-\s]?(\d{3,6})\b/i);
+        var m = (text || '').match(/\bLF[-\s]?(\d{4}-\d+|\d{3,6})\b/i);
         return m ? 'LF-' + m[1] : '';
     }
 
@@ -470,27 +459,16 @@
             }
             updateVerifiedBar(name);
         }
-        // Show / hide the "Verified as <Name> · End session" bar
-        // that sits above the Quick topics.
+        // Show / hide Sign out + timer in the header when verified.
         function updateVerifiedBar(name) {
-            var bar = document.getElementById('osa-chat-verified-bar');
-            var nameEl = document.getElementById('osa-chat-verified-name');
             var first = getFirstName(name);
             var canShow = !!(otpVerified && chatSessionId && first);
-            if (bar) {
-                if (canShow) {
-                    if (nameEl) nameEl.textContent = first;
-                    bar.hidden = false;
-                } else {
-                    bar.hidden = true;
-                }
+            var endBtn = document.getElementById('osa-chat-end-session');
+            var statusEl = document.getElementById('osa-chat-status-line');
+            if (endBtn) endBtn.hidden = !canShow;
+            if (statusEl) {
+                statusEl.textContent = canShow ? ('Verified as ' + first) : 'Ready';
             }
-            // Hide Quick topics for OTP-verified students — they already have
-            // a personalised flow; the generic chips become redundant clutter.
-            try {
-                var chipsWrap = document.querySelector('.osa-ai-chips-wrapper');
-                if (chipsWrap) chipsWrap.classList.toggle('is-hidden-verified', !!(otpVerified && chatSessionId));
-            } catch (_) {}
         }
         // Restore the personalized header on page load for an already-verified
         // browser (avoids flashing "Ask OSA" before the user sees their name).
@@ -626,19 +604,26 @@
             // chat is harmless — no in-flight reply can be lost. Show a
             // friendlier confirmation in that case.
             var bodyHtml = lastApptApproved
-                ? '<p style="margin:0 0 8px">Your appointment is already <strong>confirmed by OSA staff</strong>. Ending this chat is safe — your scheduled appointment stays.</p>' +
-                  '<p style="margin:0 0 10px;font-size:12px;color:#65574d">You can verify your email again anytime to start a new case.</p>'
-                : '<p style="margin:0 0 8px">You are still chatting with <strong>OSA Staff</strong>. If you end the session now, your case will be cancelled and their replies will no longer reach you here.</p>' +
-                  '<p style="margin:0 0 10px;font-size:12px;color:#65574d">You can verify your email again anytime to start a new case.</p>';
+                ? '<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:#f0fdf4;border-radius:8px;margin-bottom:4px">' +
+                  '<span style="font-size:16px;line-height:1;margin-top:1px">✓</span>' +
+                  '<div><p style="margin:0 0 2px;font-size:13px;font-weight:600;color:#065f46">Appointment confirmed</p>' +
+                  '<p style="margin:0;font-size:12.5px;color:#374151">Your scheduled visit stays on the calendar. Safe to close this chat.</p></div></div>'
+                : '<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:#fff7ed;border-radius:8px;margin-bottom:4px">' +
+                  '<span style="font-size:16px;line-height:1;margin-top:1px">⚠</span>' +
+                  '<div><p style="margin:0 0 2px;font-size:13px;font-weight:600;color:#92400e">Active case in progress</p>' +
+                  '<p style="margin:0;font-size:12.5px;color:#374151">OSA staff won\'t be able to reply if you leave now.</p></div></div>';
+            var endBtnStyle = lastApptApproved
+                ? 'flex:1;padding:10px 0;font-size:13px;font-weight:600;border-radius:8px;border:none;background:#059669;color:#fff;cursor:pointer;transition:background 0.15s'
+                : 'flex:1;padding:10px 0;font-size:13px;font-weight:600;border-radius:8px;border:none;background:#841a2d;color:#fff;cursor:pointer;transition:background 0.15s';
             appendBubble(
                 'assistant',
-                '<details class="osa-ai-rich" id="osa-end-confirm" open>' +
-                '<summary>End this conversation?</summary>' +
+                '<div id="osa-end-confirm" style="background:#fff;border:1px solid rgba(0,0,0,0.09);border-radius:12px;padding:16px;margin-top:4px;box-shadow:0 2px 12px rgba(0,0,0,0.07)">' +
+                '<p style="margin:0 0 10px;font-size:14px;font-weight:700;color:#111827">End conversation?</p>' +
                 bodyHtml +
-                '<div class="osa-ai-actions">' +
-                '<button type="button" class="osa-escalate-btn" data-osa-end-confirm>Yes, end session</button>' +
-                '<button type="button" class="osa-escalate-btn" data-osa-end-cancel>Stay in chat</button>' +
-                '</div></details>',
+                '<div style="display:flex;gap:8px;margin-top:14px">' +
+                '<button type="button" data-osa-end-cancel style="flex:1;padding:10px 0;font-size:13px;font-weight:600;border-radius:8px;border:1px solid rgba(0,0,0,0.12);background:#f3f4f6;color:#374151;cursor:pointer;transition:background 0.15s">Stay</button>' +
+                '<button type="button" data-osa-end-confirm style="' + endBtnStyle + '">Yes, end</button>' +
+                '</div></div>',
                 { persist: false }
             );
         }
@@ -1660,6 +1645,11 @@
                         try { notifySeen(); } catch (_) {}
                     }
 
+                    // Sync appointment approval state from SSE payload
+                    if (payload.appointment_approved) {
+                        lastApptApproved = true;
+                    }
+
                     if (payload.session_closed) {
                         setMode('ai');
                         renderSystemBubble('This support session has been closed by OSA staff. You may open a new concern anytime.');
@@ -2285,6 +2275,8 @@
                     var cid = String((claimRes && claimRes.case_id) || '').trim();
                     if (cid) {
                         appendBubble('assistant', lfPreferencePanelHtml(cid));
+                        renderWaitingBanner(cid, Date.now(), true);
+                        setMode('staff');
                         // Auto-record this as a Claiming appointment (L&F is always claiming).
                         try {
                             postApi('/chat/claim/appointment-preference', {
@@ -2614,7 +2606,11 @@
                 return;
             }
 
-            var escBtn = ev.target && ev.target.closest && ev.target.closest('.osa-escalate-btn');
+            var escBtn = ev.target && ev.target.closest && (
+                ev.target.closest('.osa-escalate-btn') ||
+                ev.target.closest('[data-osa-end-confirm]') ||
+                ev.target.closest('[data-osa-end-cancel]')
+            );
             if (escBtn && widget.contains(escBtn)) {
                 ev.preventDefault();
                 if (escBtn.getAttribute('data-osa-end-confirm') != null) {

@@ -2016,6 +2016,7 @@
     lfApptWhen.value = toDatetimeLocalValue(t.appointment_datetime);
     lfApptLoc.value = t.appointment_location || 'OSA Office';
     lfApptNotes.value = t.appointment_notes ? String(t.appointment_notes) : '';
+    var lfApptSt = String(t.appointment_status || '').toLowerCase();
     btnLfSchedule.disabled = t.status === 'resolved';
 
     // Update the collapsible header pill so staff can see the schedule
@@ -2505,7 +2506,16 @@
       convoActive.classList.add('hidden');
     }
     btnResolve.disabled = t.status === 'resolved';
-    if (btnApproveAppt) btnApproveAppt.disabled = t.status === 'resolved' || String(t.appointment_status || '').toLowerCase() === 'approved';
+    if (btnApproveAppt) {
+      var isClaimOrAppt = t.ticket_type === 'claim' || t.ticket_type === 'appointment';
+      btnApproveAppt.classList.toggle('hidden', !isClaimOrAppt);
+      btnApproveAppt.disabled = t.status === 'resolved' || String(t.appointment_status || '').toLowerCase() === 'approved';
+      // Label changes based on ticket type
+      var fullLabel = btnApproveAppt.querySelector('.btn-label-full');
+      var shortLabel = btnApproveAppt.querySelector('.btn-label-short');
+      if (fullLabel) fullLabel.textContent = t.ticket_type === 'claim' ? 'Approve Claim' : 'Approve Appointment';
+      if (shortLabel) shortLabel.textContent = 'Approve';
+    }
     if (btnEndSession) btnEndSession.disabled = t.status === 'resolved';
     if (btnDeleteTicket) btnDeleteTicket.classList.toggle('hidden', t.status !== 'resolved');
     // Show panels
@@ -3118,6 +3128,22 @@
     var when = (lfApptWhen && lfApptWhen.value || '').trim();
     if (!when) {
       showToast('Choose a visit date and time.', { variant: 'danger', duration: 4500 });
+      return;
+    }
+    // Guard: claim must be approved before scheduling the student pickup.
+    var claimApptStatus = String(state.currentAppointmentStatus || '').toLowerCase();
+    var claimIsApproved = claimApptStatus === 'approved' || claimApptStatus === 'scheduled';
+    if (!claimIsApproved) {
+      openActionModal({
+        variant: 'warning',
+        title: 'Approve this claim first',
+        message:
+          ‘You haven’t approved this L&F claim yet. ‘ +
+          ‘Please tap “Approve Claim” at the top of the conversation first, ‘ +
+          ‘then come back here to confirm the pickup date & time and notify the student.’,
+        confirmText: 'Got it',
+        cancelText: '',
+      });
       return;
     }
     state.busy = true;

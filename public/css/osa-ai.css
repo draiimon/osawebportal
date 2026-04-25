@@ -1990,37 +1990,37 @@
 
 /* ── Quick-action chips ─── */
 .osa-launcher-panel--chat-ui .osa-ai-chips-wrapper {
-    border-top: 0.5px solid rgba(132,26,45,0.07);
-    background: rgba(255,255,255,0.55) !important;
-    backdrop-filter: blur(16px) !important;
-    -webkit-backdrop-filter: blur(16px) !important;
+    border-top: 1px solid rgba(0,0,0,0.07);
+    background: rgba(246,248,250,0.92) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
     padding: 7px 0 9px;
 }
 
 .osa-launcher-panel--chat-ui .osa-ai-chip {
     border-radius: 999px !important;
-    padding: 7px 15px;
-    font-size: 12.5px;
+    padding: 5px 14px;
+    font-size: 12px;
     font-weight: 600;
-    background: rgba(255,255,255,0.78) !important;
-    color: var(--brand, #841a2d) !important;
-    border: 1px solid rgba(132, 26, 45, 0.18) !important;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-    backdrop-filter: blur(8px) !important;
-    -webkit-backdrop-filter: blur(8px) !important;
-    transition: background 140ms ease, color 140ms ease, box-shadow 140ms ease;
+    background: rgba(255,255,255,0.70) !important;
+    color: #374151 !important;
+    border: 1px solid rgba(0,0,0,0.10) !important;
+    box-shadow: none;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    transition: background 140ms ease, color 140ms ease, border-color 140ms ease;
 }
 
 .osa-launcher-panel--chat-ui .osa-ai-chip:hover {
     background: rgba(255,255,255,0.96) !important;
-    box-shadow: 0 2px 8px rgba(132,26,45,0.14);
+    color: #841a2d !important;
+    border-color: rgba(132,26,45,0.20) !important;
 }
 
 .osa-launcher-panel--chat-ui .osa-ai-chip:active {
-    background: var(--brand, #841a2d) !important;
+    background: #841a2d !important;
     color: #fff !important;
     border-color: transparent !important;
-    box-shadow: 0 2px 8px rgba(132,26,45,0.28) !important;
 }
 
 /* ── Composer bar ─── */
