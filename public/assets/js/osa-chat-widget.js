@@ -43,10 +43,6 @@
             '        <strong id="osa-chat-title">Ask OSA</strong>' +
             '        <div class="osa-ai-header__sub">' +
             '          <span class="osa-ai-header__status-line" id="osa-chat-status-line">Ready</span>' +
-            '          <div class="osa-ai-session-timer" id="osa-chat-timer" hidden aria-live="polite" title="Session time remaining">' +
-            '            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>' +
-            '            <span id="osa-chat-timer-text">--:--</span>' +
-            '          </div>' +
             '        </div>' +
             '      </div>' +
             '    </div>' +
@@ -67,6 +63,10 @@
             '        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 9.5 8 11 4.6-1.5 8-6 8-11V5l-8-3z"/><polyline points="9 12 11 14 15 10"/></svg>' +
             '      </span>' +
             '      <span class="osa-ai-verified-bar__text">Verified as <strong id="osa-chat-verified-name">student</strong></span>' +
+            '      <div class="osa-ai-session-timer osa-ai-verified-bar__timer" id="osa-chat-timer" hidden aria-live="polite" title="Session time remaining">' +
+            '        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>' +
+            '        <span id="osa-chat-timer-text">--:--</span>' +
+            '      </div>' +
             '    </div>' +
             '    <button type="button" class="osa-ai-verified-bar__end" id="osa-chat-end-session" aria-label="End verified session">' +
             '      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>' +
