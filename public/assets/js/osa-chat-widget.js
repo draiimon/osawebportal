@@ -271,6 +271,34 @@
             '</details>';
     }
 
+    /**
+     * Preference buttons for a visit/appointment ticket.
+     * Student picks preferred day + time window; OSA confirms the final slot.
+     */
+    function visitPreferencePanelHtml(caseId) {
+        var c = escapeHtml(caseId);
+        var wrapStyle = 'display:flex;flex-wrap:wrap;gap:6px;overflow:visible;margin-bottom:12px;padding:0';
+        return '' +
+            '<details class="osa-ai-rich" open style="margin-top:6px">' +
+            '<summary>Visit appointment preferences</summary>' +
+            '<p style="margin:0 0 10px;font-size:13px;color:#675a4f;">Choose your preferred day and time window. OSA staff will review and confirm the exact schedule.</p>' +
+            '<p style="margin:0 0 6px;font-size:12px;font-weight:700;color:#1c1917">Preferred day</p>' +
+            '<div class="osa-ai-chips" style="' + wrapStyle + '">' +
+            '<button type="button" class="osa-ai-chip osa-visit-appt-btn" data-visit-case="' + c + '" data-visit-field="day" data-visit-value="Mon">Mon</button>' +
+            '<button type="button" class="osa-ai-chip osa-visit-appt-btn" data-visit-case="' + c + '" data-visit-field="day" data-visit-value="Tue">Tue</button>' +
+            '<button type="button" class="osa-ai-chip osa-visit-appt-btn" data-visit-case="' + c + '" data-visit-field="day" data-visit-value="Wed">Wed</button>' +
+            '<button type="button" class="osa-ai-chip osa-visit-appt-btn" data-visit-case="' + c + '" data-visit-field="day" data-visit-value="Thu">Thu</button>' +
+            '<button type="button" class="osa-ai-chip osa-visit-appt-btn" data-visit-case="' + c + '" data-visit-field="day" data-visit-value="Fri">Fri</button>' +
+            '</div>' +
+            '<p style="margin:0 0 6px;font-size:12px;font-weight:700;color:#1c1917">Time window</p>' +
+            '<div class="osa-ai-chips" style="' + wrapStyle + ';margin-bottom:0">' +
+            '<button type="button" class="osa-ai-chip osa-visit-appt-btn" data-visit-case="' + c + '" data-visit-field="window" data-visit-value="Morning">Morning</button>' +
+            '<button type="button" class="osa-ai-chip osa-visit-appt-btn" data-visit-case="' + c + '" data-visit-field="window" data-visit-value="Afternoon">Afternoon</button>' +
+            '</div>' +
+            '<p style="margin:10px 0 0;font-size:12px;color:#65574d"><em>OSA staff will confirm the exact date and time once they review your request.</em></p>' +
+            '</details>';
+    }
+
     function getLostFoundItem(itemNumber) {
         var data = getLS(LF_KEY, []);
         if (!Array.isArray(data)) return null;
@@ -1873,6 +1901,43 @@
                 return;
             }
 
+            // Explicit appointment/visit request: create a visit ticket and show preference panel.
+            if (chatSessionId && !itemNumber && hasAppointmentIntent(message)) {
+                var purposeText = message.length > 20 ? message : '';
+                var typingVisit = showTyping('visit-submit');
+                try {
+                    var visitRes = await postApi('/chat/visit', {
+                        session_id: chatSessionId,
+                        purpose: purposeText,
+                    });
+                    if (visitRes && visitRes.code === 'VISIT_LOCKED_TODAY') {
+                        appendBubble('assistant', renderAssistantText(visitRes.message || 'You already have an appointment request for today.'));
+                    } else if (visitRes && visitRes.success) {
+                        var visitText = String((visitRes && visitRes.assistant_message) || '').trim();
+                        if (visitText) appendBubble('assistant', renderAssistantText(visitText));
+                        var vid = String((visitRes && visitRes.case_id) || '').trim();
+                        if (vid) {
+                            renderWaitingBanner(vid, Date.now(), true);
+                            setMode('staff');
+                            appendBubble('assistant', visitPreferencePanelHtml(vid));
+                        }
+                    }
+                } catch (err) {
+                    if (err && (err.code === 'SESSION_EXPIRED' || err.status === 401)) {
+                        expireSecureSessionLocal();
+                        appendBubble('assistant', '<p style="margin:0">Your secure chat expired. Please verify your email again.</p>');
+                        await injectOtp();
+                    } else {
+                        appendBubble('assistant', '<p style="margin:0">Could not submit visit request: ' + escapeHtml(err.message || 'Unknown error') + '</p>');
+                    }
+                } finally {
+                    hideTyping(typingVisit, 'visit-submit:finally');
+                }
+                sendBtn.disabled = false;
+                input.focus();
+                return;
+            }
+
             var typingAI = null;
             try {
                 if (chatSessionId) {
@@ -1934,6 +1999,9 @@
                                     '<p style="margin:0 0 4px">Keep this chat open — an OSA staff member will reply <strong>right here</strong> once they pick up your case.</p>' +
                                     '<p style="margin:0;font-size:12px;color:#65574d">AI replies are paused for this case while staff handles it.</p>' +
                                     '</div>');
+                                if (String((payload && payload.ticket_type) || '') === 'appointment') {
+                                    appendBubble('assistant', visitPreferencePanelHtml(String(payload.case_id)));
+                                }
                             }
                             if (payload && (payload.suggest_escalation || payload.escalate) && !(payload && payload.human_mode) && !(payload && payload.auto_escalated)) {
                                 appendBubble('assistant',
@@ -2175,6 +2243,32 @@
                 else if (field === 'day') body.preferred_day = val;
                 else if (field === 'window') body.preferred_time_window = val;
                 postApi('/chat/claim/appointment-preference', body)
+                    .then(function (data) {
+                        var summary = String((data && data.summary) || 'Preference saved.');
+                        appendBubble('assistant', renderAssistantText(summary));
+                    })
+                    .catch(function (err) {
+                        if (err && (err.code === 'SESSION_EXPIRED' || err.status === 401)) {
+                            expireSecureSessionLocal();
+                            appendBubble('assistant', '<p style="margin:0">Session expired. Verify OTP again to continue.</p>');
+                        } else {
+                            appendBubble('assistant', '<p style="margin:0">' + escapeHtml(err.message || 'Could not save preference.') + '</p>');
+                        }
+                    });
+                return;
+            }
+
+            var visitBtn = ev.target && ev.target.closest && ev.target.closest('.osa-visit-appt-btn');
+            if (visitBtn && widget.contains(visitBtn)) {
+                ev.preventDefault();
+                var vcid = (visitBtn.getAttribute('data-visit-case') || '').trim();
+                var vfield = (visitBtn.getAttribute('data-visit-field') || '').trim();
+                var vval = (visitBtn.getAttribute('data-visit-value') || '').trim();
+                if (!chatSessionId || !vcid || !vfield) return;
+                var vbody = { session_id: chatSessionId, case_id: vcid };
+                if (vfield === 'day') vbody.preferred_day = vval;
+                else if (vfield === 'window') vbody.preferred_time_window = vval;
+                postApi('/chat/visit/appointment-preference', vbody)
                     .then(function (data) {
                         var summary = String((data && data.summary) || 'Preference saved.');
                         appendBubble('assistant', renderAssistantText(summary));

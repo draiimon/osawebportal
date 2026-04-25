@@ -309,6 +309,9 @@
       <button class="section-tab" data-tab="guides">Guide Slides</button>
       <button class="section-tab" data-tab="services">OSA Services</button>
       <button class="section-tab" data-tab="manual">Manual &amp; Forms</button>
+      <button class="section-tab" data-tab="flow">Process Flow</button>
+      <button class="section-tab" data-tab="faq">FAQ</button>
+      <button class="section-tab" data-tab="where">Office Hours &amp; Contact</button>
     </div>
 
     <div class="section-panel active" id="panel-hero">
@@ -425,6 +428,135 @@
         </div>
       </div>
     </div>
+
+    <div class="section-panel" id="panel-flow">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Process Flow Steps</h2>
+          <button class="btn btn-primary btn-sm" id="add-flow-btn">
+            <svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+            Add Step
+          </button>
+        </div>
+        <div class="panel-body">
+          <div class="helper-note">Edit the "From a Question to a Resolved Transaction" cards on the home page. Keep four steps for the best layout.</div>
+          <div class="field" style="margin-bottom:12px">
+            <label for="flow-section-title">Section Title</label>
+            <input type="text" id="flow-section-title" placeholder="From a Question to a Resolved Transaction">
+          </div>
+          <div class="field" style="margin-bottom:12px">
+            <label for="flow-section-desc">Section Description</label>
+            <textarea id="flow-section-desc" placeholder="Every OSA concern follows the same predictable flow…"></textarea>
+          </div>
+          <div class="repeater-grid" id="flow-list"></div>
+        </div>
+        <div class="panel-foot">
+          <button class="btn btn-primary" id="save-flow-btn">
+            <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Save Process Flow
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-panel" id="panel-faq">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Homepage FAQ</h2>
+          <button class="btn btn-primary btn-sm" id="add-faq-btn">
+            <svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+            Add FAQ Item
+          </button>
+        </div>
+        <div class="panel-body">
+          <div class="helper-note">Edit the "Quick Answers Before You Reach Out" cards. Each item has a short tag, a question, and the answer students see on the home page.</div>
+          <div class="field" style="margin-bottom:12px">
+            <label for="faq-section-title">Section Title</label>
+            <input type="text" id="faq-section-title" placeholder="Quick Answers Before You Reach Out">
+          </div>
+          <div class="field" style="margin-bottom:12px">
+            <label for="faq-section-desc">Section Description</label>
+            <textarea id="faq-section-desc" placeholder="Common questions answered here…"></textarea>
+          </div>
+          <div class="field" style="margin-bottom:12px">
+            <label for="faq-foot-text">Footer Prompt</label>
+            <textarea id="faq-foot-text" placeholder="Did not find your answer? Open Ask OSA…"></textarea>
+          </div>
+          <div class="repeater-grid" id="faq-list"></div>
+        </div>
+        <div class="panel-foot">
+          <button class="btn btn-primary" id="save-faq-btn">
+            <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Save FAQ
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-panel" id="panel-where">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Office Hours &amp; Contact</h2>
+        </div>
+        <div class="panel-body">
+          <div class="helper-note">Edit the "Office Hours, Location, and Direct Lines" section shown near the bottom of the home page.</div>
+          <div class="form-grid">
+            <div class="field">
+              <label for="where-section-title">Section Title</label>
+              <input type="text" id="where-section-title" placeholder="Office Hours, Location, and Direct Lines">
+            </div>
+            <div class="field">
+              <label for="where-section-desc">Section Description</label>
+              <textarea id="where-section-desc" placeholder="Plan your visit ahead…"></textarea>
+            </div>
+          </div>
+          <div class="editor-card" style="margin-top:16px">
+            <div class="editor-card__head">
+              <div>
+                <div class="editor-card__tag">Office Hours Panel</div>
+                <div class="editor-card__title">Weekly Schedule</div>
+              </div>
+            </div>
+            <div class="form-grid">
+              <div class="field"><label for="hours-heading">Panel Heading</label><input type="text" id="hours-heading" placeholder="Open for student transactions"></div>
+              <div class="field"><label for="hours-blurb">Panel Blurb</label><textarea id="hours-blurb" placeholder="Manila local time. Holidays and academic suspensions…"></textarea></div>
+            </div>
+            <div class="form-grid" style="margin-top:10px">
+              <div class="field"><label for="hours-mon">Monday</label><input type="text" id="hours-mon" placeholder="8:00 AM – 5:00 PM or Closed"></div>
+              <div class="field"><label for="hours-tue">Tuesday</label><input type="text" id="hours-tue" placeholder="8:00 AM – 5:00 PM or Closed"></div>
+              <div class="field"><label for="hours-wed">Wednesday</label><input type="text" id="hours-wed" placeholder="8:00 AM – 5:00 PM or Closed"></div>
+              <div class="field"><label for="hours-thu">Thursday</label><input type="text" id="hours-thu" placeholder="8:00 AM – 5:00 PM or Closed"></div>
+              <div class="field"><label for="hours-fri">Friday</label><input type="text" id="hours-fri" placeholder="8:00 AM – 5:00 PM or Closed"></div>
+              <div class="field"><label for="hours-sat">Saturday</label><input type="text" id="hours-sat" placeholder="Closed"></div>
+              <div class="field"><label for="hours-sun">Sunday</label><input type="text" id="hours-sun" placeholder="Closed"></div>
+            </div>
+          </div>
+          <div class="editor-card" style="margin-top:16px">
+            <div class="editor-card__head">
+              <div>
+                <div class="editor-card__tag">Contact Panel</div>
+                <div class="editor-card__title">Where to Find Us</div>
+              </div>
+            </div>
+            <div class="form-grid">
+              <div class="field"><label for="contact-heading">Panel Heading</label><input type="text" id="contact-heading" placeholder="Office of Student Affairs"></div>
+              <div class="field"><label for="contact-blurb">Panel Blurb</label><textarea id="contact-blurb" placeholder="Emilio Aguinaldo College — Cavite Campus…"></textarea></div>
+              <div class="field"><label for="contact-address">Address</label><textarea id="contact-address" placeholder="Gov. D. Mangubat Ave., Brgy. Burol Main, Dasmariñas, Cavite 4114, Philippines"></textarea></div>
+              <div class="field"><label for="contact-email">Email</label><input type="email" id="contact-email" placeholder="studentaffairs.cvt@eac.edu.ph"></div>
+              <div class="field"><label for="contact-phone">Phone</label><input type="text" id="contact-phone" placeholder="(046) 416-43-00"></div>
+              <div class="field"><label for="contact-best-time">Best Time to Visit</label><textarea id="contact-best-time" placeholder="9:00 AM – 11:00 AM and 2:00 PM – 4:00 PM tend to have the shortest wait…"></textarea></div>
+              <div class="field"><label for="contact-anytime">Anytime Note</label><textarea id="contact-anytime" placeholder="Open Ask OSA from any page…"></textarea></div>
+            </div>
+          </div>
+        </div>
+        <div class="panel-foot">
+          <button class="btn btn-primary" id="save-where-btn">
+            <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Save Office Hours &amp; Contact
+          </button>
+        </div>
+      </div>
+    </div>
   </main>
 </div>
 
@@ -493,7 +625,54 @@
       { title: 'Scholarship Application', link: 'https://www.eac.edu.ph/wp-content/uploads/2021/08/QF-OSA-010-07.15.2021-Rev.01-Scholarship-Application-OSA-FORMS-2021-2.doc' },
       { title: 'Incident Report Form', link: 'https://www.eac.edu.ph/wp-content/uploads/2021/08/QF-OSA-012-07.15.2021-Rev.01-Incident-Report.doc' },
       { title: 'Academic Leave Form', link: 'https://www.eac.edu.ph/wp-content/uploads/2021/08/QF-OSA-013-07.15.2021-Rev.0Academic-Leave-of-Absence-Application-Form.doc' }
-    ]
+    ],
+    flow: {
+      title: 'From a Question to a Resolved Transaction',
+      description: 'Every OSA concern follows the same predictable flow. Start with the assistant, get verified when needed, then move to the right module to finish the task.',
+      steps: [
+        { num: '01', title: 'Ask', desc: 'Open Ask OSA and describe your concern in plain language. The assistant routes you to the matching service or document.', meta: 'Takes seconds' },
+        { num: '02', title: 'Verify', desc: 'For sensitive actions like Lost & Found claims or appointments, secure email verification confirms it is really you.', meta: 'Student email' },
+        { num: '03', title: 'Schedule', desc: 'Book a visit when needed. Track the appointment in real time — submitted, scheduled, waiting, completed.', meta: 'Live timeline' },
+        { num: '04', title: 'Resolve', desc: 'Walk in, finish your transaction, and close the loop. The portal keeps a record so the next request is even faster.', meta: 'Closed loop' }
+      ]
+    },
+    faq: {
+      title: 'Quick Answers Before You Reach Out',
+      description: 'Common questions answered here. For anything not on this list, Ask OSA carries the full verified knowledge base.',
+      footer: 'Did not find your answer? Open Ask OSA — it carries the full verified knowledge base and connects you to staff when needed.',
+      items: [
+        { tag: 'Lost & Found', question: 'How do I claim an item I lost on campus?', answer: 'Browse the Lost & Found board, note the reference code, then open Ask OSA and start the guided claim. You will be asked for proof of ownership.' },
+        { tag: 'Documents', question: 'Where do I request a Good Moral Certificate?', answer: 'Submit through the OSA office during posted hours. Bring your school ID and any required clearance. Ask OSA can list the latest requirements.' },
+        { tag: 'Scholarships', question: 'How can I apply for an OSA-handled scholarship?', answer: 'Download the Scholarship Application form from the manual and forms section, prepare the listed attachments, then submit at the OSA office for review.' },
+        { tag: 'Conduct', question: 'How do I file an incident report?', answer: 'Use the Incident Report Form in the forms section. Submit at the OSA office. Reports are reviewed under existing student conduct guidelines.' },
+        { tag: 'ID Processing', question: 'What if I lost my school ID?', answer: 'Ask OSA for the current ID replacement steps. You will be guided through the form, the fee details, and where to claim the reprinted ID.' },
+        { tag: 'Activities', question: 'Where do student organizations register events?', answer: 'Coordinate through OSA under the Learner Activity Program (LAAP). Ask OSA can outline the steps, required signatories, and submission window.' }
+      ]
+    },
+    where: {
+      title: 'Office Hours, Location, and Direct Lines',
+      description: 'Plan your visit ahead. The OSA office serves walk-ins during posted hours and accepts inquiries through email and phone outside the chat.',
+      hours: {
+        heading: 'Open for student transactions',
+        blurb: 'Manila local time. Holidays and academic suspensions may affect availability — check the announcements page for short-notice updates.',
+        mon: '8:00 AM – 5:00 PM',
+        tue: '8:00 AM – 5:00 PM',
+        wed: '8:00 AM – 5:00 PM',
+        thu: '8:00 AM – 5:00 PM',
+        fri: '8:00 AM – 5:00 PM',
+        sat: 'Closed',
+        sun: 'Closed'
+      },
+      contact: {
+        heading: 'Office of Student Affairs',
+        blurb: 'Emilio Aguinaldo College — Cavite Campus. Look for OSA signage along the main academic corridor.',
+        address: 'Gov. D. Mangubat Ave., Brgy. Burol Main, Dasmariñas, Cavite 4114, Philippines',
+        email: 'studentaffairs.cvt@eac.edu.ph',
+        phone: '(046) 416-43-00',
+        bestTime: '9:00 AM – 11:00 AM and 2:00 PM – 4:00 PM tend to have the shortest wait at the counter.',
+        anytime: 'Open Ask OSA from any page in the bottom-right corner — available outside office hours.'
+      }
+    }
   };
 
   let remoteState = {};
@@ -518,12 +697,18 @@
     const services = parseMaybeJson(data.services);
     const manual = parseMaybeJson(data.manual) || {};
     const forms = parseMaybeJson(data.forms);
+    const flow = parseMaybeJson(data.flow) || {};
+    const faq = parseMaybeJson(data.faq) || {};
+    const where = parseMaybeJson(data.where) || {};
     return {
       hero,
       slides: Array.isArray(slides) ? slides : [],
       services: Array.isArray(services) ? services : [],
       manual,
-      forms: Array.isArray(forms) ? forms : []
+      forms: Array.isArray(forms) ? forms : [],
+      flow,
+      faq,
+      where
     };
   }
 
@@ -534,6 +719,9 @@
       services: JSON.stringify(Array.isArray(data.services) ? data.services : []),
       manual: JSON.stringify(data.manual || {}),
       forms: JSON.stringify(Array.isArray(data.forms) ? data.forms : []),
+      flow: JSON.stringify(data.flow || {}),
+      faq: JSON.stringify(data.faq || {}),
+      where: JSON.stringify(data.where || {}),
       hero_title: (data.hero && data.hero.title) || '',
       hero_subtitle: Array.isArray(data.hero && data.hero.subtitles) ? data.hero.subtitles.filter(Boolean).join(' | ') : ''
     };
@@ -553,12 +741,32 @@
   const getData = () => Object.assign({}, remoteState || {}, adminDB.get(DB) || {});
   const mergeData = () => {
     const saved = getData();
+    const savedFlow = saved.flow && typeof saved.flow === 'object' ? saved.flow : {};
+    const savedFaq = saved.faq && typeof saved.faq === 'object' ? saved.faq : {};
+    const savedWhere = saved.where && typeof saved.where === 'object' ? saved.where : {};
     return {
       hero: Object.assign({}, DEFAULTS.hero, saved.hero || {}),
       slides: Array.isArray(saved.slides) && saved.slides.length ? saved.slides : DEFAULTS.slides,
       services: Array.isArray(saved.services) && saved.services.length ? saved.services : DEFAULTS.services,
       manual: Object.assign({}, DEFAULTS.manual, saved.manual || {}),
-      forms: Array.isArray(saved.forms) && saved.forms.length ? saved.forms : DEFAULTS.forms
+      forms: Array.isArray(saved.forms) && saved.forms.length ? saved.forms : DEFAULTS.forms,
+      flow: {
+        title: savedFlow.title || DEFAULTS.flow.title,
+        description: savedFlow.description || DEFAULTS.flow.description,
+        steps: Array.isArray(savedFlow.steps) && savedFlow.steps.length ? savedFlow.steps : DEFAULTS.flow.steps
+      },
+      faq: {
+        title: savedFaq.title || DEFAULTS.faq.title,
+        description: savedFaq.description || DEFAULTS.faq.description,
+        footer: savedFaq.footer || DEFAULTS.faq.footer,
+        items: Array.isArray(savedFaq.items) && savedFaq.items.length ? savedFaq.items : DEFAULTS.faq.items
+      },
+      where: {
+        title: savedWhere.title || DEFAULTS.where.title,
+        description: savedWhere.description || DEFAULTS.where.description,
+        hours: Object.assign({}, DEFAULTS.where.hours, savedWhere.hours || {}),
+        contact: Object.assign({}, DEFAULTS.where.contact, savedWhere.contact || {})
+      }
     };
   };
   const persistData = (data) => {
@@ -783,13 +991,147 @@
     }));
   }
 
+  let flowStepsState = [];
+  let faqItemsState = [];
+
+  function renderFlowPanel(flow) {
+    document.getElementById('flow-section-title').value = flow.title || '';
+    document.getElementById('flow-section-desc').value = flow.description || '';
+    flowStepsState = (Array.isArray(flow.steps) ? flow.steps : []).map((s) => ({
+      num: s.num || '', title: s.title || '', desc: s.desc || '', meta: s.meta || ''
+    }));
+    const list = document.getElementById('flow-list');
+    list.innerHTML = flowStepsState.map((step, index) => `
+      <div class="editor-card flow-item">
+        <div class="editor-card__head">
+          <div><div class="editor-card__tag">Step ${index + 1}</div><div class="editor-card__title">${escapeHtml(step.title || 'New Step')}</div></div>
+          <button class="icon-button" type="button" onclick="window.removeFlowStep(${index})" aria-label="Remove step">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>
+          </button>
+        </div>
+        <div class="form-grid">
+          <div class="field"><label>Step Number</label><input type="text" class="flow-num" value="${escapeAttr(step.num || '')}" placeholder="01"></div>
+          <div class="field"><label>Step Title</label><input type="text" class="flow-title" value="${escapeAttr(step.title || '')}" placeholder="Ask"></div>
+          <div class="field"><label>Meta Label</label><input type="text" class="flow-meta" value="${escapeAttr(step.meta || '')}" placeholder="Takes seconds"></div>
+          <div class="field"><label>Description</label><textarea class="flow-desc" placeholder="Describe this step for students">${escapeHtml(step.desc || '')}</textarea></div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function collectFlow() {
+    const items = Array.from(document.querySelectorAll('.flow-item')).map((wrap) => ({
+      num: wrap.querySelector('.flow-num').value.trim(),
+      title: wrap.querySelector('.flow-title').value.trim(),
+      desc: wrap.querySelector('.flow-desc').value.trim(),
+      meta: wrap.querySelector('.flow-meta').value.trim()
+    }));
+    return {
+      title: document.getElementById('flow-section-title').value.trim(),
+      description: document.getElementById('flow-section-desc').value.trim(),
+      steps: items
+    };
+  }
+
+  function renderFaqPanel(faq) {
+    document.getElementById('faq-section-title').value = faq.title || '';
+    document.getElementById('faq-section-desc').value = faq.description || '';
+    document.getElementById('faq-foot-text').value = faq.footer || '';
+    faqItemsState = (Array.isArray(faq.items) ? faq.items : []).map((i) => ({
+      tag: i.tag || '', question: i.question || '', answer: i.answer || ''
+    }));
+    const list = document.getElementById('faq-list');
+    list.innerHTML = faqItemsState.map((item, index) => `
+      <div class="editor-card faq-item-row">
+        <div class="editor-card__head">
+          <div><div class="editor-card__tag">FAQ ${index + 1}</div><div class="editor-card__title">${escapeHtml(item.question || 'New question')}</div></div>
+          <button class="icon-button" type="button" onclick="window.removeFaqItem(${index})" aria-label="Remove FAQ">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>
+          </button>
+        </div>
+        <div class="form-grid">
+          <div class="field"><label>Tag</label><input type="text" class="faq-tag" value="${escapeAttr(item.tag || '')}" placeholder="Lost & Found"></div>
+          <div class="field"><label>Question</label><input type="text" class="faq-question" value="${escapeAttr(item.question || '')}" placeholder="How do I…"></div>
+          <div class="field"><label>Answer</label><textarea class="faq-answer" placeholder="Short answer shown on the home page">${escapeHtml(item.answer || '')}</textarea></div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function collectFaq() {
+    const items = Array.from(document.querySelectorAll('.faq-item-row')).map((wrap) => ({
+      tag: wrap.querySelector('.faq-tag').value.trim(),
+      question: wrap.querySelector('.faq-question').value.trim(),
+      answer: wrap.querySelector('.faq-answer').value.trim()
+    }));
+    return {
+      title: document.getElementById('faq-section-title').value.trim(),
+      description: document.getElementById('faq-section-desc').value.trim(),
+      footer: document.getElementById('faq-foot-text').value.trim(),
+      items: items
+    };
+  }
+
+  function renderWherePanel(where) {
+    document.getElementById('where-section-title').value = where.title || '';
+    document.getElementById('where-section-desc').value = where.description || '';
+    const h = where.hours || {};
+    document.getElementById('hours-heading').value = h.heading || '';
+    document.getElementById('hours-blurb').value = h.blurb || '';
+    document.getElementById('hours-mon').value = h.mon || '';
+    document.getElementById('hours-tue').value = h.tue || '';
+    document.getElementById('hours-wed').value = h.wed || '';
+    document.getElementById('hours-thu').value = h.thu || '';
+    document.getElementById('hours-fri').value = h.fri || '';
+    document.getElementById('hours-sat').value = h.sat || '';
+    document.getElementById('hours-sun').value = h.sun || '';
+    const c = where.contact || {};
+    document.getElementById('contact-heading').value = c.heading || '';
+    document.getElementById('contact-blurb').value = c.blurb || '';
+    document.getElementById('contact-address').value = c.address || '';
+    document.getElementById('contact-email').value = c.email || '';
+    document.getElementById('contact-phone').value = c.phone || '';
+    document.getElementById('contact-best-time').value = c.bestTime || '';
+    document.getElementById('contact-anytime').value = c.anytime || '';
+  }
+
+  function collectWhere() {
+    return {
+      title: document.getElementById('where-section-title').value.trim(),
+      description: document.getElementById('where-section-desc').value.trim(),
+      hours: {
+        heading: document.getElementById('hours-heading').value.trim(),
+        blurb: document.getElementById('hours-blurb').value.trim(),
+        mon: document.getElementById('hours-mon').value.trim(),
+        tue: document.getElementById('hours-tue').value.trim(),
+        wed: document.getElementById('hours-wed').value.trim(),
+        thu: document.getElementById('hours-thu').value.trim(),
+        fri: document.getElementById('hours-fri').value.trim(),
+        sat: document.getElementById('hours-sat').value.trim(),
+        sun: document.getElementById('hours-sun').value.trim()
+      },
+      contact: {
+        heading: document.getElementById('contact-heading').value.trim(),
+        blurb: document.getElementById('contact-blurb').value.trim(),
+        address: document.getElementById('contact-address').value.trim(),
+        email: document.getElementById('contact-email').value.trim(),
+        phone: document.getElementById('contact-phone').value.trim(),
+        bestTime: document.getElementById('contact-best-time').value.trim(),
+        anytime: document.getElementById('contact-anytime').value.trim()
+      }
+    };
+  }
+
   function buildPayload() {
     return {
       hero: collectHero(),
       slides: collectSlides(),
       services: collectServices(),
       manual: collectManual(),
-      forms: collectForms()
+      forms: collectForms(),
+      flow: collectFlow(),
+      faq: collectFaq(),
+      where: collectWhere()
     };
   }
 
@@ -799,6 +1141,9 @@
     renderSlides(data.slides);
     renderServices(data.services);
     renderManualForms(data.manual, data.forms);
+    renderFlowPanel(data.flow);
+    renderFaqPanel(data.faq);
+    renderWherePanel(data.where);
   }
 
   window.removeSlide = (index) => {
@@ -816,6 +1161,19 @@
     renderManualForms(collectManual(), formsState);
   };
 
+  window.removeFlowStep = (index) => {
+    // Capture edits in the other fields before re-rendering so nothing is lost.
+    const current = collectFlow();
+    current.steps.splice(index, 1);
+    renderFlowPanel(current);
+  };
+
+  window.removeFaqItem = (index) => {
+    const current = collectFaq();
+    current.items.splice(index, 1);
+    renderFaqPanel(current);
+  };
+
   function saveSection(section) {
     const payload = buildPayload();
     persistData(payload);
@@ -826,6 +1184,9 @@
   document.getElementById('save-slides-btn').addEventListener('click', () => saveSection('Guide slides'));
   document.getElementById('save-services-btn').addEventListener('click', () => saveSection('OSA services'));
   document.getElementById('save-manual-btn').addEventListener('click', () => saveSection('Manual and forms'));
+  document.getElementById('save-flow-btn').addEventListener('click', () => saveSection('Process flow'));
+  document.getElementById('save-faq-btn').addEventListener('click', () => saveSection('Homepage FAQ'));
+  document.getElementById('save-where-btn').addEventListener('click', () => saveSection('Office hours and contact'));
   document.getElementById('add-slide-btn').addEventListener('click', () => {
     slidesState.push({
       kicker: 'New Guide',
@@ -842,6 +1203,17 @@
   document.getElementById('add-form-btn').addEventListener('click', () => {
     formsState.push({ title: 'New Form Link', link: '' });
     renderManualForms(collectManual(), formsState);
+  });
+  document.getElementById('add-flow-btn').addEventListener('click', () => {
+    const current = collectFlow();
+    const nextNum = String(current.steps.length + 1).padStart(2, '0');
+    current.steps.push({ num: nextNum, title: 'New Step', desc: '', meta: '' });
+    renderFlowPanel(current);
+  });
+  document.getElementById('add-faq-btn').addEventListener('click', () => {
+    const current = collectFaq();
+    current.items.push({ tag: '', question: 'New question?', answer: '' });
+    renderFaqPanel(current);
   });
   document.getElementById('save-all-btn').addEventListener('click', () => {
     persistData(buildPayload());

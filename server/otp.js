@@ -102,16 +102,28 @@ async function sendBrevoEmail(toEmail, otp) {
 
   const senderName = String(process.env.BREVO_SENDER_NAME || "OSA System").trim() || "OSA System";
 
+  const html =
+    `<div style="font-family:system-ui,sans-serif;max-width:560px;color:#191412">` +
+    `<p style="font-size:13px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#841a2d;margin:0 0 6px">OSA TRANSACTION GUIDE — EMAIL VERIFICATION</p>` +
+    `<p style="font-size:22px;font-weight:800;margin:0 0 20px;letter-spacing:-0.02em">Your one-time verification code</p>` +
+    `<p style="font-size:14px;line-height:1.6;margin:0 0 16px;color:#191412">Use the code below to verify your student email and access OSA Chat Support. This code is valid for <strong>5 minutes</strong> and can only be used once.</p>` +
+    `<div style="background:#fff8f0;border-left:4px solid #841a2d;padding:20px 24px;margin-bottom:20px;text-align:center">` +
+      `<p style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#65574d;margin:0 0 10px">Verification Code</p>` +
+      `<p style="font-size:40px;font-weight:800;letter-spacing:0.22em;color:#841a2d;margin:0;font-variant-numeric:tabular-nums">${otp}</p>` +
+    `</div>` +
+    `<table style="width:100%;border-collapse:collapse;margin-bottom:20px">` +
+      `<tr><td style="padding:8px 12px;background:#f5ede0;font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#65574d;width:120px">Sent to</td><td style="padding:8px 12px;background:#fffaf3;font-size:14px">${toEmail}</td></tr>` +
+      `<tr><td style="padding:8px 12px;background:#f5ede0;font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#65574d">Expires</td><td style="padding:8px 12px;background:#fffaf3;font-size:14px">5 minutes from send time</td></tr>` +
+    `</table>` +
+    `<p style="font-size:12px;color:#65574d;margin-top:4px">If you did not request this code, you can safely ignore this email. Do not share this code with anyone.</p>` +
+    `<p style="font-size:12px;color:#65574d;margin-top:8px">This is an automated message from the OSA Transaction Guide Portal.</p>` +
+    `</div>`;
+
   const body = {
     sender: { name: senderName, email: senderEmail },
     to: [{ email: toEmail }],
-    subject: "OTP Verification",
-    htmlContent:
-      `<p style="font-family:system-ui,sans-serif;font-size:16px;line-height:1.5">` +
-      `Your one-time code is:</p>` +
-      `<p style="font-family:system-ui,sans-serif;font-size:28px;font-weight:700;letter-spacing:0.08em;margin:16px 0">` +
-      `${otp}</p>` +
-      `<p style="font-family:system-ui,sans-serif;font-size:14px;color:#555">This code expires in 5 minutes. If you did not request it, you can ignore this email.</p>`,
+    subject: "Your OSA Verification Code",
+    htmlContent: html,
   };
 
   const res = await fetch(BREVO_URL, {

@@ -760,6 +760,76 @@
       .btn-lf-schedule { width: 100%; }
     }
 
+    /* ── Visit / Appointment schedule panel (modern redesign) ── */
+    #visit-schedule-panel {
+      background: #f8faff;
+      border-bottom: 1px solid #dbeafe;
+    }
+    #visit-schedule-panel .lf-schedule-panel__title {
+      color: #1e40af;
+    }
+    #visit-schedule-panel .lf-schedule-panel__meta {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      font-size: 12.5px;
+      line-height: 1.6;
+      margin-bottom: 12px;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 4px 10px;
+    }
+    #visit-schedule-panel .lf-schedule-panel__scheduled {
+      background: #fff;
+      border: 1.5px solid #bfdbfe;
+      border-left: 4px solid #3b82f6;
+      color: #1e3a8a;
+      font-weight: 600;
+    }
+    #visit-schedule-panel input[type="datetime-local"],
+    #visit-schedule-panel input[type="text"],
+    #visit-schedule-panel textarea {
+      border-color: #bfdbfe;
+    }
+    #visit-schedule-panel input:focus,
+    #visit-schedule-panel textarea:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+    }
+    #visit-schedule-panel .btn-lf-schedule {
+      background: #1d4ed8;
+      box-shadow: 0 4px 12px rgba(29,78,216,0.25);
+      width: 100%;
+    }
+    #visit-schedule-panel .btn-lf-schedule:hover:not(:disabled) {
+      background: #1e40af;
+      filter: none;
+    }
+    .visit-pref-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+    .visit-pref-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 99px;
+      background: #dbeafe;
+      color: #1e40af;
+      letter-spacing: 0.03em;
+    }
+    .visit-pref-chip--empty {
+      background: #f1f5f9;
+      color: #94a3b8;
+      font-style: italic;
+    }
+
     /* ── Concern card (shown at top of thread) ──────────── */
     .concern-card {
       margin: 0 0 10px;
@@ -1261,6 +1331,25 @@
           <button type="button" class="btn-lf-schedule" id="btn-lf-schedule">Schedule / update visit</button>
         </div>
 
+        <div class="lf-schedule-panel hidden" id="visit-schedule-panel">
+          <div class="lf-schedule-panel__title">Visit / Appointment</div>
+          <div class="lf-schedule-panel__meta" id="visit-meta"></div>
+          <div class="lf-schedule-panel__scheduled" id="visit-scheduled-display"></div>
+          <div class="field-row">
+            <label for="visit-appt-when">Date &amp; time</label>
+            <input type="datetime-local" id="visit-appt-when" autocomplete="off">
+          </div>
+          <div class="field-row">
+            <label for="visit-appt-loc">Location</label>
+            <input type="text" id="visit-appt-loc" placeholder="OSA Office" maxlength="200" autocomplete="off">
+          </div>
+          <div class="field-row">
+            <label for="visit-appt-notes">Note to student</label>
+            <textarea id="visit-appt-notes" maxlength="2000" placeholder="e.g. Bring your school ID and this Case ID"></textarea>
+          </div>
+          <button type="button" class="btn-lf-schedule" id="btn-visit-schedule">Confirm schedule &amp; notify student</button>
+        </div>
+
         <div class="convo-thread hidden" id="convo-thread"></div>
 
         <div class="convo-composer hidden" id="convo-composer">
@@ -1505,6 +1594,14 @@
   var lfApptNotes     = document.getElementById('lf-appt-notes');
   var btnLfSchedule   = document.getElementById('btn-lf-schedule');
 
+  var visitSchedulePanel = document.getElementById('visit-schedule-panel');
+  var visitMeta          = document.getElementById('visit-meta');
+  var visitScheduledDisp = document.getElementById('visit-scheduled-display');
+  var visitApptWhen      = document.getElementById('visit-appt-when');
+  var visitApptLoc       = document.getElementById('visit-appt-loc');
+  var visitApptNotes     = document.getElementById('visit-appt-notes');
+  var btnVisitSchedule   = document.getElementById('btn-visit-schedule');
+
   /* ── Helpers ── */
   function fmtTime(iso) {
     if (!iso) return '';
@@ -1630,6 +1727,50 @@
     btnLfSchedule.disabled = t.status === 'resolved';
   }
 
+  function fillVisitSchedulePanel(t) {
+    if (!visitSchedulePanel) return;
+    if (!t || t.ticket_type !== 'appointment') {
+      visitSchedulePanel.classList.add('hidden');
+      return;
+    }
+    visitSchedulePanel.classList.remove('hidden');
+
+    function chip(label, value) {
+      if (value) {
+        return '<span class="visit-pref-chip">' + escapeHtml(label) + ': ' + escapeHtml(value) + '</span>';
+      }
+      return '<span class="visit-pref-chip visit-pref-chip--empty">' + escapeHtml(label) + ': not set</span>';
+    }
+
+    var statusMap = {
+      pending_staff_schedule: 'Pending schedule',
+      approved: 'Approved',
+      scheduled: 'Scheduled',
+    };
+    var statusLabel = statusMap[t.appointment_status] || (t.appointment_status || 'Pending');
+
+    visitMeta.innerHTML =
+      '<div class="visit-pref-chips">' +
+        chip('Day', t.preferred_day) +
+        chip('Time', t.preferred_time_window) +
+        '<span class="visit-pref-chip" style="background:#e0f2fe;color:#075985">' + escapeHtml(statusLabel) + '</span>' +
+      '</div>' +
+      (t.concern ? '<div style="font-size:12px;color:#475569;line-height:1.5;word-break:break-word">' + escapeHtml(String(t.concern).replace(/^OSA visit request — Purpose:\s*/i, '').slice(0, 180)) + '</div>' : '');
+
+    if (t.appointment_datetime) {
+      visitScheduledDisp.innerHTML =
+        '<strong style="color:#1e40af">Confirmed:</strong> ' + escapeHtml(fmtDate(t.appointment_datetime)) +
+        (t.appointment_location ? ' &nbsp;·&nbsp; ' + escapeHtml(t.appointment_location) : '');
+    } else {
+      visitScheduledDisp.innerHTML = '<span style="color:#64748b">No confirmed schedule yet — fill in below and notify the student.</span>';
+    }
+
+    visitApptWhen.value = toDatetimeLocalValue(t.appointment_datetime);
+    visitApptLoc.value = t.appointment_location || 'OSA Office';
+    visitApptNotes.value = t.appointment_notes ? String(t.appointment_notes) : '';
+    btnVisitSchedule.disabled = t.status === 'resolved';
+  }
+
   function clearActiveConversationUi(reason) {
     stopPolling();
     state.currentCaseId = null;
@@ -1656,6 +1797,7 @@
     convoComposer.classList.add('hidden');
     convoEmpty.classList.remove('hidden');
     if (lfSchedulePanel) lfSchedulePanel.classList.add('hidden');
+    if (visitSchedulePanel) visitSchedulePanel.classList.add('hidden');
     if (sessionLimitPanel) sessionLimitPanel.classList.add('hidden');
     if (sessionLimitHint) sessionLimitHint.textContent = '';
     syncResponsivePanels(false);
@@ -1892,6 +2034,8 @@
       : '';
     var lfBadge = (t.ticket_type === 'claim')
       ? '<span style="font-size:10px;font-weight:800;background:#fde68a;color:#78350f;padding:2px 7px;border-radius:99px;margin-left:6px;letter-spacing:0.04em">LF CLAIM</span>'
+      : (t.ticket_type === 'appointment')
+      ? '<span style="font-size:10px;font-weight:800;background:#dbeafe;color:#1e40af;padding:2px 7px;border-radius:99px;margin-left:6px;letter-spacing:0.04em">VISIT</span>'
       : '';
     var statusClass = statusBadgeClass(t);
     var endPrompt = t.needs_end_session_prompt
@@ -2027,6 +2171,7 @@
       : 'Type a message to the student…';
 
     fillLfSchedulePanel(t);
+    fillVisitSchedulePanel(t);
 
     syncResponsivePanels(true);
 
@@ -2647,6 +2792,54 @@
         showToast('Network error. Please try again.', { variant: 'danger', duration: 4500 });
       });
   });
+
+  if (btnVisitSchedule) {
+    btnVisitSchedule.addEventListener('click', function () {
+      if (!state.currentCaseId || state.busy) return;
+      var when = (visitApptWhen && visitApptWhen.value || '').trim();
+      if (!when) {
+        showToast('Choose a confirmed date and time.', { variant: 'danger', duration: 4500 });
+        return;
+      }
+      state.busy = true;
+      btnVisitSchedule.disabled = true;
+      fetch(API + '/chat/tickets/' + encodeURIComponent(state.currentCaseId) + '/appointment', {
+        method: 'POST',
+        headers: apiHeaders(),
+        body: JSON.stringify({
+          staff_name: staffName(),
+          appointment_datetime: when,
+          appointment_location: (visitApptLoc && visitApptLoc.value || '').trim() || 'OSA Office',
+          appointment_notes: (visitApptNotes && visitApptNotes.value || '').trim(),
+        }),
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          state.busy = false;
+          if (!data.success) {
+            btnVisitSchedule.disabled = state.currentTicketStatus === 'resolved';
+            showToast('Could not confirm schedule: ' + (data.message || 'Unknown error'), { variant: 'danger', duration: 4500 });
+            return;
+          }
+          loadMessages(state.currentSessionId, state.currentConcern);
+          fetch(API + '/chat/tickets?status=' + encodeURIComponent(state.currentStatus) + '&_ts=' + Date.now(), { headers: apiHeaders(), cache: 'no-store' })
+            .then(function (r) { return r.json(); })
+            .then(function (d) {
+              if (!d.success || !d.tickets) return;
+              var found = d.tickets.filter(function (x) { return x.case_id === state.currentCaseId; })[0];
+              if (found) fillVisitSchedulePanel(found);
+            })
+            .catch(function () {});
+          loadTickets({ quiet: true });
+          showToast('Schedule confirmed and student notified.', { variant: 'success', duration: 3000 });
+        })
+        .catch(function () {
+          state.busy = false;
+          btnVisitSchedule.disabled = false;
+          showToast('Network error. Please try again.', { variant: 'danger', duration: 4500 });
+        });
+    });
+  }
 
   /* ── Presence: staff typing + student-seen receipts ────────────── */
   // The student widget listens on its per-session SSE stream for staff_typing /

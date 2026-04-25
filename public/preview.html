@@ -2931,6 +2931,11 @@
             background: rgba(199, 154, 73, 0.10);
         }
 
+        .hours-table tr.is-today.is-closed th,
+        .hours-table tr.is-today.is-closed td {
+            background: rgba(180, 83, 9, 0.08);
+        }
+
         .hours-now {
             margin-top: 14px;
             padding: 12px 14px;
@@ -3570,23 +3575,152 @@
                             </div>
                         </article>`).join("");
             };
-            const homeContent = readJSONStorage("osaHomeContent", {});
-            const mergedHome = {
-                hero: Object.assign({}, homeDefaults.hero, homeContent.hero || {}),
-                slides: Array.isArray(homeContent.slides) && homeContent.slides.length ? homeContent.slides : homeDefaults.slides,
-                services: Array.isArray(homeContent.services) && homeContent.services.length ? homeContent.services : homeDefaults.services,
-                manual: Object.assign({}, homeDefaults.manual, homeContent.manual || {}),
-                forms: Array.isArray(homeContent.forms) && homeContent.forms.length ? homeContent.forms : homeDefaults.forms
+            const parseMaybeJson = (value) => {
+                if (value == null) return null;
+                if (typeof value === "object") return value;
+                if (typeof value !== "string") return null;
+                const trimmed = value.trim();
+                if (!trimmed) return null;
+                try { return JSON.parse(trimmed); } catch (e) { return null; }
             };
-            if (homeHeroTitle) homeHeroTitle.textContent = mergedHome.hero.title || homeDefaults.hero.title;
-            if (heroSubtitleRotator) heroSubtitleRotator.textContent = (mergedHome.hero.subtitles && mergedHome.hero.subtitles[0]) || homeDefaults.hero.subtitles[0];
-            renderGuideSlides(mergedHome.slides);
-            renderServices(mergedHome.services);
-            if (manualCover && mergedHome.manual.cover) manualCover.src = mergedHome.manual.cover;
-            if (manualTitle) manualTitle.textContent = mergedHome.manual.title || homeDefaults.manual.title;
-            if (manualDescription) manualDescription.textContent = mergedHome.manual.description || homeDefaults.manual.description;
-            if (manualLink && mergedHome.manual.link) manualLink.href = mergedHome.manual.link;
-            renderManualForms(mergedHome.forms);
+            const buildMergedHome = (raw) => {
+                const hc = raw && typeof raw === "object" ? raw : {};
+                const flow = hc.flow && typeof hc.flow === "object" ? hc.flow : {};
+                const faq = hc.faq && typeof hc.faq === "object" ? hc.faq : {};
+                const where = hc.where && typeof hc.where === "object" ? hc.where : {};
+                return {
+                    hero: Object.assign({}, homeDefaults.hero, hc.hero || {}),
+                    slides: Array.isArray(hc.slides) && hc.slides.length ? hc.slides : homeDefaults.slides,
+                    services: Array.isArray(hc.services) && hc.services.length ? hc.services : homeDefaults.services,
+                    manual: Object.assign({}, homeDefaults.manual, hc.manual || {}),
+                    forms: Array.isArray(hc.forms) && hc.forms.length ? hc.forms : homeDefaults.forms,
+                    flow: { title: flow.title || '', description: flow.description || '', steps: Array.isArray(flow.steps) ? flow.steps : [] },
+                    faq: { title: faq.title || '', description: faq.description || '', footer: faq.footer || '', items: Array.isArray(faq.items) ? faq.items : [] },
+                    where: {
+                        title: where.title || '',
+                        description: where.description || '',
+                        hours: where.hours && typeof where.hours === 'object' ? where.hours : {},
+                        contact: where.contact && typeof where.contact === 'object' ? where.contact : {}
+                    }
+                };
+            };
+            const setText = (selector, value) => {
+                const el = typeof selector === 'string' ? document.querySelector(selector) : selector;
+                if (el && value != null && String(value).length) el.textContent = value;
+            };
+            const renderFlow = (flow) => {
+                if (!flow) return;
+                setText('#flow-title', flow.title);
+                const descEl = document.querySelector('#how-it-works .section-copy p');
+                if (descEl && flow.description) descEl.textContent = flow.description;
+                const gridEl = document.querySelector('#how-it-works .flow-grid');
+                const steps = Array.isArray(flow.steps) ? flow.steps : [];
+                if (gridEl && steps.length) {
+                    gridEl.innerHTML = steps.map((s) => `<article class="flow-step">
+                        <span class="flow-num">${s.num || ''}</span>
+                        <h3>${s.title || ''}</h3>
+                        <p>${s.desc || ''}</p>
+                        <span class="flow-meta">${s.meta || ''}</span>
+                    </article>`).join('');
+                }
+            };
+            const renderFaq = (faq) => {
+                if (!faq) return;
+                setText('#faq-title', faq.title);
+                const descEl = document.querySelector('#faq .section-copy p');
+                if (descEl && faq.description) descEl.textContent = faq.description;
+                const gridEl = document.querySelector('#faq .faq-grid');
+                const items = Array.isArray(faq.items) ? faq.items : [];
+                if (gridEl && items.length) {
+                    gridEl.innerHTML = items.map((i) => `<article class="faq-item">
+                        <span class="faq-tag">${i.tag || ''}</span>
+                        <h3>${i.question || ''}</h3>
+                        <p>${i.answer || ''}</p>
+                    </article>`).join('');
+                }
+                const footP = document.querySelector('#faq .faq-foot p');
+                if (footP && faq.footer) footP.innerHTML = faq.footer;
+            };
+            const renderWhere = (where) => {
+                if (!where) return;
+                setText('#where-title', where.title);
+                const descEl = document.querySelector('#where .section-copy p');
+                if (descEl && where.description) descEl.textContent = where.description;
+                const hours = where.hours || {};
+                const panels = document.querySelectorAll('#where .where-panel');
+                if (panels[0]) {
+                    const h3 = panels[0].querySelector('h3');
+                    const blurb = panels[0].querySelector('p');
+                    if (h3 && hours.heading) h3.textContent = hours.heading;
+                    if (blurb && hours.blurb) blurb.textContent = hours.blurb;
+                    const rowMap = { '1': hours.mon, '2': hours.tue, '3': hours.wed, '4': hours.thu, '5': hours.fri, '6': hours.sat, '0': hours.sun };
+                    Object.keys(rowMap).forEach((day) => {
+                        const row = panels[0].querySelector(`tr[data-day="${day}"] td`);
+                        if (row && rowMap[day]) {
+                            row.textContent = rowMap[day];
+                            row.classList.toggle('is-closed', /closed/i.test(rowMap[day]));
+                        }
+                    });
+                }
+                const contact = where.contact || {};
+                if (panels[1]) {
+                    const h3 = panels[1].querySelector('h3');
+                    const blurb = panels[1].querySelector('p');
+                    if (h3 && contact.heading) h3.textContent = contact.heading;
+                    if (blurb && contact.blurb) blurb.textContent = contact.blurb;
+                    const rows = panels[1].querySelectorAll('.contact-row .contact-value');
+                    if (rows[0] && contact.address) rows[0].textContent = contact.address;
+                    if (rows[1] && contact.email) rows[1].innerHTML = `<a href="mailto:${contact.email}">${contact.email}</a>`;
+                    if (rows[2] && contact.phone) rows[2].innerHTML = `<a href="tel:${String(contact.phone).replace(/[^+\d]/g, '')}">${contact.phone}</a>`;
+                    if (rows[3] && contact.bestTime) rows[3].textContent = contact.bestTime;
+                    if (rows[4] && contact.anytime) rows[4].textContent = contact.anytime;
+                }
+            };
+            const applyHomeContent = (mergedHome, opts) => {
+                const o = opts || {};
+                if (homeHeroTitle) homeHeroTitle.textContent = mergedHome.hero.title || homeDefaults.hero.title;
+                if (heroSubtitleRotator) heroSubtitleRotator.textContent = (mergedHome.hero.subtitles && mergedHome.hero.subtitles[0]) || homeDefaults.hero.subtitles[0];
+                // Slide/rotator DOM nodes are captured later by the hero-guide
+                // rotation logic; re-rendering them after that would break the
+                // captured NodeList. Skip slide re-render on post-DB repaint
+                // unless the caller explicitly opts in.
+                if (!o.skipSlides) renderGuideSlides(mergedHome.slides);
+                renderServices(mergedHome.services);
+                if (manualCover && mergedHome.manual.cover) manualCover.src = mergedHome.manual.cover;
+                if (manualTitle) manualTitle.textContent = mergedHome.manual.title || homeDefaults.manual.title;
+                if (manualDescription) manualDescription.textContent = mergedHome.manual.description || homeDefaults.manual.description;
+                if (manualLink && mergedHome.manual.link) manualLink.href = mergedHome.manual.link;
+                renderManualForms(mergedHome.forms);
+                renderFlow(mergedHome.flow);
+                renderFaq(mergedHome.faq);
+                renderWhere(mergedHome.where);
+            };
+            // First paint from localStorage (instant), then re-paint from DB so
+            // admin edits made in another browser (especially the Services Cards
+            // picture) show up for every visitor.
+            const homeContent = readJSONStorage("osaHomeContent", {});
+            let mergedHome = buildMergedHome(homeContent);
+            applyHomeContent(mergedHome);
+            fetch("/api/v1/content/home", { cache: "no-store" })
+                .then((r) => r.ok ? r.json() : null)
+                .then((payload) => {
+                    if (!payload || payload.success !== true) return;
+                    const raw = payload.data || {};
+                    const dbContent = {
+                        hero: parseMaybeJson(raw.hero) || {},
+                        slides: parseMaybeJson(raw.slides) || [],
+                        services: parseMaybeJson(raw.services) || [],
+                        manual: parseMaybeJson(raw.manual) || {},
+                        forms: parseMaybeJson(raw.forms) || [],
+                        flow: parseMaybeJson(raw.flow) || {},
+                        faq: parseMaybeJson(raw.faq) || {},
+                        where: parseMaybeJson(raw.where) || {}
+                    };
+                    try { localStorage.setItem("osaHomeContent", JSON.stringify(dbContent)); } catch (e) {}
+                    mergedHome = buildMergedHome(dbContent);
+                    applyHomeContent(mergedHome, { skipSlides: true });
+                })
+                .catch(() => {});
             const heroGuideSlides = heroGuideRotator ? Array.from(heroGuideRotator.querySelectorAll(".hero-guide-slide")) : [];
             const heroGuideDots = Array.from(document.querySelectorAll("#hero-guide-dots .hero-guide-dot"));
             let heroCaptions = Array.isArray(mergedHome.hero.subtitles) && mergedHome.hero.subtitles.length

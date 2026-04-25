@@ -1538,14 +1538,11 @@ function registerChatRoutes(app, apiPrefix) {
               : `Your session is now in live human support mode (Case ID: ${activeHumanTicket.case_id}). ` +
                 `AI is paused while OSA staff handles this concern.`;
 
-          // Inline parse of typed claim-visit preferences while in human-mode.
-          // The student widget no longer renders Mon–Fri chips (they overflowed
-          // the bubble), so the student types the day instead — we accept day
-          // and time-window words here so the ticket is updated without
-          // requiring a separate button tap.
+          // Inline parse of typed day/time preferences while in human-mode.
+          // Applies to both claim and appointment ticket types.
           if (
-            activeHumanTicket.ticket_type === "claim" &&
-            activeHumanTicket.appointment_track &&
+            (activeHumanTicket.ticket_type === "claim" || activeHumanTicket.ticket_type === "appointment") &&
+            (activeHumanTicket.ticket_type === "appointment" || activeHumanTicket.appointment_track) &&
             (!activeHumanTicket.preferred_day || !activeHumanTicket.preferred_time_window)
           ) {
             const lcMsg = String(message || "").toLowerCase();
@@ -1598,13 +1595,18 @@ function registerChatRoutes(app, apiPrefix) {
           } else if (activeHumanTicket.ticket_type === "claim" && !activeHumanTicket.appointment_track) {
             humanReply +=
               ` For your visit, choose **Claiming Appointment** or **Private Appointment** using the chat buttons (or type those words).`;
-          } else if (activeHumanTicket.ticket_type === "claim" && activeHumanTicket.appointment_track && (!activeHumanTicket.preferred_day || !activeHumanTicket.preferred_time_window)) {
-            const need = [];
-            if (!activeHumanTicket.preferred_day) need.push("preferred weekday (type Mon, Tue, Wed, Thu, or Fri)");
-            if (!activeHumanTicket.preferred_time_window) need.push("time window (Morning or Afternoon — tap the button or type the word)");
-            humanReply += ` Please share your ${need.join(" and ")}.`;
-          } else if (activeHumanTicket.ticket_type === "claim" && activeHumanTicket.appointment_track && activeHumanTicket.preferred_day && activeHumanTicket.preferred_time_window) {
-            humanReply += ` Recorded preferences — Day: **${activeHumanTicket.preferred_day}**, Time: **${activeHumanTicket.preferred_time_window}**. OSA staff will confirm the final schedule in this chat.`;
+          } else if (
+            (activeHumanTicket.ticket_type === "claim" && activeHumanTicket.appointment_track) ||
+            activeHumanTicket.ticket_type === "appointment"
+          ) {
+            if (!activeHumanTicket.preferred_day || !activeHumanTicket.preferred_time_window) {
+              const need = [];
+              if (!activeHumanTicket.preferred_day) need.push("preferred weekday (type Mon, Tue, Wed, Thu, or Fri)");
+              if (!activeHumanTicket.preferred_time_window) need.push("time window (Morning or Afternoon — tap the button or type the word)");
+              humanReply += ` Please share your ${need.join(" and ")}.`;
+            } else {
+              humanReply += ` Recorded preferences — Day: **${activeHumanTicket.preferred_day}**, Time: **${activeHumanTicket.preferred_time_window}**. OSA staff will confirm the final schedule in this chat.`;
+            }
           }
 
           await persistReply(sessionId, humanReply);
@@ -2297,10 +2299,10 @@ function registerChatRoutes(app, apiPrefix) {
         const row = snap.rows[0] || {};
 
         let summary = "Appointment preference saved.";
-        if (row.appointment_track === "claiming") summary = "Recorded: **Claiming Appointment**.";
-        else if (row.appointment_track === "private") summary = "Recorded: **Private Appointment** (OSA will handle this discreetly).";
-        if (preferredDay) summary += ` Preferred day: **${preferredDay}**.`;
-        if (preferredWindow) summary += ` Time window: **${preferredWindow}**.`;
+        if (row.appointment_track === "claiming") summary = "Recorded: Claiming Appointment.";
+        else if (row.appointment_track === "private") summary = "Recorded: Private Appointment (OSA will handle this discreetly).";
+        if (preferredDay) summary += ` Preferred day: ${preferredDay}.`;
+        if (preferredWindow) summary += ` Time window: ${preferredWindow}.`;
         if (scheduleNote) summary += ` Note stored for staff.`;
 
         await db.query(
@@ -2312,6 +2314,164 @@ function registerChatRoutes(app, apiPrefix) {
         return res.json({ success: true, case_id: caseId, summary });
       } catch (error) {
         return genericError(res, "chat", error);
+      }
+    }
+  );
+
+  // Student: create a visit/appointment request ticket
+  app.post(
+    `${apiPrefix}/chat/visit`,
+    ...[chatMsgLimiter].filter(Boolean),
+    async (req, res) => {
+      const sessionId = String((req.body && req.body.session_id) || "").trim();
+      const purposeRaw = String((req.body && req.body.purpose) || "").trim().slice(0, 500);
+
+      if (!sessionId) {
+        return res.status(400).json({ success: false, message: "session_id is required." });
+      }
+      if (!isValidSessionId(sessionId)) {
+        return res.status(400).json({ success: false, message: "Invalid session_id format." });
+      }
+
+      try {
+        const loaded = await loadSessionRow(sessionId);
+        if (!loaded.found) return res.status(404).json({ success: false, message: "Session not found." });
+        if (loaded.expired) {
+          return res.status(401).json({ success: false, code: "SESSION_EXPIRED", message: "Secure chat session expired. Please verify your email again." });
+        }
+        const { email, student_name } = loaded.session;
+
+        const existing = await findOpenTicketByType(sessionId, "appointment");
+        let caseId = existing;
+        const concern = purposeRaw
+          ? `OSA visit request — Purpose: ${purposeRaw}`
+          : `Student requests a visit or appointment with OSA.`;
+
+        if (!caseId) {
+          const sameDayTicket = await findTodayAppointmentTicketByEmail(email);
+          if (sameDayTicket) {
+            const lockedReply =
+              `You already have an appointment request for today (Case ID: ${sameDayTicket.case_id}). ` +
+              `Please wait for OSA to confirm your schedule, or email OSA for urgent follow-up.`;
+            await db.query(
+              `INSERT INTO chat_messages (session_id, role, content) VALUES ($1, 'assistant', $2)`,
+              [sessionId, lockedReply]
+            );
+            await db.query(`UPDATE chat_sessions SET last_active_at = NOW() WHERE id = $1`, [sessionId]);
+            return res.json({ success: false, code: "VISIT_LOCKED_TODAY", message: lockedReply, case_id: sameDayTicket.case_id });
+          }
+          caseId = await createEscalationTicket(sessionId, email, student_name, concern, { ticket_type: "appointment" });
+        }
+
+        const botMsg = existing
+          ? `You already have an open visit request.\n\n📋 Case ID: **${caseId}**\n\nUse the buttons below to update your preferred day and time. OSA staff will confirm the final schedule.`
+          : `Your visit request has been submitted.\n\n📋 Case ID: **${caseId}**\n\nChoose your preferred day and time below. OSA staff will confirm the schedule.`;
+
+        await db.query(
+          `INSERT INTO chat_messages (session_id, role, content) VALUES ($1, 'assistant', $2)`,
+          [sessionId, botMsg]
+        );
+        await db.query(`UPDATE chat_sessions SET last_active_at = NOW() WHERE id = $1`, [sessionId]);
+
+        return res.json({
+          success: true,
+          case_id: caseId,
+          assistant_message: botMsg,
+          ticket_type: "appointment",
+          reused_case: !!existing,
+        });
+      } catch (error) {
+        return genericError(res, "chat-visit", error);
+      }
+    }
+  );
+
+  // Student: submit / update appointment preferences for a visit ticket
+  app.post(
+    `${apiPrefix}/chat/visit/appointment-preference`,
+    ...[chatMsgLimiter].filter(Boolean),
+    async (req, res) => {
+      const sessionId = String((req.body && req.body.session_id) || "").trim();
+      const caseId = String((req.body && req.body.case_id) || "").trim();
+      const preferredDay = String((req.body && req.body.preferred_day) || "").trim().slice(0, 32);
+      const preferredWindow = String((req.body && req.body.preferred_time_window) || "").trim().slice(0, 32);
+      const scheduleNote = String((req.body && req.body.schedule_note) || "").trim().slice(0, 500);
+
+      if (!sessionId || !caseId) {
+        return res.status(400).json({ success: false, message: "session_id and case_id are required." });
+      }
+      if (!isValidSessionId(sessionId)) {
+        return res.status(400).json({ success: false, message: "Invalid session_id format." });
+      }
+
+      try {
+        const loaded = await loadSessionRow(sessionId);
+        if (!loaded.found) return res.status(404).json({ success: false, message: "Session not found." });
+        if (loaded.expired) {
+          return res.status(401).json({ success: false, code: "SESSION_EXPIRED", message: "Secure chat session expired. Please verify your email again." });
+        }
+
+        const ticketRow = await db.query(
+          `SELECT ticket_type, status FROM escalation_tickets WHERE case_id = $1 AND session_id = $2`,
+          [caseId, sessionId]
+        );
+        if (!ticketRow.rows.length || ticketRow.rows[0].ticket_type !== "appointment") {
+          return res.status(404).json({ success: false, message: "Visit ticket not found for this session." });
+        }
+        if (ticketRow.rows[0].status === "resolved") {
+          return res.status(400).json({ success: false, message: "This case is already resolved." });
+        }
+
+        const updates = [];
+        const vals = [];
+        let p = 1;
+
+        if (preferredDay) { updates.push(`preferred_day = $${p++}`); vals.push(preferredDay); }
+        if (preferredWindow) { updates.push(`preferred_time_window = $${p++}`); vals.push(preferredWindow); }
+        if (scheduleNote) {
+          updates.push(`appointment_notes = trim(both from coalesce(appointment_notes,'') || E'\\n' || $${p++})`);
+          vals.push(`Student note: ${scheduleNote}`);
+        }
+
+        if (!updates.length) {
+          return res.status(400).json({ success: false, message: "No preference fields provided." });
+        }
+
+        vals.push(caseId, sessionId);
+        await db.query(
+          `UPDATE escalation_tickets SET ${updates.join(", ")}, updated_at = NOW() WHERE case_id = $${p} AND session_id = $${p + 1}`,
+          vals
+        );
+
+        const snap = await db.query(
+          `SELECT preferred_day, preferred_time_window FROM escalation_tickets WHERE case_id = $1`,
+          [caseId]
+        );
+        const row = snap.rows[0] || {};
+
+        const parts = [];
+        if (row.preferred_day) parts.push(`Day: ${row.preferred_day}`);
+        if (row.preferred_time_window) parts.push(`Time: ${row.preferred_time_window}`);
+
+        let summary;
+        if (parts.length === 2) {
+          summary = `✅ Preference saved — ${parts.join(", ")}. OSA staff will review and confirm the final schedule.`;
+        } else if (parts.length === 1) {
+          summary = `Got it — ${parts[0]} noted. ${row.preferred_day ? "Choose a time window (Morning or Afternoon) below." : "Choose your preferred day below."}`;
+        } else {
+          summary = "Preference saved. OSA staff will confirm your schedule.";
+        }
+        if (scheduleNote) summary += " Your note was also saved for staff.";
+
+        await db.query(
+          `INSERT INTO chat_messages (session_id, role, content) VALUES ($1, 'assistant', $2)`,
+          [sessionId, summary]
+        );
+        await db.query(`UPDATE chat_sessions SET last_active_at = NOW() WHERE id = $1`, [sessionId]);
+
+        return res.json({ success: true, case_id: caseId, summary });
+      } catch (error) {
+        return genericError(res, "chat-visit-pref", error);
       }
     }
   );
@@ -2343,7 +2503,7 @@ function registerChatRoutes(app, apiPrefix) {
              status = CASE WHEN status = 'open' THEN 'in_progress' ELSE status END,
              updated_at = NOW()
          WHERE case_id = $4 AND status IN ('open','in_progress')
-         RETURNING session_id`,
+         RETURNING session_id, ticket_type`,
         [when.toISOString(), location, notes || null, caseId]
       );
 
@@ -2351,21 +2511,28 @@ function registerChatRoutes(app, apiPrefix) {
         return res.status(404).json({ success: false, message: "Ticket not found or already resolved." });
       }
 
-      const session_id = ticketResult.rows[0].session_id;
-      const dtLabel = when.toLocaleString("en-PH", { dateStyle: "medium", timeStyle: "short" });
+      const { session_id, ticket_type } = ticketResult.rows[0];
+      const isVisitTicket = String(ticket_type || "").toLowerCase() === "appointment";
+
+      const dtLabel = when.toLocaleString("en-PH", {
+        weekday: "long", year: "numeric", month: "long", day: "numeric",
+        hour: "numeric", minute: "2-digit", hour12: true,
+        timeZone: "Asia/Manila",
+      });
 
       const msgContent =
         `[OSA Staff · ${staffName}]\n\n` +
-        `Your OSA visit is scheduled:\n\n` +
+        `Your OSA visit is confirmed:\n\n` +
         `When: ${dtLabel}\n` +
         `Where: ${location}\n` +
-        (notes ? `\nNotes: ${notes}\n` : "") +
-        `\nPlease arrive on time and bring your school ID and Case ID **${caseId}**.`;
+        (notes ? `Notes: ${notes}\n` : "") +
+        `\nPlease arrive on time and bring your school ID and Case ID (${caseId}).`;
 
       await db.query(
         `INSERT INTO chat_messages (session_id, role, content) VALUES ($1, 'assistant', $2)`,
         [session_id, msgContent]
       );
+
       await db.query(`UPDATE chat_sessions SET last_active_at = NOW() WHERE id = $1`, [session_id]);
 
       const delivered = pushToSession(session_id, {
@@ -2418,14 +2585,15 @@ function registerChatRoutes(app, apiPrefix) {
       }
 
       const row = approved.rows[0];
+      const isVisitTicket = String(row.ticket_type || "").toLowerCase() === "appointment";
       const msg =
         `[OSA Staff · ${staffName}]\n\n` +
-        `✅ Appointment Approved\n\n` +
-        `Case ID: ${caseId}\n` +
-        `Ticket type: ${String(row.ticket_type || "general").replace("_", " ")}\n` +
-        (note ? `\nNote: ${note}\n` : "\n") +
-        `\nAn OSA staff member will provide your final schedule details in this chat.\n` +
-        `\n— OSA staff has stepped away from this chat for now. They will return here once the final schedule is ready.`;
+        `✅ Your appointment request has been approved.\n\n` +
+        (note ? `Note: ${note}\n\n` : "") +
+        (isVisitTicket
+          ? `OSA will send you the confirmed date, time, and location in this chat shortly.`
+          : `An OSA staff member will confirm the exact schedule in this chat. Please keep this window open.`
+        );
 
       await db.query(
         `INSERT INTO chat_messages (session_id, role, content) VALUES ($1, 'assistant', $2)`,
