@@ -2994,6 +2994,29 @@
         showToast('Choose a confirmed date and time.', { variant: 'danger', duration: 4500 });
         return;
       }
+
+      // Guard: the appointment must be approved before a schedule can be
+      // confirmed and the student notified. Otherwise the student would get
+      // a "your visit is scheduled" notification for a request OSA has not
+      // even reviewed yet. Surface a warning modal that nudges staff to use
+      // the green "Approve Appointment" button at the top of the conversation
+      // first. Already-scheduled tickets (re-schedule case) are also allowed.
+      var apptStatus = String(state.currentAppointmentStatus || '').toLowerCase();
+      var isApproved = apptStatus === 'approved' || apptStatus === 'scheduled';
+      if (!isApproved) {
+        openActionModal({
+          variant: 'warning',
+          title: 'Approve this appointment first',
+          message:
+            'You haven\u2019t approved this visit request yet. ' +
+            'Please tap "Approve Appointment" at the top of the conversation first, ' +
+            'then come back here to confirm the date & time and notify the student.',
+          confirmText: 'Got it',
+          cancelText: '',
+        });
+        return;
+      }
+
       state.busy = true;
       btnVisitSchedule.disabled = true;
       fetch(API + '/chat/tickets/' + encodeURIComponent(state.currentCaseId) + '/appointment', {
@@ -3424,7 +3447,16 @@
       }
 
       confirmBtn.textContent = String(opts.confirmText || 'Confirm');
-      cancelBtn.textContent  = String(opts.cancelText  || 'Cancel');
+      // Pass `cancelText: ''` (or null/false) to render an acknowledgment-only
+      // modal — hides the Cancel button so the dialog has just one clear
+      // dismiss action. Otherwise show the cancel button with the given label
+      // (or 'Cancel' as a sensible default).
+      if (opts.cancelText === '' || opts.cancelText === null || opts.cancelText === false) {
+        cancelBtn.style.display = 'none';
+      } else {
+        cancelBtn.style.display = '';
+        cancelBtn.textContent  = String(opts.cancelText || 'Cancel');
+      }
 
       function cleanup(result) {
         actionModal.classList.add('hidden');
