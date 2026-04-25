@@ -91,7 +91,7 @@
             '        <svg viewBox="0 0 24 24"><path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z"/></svg>' +
             '      </button>' +
             '    </div>' +
-            '    <p class="osa-ai-composer__hint">Quick topics above send automatically. OTP may appear for sensitive requests (claim, appointment, escalate).</p>' +
+            '    <p class="osa-ai-composer__hint" id="osa-chat-hint">Quick topics above send automatically. OTP may appear for sensitive requests (claim, appointment, escalate).</p>' +
             '    <div class="osa-ai-quota" id="osa-chat-quota" aria-live="polite" hidden><span class="osa-ai-quota__dot" aria-hidden="true"></span><span class="osa-ai-quota__text" id="osa-chat-quota-text">-- / -- today</span></div>' +
             '  </div>' +
             '</div>' +
@@ -1405,6 +1405,11 @@
         // ── Header mode badge (Tier indicator) ────────────────────
         var modeBadgeEl = document.getElementById('osa-chat-mode-badge');
         var statusLineEl = document.getElementById('osa-chat-status-line');
+        var headerEl = widget ? widget.querySelector('.osa-ai-header') : null;
+        var chipsWrapEl = widget ? widget.querySelector('.osa-ai-chips-wrapper') : null;
+        var hintEl = document.getElementById('osa-chat-hint');
+        var DEFAULT_HINT = hintEl ? hintEl.textContent : '';
+        var STAFF_HINT = 'Live OSA Staff is on the line — type your message and they will reply here.';
         var MODE_COPY = {
             faq:   { label: 'Guide', cls: 'osa-ai-mode--faq' },
             ai:    { label: 'OSA',   cls: 'osa-ai-mode--ai' },
@@ -1420,6 +1425,15 @@
             if (statusLineEl) {
                 statusLineEl.textContent = next === 'staff' ? 'Live OSA Staff' : (next === 'faq' ? 'Guided Flow' : 'Ready');
                 statusLineEl.classList.toggle('is-staff', next === 'staff');
+            }
+            // Talking with admin: hide quick topics, animate header,
+            // and swap the composer hint to a staff-aware copy.
+            var isStaff = next === 'staff';
+            if (chipsWrapEl) chipsWrapEl.classList.toggle('is-hidden-staff', isStaff);
+            if (headerEl) headerEl.classList.toggle('is-staff-live', isStaff);
+            if (hintEl) {
+                hintEl.textContent = isStaff ? STAFF_HINT : DEFAULT_HINT;
+                hintEl.classList.toggle('is-staff', isStaff);
             }
         }
         setMode('ai');

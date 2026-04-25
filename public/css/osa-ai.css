@@ -2158,6 +2158,42 @@
     min-height: 0.95rem !important;
 }
 
+/* ── Talking with admin: dynamic header + hidden quick topics ─── */
+@keyframes osaStaffHeaderShimmer {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@keyframes osaStaffHeaderGlow {
+    0%, 100% { box-shadow: 0 3px 14px rgba(132, 26, 45, 0.32), inset 0 1px 0 rgba(255,255,255,0.12), 0 0 0 0 rgba(251,146,60,0.0); }
+    50%      { box-shadow: 0 3px 18px rgba(132, 26, 45, 0.45), inset 0 1px 0 rgba(255,255,255,0.16), 0 0 0 6px rgba(251,146,60,0.10); }
+}
+
+.osa-launcher-panel--chat-ui .osa-ai-header.is-staff-live {
+    background: linear-gradient(120deg, #841a2d 0%, #a4203a 25%, #c2410c 50%, #a4203a 75%, #841a2d 100%) !important;
+    background-size: 220% 220% !important;
+    animation: osaStaffHeaderShimmer 6s ease-in-out infinite, osaStaffHeaderGlow 2.4s ease-in-out infinite !important;
+}
+
+.osa-launcher-panel--chat-ui .osa-ai-header.is-staff-live .osa-ai-header__avatar {
+    background: rgba(255,255,255,0.22) !important;
+    border-color: rgba(255,255,255,0.36) !important;
+}
+
+.osa-ai-chips-wrapper.is-hidden-staff {
+    display: none !important;
+}
+
+.osa-ai-composer__hint.is-staff {
+    color: #c2410c !important;
+    font-weight: 600 !important;
+}
+
+.osa-launcher-panel--chat-ui .osa-ai-composer__hint.is-staff {
+    color: #fb923c !important;
+}
+
 /* ── Locked chip group (after preference is chosen) ─── */
 .osa-ai-chip.is-chosen {
     background: linear-gradient(135deg, #a4203a 0%, var(--brand) 100%) !important;
