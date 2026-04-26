@@ -3938,8 +3938,22 @@ function registerChatRoutes(app, apiPrefix) {
         `SELECT role, content, created_at FROM chat_messages WHERE session_id = $1 ORDER BY created_at ASC`,
         [sessionId]
       );
+      // Normalize stored `[system] …` notices (the "OSA Staff has joined the
+      // chat" banner is persisted as a role=assistant row with a [system]
+      // prefix) into proper role='system' rows so both the student widget
+      // and the admin thread can render them as a system event instead of
+      // an ugly raw assistant bubble. The DB record is left untouched for
+      // backward compatibility — the projection only happens in the API.
+      const SYSTEM_PREFIX = "[system] ";
+      const normalizedMessages = (msgs.rows || []).map((row) => {
+        const content = String(row.content || "");
+        if (row.role === "assistant" && content.startsWith(SYSTEM_PREFIX)) {
+          return { ...row, role: "system", content: content.slice(SYSTEM_PREFIX.length).trim() };
+        }
+        return row;
+      });
       const sessionPayload = loaded.session || (isAdminCall ? { id: sessionId, expired: true } : null);
-      return res.json({ success: true, session: sessionPayload, messages: msgs.rows });
+      return res.json({ success: true, session: sessionPayload, messages: normalizedMessages });
     } catch (error) {
       return genericError(res, "chat", error);
     }

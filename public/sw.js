@@ -11,11 +11,11 @@ const PRECACHE_URLS = [
   "/about-portal/",
   "/about-portal",
   "/css/osa-design.css?v=40",
-  "/css/osa-ai.css?v=52",
+  "/css/osa-ai.css?v=53",
   "/assets/js/portal-shell.js?v=44",
   "/assets/js/osa-api-client.js?v=2",
-  "/assets/js/osa-chat-loader.js?v=71",
-  "/assets/js/osa-chat-widget.js?v=98",
+  "/assets/js/osa-chat-loader.js?v=72",
+  "/assets/js/osa-chat-widget.js?v=99",
   "/assets/images/eac-emblem.png",
 ];
 

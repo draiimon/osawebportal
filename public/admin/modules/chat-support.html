@@ -2735,6 +2735,39 @@
   }
 
   function appendMsg(role, content, time, scroll) {
+    // System notices ("OSA Staff has joined the chat", etc.) come in either
+    // as role='system' (server-normalized) or as a role='assistant' message
+    // whose body starts with `[system] ` (legacy/SSE path). Render them as
+    // a centered, distinct event so staff can see at a glance that the
+    // message is a system event, not an AI/staff reply.
+    var rawText = String(content || '');
+    var isSystemEvent = role === 'system' || rawText.indexOf('[system] ') === 0;
+    if (isSystemEvent) {
+      var sysText = role === 'system' ? rawText : rawText.slice('[system] '.length).trim();
+      var sys = document.createElement('div');
+      sys.className = 'cmsg cmsg--system-event';
+      sys.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 0;';
+      var bubble = document.createElement('div');
+      bubble.style.cssText =
+        'display:inline-flex;align-items:center;gap:6px;' +
+        'padding:5px 12px;font-size:12px;font-weight:600;' +
+        'color:#92400e;background:#fef3c7;border:1px solid #fcd34d;' +
+        'border-radius:999px;letter-spacing:0.01em;';
+      bubble.innerHTML =
+        '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>' +
+        '<span></span>';
+      bubble.querySelector('span').textContent = sysText;
+      sys.appendChild(bubble);
+      var sysTs = document.createElement('div');
+      sysTs.className = 'cmsg__time';
+      sysTs.style.cssText = 'font-size:10.5px;color:#92400e;opacity:0.7;';
+      sysTs.textContent = fmtTime(time);
+      sys.appendChild(sysTs);
+      convoThread.appendChild(sys);
+      if (scroll !== false) convoThread.scrollTop = convoThread.scrollHeight;
+      return;
+    }
+
     var staffInfo = (role === 'assistant') ? parseStaffMessage(content) : null;
     var cssRole = staffInfo ? 'staff' : role;
 
