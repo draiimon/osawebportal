@@ -283,6 +283,31 @@ a {
     text-decoration: none;
 }
 
+/* Mobile app-like touch feedback: remove default blue flash */
+html,
+body,
+a,
+button,
+input[type="button"],
+input[type="submit"],
+[role="button"],
+summary {
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Make taps feel immediate on touch devices */
+a,
+button,
+input[type="button"],
+input[type="submit"],
+[role="button"],
+.btn,
+.site-navbar__link,
+.site-navbar__toggle,
+.site-navbar__drawer-nav a {
+    touch-action: manipulation;
+}
+
 img {
     display: block;
     max-width: 100%;
@@ -1636,8 +1661,8 @@ p {
 
     /* Keep a lighter blur on mobile so the underlying page softens behind the drawer. */
     .site-navbar__drawer-overlay {
-        -webkit-backdrop-filter: blur(8px);
-        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
         background: rgba(10, 4, 8, 0.6);
     }
 
@@ -1648,6 +1673,63 @@ p {
 
     .site-navbar__bar {
         transition: min-height 200ms ease, padding 200ms ease;
+    }
+
+    /* Shorter interaction transitions for snappier mobile feel */
+    a,
+    button,
+    input[type="button"],
+    input[type="submit"],
+    [role="button"],
+    .btn,
+    .site-navbar__link,
+    .site-navbar__toggle,
+    .site-navbar__drawer-nav a {
+        transition-duration: 120ms !important;
+    }
+}
+
+/* Coarse pointer devices (phones/tablets): keep visuals but reduce GPU-heavy work */
+@media (hover: none) and (pointer: coarse) {
+    .site-navbar__drawer,
+    .site-navbar__drawer-overlay,
+    .osa-loader__backdrop,
+    .panel,
+    .card,
+    .announcement-card,
+    .lf-listing-card,
+    .lf-listing-status {
+        -webkit-backdrop-filter: none !important;
+        backdrop-filter: none !important;
+    }
+
+    /* Replace expensive blur depth with cleaner static surfaces */
+    .site-navbar__drawer {
+        background: rgba(123, 16, 37, 0.97) !important;
+    }
+
+    .panel,
+    .card,
+    .announcement-card,
+    .lf-listing-card {
+        background: rgba(255, 255, 255, 0.88);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Hover animations are not useful on touch and can add jank */
+    .btn,
+    .site-navbar__link,
+    .site-navbar__toggle,
+    .announcement-card,
+    .lf-listing-card {
+        transition-duration: 100ms !important;
+    }
+
+    .announcement-card:hover,
+    .lf-listing-card:hover,
+    .card:hover {
+        transform: none;
+        box-shadow: 0 10px 26px rgba(0, 0, 0, 0.09);
     }
 }
 
