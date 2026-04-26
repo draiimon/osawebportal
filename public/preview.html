@@ -2419,6 +2419,17 @@
             border: 0;
         }
 
+        @media (max-width: 640px) {
+            .hero-subtitle-rotator {
+                min-height: calc(1.56em * 3);
+                font-size: 0.94rem;
+                line-height: 1.6;
+                margin-bottom: 1.2rem;
+                overflow-wrap: anywhere;
+                word-break: break-word;
+            }
+        }
+
         .hero-subtitle-rotator.is-entering {
             animation: heroSubtitleIn 360ms cubic-bezier(0.22, 1, 0.36, 1);
         }
@@ -3718,7 +3729,12 @@
             const applyHomeContent = (mergedHome, opts) => {
                 const o = opts || {};
                 if (homeHeroTitle) homeHeroTitle.textContent = mergedHome.hero.title || homeDefaults.hero.title;
-                if (heroSubtitleRotator) heroSubtitleRotator.textContent = (mergedHome.hero.subtitles && mergedHome.hero.subtitles[0]) || homeDefaults.hero.subtitles[0];
+                const safeHeroSubtitles = (Array.isArray(mergedHome.hero.subtitles) ? mergedHome.hero.subtitles : [])
+                    .map((text) => String(text || "").trim())
+                    .filter(Boolean);
+                if (heroSubtitleRotator) {
+                    heroSubtitleRotator.textContent = safeHeroSubtitles[0] || homeDefaults.hero.subtitles[0];
+                }
                 // Slide/rotator DOM nodes are captured later by the hero-guide
                 // rotation logic; re-rendering them after that would break the
                 // captured NodeList. Skip slide re-render on post-DB repaint
@@ -3762,15 +3778,18 @@
                 .catch(() => {});
             const heroGuideSlides = heroGuideRotator ? Array.from(heroGuideRotator.querySelectorAll(".hero-guide-slide")) : [];
             const heroGuideDots = Array.from(document.querySelectorAll("#hero-guide-dots .hero-guide-dot"));
-            let heroCaptions = Array.isArray(mergedHome.hero.subtitles) && mergedHome.hero.subtitles.length
-                ? mergedHome.hero.subtitles
-                : [
+            let heroCaptions = (Array.isArray(mergedHome.hero.subtitles) ? mergedHome.hero.subtitles : [])
+                .map((text) => String(text || "").trim())
+                .filter(Boolean);
+            if (!heroCaptions.length) {
+                heroCaptions = [
                     "Access OSA services, forms, and student support in one easy portal.",
                     "Clear student guidance for requirements, forms, and OSA procedures.",
                     "Follow verified steps so transactions are quicker and easier to complete.",
                     "Use one portal to navigate OSA processes with confidence.",
                     "Student-first access to OSA support, updates, and service information."
                 ];
+            }
             if (heroSubtitleRotator && heroCaptions.length > 1) {
                 let heroCaptionIndex = 0;
                 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
