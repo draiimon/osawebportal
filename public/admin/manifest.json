@@ -1,5 +1,5 @@
 {
-  "name": "OSA Admin Portal — EAC Cavite",
+  "name": "OSA Admin",
   "short_name": "OSA Admin",
   "description": "Administrative dashboard for the EAC Cavite Office of Student Affairs. Manage announcements, lost & found, chat support, and the knowledge base.",
   "start_url": "/admin/",

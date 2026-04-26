@@ -185,8 +185,18 @@
     <meta name="theme-color" content="#841a2d">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="OSA Student">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Ask OSA">
+    <style>
+        :root {
+            --osa-safe-top: env(safe-area-inset-top, 0px);
+            --osa-safe-bottom: env(safe-area-inset-bottom, 0px);
+        }
+        body {
+            padding-top: var(--osa-safe-top);
+            padding-bottom: var(--osa-safe-bottom);
+        }
+    </style>
     <link rel="apple-touch-icon" sizes="120x120" href="/assets/images/app-icon-student-120.png">
     <link rel="apple-touch-icon" sizes="152x152" href="/assets/images/app-icon-student-152.png">
     <link rel="apple-touch-icon" sizes="167x167" href="/assets/images/app-icon-student-167.png">

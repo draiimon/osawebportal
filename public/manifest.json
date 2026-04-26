@@ -1,6 +1,6 @@
 {
-  "name": "OSA Student Portal — EAC Cavite",
-  "short_name": "OSA Student",
+  "name": "Ask OSA",
+  "short_name": "Ask OSA",
   "description": "Office of Student Affairs portal for Emilio Aguinaldo College Cavite. Browse announcements, lost & found, book appointments, and chat with OSA staff.",
   "start_url": "/",
   "scope": "/",
