@@ -2613,26 +2613,65 @@
   .osa-staff-typing-pill { animation: none; }
 }
 
-/* ── Welcome carousel — yellow themed bubble + loop indicator ──
-   The welcome bubble is the very first thing a new student sees,
-   so it gets a distinct gold/cream treatment to feel inviting and
-   visibly different from regular assistant replies. */
+/* ── Welcome bubble — EAC-themed (maroon + gold) ─────────────────
+   The very first bubble a student sees gets the EAC institutional
+   treatment: deep maroon background, warm gold accents, cream text.
+   Visually distinct from the neutral white assistant bubbles so it
+   reads as "official greeting from the Office of Student Affairs"
+   instead of just another reply. */
 .osa-ai-msg.osa-ai-msg--welcome .osa-ai-msg__bubble {
-  background: linear-gradient(135deg, #fff4d6 0%, #ffe9a8 55%, #f7d781 100%) !important;
-  border: 1px solid rgba(199, 154, 73, 0.55) !important;
-  color: #4a2c10 !important;
+  background:
+    radial-gradient(120% 140% at 0% 0%, rgba(247,215,129,0.16) 0%, rgba(247,215,129,0) 55%),
+    linear-gradient(135deg, #6b0f1f 0%, #5a0a18 55%, #3d0610 100%) !important;
+  border: 1px solid rgba(247, 215, 129, 0.42) !important;
+  color: #fef7e0 !important;
+  padding-left: 18px !important;
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.6) inset,
-    0 6px 14px rgba(199, 154, 73, 0.18),
-    0 0 0 1px rgba(199, 154, 73, 0.08);
+    0 1px 0 rgba(247, 215, 129, 0.18) inset,
+    0 8px 20px rgba(61, 6, 16, 0.32),
+    0 0 0 1px rgba(247, 215, 129, 0.10);
   position: relative;
   overflow: hidden;
   animation: osaWelcomeBubbleGlow 4.2s ease-in-out infinite;
 }
 
-/* Soft looping shimmer that sweeps across the bubble — gives the
-   "this is alive / there are more tips coming" vibe without
-   distracting from the text. */
+/* Gold left-edge ribbon — evokes the EAC seal's vertical accent. */
+.osa-ai-msg.osa-ai-msg--welcome .osa-ai-msg__bubble::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, #f7d781 0%, #c79a49 50%, #b6873a 100%);
+  box-shadow: 0 0 12px rgba(247, 215, 129, 0.55);
+  pointer-events: none;
+}
+
+/* Cream / gold typography overrides so text reads cleanly on the
+   dark maroon ground (the global assistant rule paints it #050505). */
+.osa-ai-msg.osa-ai-msg--welcome .osa-ai-msg__bubble,
+.osa-ai-msg.osa-ai-msg--welcome .osa-ai-msg__bubble p,
+.osa-ai-msg.osa-ai-msg--welcome .osa-ai-msg__bubble span {
+  color: #fef7e0 !important;
+}
+.osa-ai-msg.osa-ai-msg--welcome .osa-ai-msg__bubble strong,
+.osa-ai-msg.osa-ai-msg--welcome .osa-ai-msg__bubble b {
+  color: #f7d781 !important;
+  font-weight: 700;
+}
+.osa-ai-msg.osa-ai-msg--welcome .osa-ai-msg__bubble a {
+  color: #f7d781 !important;
+  text-decoration: underline;
+  text-decoration-color: rgba(247, 215, 129, 0.45);
+  text-underline-offset: 2px;
+}
+.osa-ai-msg.osa-ai-msg--welcome .osa-ai-msg__bubble a:hover {
+  text-decoration-color: #f7d781;
+}
+
+/* Soft looping gold shimmer that sweeps diagonally — keeps the
+   "alive / more tips coming" feel without the old chrome. */
 .osa-ai-msg.osa-ai-msg--welcome .osa-ai-msg__bubble::before {
   content: "";
   position: absolute;
@@ -2641,29 +2680,29 @@
   background: linear-gradient(
     115deg,
     transparent 0%,
-    transparent 35%,
-    rgba(255, 255, 255, 0.55) 50%,
-    transparent 65%,
+    transparent 38%,
+    rgba(247, 215, 129, 0.18) 50%,
+    transparent 62%,
     transparent 100%
   );
   background-size: 240% 100%;
   background-position: 120% 0;
-  animation: osaWelcomeShimmer 4.5s ease-in-out infinite;
+  animation: osaWelcomeShimmer 5.5s ease-in-out infinite;
   mix-blend-mode: screen;
 }
 
 @keyframes osaWelcomeBubbleGlow {
   0%, 100% {
     box-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.6) inset,
-      0 6px 14px rgba(199, 154, 73, 0.18),
-      0 0 0 1px rgba(199, 154, 73, 0.08);
+      0 1px 0 rgba(247, 215, 129, 0.18) inset,
+      0 8px 20px rgba(61, 6, 16, 0.32),
+      0 0 0 1px rgba(247, 215, 129, 0.10);
   }
   50% {
     box-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.7) inset,
-      0 8px 20px rgba(199, 154, 73, 0.32),
-      0 0 0 1px rgba(199, 154, 73, 0.18);
+      0 1px 0 rgba(247, 215, 129, 0.28) inset,
+      0 10px 26px rgba(61, 6, 16, 0.42),
+      0 0 0 1px rgba(247, 215, 129, 0.22);
   }
 }
 
@@ -2673,18 +2712,18 @@
   100% { background-position: -120% 0; }
 }
 
-/* Welcome carousel — no container chrome (no Skip button, dots, or
-   progress strip). Just a smooth opacity fade as the tip text rotates,
-   plus a min-height so the bubble doesn't reflow as tip lengths vary. */
+/* Carousel inner — text that fades as tips rotate. Inherits the
+   cream color from the bubble so we don't have to re-declare it. */
 .osa-welcome-carousel {
   display: block;
   position: relative;
 }
 .osa-welcome-text {
   margin: 0;
-  color: #4a2c10;
   min-height: 2.6em;
-  transition: opacity 180ms ease;
+  transition: opacity 220ms ease;
+  font-weight: 500;
+  letter-spacing: 0.005em;
 }
 .osa-welcome-text.is-fading { opacity: 0; }
 
