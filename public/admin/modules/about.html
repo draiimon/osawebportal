@@ -17,6 +17,7 @@
       flex-wrap: wrap;
       margin-bottom: 20px;
       border-bottom: 2px solid var(--line);
+      min-width: 0;
     }
     .about-tab {
       padding: 9px 16px;
@@ -46,6 +47,20 @@
     }
     .about-panel { display: none; }
     .about-panel.active { display: block; }
+
+    .about-panel .panel,
+    .about-panel .panel-body,
+    .about-panel .form-grid,
+    .about-panel .field {
+      min-width: 0;
+    }
+
+    .about-panel .field input,
+    .about-panel .field textarea,
+    .about-panel .field select {
+      width: 100%;
+      min-width: 0;
+    }
 
     .helper-note {
       margin-bottom: 16px;
@@ -201,6 +216,20 @@
     }
 
     @media (max-width: 600px) {
+      .about-tabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding-bottom: 2px;
+      }
+      .about-tabs::-webkit-scrollbar { display: none; }
+
+      .about-tab {
+        flex: 0 0 auto;
+      }
+
       .about-tab { padding: 8px 12px; font-size: 0.76rem; }
       .toggle-row {
         align-items: flex-start;
