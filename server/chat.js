@@ -3857,6 +3857,96 @@ function registerChatRoutes(app, apiPrefix) {
       return genericError(res, "chat", error);
     }
   });
+
+  // ── Background cleanup: idle / abandoned tickets ──────────────────
+  // Runs every 5 minutes. Mirrors the staff policy:
+  //   • UNAPPROVED + idle → DELETE the ticket (student abandoned the
+  //     queue before any admin engaged AND before approval).
+  //   • APPROVED general escalation + idle → AUTO-RESOLVE (admin and
+  //     student both went silent on a chat that's already engaged —
+  //     close it gracefully, no /end-session command needed).
+  //   • Approved appointment / claim tickets are LEFT ALONE — they hold
+  //     a future scheduled date that must remain visible until manual
+  //     resolution after the visit / pickup.
+  const CLEANUP_INTERVAL_MS = 5 * 60 * 1000;
+  const idleCleanupTimer = setInterval(async () => {
+    try {
+      const idleSec = Math.max(60, Math.floor(STAFF_CHAT_IDLE_MS / 1000));
+
+      // 1) Delete unapproved + abandoned (no staff reply ever)
+      const del = await db.query(
+        `WITH activity AS (
+           SELECT t.case_id, t.session_id,
+                  COALESCE((SELECT MAX(created_at) FROM chat_messages m
+                            WHERE m.session_id = t.session_id), t.created_at) AS last_at,
+                  EXISTS (SELECT 1 FROM chat_messages m
+                          WHERE m.session_id = t.session_id
+                            AND m.role = 'assistant'
+                            AND m.content LIKE '[OSA Staff · %') AS staff_engaged
+           FROM escalation_tickets t
+           WHERE t.status IN ('open', 'in_progress')
+             AND COALESCE(t.appointment_status, '') <> 'approved'
+         )
+         DELETE FROM escalation_tickets
+         WHERE case_id IN (
+           SELECT case_id FROM activity
+           WHERE staff_engaged = false
+             AND last_at < NOW() - ($1 || ' seconds')::interval
+         )
+         RETURNING case_id, session_id`,
+        [String(idleSec)]
+      );
+
+      // 2) Auto-resolve idle general escalations that the admin
+      //    engaged but everyone went quiet on.
+      const resolved = await db.query(
+        `WITH activity AS (
+           SELECT t.case_id, t.session_id,
+                  COALESCE((SELECT MAX(created_at) FROM chat_messages m
+                            WHERE m.session_id = t.session_id), t.created_at) AS last_at
+           FROM escalation_tickets t
+           WHERE t.status = 'in_progress'
+             AND COALESCE(t.ticket_type, 'general') = 'general'
+             AND COALESCE(t.appointment_status, '') <> 'approved'
+         )
+         UPDATE escalation_tickets
+         SET status = 'resolved', updated_at = NOW()
+         WHERE case_id IN (
+           SELECT case_id FROM activity
+           WHERE last_at < NOW() - ($1 || ' seconds')::interval
+         )
+         RETURNING case_id`,
+        [String(idleSec)]
+      );
+
+      if (del.rows.length || resolved.rows.length) {
+        console.log(
+          `[chat-cleanup] idle sweep: deleted=${del.rows.length} resolved=${resolved.rows.length}`
+        );
+        del.rows.forEach((r) => {
+          pushToAdminTickets({
+            type: "ticket_deleted",
+            case_id: r.case_id,
+            status: "deleted",
+            timestamp: new Date().toISOString(),
+          });
+        });
+        resolved.rows.forEach((r) => {
+          pushToAdminTickets({
+            type: "ticket_updated",
+            case_id: r.case_id,
+            status: "resolved",
+            timestamp: new Date().toISOString(),
+          });
+        });
+      }
+    } catch (err) {
+      logError("chat-cleanup", err);
+    }
+  }, CLEANUP_INTERVAL_MS);
+  if (idleCleanupTimer && typeof idleCleanupTimer.unref === "function") {
+    idleCleanupTimer.unref();
+  }
 }
 
 module.exports = { registerChatRoutes };

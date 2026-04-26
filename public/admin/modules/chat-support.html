@@ -2461,7 +2461,7 @@
       : '';
     var statusClass = statusBadgeClass(t);
     var endPrompt = t.needs_end_session_prompt
-      ? '<div class="ticket-item__time" style="margin-top:6px;color:#b45309;font-weight:700">Idle live chat. Type <code>/end session</code> to close.</div>'
+      ? '<div class="ticket-item__time" style="margin-top:6px;color:#b45309;font-weight:700">● Idle — auto-close pending</div>'
       : '';
     item.innerHTML =
       '<div class="ticket-item__head">' +
@@ -2596,9 +2596,7 @@
       convoComposer.classList.add('hidden');
     }
     if (sessionLimitPanel) sessionLimitPanel.classList.toggle('hidden', t.status === 'resolved');
-    staffInput.placeholder = state.currentNeedsEndPrompt
-      ? 'Session idle. Send update or type /end session to close…'
-      : 'Type a message to the student…';
+    staffInput.placeholder = 'Type a message to the student…';
 
     fillLfSchedulePanel(t);
     fillVisitSchedulePanel(t);
