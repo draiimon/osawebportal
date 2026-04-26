@@ -968,8 +968,10 @@ async function getOsaContext(studentEmail, sessionId) {
 }
 
 function buildNoKbGuidancePrompt(name, email) {
+  const { combined: nowStr } = formatPhDateTime();
   return (
-    `You are the OSA (Office of Student Affairs) Assistant for EAC Cavite.\n\n` +
+    `You are the OSA (Office of Student Affairs) Assistant for EAC Cavite.\n` +
+    `Today is ${nowStr}. You may answer date / time questions directly using this value — do not say you cannot tell the date.\n\n` +
     `The student's question doesn't have matching official EAC records available right now.\n` +
     `Your role is to give a brief, genuinely helpful general response — practical tips or general guidance ` +
     `about the topic — without inventing any specific EAC policy, fee, deadline, or institutional data.\n\n` +
@@ -1022,8 +1024,10 @@ function buildSystemPrompt(name, email, ctx, ragInfo) {
       ? `\nIMPORTANT: No official sources are available for this turn. If the user is asking an informational question you cannot answer, say you don't have that detail and suggest contacting OSA — unless the user is asking for human help or an appointment (handle per Escalation Contract below).\n`
       : "";
 
+  const { combined: nowStr } = formatPhDateTime();
   return (
-    `You are the OSA (Office of Student Affairs) Assistant for EAC Cavite.\n\n` +
+    `You are the OSA (Office of Student Affairs) Assistant for EAC Cavite.\n` +
+    `Today is ${nowStr}. Treat this as ground truth for any "what day/date/time" question — answer directly with this value, never tell the student to check their phone or a calendar.\n\n` +
     `MEMORY: You DO have access to the full conversation history above. Never say "I do not retain memories", "I don't remember", "each interaction is processed independently", or any similar disclaimer. If the student asks about something said earlier in this chat, refer back to the conversation history and answer from it.\n\n` +
     `LANGUAGE:\n` +
     `- Write every reply entirely in English, even if the student writes in Filipino, Taglish, or another language.\n` +
@@ -1277,6 +1281,53 @@ function looksLikePortalLogisticsIntent(message) {
     /\b(where\s+(is|are)|location|office\s+hours|open\s+hours|business\s+hours|operating\s+hours|address|how\s+to\s+(contact|reach)|contact\s+(osa|info|number))\b/i.test(m) ||
     /\b(what\s+time|until\s+what\s+time|what\s+are\s+(the\s+)?hours)\b/i.test(m)
   );
+}
+
+/** Detect trivial date/time small-talk so the bot can answer it directly
+ *  (with the current Asia/Manila clock) instead of routing through RAG/LLM
+ *  and then falsely flagging it for staff escalation. Distinguished from
+ *  `looksLikePortalLogisticsIntent` (which targets OSA office hours) by
+ *  requiring the question to be about today/now rather than office hours. */
+function looksLikeDateTimeQuery(message) {
+  const m = String(message || "").toLowerCase().trim();
+  if (!m) return false;
+  if (m.length > 80) return false; // skip long messages where date is incidental
+  // Office-hours / location questions belong to the portal-logistics path.
+  if (/\b(office|business|operating|open)\s+hours\b/.test(m)) return false;
+  if (/\bwhat\s+(are\s+)?(the\s+)?hours\b/.test(m)) return false;
+  return (
+    /\bwhat(?:'s|\s+is)\s+(?:the\s+)?(date|day|time|month|year)\b/.test(m) ||
+    /\bwhat\s+(time|day|date|year|month)\s+is\s+it\b/.test(m) ||
+    /\bwhat\s+day\s+(of\s+the\s+week\s+)?(is\s+it|today)\b/.test(m) ||
+    /\b(current|today'?s?)\s+(date|day|time)\b/.test(m) ||
+    /\b(time|date)\s+(now|today|right\s+now)\b/.test(m) ||
+    /^\s*(time|date|day|year|month)\s*\??\s*$/.test(m) ||
+    // Tagalog / Taglish
+    /\bano(?:ng)?\s+(araw|petsa|oras|buwan|taon)\b/.test(m) ||
+    /\banong\s+oras\s+na\b/.test(m) ||
+    /\bpetsa\s+ngayon\b/.test(m)
+  );
+}
+
+/** Format the current Asia/Manila date/time as a single human string,
+ *  e.g. "Sunday, April 26, 2026 at 4:13 PM (Asia/Manila)". Uses the
+ *  Intl API so the server's host timezone doesn't matter. */
+function formatPhDateTime(now) {
+  const d = now instanceof Date ? now : new Date();
+  try {
+    const dateStr = new Intl.DateTimeFormat("en-PH", {
+      timeZone: "Asia/Manila",
+      weekday: "long", year: "numeric", month: "long", day: "numeric",
+    }).format(d);
+    const timeStr = new Intl.DateTimeFormat("en-PH", {
+      timeZone: "Asia/Manila",
+      hour: "numeric", minute: "2-digit", hour12: true,
+    }).format(d);
+    return { dateStr, timeStr, combined: `${dateStr} at ${timeStr} (Asia/Manila)` };
+  } catch (_) {
+    const iso = d.toISOString();
+    return { dateStr: iso, timeStr: iso, combined: iso };
+  }
 }
 
 function needsEscalation(message, reply) {
@@ -1888,6 +1939,36 @@ function registerChatRoutes(app, apiPrefix) {
             tier: 2,
             suggest_escalation: false,
             content_filtered: true,
+          });
+        }
+
+        // Direct, no-escalation answer for trivial date / time small-talk.
+        // Without this short-circuit the question lands in the no-RAG path,
+        // the LLM hedges with vague tips ("check your phone…"), and the
+        // refusal-style answer trips the escalation heuristics — leaving
+        // the student with a "Verify email & escalate" card just for
+        // asking what day it is.
+        if (looksLikeDateTimeQuery(message)) {
+          const { dateStr, timeStr, combined } = formatPhDateTime();
+          const m = String(message || "").toLowerCase();
+          const wantsTimeOnly = /\b(time|oras)\b/.test(m) && !/\b(date|day|petsa|araw)\b/.test(m);
+          const wantsDateOnly = /\b(date|day|petsa|araw|month|year|buwan|taon)\b/.test(m) && !/\b(time|oras)\b/.test(m);
+          let dtReply;
+          if (wantsTimeOnly) {
+            dtReply = `It's currently **${timeStr}** here in the Philippines (Asia/Manila).`;
+          } else if (wantsDateOnly) {
+            dtReply = `Today is **${dateStr}** (Philippine time).`;
+          } else {
+            dtReply = `It's **${combined}** right now.`;
+          }
+          await persistReply(sessionId, dtReply);
+          return res.json({
+            success: true,
+            reply: dtReply,
+            answer: dtReply,
+            tier: 2,
+            suggest_escalation: false,
+            escalate: false,
           });
         }
 
