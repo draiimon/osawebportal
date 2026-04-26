@@ -3288,6 +3288,12 @@ function registerChatRoutes(app, apiPrefix) {
       // re-render, network retry) doesn't spam the student with two
       // "Your OSA visit is confirmed" messages for the same case.
       const result = await withKeyedLock(`appt:${caseId}`, async () => {
+        const prevTicket = await db.query(
+          `SELECT status FROM escalation_tickets WHERE case_id = $1 AND status IN ('open','in_progress')`,
+          [caseId]
+        );
+        const wasOpen = prevTicket.rows.length > 0 && prevTicket.rows[0].status === "open";
+
         const ticketResult = await db.query(
           `UPDATE escalation_tickets
            SET appointment_datetime = $1,
@@ -3339,6 +3345,21 @@ function registerChatRoutes(app, apiPrefix) {
 
         await db.query(`UPDATE chat_sessions SET last_active_at = NOW() WHERE id = $1`, [session_id]);
 
+        if (wasOpen) {
+          const joinMsg = `OSA Staff ${staffName} has joined the chat.`;
+          await db.query(
+            `INSERT INTO chat_messages (session_id, role, content) VALUES ($1, 'assistant', $2)`,
+            [session_id, `[system] ${joinMsg}`]
+          );
+          pushToSession(session_id, {
+            type: "staff_joined",
+            content: joinMsg,
+            staff_name: staffName,
+            case_id: caseId,
+            timestamp: new Date().toISOString(),
+          });
+        }
+
         const delivered = pushToSession(session_id, {
           type: "staff_message",
           content: msgContent,
@@ -3380,6 +3401,12 @@ function registerChatRoutes(app, apiPrefix) {
     }
 
     try {
+      const prevTicket = await db.query(
+        `SELECT status FROM escalation_tickets WHERE case_id = $1 AND status IN ('open','in_progress')`,
+        [caseId]
+      );
+      const wasOpen = prevTicket.rows.length > 0 && prevTicket.rows[0].status === "open";
+
       const approved = await db.query(
         `UPDATE escalation_tickets
          SET appointment_status = 'approved',
@@ -3407,6 +3434,21 @@ function registerChatRoutes(app, apiPrefix) {
           ? `OSA will send you the confirmed date, time, and location in this chat shortly.`
           : `An OSA staff member will confirm the exact schedule in this chat. Please keep this window open.`
         );
+
+      if (wasOpen) {
+        const joinMsg = `OSA Staff ${staffName} has joined the chat.`;
+        await db.query(
+          `INSERT INTO chat_messages (session_id, role, content) VALUES ($1, 'assistant', $2)`,
+          [row.session_id, `[system] ${joinMsg}`]
+        );
+        pushToSession(row.session_id, {
+          type: "staff_joined",
+          content: joinMsg,
+          staff_name: staffName,
+          case_id: caseId,
+          timestamp: new Date().toISOString(),
+        });
+      }
 
       await db.query(
         `INSERT INTO chat_messages (session_id, role, content) VALUES ($1, 'assistant', $2)`,
