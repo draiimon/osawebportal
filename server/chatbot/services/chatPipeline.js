@@ -252,8 +252,78 @@ function providerFailureHint(err) {
   return "error";
 }
 
-function buildDomainQuickReply(cleanedText) {
-  const text = String(cleanedText || "").toLowerCase();
+/**
+ * Returns either a string (legacy: appointment quick-reply, no escalate flag)
+ * or an object `{ text, escalate }` for triggers that should also surface the
+ * "Verify email & escalate" button in the widget.
+ *
+ * The `memory` argument (recent conversation, oldest→newest) lets us catch
+ * short follow-ups like "how?", "yes", or "the live staff" by inspecting the
+ * previous assistant turn.
+ */
+function buildDomainQuickReply(cleanedText, memory) {
+  const text = String(cleanedText || "").toLowerCase().trim();
+
+  // ── 1. Direct request to talk to a real OSA staff member ───────────
+  // Triggers when the student asks for live staff, a real person, a human
+  // agent, or wants to "ask/talk/speak to" staff in English, Filipino, or
+  // Taglish. Returns clear how-to steps AND escalate=true so the widget
+  // renders the OTP verification button — no more robotic "I recommend
+  // escalating" with zero next steps.
+  const liveStaffPattern =
+    /\b(live|real|actual|human)\s+(staff|agent|person|representative|admin|adviser)\b/i.test(text) ||
+    /\b(talk|speak|chat|message|kausap(in)?|makausap|magtanong|tanong(in)?|ask)\s+(?:po\s+)?(?:to\s+|sa\s+|with\s+|kay\s+|kayo\s+|the\s+)?(live\s+|real\s+|actual\s+|human\s+|osa\s+)?(staff|agent|person|adviser|admin|representative|tao)\b/i.test(text) ||
+    /\b(i\s+)?(want|wanna|need|gusto(\s+ko)?|kailangan(\s+ko)?)\s+(to\s+)?(talk|speak|chat|message|ask|kausapin|makausap|magtanong)\s+(?:to\s+|sa\s+|with\s+|kay\s+)?(?:the\s+|a\s+|an\s+)?(live\s+|real\s+|actual\s+|human\s+|osa\s+)?(staff|agent|person|adviser|admin|representative|tao)\b/i.test(text) ||
+    /\b(connect|transfer|forward|endorse|i-?endorse|ipasa)\s+(me\s+)?(to\s+|sa\s+)?(a\s+|the\s+|an\s+)?(live\s+|real\s+|human\s+|osa\s+)?(staff|agent|person|adviser|admin|representative|tao)\b/i.test(text) ||
+    /\b(may\s+(katao|tao|staff|admin|adviser)\s+ba|may\s+nakaduty\s+ba|sino\s+(?:ang\s+)?(staff|nakaduty|on\s+duty|naka-?duty))\b/i.test(text);
+
+  if (liveStaffPattern) {
+    return {
+      text: [
+        "Of course — you can reach a live OSA staff member through the portal's **secure (OTP-verified) chat**. Here's how:",
+        "",
+        "1. Tap **Verify email & escalate** below.",
+        "2. Enter your **EAC campus email** to receive a one-time code (OTP).",
+        "3. Type the code to open the secure chat thread.",
+        "4. State your concern — an OSA staff member will join and reply in that same thread.",
+        "",
+        "I'll stay here in the meantime if you'd like to ask anything else.",
+      ].join("\n"),
+      escalate: true,
+    };
+  }
+
+  // ── 2. "How?" / "paano?" follow-up after we already mentioned escalation ──
+  // The model often replies "I recommend escalating to OSA staff" without
+  // explaining HOW. When the student then asks "how?", the model loses
+  // context and asks for clarification. We catch that pattern here.
+  const isHowFollowUp =
+    /^(how|how\?|how\s+do\s+i|how\s+to|paano|paano\?|pano|pano\?|paano\s+po|panu)$/i.test(text);
+  if (isHowFollowUp && Array.isArray(memory) && memory.length > 0) {
+    // Look at the most recent assistant turn for an escalation hint.
+    const lastAssistant = [...memory].reverse().find((m) => m && m.role === "assistant");
+    const prevText = String(lastAssistant?.content || "").toLowerCase();
+    const mentionedEscalation =
+      /\bescalat/i.test(prevText) ||
+      /\bosa\s+(staff|office|adviser|admin)/i.test(prevText) ||
+      /\b(speak|talk|reach\s+out)\s+to\s+(?:an?\s+)?osa\b/i.test(prevText) ||
+      /\bcontact\s+osa\b/i.test(prevText);
+    if (mentionedEscalation) {
+      return {
+        text: [
+          "Here's how to escalate to a live OSA staff member:",
+          "",
+          "1. Tap **Verify email & escalate** below.",
+          "2. Enter your **EAC campus email** — you'll get a one-time code (OTP).",
+          "3. Type that code to open the secure chat thread.",
+          "4. State your concern there — an OSA staff member will reply in the same thread.",
+        ].join("\n"),
+        escalate: true,
+      };
+    }
+  }
+
+  // ── 3. Appointment booking quick-reply (legacy, no escalate flag) ──
   if (/\b(appointment|book\s+(an?\s+)?(appointment|visit|meeting)|schedule\s+(an?\s+)?(appointment|visit|meeting)|meet\s+with\s+osa|face\s+to\s+face)\b/i.test(text)) {
     return [
       "To request an OSA appointment with staff, open the portal's **verified-student (OTP) chat** from the main navigation.",
@@ -659,6 +729,45 @@ async function runChatPipeline({ message, conversationId, userId }) {
     });
   }
 
+  // ── Early live-staff / escalation quick-reply ───────────────────
+  // Done BEFORE the cache lookup so a previous generic "How can I help?"
+  // cached for the bare word "how?" can never overwrite the proper
+  // step-by-step escalation guidance. Memory is loaded eagerly here
+  // because the "how?" follow-up branch needs the prior assistant turn.
+  {
+    const earlyMemory = await getRecentMemory(conversationId).catch((error) => {
+      logError("memory-read-early", error);
+      return [];
+    });
+    const earlyQuick = buildDomainQuickReply(processed.cleanedText, earlyMemory);
+    const earlyText =
+      typeof earlyQuick === "string"
+        ? ""  // legacy string path (appointment) is handled later, after cache
+        : (earlyQuick && earlyQuick.text) || "";
+    const earlyEscalate =
+      typeof earlyQuick === "object" && earlyQuick !== null
+        ? earlyQuick.escalate === true
+        : false;
+    if (earlyText && earlyEscalate) {
+      try {
+        await appendMemory(conversationId, "user", processed.cleanedText);
+      } catch (err) { logError("memory-write-user-early-quick", err); }
+      try {
+        await appendMemory(conversationId, "assistant", earlyText);
+      } catch (err) { logError("memory-write-assistant-early-quick", err); }
+      return withAnswerFields({
+        response: earlyText,
+        provider: "domain-quick-reply",
+        cached: false,
+        escalate: true,
+        intent: processed.intent,
+        complexity: processed.complexity,
+        conversationId: conversationId || null,
+        userId: userId || null,
+      });
+    }
+  }
+
   const cacheKey = buildCacheKey({
     policy: POLICY_VERSION,
     text: processed.cleanedText.toLowerCase(),
@@ -712,17 +821,24 @@ async function runChatPipeline({ message, conversationId, userId }) {
     return [];
   });
 
-  const domainQuickReply = buildDomainQuickReply(processed.cleanedText);
-  if (domainQuickReply) {
+  // Late-stage quick-reply path — handles the legacy string returns
+  // from buildDomainQuickReply (currently: appointment booking). The
+  // escalation/live-staff branches were already handled BEFORE the
+  // cache lookup above so a stale cached "How can I help?" reply for
+  // bare "how?" can't shadow them.
+  const domainQuickReplyRaw = buildDomainQuickReply(processed.cleanedText, memory);
+  const domainQuickReplyText =
+    typeof domainQuickReplyRaw === "string" ? domainQuickReplyRaw : "";
+  if (domainQuickReplyText) {
     await appendMemory(conversationId, "user", processed.cleanedText).catch((error) => logError("memory-write-user", error));
-    await appendMemory(conversationId, "assistant", domainQuickReply).catch((error) => logError("memory-write-assistant", error));
+    await appendMemory(conversationId, "assistant", domainQuickReplyText).catch((error) => logError("memory-write-assistant", error));
     try {
-      await saveCachedResponse(cacheKey, processed.cleanedText, domainQuickReply, "domain-quick-reply");
+      await saveCachedResponse(cacheKey, processed.cleanedText, domainQuickReplyText, "domain-quick-reply");
     } catch (error) {
       logError("cache-write-quick-reply", error);
     }
     return withAnswerFields({
-      response: domainQuickReply,
+      response: domainQuickReplyText,
       provider: "domain-quick-reply",
       cached: false,
       escalate: false,
