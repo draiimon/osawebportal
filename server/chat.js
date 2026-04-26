@@ -24,21 +24,15 @@ const GROQ_MODEL = String(process.env.GROQ_MODEL || "qwen/qwen3-32b").trim();
  *
  * Priority order:
  *   1. PORTAL_URL env var — only used when it is NOT a localhost address.
- *   2. RENDER_EXTERNAL_URL — auto-injected by Render on every deploy.
- *   3. REPLIT_DEV_DOMAIN — auto-injected by Replit (no scheme prefix).
- *   4. Empty string — no link rendered in the email.
+ *   2. Production custom domain (default fallback).
  */
+const PRODUCTION_PORTAL_URL = "https://eac.osawebportal.ct.ws";
+
 function getPortalUrl() {
   const explicit = String(process.env.PORTAL_URL || "").trim().replace(/\/$/, "");
   if (explicit && !/localhost|127\.0\.0\.1/i.test(explicit)) return explicit;
 
-  const render = String(process.env.RENDER_EXTERNAL_URL || "").trim().replace(/\/$/, "");
-  if (render) return render;
-
-  const replit = String(process.env.REPLIT_DEV_DOMAIN || "").trim();
-  if (replit) return `https://${replit}`;
-
-  return "";
+  return PRODUCTION_PORTAL_URL;
 }
 
 const GROQ_BASE_URL = String(process.env.GROQ_BASE_URL || "https://api.groq.com/openai/v1")
