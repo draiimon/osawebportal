@@ -816,13 +816,56 @@ function looksOnTopicForOsa(message) {
   // "Emilio Aguinaldo" alone is treated as off-topic (the historical figure).
   // It only counts as on-topic when paired with college/university/school terms.
   if (/\bemilio aguinaldo\s+(college|university|school|institute|cavite)\b/.test(m)) return true;
-  return /\b(eac|osa|student\s*affairs|student\s*manual|manual|handbook|scholarship|tuition|clearance|enrollment|enroll|lost\s*(and|&)?\s*found|announcement|good\s*moral|discipline|disciplinary|attendance|tardiness|tardy|absence|absences|grading|grade|grades|uniform|cashier|registrar|school\s*id|student\s*id|office\s*hours|campus|appointment|ticket|case|lf-?\d|incident|brightspace|residency|graduation|graduate|transferee|exam|exams|examination|examinations|prelim|midterm|final|finals|semester|term|summer|class\s*size|policy|policies|rule|rules|regulation|requirement|complaint|concern|chat|portal|form|certificate|claim|item|backpack|wallet|id\s*card|lecture|class|classes|teacher|professor|faculty|subject|course|curriculum|guidance|counseling|sanction|fee|fees|payment|deadline|schedule|drop|dropped|cheating|plagiarism|behavior|conduct|residence)\b/.test(m);
+  return /\b(eac|osa|student\s*affairs|student\s*manual|manual|handbook|scholarship|tuition|clearance|enrollment|enroll|enrol(?:l|led|ling|ment)?|lost\s*(and|&)?\s*found|announcement|good\s*moral|discipline|disciplinary|attendance|tardiness|tardy|absence|absences|grading|grade|grades|uniform|cashier|registrar|register|registration|school\s*id|student\s*id|office\s*hours|campus|appointment|ticket|case|lf-?\d|incident|brightspace|residency|graduation|graduate|transferee|exam|exams|examination|examinations|prelim|midterm|final|finals|semester|term|summer|class\s*size|policy|policies|rule|rules|regulation|requirement|complaint|concern|chat|portal|form|certificate|claim|item|backpack|wallet|id\s*card|lecture|class|classes|teacher|professor|faculty|subject|course|curriculum|guidance|counseling|counselling|sanction|fee|fees|payment|deadline|schedule|drop|dropped|cheating|plagiarism|behavior|behaviour|conduct|residence|organization|organisation|organizations|organisations|\borg\b|\borgs\b|event|events|activity|activities|club|clubs|society|societies|laap|college|university|school|library|clinic|laboratory|laboratories|computer\s*lab|service|services|department|college\s*of|program|programs|programme|programmes|application|applications|apply|requirements?|deadline|deadlines|process|procedure|procedures|step|steps|how\s+to|where\s+(can|do|to)|register\s+for|wash\s*day|dress\s*code|prescribed|prohibited|allowed|emili?an\s+(culture|formation)|loa|leave\s+of\s+absence|grievance)\b/.test(m);
 }
 
-const OFF_TOPIC_REFUSAL_REPLY =
-  "I can only help with OSA topics — announcements, lost & found, official forms, " +
-  "appointments, and student services. Please ask a question related to the Office " +
-  "of Student Affairs at EAC Cavite and I'll be glad to help.";
+const OFF_TOPIC_REFUSALS = [
+  "Hi! I focus on OSA services here at EAC Cavite — announcements, lost & found, " +
+  "scholarships, appointments, good moral, forms, and any student concern. " +
+  "Anything I can help you with on that side? I'd love to assist!",
+
+  "That's a little outside my OSA wheelhouse, but I'm here for anything EAC Cavite student-life " +
+  "related — announcements, lost & found claims, scholarships, appointments, your good moral " +
+  "request, forms, you name it. Just tell me what you need!",
+
+  "Hmm, not quite my area — but I'm your OSA buddy for EAC Cavite! Ask me about announcements, " +
+  "lost & found, scholarships, appointments, certificates, or anything OSA staff handles, and " +
+  "I'll walk you through it. What's on your mind?",
+
+  "Friendly heads-up: I'm built around OSA at EAC Cavite, so I'm best with student services, " +
+  "announcements, lost & found, scholarships, appointments, and forms. Pop me a question on any " +
+  "of those and we're good to go!",
+];
+
+function pickOffTopicReply() {
+  return OFF_TOPIC_REFUSALS[Math.floor(Math.random() * OFF_TOPIC_REFUSALS.length)];
+}
+
+const CASUAL_FILIPINO_REPLIES = [
+  "Kumusta! I'm your OSA assistant here at EAC Cavite — happy to help kahit anong OSA-related " +
+  "concern: announcements, lost & found, scholarships, appointments, forms, good moral cert, " +
+  "or any student service. Ano'ng maitutulong ko ngayon?",
+
+  "Hello! I'm doing great, salamat sa pagtatanong! I'm here to help with anything OSA at EAC " +
+  "Cavite — announcements, lost & found, scholarships, appointments, certificates, and student " +
+  "concerns. Anong gusto mong itanong?",
+
+  "Hi! Always ready to help with OSA matters — student services, announcements, scholarships, " +
+  "appointments, lost & found, good moral, anything OSA-related at EAC Cavite. Ano'ng kailangan mo today?",
+];
+
+function pickCasualReply() {
+  return CASUAL_FILIPINO_REPLIES[Math.floor(Math.random() * CASUAL_FILIPINO_REPLIES.length)];
+}
+
+// Friendly Filipino/Taglish casual chat — greet back warmly with a soft pivot
+// to OSA topics rather than a stiff scope refusal.
+function looksLikeCasualSocial(message) {
+  const m = String(message || "").toLowerCase().trim();
+  if (!m) return false;
+  if (m.length > 80) return false;
+  return /\b(kumain|kain|kakain|nakakain|kumain\s*ka|kumusta|kamusta|musta|mustha|mustha?\s*ka|how\s*are\s*you|pano\s*ka|ano\s*kaya|bakit\s*ganon|kasi\s*kasi|ano\s*ka|ano\s*ba|ako\s*ay|pwede\s*ba|grabe|ang\s*galing|nice|cool|lol|haha|hehe|kewl|love\s*you|miss\s*you|tagal)\b/.test(m);
+}
 
 function effectiveGuestRagMinConfidence(meta, ragResult) {
   let threshold = CHATBOT_RAG_MIN_CONFIDENCE;
@@ -937,16 +980,28 @@ async function runChatPipeline({ message, conversationId, userId }) {
     !looksOnTopicForOsa(message) &&
     !looksLikePortalPageIntent(processed.cleanedText)
   ) {
+    const isCasualSocial =
+      looksLikeCasualSocial(processed.cleanedText) || looksLikeCasualSocial(message);
+    const lcRaw = String(message || "").toLowerCase();
+    const isComplaintOrProfanity =
+      /\b(fuck|fucking|bitch|shit|asshole|putang|tangina|gago|gaga|tanga|bobo|ulol|hayop|oa|tagal|di\s*na\s*makausap|hindi\s*na\s*makausap|wala\s*ka|useless|stupid\s*ai|annoying|inis|bakit\s*ganon|ang\s*hirap)\b/.test(lcRaw);
+    const offTopicReply = isComplaintOrProfanity
+      ? ("Sorry kung nakakapagod — let's start fresh. I'm your OSA assistant for EAC Cavite and I'd really like to help. " +
+         "Try asking me about anything OSA-related: announcements, lost & found claims, scholarships, your appointment, good moral certificate, " +
+         "or any concern you'd like staff to look into. I'm here for you!")
+      : isCasualSocial
+        ? pickCasualReply()
+        : pickOffTopicReply();
     try {
       await appendMemory(conversationId, "user", processed.cleanedText);
     } catch (err) { logError("memory-write-user-offtopic", err); }
     try {
-      await appendMemory(conversationId, "assistant", OFF_TOPIC_REFUSAL_REPLY);
+      await appendMemory(conversationId, "assistant", offTopicReply);
     } catch (err) { logError("memory-write-assistant-offtopic", err); }
-    rememberAssistantReply(conversationId, OFF_TOPIC_REFUSAL_REPLY);
+    rememberAssistantReply(conversationId, offTopicReply);
     return withAnswerFields({
-      response: OFF_TOPIC_REFUSAL_REPLY,
-      provider: "off-topic-refusal",
+      response: offTopicReply,
+      provider: isCasualSocial ? "casual-social-reply" : "off-topic-refusal",
       cached: false,
       escalate: false,
       intent: processed.intent,

@@ -1,9 +1,10 @@
 "use strict";
 
-// 45-question chatbot regression test.
-// Categories (15 each): easy, complex (KB-grounded), troll/off-topic.
-// Boots the running server and POSTs against /api/v1/chatbot/message.
-// A test "passes" when the response respects the assertion for that row.
+// 60-question chatbot regression test.
+// Categories: easy (15), complex KB-grounded (15), deep KB-grounded (15),
+// troll/off-topic (15). Boots the running server and POSTs against
+// /api/v1/chatbot/message. A test "passes" when the response respects the
+// assertion for that row.
 
 const http = require("http");
 
@@ -89,6 +90,25 @@ const complex = [
     "How does OSA handle disciplinary cases?",
     /(disciplin|case|investigation|sanction|hearing|process|policy)/i,
   ],
+];
+
+// Deep KB-grounded — should be answered from the EAC Student Manual / RAG chunks.
+const deepKb = [
+  ["Where do student organizations register events at EAC?", /(osa|student\s*organization|register|event|activity|approval|laap|process)/i],
+  ["What library services are available at EAC?", /(library|book|reading|study|database|research|filipiniana|thesis|periodicals?)/i],
+  ["Does EAC have a clinic or health center?", /(clinic|health|medical|first\s*aid|nurse|doctor|exam)/i],
+  ["What computer laboratory facilities does EAC offer?", /(computer|lab|laboratory|access|enroll|subjects|workstation)/i],
+  ["Are there Filipiniana materials in the library?", /(filipiniana|library|collection|local|filipino|materials?|culture)/i],
+  ["What guidance and counseling support is available?", /(guidance|counseling|counsell?ing|support|consultation|appointment|psychological)/i],
+  ["What is the policy on academic dishonesty?", /(cheating|plagiarism|dishonest|sanction|drop|5\.0|fail|grade|policy)/i],
+  ["Tell me the OSA mission and vision.", /(osa|mission|vision|service|develop|student|emili?an|formation|holistic)/i],
+  ["Are uniforms required during summer term at EAC?", /(uniform|summer|term|policy|allowed|prescribed|wear|exception)/i],
+  ["How does EAC handle student grievances or complaints?", /(grievance|complaint|file|submit|process|hearing|investigation|osa|resolution)/i],
+  ["What are the rules for class attendance at EAC?", /(attendance|absent|absences|tardy|tardiness|class|drop|policy|allowed)/i],
+  ["How do I apply for a leave of absence at EAC?", /(leave|absence|loa|apply|request|registrar|process|form|requirement)/i],
+  ["What happens if I exceed the residency limit at EAC?", /(residency|maximum|10\s*years?|exceed|extend|drop|graduate|policy)/i],
+  ["What is the dress code on Wash Day?", /(wash\s*day|friday|wear|dress|uniform|allowed|jeans|smart\s*casual|polo)/i],
+  ["Are there Brightspace technical support contacts?", /(brightspace|support|help|technical|contact|email|portal|elearning|distance)/i],
 ];
 
 // Troll / off-topic / abusive — bot must refuse or stay on scope.
@@ -187,18 +207,20 @@ async function runCategory(label, items, allowEmpty) {
 
   const e = await runCategory("EASY", easy, false);
   const c = await runCategory("COMPLEX", complex, false);
+  const d = await runCategory("DEEP KB", deepKb, false);
   const t = await runCategory("TROLL/OFF-TOPIC", troll, false);
 
-  const totalPassed = e.passed + c.passed + t.passed;
-  const totalCount = e.total + c.total + t.total;
+  const totalPassed = e.passed + c.passed + d.passed + t.passed;
+  const totalCount = e.total + c.total + d.total + t.total;
   console.log("\n════════════════════════════════════════");
   console.log(`SUMMARY: ${totalPassed}/${totalCount} (${Math.round((totalPassed / totalCount) * 100)}%)`);
   console.log(`  Easy:    ${e.passed}/${e.total}`);
   console.log(`  Complex: ${c.passed}/${c.total}`);
+  console.log(`  Deep KB: ${d.passed}/${d.total}`);
   console.log(`  Troll:   ${t.passed}/${t.total}`);
-  if (e.failed.length || c.failed.length || t.failed.length) {
+  if (e.failed.length || c.failed.length || d.failed.length || t.failed.length) {
     console.log("\nFailed details:");
-    for (const f of [...e.failed, ...c.failed, ...t.failed]) {
+    for (const f of [...e.failed, ...c.failed, ...d.failed, ...t.failed]) {
       console.log(`  - [${f.reason}] ${f.q}\n      ${String(f.reply).slice(0, 160).replace(/\n/g, " ⏎ ")}`);
     }
   }

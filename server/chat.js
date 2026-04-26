@@ -1677,10 +1677,23 @@ function parseSimpleMath(message) {
 const CHAT_ALLOW_GENERAL_FACTS =
   String(process.env.CHAT_ALLOW_GENERAL_FACTS || "false").trim().toLowerCase() === "true";
 
-const OFF_TOPIC_REFUSAL =
-  "I can only help with OSA topics — announcements, lost & found, official forms, " +
-  "appointments, and student services. Please ask a question related to the Office " +
-  "of Student Affairs and I'll be glad to help.";
+const OFF_TOPIC_REFUSALS = [
+  "Hi there! I'd love to help — my specialty is OSA services here at EAC Cavite, " +
+  "like announcements, lost & found, scholarships, appointments, forms, and student concerns. " +
+  "Feel free to ask me anything about those and I'll guide you through it!",
+
+  "I'm your friendly OSA assistant for EAC Cavite, so I'm best at helping with student affairs — " +
+  "announcements, lost & found claims, scholarships, good moral certificates, appointments, " +
+  "and the like. What can I help you with on the OSA side?",
+
+  "That one's outside my OSA scope, but I'm happy to help with anything related to student " +
+  "services at EAC Cavite — announcements, lost & found, scholarships, appointments, forms, " +
+  "or any concern you'd like OSA staff to look into. What do you need?",
+];
+
+function pickOffTopicRefusal() {
+  return OFF_TOPIC_REFUSALS[Math.floor(Math.random() * OFF_TOPIC_REFUSALS.length)];
+}
 
 function mayUseGeneralFactMode(message) {
   if (!CHAT_ALLOW_GENERAL_FACTS) return false;
@@ -2574,14 +2587,25 @@ function registerChatRoutes(app, apiPrefix) {
           !looksLikeOtpHelpIntent(String(message || "")) &&
           !isAppointmentIntent(String(message || "")) &&
           !needsEscalation(String(message || ""), "") &&
-          !/^\s*(hi+|hello+|hey|kumusta|kamusta|good\s+(morning|afternoon|evening|day)|hoy|oi|yo|sup|helo|helow|ello|greetings|thanks?|thank\s+you|salamat|ok|okay|sige|noted)\b/i.test(String(message || "")) &&
+          !/^\s*(hi+|hello+|hey|kumusta|kamusta|musta|good\s+(morning|afternoon|evening|day)|hoy|oi|yo|sup|helo|helow|ello|greetings|thanks?|thank\s+you|salamat|ok|okay|sige|noted|kumain|kakain|mustha)\b/i.test(String(message || "")) &&
           !looksLikeManualPolicyDetailQuery(String(message || ""))
         ) {
-          await persistReply(sessionId, OFF_TOPIC_REFUSAL);
+          const lc = String(message || "").toLowerCase();
+          const isComplaint = /\b(oa|tagal|di\s*na|hindi\s*na|wala\s*ka|useless|stupid\s*ai|bobo|gago|tanga|annoying|inis|kala\s*ko|bakit\s*ganon|ang\s*hirap)\b/.test(lc);
+          const isProfanity = /\b(fuck|fucking|bitch|shit|asshole|putang|tangina|gago|gaga|tanga|bobo|ulol|hayop)\b/.test(lc);
+          let pickedReply;
+          if (isComplaint || isProfanity) {
+            pickedReply = "Sorry kung nakakapagod — let's start fresh. I'm your OSA assistant for EAC Cavite and I'd really like to help. " +
+              "Try asking me about anything OSA-related: announcements, lost & found claims, scholarships, your appointment, good moral certificate, " +
+              "or any concern you'd like staff to look into. I'm here for you!";
+          } else {
+            pickedReply = pickOffTopicRefusal();
+          }
+          await persistReply(sessionId, pickedReply);
           return res.json({
             success: true,
-            reply: OFF_TOPIC_REFUSAL,
-            answer: OFF_TOPIC_REFUSAL,
+            reply: pickedReply,
+            answer: pickedReply,
             tier: 2,
             suggest_escalation: false,
             escalate: false,
