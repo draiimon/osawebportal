@@ -6,8 +6,14 @@ const RESEND_COOLDOWN_MS = 30 * 1000;
 const MAX_VERIFY_ATTEMPTS = 5;
 const MAX_OTP_SENDS_PER_DAY = Math.max(1, Number(process.env.MAX_OTP_SENDS_PER_DAY || 5));
 const BREVO_URL = "https://api.brevo.com/v3/smtp/email";
-const OTP_TEST_MODE = String(process.env.OTP_TEST_MODE || "false").trim().toLowerCase() === "true";
-const OTP_TEST_CODE = String(process.env.OTP_TEST_CODE || "00000").replace(/\D/g, "");
+/**
+ * Dev bypass code — when set, entering this code on the verify step issues a
+ * chat token immediately, without checking the real OTP. Real OTP emails are
+ * still sent normally. Useful for testing end-to-end flows without needing to
+ * copy the code from the email each time.
+ * Set OTP_DEV_BYPASS_CODE in env vars to enable.
+ */
+const OTP_DEV_BYPASS_CODE = String(process.env.OTP_DEV_BYPASS_CODE || "").replace(/\D/g, "");
 
 function getAllowedDomain() {
   return String(process.env.OSA_ALLOWED_EMAIL_DOMAIN || "").trim().toLowerCase();
@@ -50,10 +56,10 @@ function generateSixDigitOtp() {
   return String(crypto.randomInt(0, 1_000_000)).padStart(6, "0");
 }
 
-function isOtpTestCodeMatch(rawOtp) {
+function isDevBypassCode(rawOtp) {
   const digits = String(rawOtp || "").replace(/\D/g, "");
-  if (!OTP_TEST_CODE) return false;
-  return digits === OTP_TEST_CODE;
+  if (!OTP_DEV_BYPASS_CODE || !digits) return false;
+  return digits === OTP_DEV_BYPASS_CODE;
 }
 
 async function issueChatToken(email) {
@@ -174,20 +180,6 @@ function registerOtpRoutes(app, apiPrefix) {
     try {
       await deleteExpiredForEmail(email);
 
-      // Local testing mode: skip external OTP email provider usage.
-      if (OTP_TEST_MODE) {
-        return res.json({
-          success: true,
-          message: "OTP test mode active. Use test code for verification.",
-          cooldownSeconds: 0,
-          dailyLimit: "bypassed",
-          dailyUsed: 0,
-          dailyRemaining: "unlimited",
-          testBypass: true,
-          testMode: true,
-        });
-      }
-
       // Daily cap: reject the 6th+ send in a calendar day.
       const quota = await getDailyOtpQuota(email);
       if (!bypassLimits) {
@@ -293,20 +285,19 @@ function registerOtpRoutes(app, apiPrefix) {
           `Visitors should use the public OSA website (https://www.eac.edu.ph/osa/) and visit the office during business hours.`,
       });
     }
-    if (OTP_TEST_MODE && isOtpTestCodeMatch(otpRaw)) {
+    if (isDevBypassCode(otpRaw)) {
       try {
         const chatToken = await issueChatToken(email);
         return res.json({
           success: true,
           verified: true,
-          message: "Email verified (test mode).",
+          message: "Email verified.",
           chat_token: chatToken,
           email,
-          testMode: true,
         });
       } catch (error) {
         // eslint-disable-next-line no-console
-        console.error("[otp-verify:test-mode]", error && (error.stack || error.message || error));
+        console.error("[otp-verify:dev-bypass]", error && (error.stack || error.message || error));
         return res.status(500).json({
           success: false,
           message: "Verification failed. Please try again.",
