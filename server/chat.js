@@ -1289,23 +1289,41 @@ function looksLikePortalLogisticsIntent(message) {
  *  `looksLikePortalLogisticsIntent` (which targets OSA office hours) by
  *  requiring the question to be about today/now rather than office hours. */
 function looksLikeDateTimeQuery(message) {
-  const m = String(message || "").toLowerCase().trim();
+  // Normalize: lowercase, strip punctuation (replace with spaces), collapse
+  // whitespace. This way "oras?", "full date?? today?", "anong oras na??",
+  // and "what time is it??" all reduce to clean tokenized strings before
+  // we run the intent regexes — punctuation should never block detection.
+  const m = String(message || "")
+    .toLowerCase()
+    .replace(/['`’]/g, "")                 // drop apostrophes so "today's" → "todays", "what's" → "whats"
+    .replace(/[?!.,;:¿¡()\[\]{}"~]+/g, " ") // other punctuation becomes space
+    .replace(/\s+/g, " ")
+    .trim();
   if (!m) return false;
   if (m.length > 80) return false; // skip long messages where date is incidental
   // Office-hours / location questions belong to the portal-logistics path.
   if (/\b(office|business|operating|open)\s+hours\b/.test(m)) return false;
   if (/\bwhat\s+(are\s+)?(the\s+)?hours\b/.test(m)) return false;
+  // Single-word direct asks — English + Filipino. "oras", "petsa", "araw"
+  // on their own are unambiguous date/time pings.
+  if (/^(time|date|day|year|month|today|oras|petsa|araw|buwan|taon|ngayon)$/.test(m)) return true;
+  // Two-word direct asks: "full date", "todays date", "date today",
+  // "time now", "petsa ngayon", "oras ngayon", "araw ngayon".
+  if (/^(full|today'?s?|current)\s+(date|day|time|month|year)$/.test(m)) return true;
+  if (/^(date|day|time)\s+(now|today)$/.test(m)) return true;
+  if (/^(petsa|oras|araw|buwan|taon)\s+(ngayon|today)$/.test(m)) return true;
   return (
-    /\bwhat(?:'s|\s+is)\s+(?:the\s+)?(date|day|time|month|year)\b/.test(m) ||
+    /\bwhat(?:s|\s+is)\s+(?:the\s+)?(date|day|time|month|year|today)\b/.test(m) ||
     /\bwhat\s+(time|day|date|year|month)\s+is\s+it\b/.test(m) ||
     /\bwhat\s+day\s+(of\s+the\s+week\s+)?(is\s+it|today)\b/.test(m) ||
-    /\b(current|today'?s?)\s+(date|day|time)\b/.test(m) ||
-    /\b(time|date)\s+(now|today|right\s+now)\b/.test(m) ||
-    /^\s*(time|date|day|year|month)\s*\??\s*$/.test(m) ||
+    /\b(current|todays?|full)\s+(date|day|time|month|year)\b/.test(m) ||
+    /\b(date|day|time)\s+(today|now|right\s+now)\b/.test(m) ||
+    /\b(today|now)\s+(date|day|time)\b/.test(m) ||
     // Tagalog / Taglish
     /\bano(?:ng)?\s+(araw|petsa|oras|buwan|taon)\b/.test(m) ||
     /\banong\s+oras\s+na\b/.test(m) ||
-    /\bpetsa\s+ngayon\b/.test(m)
+    /\b(petsa|oras|araw)\s+ngayon\b/.test(m) ||
+    /\bngayon\s+(petsa|oras|araw)\b/.test(m)
   );
 }
 
