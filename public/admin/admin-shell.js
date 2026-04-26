@@ -15,9 +15,12 @@
   );
 
   if (!isPublic) {
-    const token = sessionStorage.getItem('osa_admin_token');
+    const token =
+      localStorage.getItem('osa_admin_token') ||
+      sessionStorage.getItem('osa_admin_token');
     if (!token) {
-      window.location.replace('/admin');
+      var returnTo = window.location.pathname + window.location.search + window.location.hash;
+      window.location.replace('/admin?return_to=' + encodeURIComponent(returnTo));
       return;
     }
   }
@@ -202,8 +205,8 @@
     }
 
     /* ── Populate admin identity ── */
-    const adminName  = sessionStorage.getItem('osa_admin_name')  || 'Administrator';
-    const adminEmail = sessionStorage.getItem('osa_admin_email') || '';
+    const adminName  = localStorage.getItem('osa_admin_name') || sessionStorage.getItem('osa_admin_name') || 'Administrator';
+    const adminEmail = localStorage.getItem('osa_admin_email') || sessionStorage.getItem('osa_admin_email') || '';
     const initials   = adminName.split(' ').map(w => w[0]).slice(0,2).join('').toUpperCase() || 'AD';
 
     document.querySelectorAll('[data-admin-name]').forEach(el => el.textContent = adminName);
@@ -330,7 +333,10 @@
 
     /* ── Logout ── */
     const performLogout = () => {
-      sessionStorage.clear();
+      ['osa_admin_token', 'osa_admin_name', 'osa_admin_email'].forEach((key) => {
+        try { localStorage.removeItem(key); } catch (_error) {}
+        try { sessionStorage.removeItem(key); } catch (_error) {}
+      });
       window.location.replace('/admin');
     };
 

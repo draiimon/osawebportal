@@ -502,8 +502,31 @@
   </main>
 
   <script>
-    if (sessionStorage.getItem('osa_admin_token')) {
-      window.location.replace('/admin/dashboard');
+    function getAdminRedirectTarget() {
+      const params = new URLSearchParams(window.location.search || '');
+      const raw = params.get('return_to') || '/admin/dashboard';
+      try {
+        const decoded = decodeURIComponent(raw);
+        if (decoded.startsWith('/admin')) return decoded;
+      } catch (_error) {
+        if (raw.startsWith('/admin')) return raw;
+      }
+      return '/admin/dashboard';
+    }
+
+    function persistAdminSession(token, name, email) {
+      const safeToken = token || 'authenticated';
+      const safeName = name || 'Admin';
+      localStorage.setItem('osa_admin_token', safeToken);
+      localStorage.setItem('osa_admin_name', safeName);
+      localStorage.setItem('osa_admin_email', email);
+      sessionStorage.setItem('osa_admin_token', safeToken);
+      sessionStorage.setItem('osa_admin_name', safeName);
+      sessionStorage.setItem('osa_admin_email', email);
+    }
+
+    if (localStorage.getItem('osa_admin_token') || sessionStorage.getItem('osa_admin_token')) {
+      window.location.replace(getAdminRedirectTarget());
     }
 
     const form     = document.getElementById('login-form');
@@ -547,10 +570,8 @@
         if (res.ok) {
           const data = await res.json();
           if (data.success) {
-            sessionStorage.setItem('osa_admin_token', data.token || 'authenticated');
-            sessionStorage.setItem('osa_admin_name', data.name || 'Admin');
-            sessionStorage.setItem('osa_admin_email', email);
-            window.location.replace('/admin/dashboard');
+            persistAdminSession(data.token, data.name, email);
+            window.location.replace(getAdminRedirectTarget());
             return;
           }
           showError(data.message || 'Invalid credentials. Please try again.');
@@ -558,20 +579,16 @@
           showError('Incorrect email or password.');
         } else {
           if (email === 'admin@eac.edu.ph' && password === 'admin123') {
-            sessionStorage.setItem('osa_admin_token', 'dev-token');
-            sessionStorage.setItem('osa_admin_name', 'OSA Administrator');
-            sessionStorage.setItem('osa_admin_email', email);
-            window.location.replace('/admin/dashboard');
+            persistAdminSession('dev-token', 'OSA Administrator', email);
+            window.location.replace(getAdminRedirectTarget());
             return;
           }
           showError('Login failed. Check your credentials.');
         }
       } catch {
         if (email === 'admin@eac.edu.ph' && password === 'admin123') {
-          sessionStorage.setItem('osa_admin_token', 'dev-token');
-          sessionStorage.setItem('osa_admin_name', 'OSA Administrator');
-          sessionStorage.setItem('osa_admin_email', email);
-          window.location.replace('/admin/dashboard');
+          persistAdminSession('dev-token', 'OSA Administrator', email);
+          window.location.replace(getAdminRedirectTarget());
           return;
         }
         showError('Could not connect to the server. Try again.');

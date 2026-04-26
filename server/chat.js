@@ -35,6 +35,48 @@ function getPortalUrl() {
   return PRODUCTION_PORTAL_URL;
 }
 
+function getEmailApiUrl() {
+  return String(process.env.EMAIL_API_URL || "https://api.brevo.com/v3/smtp/email").trim();
+}
+
+function getEmailApiKey() {
+  return String(
+    process.env.EMAIL_API_KEY ||
+    process.env.Brevo_API_KEY ||
+    process.env.BREVO_API_KEY ||
+    ""
+  ).trim();
+}
+
+function getEmailSenderAddress() {
+  return String(
+    process.env.EMAIL_SENDER_EMAIL ||
+    process.env.BREVO_SENDER_EMAIL ||
+    ""
+  ).trim();
+}
+
+function getEmailSenderName() {
+  return String(process.env.EMAIL_SENDER_NAME || process.env.BREVO_SENDER_NAME || "OSA System").trim() || "OSA System";
+}
+
+async function postTransactionalEmail(scope, payload) {
+  const response = await fetch(getEmailApiUrl(), {
+    method: "POST",
+    headers: {
+      accept: "application/json",
+      "Content-Type": "application/json",
+      "api-key": getEmailApiKey(),
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const bodyText = await response.text();
+    throw new Error(`Email API HTTP ${response.status}${bodyText ? `: ${bodyText}` : ""}`);
+  }
+}
+
 const GROQ_BASE_URL = String(process.env.GROQ_BASE_URL || "https://api.groq.com/openai/v1")
   .trim()
   .replace(/\/+$/, "");
@@ -534,8 +576,9 @@ setInterval(() => { sweepDeadAirTickets(); }, ORPHAN_TICKET_SWEEP_INTERVAL_MS).u
 async function sendStaffNotificationEmail(caseId, studentName, studentEmail, concern, variant) {
   try {
     const staffEmail = (process.env.OSA_STAFF_EMAIL || "").trim();
-    const apiKey    = (process.env.Brevo_API_KEY || "").trim();
-    const sender    = (process.env.BREVO_SENDER_EMAIL || "").trim();
+    const apiKey = getEmailApiKey();
+    const sender = getEmailSenderAddress();
+    const senderName = getEmailSenderName();
     if (!staffEmail || !apiKey || !sender) return;
 
     const portalUrl  = getPortalUrl();
@@ -562,31 +605,25 @@ async function sendStaffNotificationEmail(caseId, studentName, studentEmail, con
       `<p style="font-size:12px;color:#65574d;margin-top:16px">This is an automated notification from the OSA Transaction Guide Portal.</p>` +
       `</div>`;
 
-    await fetch("https://api.brevo.com/v3/smtp/email", {
-      method: "POST",
-      headers: {
-        accept: "application/json",
-        "Content-Type": "application/json",
-        "api-key": apiKey,
-      },
-      body: JSON.stringify({
-        sender: { name: process.env.BREVO_SENDER_NAME || "OSA System", email: sender },
-        to: [{ email: staffEmail }],
-        subject: variant === "claim"
-          ? `[OSA] LF Claim — ${caseId} · ${studentName}`
-          : `[OSA] New Escalation — ${caseId} · ${studentName}`,
-        htmlContent: html,
-      }),
+    await postTransactionalEmail("staff-escalation-email", {
+      sender: { name: senderName, email: sender },
+      to: [{ email: staffEmail }],
+      subject: variant === "claim"
+        ? `[OSA] LF Claim — ${caseId} · ${studentName}`
+        : `[OSA] New Escalation — ${caseId} · ${studentName}`,
+      htmlContent: html,
     });
-  } catch (_) {
+  } catch (error) {
     // Non-fatal: ticket is already created, email failure shouldn't block
+    logError("send-staff-notification-email", error);
   }
 }
 
 async function sendStudentEscalationEmail(caseId, studentName, studentEmail, concern, variant) {
   try {
-    const apiKey = (process.env.Brevo_API_KEY || "").trim();
-    const sender = (process.env.BREVO_SENDER_EMAIL || "").trim();
+    const apiKey = getEmailApiKey();
+    const sender = getEmailSenderAddress();
+    const senderName = getEmailSenderName();
     if (!apiKey || !sender || !studentEmail) return;
 
     const isClaim = variant === "claim";
@@ -613,30 +650,24 @@ async function sendStudentEscalationEmail(caseId, studentName, studentEmail, con
       `<p style="font-size:12px;color:#65574d;margin-top:16px">This is an automated message from the OSA Transaction Guide Portal.</p>` +
       `</div>`;
 
-    await fetch("https://api.brevo.com/v3/smtp/email", {
-      method: "POST",
-      headers: {
-        accept: "application/json",
-        "Content-Type": "application/json",
-        "api-key": apiKey,
-      },
-      body: JSON.stringify({
-        sender: { name: process.env.BREVO_SENDER_NAME || "OSA System", email: sender },
-        to: [{ email: studentEmail }],
-        subject: isClaim ? `[OSA] Lost & Found Claim — ${caseId}` : `[OSA] Support Escalation Received — ${caseId}`,
-        htmlContent: html,
-      }),
+    await postTransactionalEmail("student-escalation-email", {
+      sender: { name: senderName, email: sender },
+      to: [{ email: studentEmail }],
+      subject: isClaim ? `[OSA] Lost & Found Claim — ${caseId}` : `[OSA] Support Escalation Received — ${caseId}`,
+      htmlContent: html,
     });
-  } catch (_) {
+  } catch (error) {
     // Non-fatal.
+    logError("send-student-escalation-email", error);
   }
 }
 
 async function sendEscalationWaitReminderEmail(caseId, studentName, studentEmail, concern) {
   try {
     const staffEmail = (process.env.OSA_STAFF_EMAIL || "").trim();
-    const apiKey = (process.env.Brevo_API_KEY || "").trim();
-    const sender = (process.env.BREVO_SENDER_EMAIL || "").trim();
+    const apiKey = getEmailApiKey();
+    const sender = getEmailSenderAddress();
+    const senderName = getEmailSenderName();
     if (!staffEmail || !apiKey || !sender) return;
 
     const toList = [{ email: staffEmail }];
@@ -651,22 +682,15 @@ async function sendEscalationWaitReminderEmail(caseId, studentName, studentEmail
       `<div style="background:#fff8f0;border-left:4px solid #c79a49;padding:14px 16px;font-size:14px;line-height:1.6;white-space:pre-wrap">${concern}</div>` +
       `</div>`;
 
-    await fetch("https://api.brevo.com/v3/smtp/email", {
-      method: "POST",
-      headers: {
-        accept: "application/json",
-        "Content-Type": "application/json",
-        "api-key": apiKey,
-      },
-      body: JSON.stringify({
-        sender: { name: process.env.BREVO_SENDER_NAME || "OSA System", email: sender },
-        to: toList,
-        subject: `[OSA] Reminder: Pending Response — ${caseId}`,
-        htmlContent: html,
-      }),
+    await postTransactionalEmail("escalation-reminder-email", {
+      sender: { name: senderName, email: sender },
+      to: toList,
+      subject: `[OSA] Reminder: Pending Response — ${caseId}`,
+      htmlContent: html,
     });
-  } catch (_) {
+  } catch (error) {
     // Non-fatal.
+    logError("send-escalation-reminder-email", error);
   }
 }
 
