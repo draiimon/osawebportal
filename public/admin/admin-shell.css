@@ -66,6 +66,36 @@ img { display: block; max-width: 100%; }
 button { font-family: var(--font-body); cursor: pointer; }
 input, select, textarea { font-family: var(--font-body); }
 
+/* App-like mobile touch behavior (no blue tap flash) */
+html,
+body,
+a,
+button,
+input[type="button"],
+input[type="submit"],
+[role="button"],
+.btn,
+.nav-link,
+.drawer-nav-item,
+.btn-logout,
+.drawer-logout {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Improve tap responsiveness across admin controls */
+a,
+button,
+input[type="button"],
+input[type="submit"],
+[role="button"],
+.btn,
+.nav-link,
+.drawer-nav-item,
+.btn-logout,
+.drawer-logout {
+  touch-action: manipulation;
+}
+
 /* ══════════════════════════════════════════════════════════════
    TOP NAVIGATION BAR
    ══════════════════════════════════════════════════════════════ */
@@ -1425,6 +1455,22 @@ input, select, textarea { font-family: var(--font-body); }
   .toast-wrap { left: 12px; right: 12px; bottom: 14px; }
   .toast { min-width: 0; max-width: 100%; }
   .btn-logout { padding: 0 12px; }
+}
+
+/* Faster touch feedback on phones */
+@media (max-width: 960px) and (hover: none) and (pointer: coarse) {
+  a,
+  button,
+  input[type="button"],
+  input[type="submit"],
+  [role="button"],
+  .btn,
+  .nav-link,
+  .drawer-nav-item,
+  .btn-logout,
+  .drawer-logout {
+    transition-duration: 90ms !important;
+  }
 }
 
 /* ══════════════════════════════════════════════════════════════
