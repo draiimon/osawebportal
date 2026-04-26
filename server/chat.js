@@ -1670,7 +1670,20 @@ function parseSimpleMath(message) {
   return `${a} ${op} ${b} = ${answer}`;
 }
 
+// Off-topic ("general fact") mode is OFF by default. The portal assistant is
+// scoped to OSA topics only. Set CHAT_ALLOW_GENERAL_FACTS=true to re-enable
+// general factual answers (e.g. trivia, translations) — not recommended for
+// production deployments.
+const CHAT_ALLOW_GENERAL_FACTS =
+  String(process.env.CHAT_ALLOW_GENERAL_FACTS || "false").trim().toLowerCase() === "true";
+
+const OFF_TOPIC_REFUSAL =
+  "I can only help with OSA topics — announcements, lost & found, official forms, " +
+  "appointments, and student services. Please ask a question related to the Office " +
+  "of Student Affairs and I'll be glad to help.";
+
 function mayUseGeneralFactMode(message) {
+  if (!CHAT_ALLOW_GENERAL_FACTS) return false;
   const m = String(message || "").trim();
   if (!m) return false;
   if (hasOsaScopeSignals(m)) return false;
@@ -1682,7 +1695,7 @@ function mayUseGeneralFactMode(message) {
 
 async function generateGeneralFactReply(message) {
   const raw = await generateLlmText({
-    maxOutputTokens: 220,
+    maxOutputTokens: 600,
     temperature: 0.2,
     systemPrompt:
       "You are a concise factual assistant. " +
@@ -2555,6 +2568,25 @@ function registerChatRoutes(app, apiPrefix) {
               general_fact_mode: true,
             });
           }
+        } else if (
+          !CHAT_ALLOW_GENERAL_FACTS &&
+          !hasOsaScopeSignals(String(message || "")) &&
+          !looksLikeOtpHelpIntent(String(message || "")) &&
+          !isAppointmentIntent(String(message || "")) &&
+          !needsEscalation(String(message || ""), "") &&
+          !/^\s*(hi+|hello+|hey|kumusta|kamusta|good\s+(morning|afternoon|evening|day)|hoy|oi|yo|sup|helo|helow|ello|greetings|thanks?|thank\s+you|salamat|ok|okay|sige|noted)\b/i.test(String(message || "")) &&
+          !looksLikeManualPolicyDetailQuery(String(message || ""))
+        ) {
+          await persistReply(sessionId, OFF_TOPIC_REFUSAL);
+          return res.json({
+            success: true,
+            reply: OFF_TOPIC_REFUSAL,
+            answer: OFF_TOPIC_REFUSAL,
+            tier: 2,
+            suggest_escalation: false,
+            escalate: false,
+            off_topic_refusal: true,
+          });
         }
 
         // ── TIER 1: FAQ search (optional; default off for conversational Tier 2) ──

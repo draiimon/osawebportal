@@ -62,12 +62,31 @@ function cleanModelText(raw) {
   // Strip common prompt-scaffolding leaks (some models echo structured instructions or block headers).
   text = text.replace(/(?:^|\n)\s*(?:SYSTEM|CONTEXT|INSTRUCTION|GROUNDING INSTRUCTIONS?|OFFICIAL SOURCES?|RETRIEVED[\w ]*)\s*:\s*[^\n]*(?:\n|$)/gi, "\n");
   text = text.replace(/\[Retrieved[^\]]+\]/gi, "");
+  // Strip Markdown emphasis Gemini and other LLMs emit (chat UI is plain text).
+  // Bold/italic/strikethrough markers are removed but the inner text is kept.
+  text = stripMarkdownEmphasis(text);
+
   // Clean up double spaces/punctuation left by removals
-  text = text.replace(/\s{2,}/g, " ").replace(/ ,/g, ",").replace(/ \./g, ".").replace(/^[,. ]+/g, "").trim();
+  text = text.replace(/[ \t]{2,}/g, " ").replace(/ ,/g, ",").replace(/ \./g, ".").replace(/^[,. ]+/g, "").trim();
   text = text.replace(/\n{3,}/g, "\n\n");
   text = collapseRepeatedWordRuns(text);
 
   return text.trim();
+}
+
+/** Strip Markdown emphasis markers (** __ *_ ~~) but preserve the inner text. */
+function stripMarkdownEmphasis(text) {
+  let out = String(text || "");
+  out = out.replace(/\*\*\*([^*\n]+?)\*\*\*/g, "$1");
+  out = out.replace(/___([^_\n]+?)___/g, "$1");
+  out = out.replace(/\*\*([^*\n]+?)\*\*/g, "$1");
+  out = out.replace(/__([^_\n]+?)__/g, "$1");
+  out = out.replace(/(^|[^\\\*])\*(?!\*)([^*\n]+?)\*(?!\*)/g, "$1$2");
+  out = out.replace(/(^|[^\\_])_(?!_)([^_\n]+?)_(?!_)/g, "$1$2");
+  out = out.replace(/~~([^~\n]+?)~~/g, "$1");
+  // Remove leftover bullet-asterisks at line starts but keep dash bullets.
+  out = out.replace(/^[ \t]*\*[ \t]+/gm, "• ");
+  return out;
 }
 
 /** Exact copy shown to users when FAQ/RAG cannot support a reliable answer (secure + guest chat). */

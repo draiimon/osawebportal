@@ -778,7 +778,14 @@ function hasUnsafeGeneralTopicSignals(message) {
   return /\b(kill myself|suicide|harm myself|bomb|weapon|gun|hack|hacking|steal password|drugs|shabu|meth|porn)\b/i.test(String(message || ""));
 }
 
+// Off-topic ("harmless general AI") fallback is OFF by default. The portal
+// assistant is scoped to OSA / EAC topics. Set CHATBOT_ALLOW_GENERAL_FACTS=true
+// to let the bot answer general trivia, translations, jokes, and casual chat.
+const CHATBOT_ALLOW_GENERAL_FACTS =
+  String(process.env.CHATBOT_ALLOW_GENERAL_FACTS || "false").trim().toLowerCase() === "true";
+
 function mayUseHarmlessGeneralAiFallback(message, meta) {
+  if (!CHATBOT_ALLOW_GENERAL_FACTS) return false;
   const m = String(message || "").trim();
   if (!m) return false;
   if (OFFICIAL_EAC_INTENTS.has(meta.intent)) return false;
@@ -799,6 +806,23 @@ function mayUseHarmlessGeneralAiFallback(message, meta) {
     meta.intent === "support"
   );
 }
+
+// Strict OSA/EAC scope check — used to short-circuit obvious off-topic prompts.
+function looksOnTopicForOsa(message) {
+  const m = String(message || "").toLowerCase();
+  if (!m.trim()) return true;
+  if (m.length <= 3) return true;
+  if (/^(hi+|hello+|hey|kumusta|kamusta|good\s+(morning|afternoon|evening|day)|hoy|oi|yo|sup|helo|helow|ello|greetings|thanks?|thank\s+you|salamat|ok|okay|sige|noted|bye+|goodbye)\b/.test(m)) return true;
+  // "Emilio Aguinaldo" alone is treated as off-topic (the historical figure).
+  // It only counts as on-topic when paired with college/university/school terms.
+  if (/\bemilio aguinaldo\s+(college|university|school|institute|cavite)\b/.test(m)) return true;
+  return /\b(eac|osa|student\s*affairs|student\s*manual|manual|handbook|scholarship|tuition|clearance|enrollment|enroll|lost\s*(and|&)?\s*found|announcement|good\s*moral|discipline|disciplinary|attendance|tardiness|tardy|absence|absences|grading|grade|grades|uniform|cashier|registrar|school\s*id|student\s*id|office\s*hours|campus|appointment|ticket|case|lf-?\d|incident|brightspace|residency|graduation|graduate|transferee|exam|exams|examination|examinations|prelim|midterm|final|finals|semester|term|summer|class\s*size|policy|policies|rule|rules|regulation|requirement|complaint|concern|chat|portal|form|certificate|claim|item|backpack|wallet|id\s*card|lecture|class|classes|teacher|professor|faculty|subject|course|curriculum|guidance|counseling|sanction|fee|fees|payment|deadline|schedule|drop|dropped|cheating|plagiarism|behavior|conduct|residence)\b/.test(m);
+}
+
+const OFF_TOPIC_REFUSAL_REPLY =
+  "I can only help with OSA topics — announcements, lost & found, official forms, " +
+  "appointments, and student services. Please ask a question related to the Office " +
+  "of Student Affairs at EAC Cavite and I'll be glad to help.";
 
 function effectiveGuestRagMinConfidence(meta, ragResult) {
   let threshold = CHATBOT_RAG_MIN_CONFIDENCE;
@@ -892,6 +916,37 @@ async function runChatPipeline({ message, conversationId, userId }) {
     return withAnswerFields({
       response: reply,
       provider: "datetime-shortcircuit",
+      cached: false,
+      escalate: false,
+      intent: processed.intent,
+      complexity: processed.complexity,
+      conversationId: conversationId || null,
+      userId: userId || null,
+    });
+  }
+
+  // ── Off-topic short-circuit ─────────────────────────────────────
+  // Refuse questions that are clearly outside OSA / EAC scope (translations,
+  // trivia, dating advice, profanity, etc.) before they reach the LLM.
+  // Skipped when CHATBOT_ALLOW_GENERAL_FACTS=true.
+  if (
+    !CHATBOT_ALLOW_GENERAL_FACTS &&
+    !otpIntent &&
+    !deterministicPortalQuery &&
+    !looksOnTopicForOsa(processed.cleanedText) &&
+    !looksOnTopicForOsa(message) &&
+    !looksLikePortalPageIntent(processed.cleanedText)
+  ) {
+    try {
+      await appendMemory(conversationId, "user", processed.cleanedText);
+    } catch (err) { logError("memory-write-user-offtopic", err); }
+    try {
+      await appendMemory(conversationId, "assistant", OFF_TOPIC_REFUSAL_REPLY);
+    } catch (err) { logError("memory-write-assistant-offtopic", err); }
+    rememberAssistantReply(conversationId, OFF_TOPIC_REFUSAL_REPLY);
+    return withAnswerFields({
+      response: OFF_TOPIC_REFUSAL_REPLY,
+      provider: "off-topic-refusal",
       cached: false,
       escalate: false,
       intent: processed.intent,
