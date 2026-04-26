@@ -3345,6 +3345,38 @@ function registerChatRoutes(app, apiPrefix) {
     }
   });
 
+  // Admin: lightweight tab counters so new open requests stay visible
+  // even while staff are browsing a different status tab.
+  app.get(`${apiPrefix}/chat/tickets/counts`, requireAdminKey, async (_req, res) => {
+    try {
+      const [openResult, resolvedResult, inProgressResult] = await Promise.all([
+        db.query(`SELECT count(*)::int AS c FROM escalation_tickets WHERE status = 'open'`),
+        db.query(`SELECT count(*)::int AS c FROM escalation_tickets WHERE status = 'resolved'`),
+        db.query(
+          `SELECT session_id, appointment_status
+             FROM escalation_tickets
+            WHERE status = 'in_progress'`
+        ),
+      ]);
+
+      const open = Number((openResult.rows[0] && openResult.rows[0].c) || 0);
+      const resolved = Number((resolvedResult.rows[0] && resolvedResult.rows[0].c) || 0);
+      const in_progress = inProgressResult.rows.filter((t) => {
+        return (
+          !!(sseClients.get(t.session_id) && sseClients.get(t.session_id).size > 0) ||
+          String(t.appointment_status || "").toLowerCase() === "approved"
+        );
+      }).length;
+
+      return res.json({
+        success: true,
+        counts: { open, in_progress, resolved },
+      });
+    } catch (error) {
+      return genericError(res, "chat-ticket-counts", error);
+    }
+  });
+
   // Admin: List tickets
   app.get(`${apiPrefix}/chat/tickets`, requireAdminKey, async (req, res) => {
     const status = String((req.query && req.query.status) || "open").trim().toLowerCase();

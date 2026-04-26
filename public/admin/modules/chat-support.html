@@ -304,6 +304,25 @@
       border-bottom-color: var(--brand);
       background: linear-gradient(180deg, transparent 0%, var(--brand-soft) 100%);
     }
+    .status-tab__count {
+      display: none;
+      min-width: 18px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: rgba(132,26,45,0.12);
+      color: var(--brand);
+      font-size: 10px;
+      font-weight: 800;
+      line-height: 1.2;
+      vertical-align: middle;
+      margin-left: 6px;
+    }
+    .status-tab__count.visible { display: inline-block; }
+    .status-tab__count.status-tab__count--alert {
+      background: var(--brand);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(132,26,45,0.22);
+    }
 
     .ticket-search-wrap {
       padding: 10px 12px;
@@ -1472,9 +1491,9 @@
           </button>
         </div>
         <div class="status-tabs">
-          <button type="button" class="status-tab active" data-status="open">Open</button>
-          <button type="button" class="status-tab" data-status="in_progress">In Progress</button>
-          <button type="button" class="status-tab" data-status="resolved">Resolved</button>
+          <button type="button" class="status-tab active" data-status="open">Open <span class="status-tab__count" id="tab-count-open">0</span></button>
+          <button type="button" class="status-tab" data-status="in_progress">In Progress <span class="status-tab__count" id="tab-count-in-progress">0</span></button>
+          <button type="button" class="status-tab" data-status="resolved">Resolved <span class="status-tab__count" id="tab-count-resolved">0</span></button>
         </div>
         <div style="padding:10px 12px;border-bottom:1px solid var(--line);background:#fff">
           <input id="ticket-search" type="search" placeholder="Search by case ID or student name" style="width:100%;border:1.5px solid var(--line);padding:8px 10px;font:inherit;font-size:12.5px;border-radius:2px;outline:none">
@@ -1757,6 +1776,7 @@
   var state = {
     currentStatus: readSavedStatus(),
     currentSearch: '',
+    ticketCounts: { open: 0, in_progress: 0, resolved: 0 },
     currentCaseId: null,
     currentSessionId: null,
     currentConcern: '',
@@ -1910,7 +1930,44 @@
   function updateDrawerBadge(count) {
     var btn = document.getElementById('btn-show-tickets');
     if (!btn) return;
-    btn.setAttribute('data-has-pending', (Number(count) > 0 && state.currentStatus === 'open') ? '1' : '0');
+    btn.setAttribute('data-has-pending', Number(count) > 0 ? '1' : '0');
+  }
+
+  function updateTabCounts(counts) {
+    var next = counts || {};
+    state.ticketCounts = {
+      open: Number(next.open || 0),
+      in_progress: Number(next.in_progress || 0),
+      resolved: Number(next.resolved || 0),
+    };
+
+    var map = [
+      ['open', 'tab-count-open'],
+      ['in_progress', 'tab-count-in-progress'],
+      ['resolved', 'tab-count-resolved'],
+    ];
+
+    map.forEach(function (entry) {
+      var key = entry[0];
+      var el = document.getElementById(entry[1]);
+      if (!el) return;
+      var value = Number(state.ticketCounts[key] || 0);
+      el.textContent = String(value);
+      el.classList.toggle('visible', value > 0);
+      el.classList.toggle('status-tab__count--alert', key === 'open' && value > 0 && state.currentStatus !== 'open');
+    });
+
+    updateDrawerBadge(state.ticketCounts.open || 0);
+  }
+
+  function loadTicketCounts() {
+    fetch(API + '/chat/tickets/counts?_ts=' + Date.now(), { headers: apiHeaders(), cache: 'no-store' })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (!data || data.success === false || !data.counts) return;
+        updateTabCounts(data.counts);
+      })
+      .catch(function () {});
   }
 
   function syncResponsivePanels(hasSelectedTicket) {
@@ -2194,16 +2251,17 @@
           ticketList.innerHTML = '<div class="empty-tickets">Admin session expired. Please sign in again.</div>';
           return;
         }
+        loadTicketCounts();
         if (!data.success || !data.tickets.length) {
           invalidateTicketCache();
           ticketList.innerHTML = '<div class="empty-tickets">No ' + state.currentStatus.replace('_', ' ') + ' tickets.</div>';
           openCount.textContent = '0';
-          updateDrawerBadge(0);
+          updateDrawerBadge(state.ticketCounts.open || 0);
           if (!state.currentCaseId) probeAndRestoreLastCaseAcrossTabs();
           return;
         }
         openCount.textContent = String(data.tickets.length);
-        updateDrawerBadge(data.tickets.length);
+        updateDrawerBadge(state.ticketCounts.open || 0);
         renderTickets(data.tickets);
         if (!state.currentCaseId) {
           if (!tryRestoreLastCaseFromCurrentList(data.tickets)) {
@@ -2313,6 +2371,12 @@
       var isNewTicket = presenceType === 'ticket_created';
       var shouldRefreshList = isNewTicket || ((!state.currentCaseId || sameCaseAsFocused) && !skipListRefreshForFocusedInProgress);
       if (shouldRefreshList) loadTickets({ quiet: true });
+      if (isNewTicket) {
+        loadTicketCounts();
+        if (state.currentStatus !== 'open') {
+          showToast('New open ticket received. Switch to the Open tab to view it.', { variant: 'info', duration: 3200 });
+        }
+      }
       if (state.currentSessionId && (!payload.case_id || payload.case_id === state.currentCaseId)) {
         // Debounced — coalesces a burst of SSE events into one fetch + diff
         loadMessagesSoon();
@@ -3782,6 +3846,7 @@
   });
   syncResponsivePanels(false);
   loadTickets();
+  loadTicketCounts();
   startAdminTicketStream();
 
   // Polling fallback: refresh the ticket list every 10 s regardless of SSE.
@@ -3789,6 +3854,7 @@
   // admin opened the page before the student submitted, or SSE dropped).
   window.setInterval(function () {
     loadTickets({ quiet: true });
+    loadTicketCounts();
   }, 10000);
 
   // First-load UX on phones: if there's no remembered ticket to restore,
