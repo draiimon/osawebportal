@@ -130,6 +130,7 @@ const CHAT_TIER1_FAQ_ENABLED =
  * Entries are cleaned up when the chain resolves to avoid unbounded growth.
  */
 const _sessionQueues = new Map();
+const _recentAssistantRepliesBySession = new Map();
 
 function enqueueForSession(sessionId, fn) {
   const prev = _sessionQueues.get(sessionId) || Promise.resolve();
@@ -142,6 +143,23 @@ function enqueueForSession(sessionId, fn) {
   });
   _sessionQueues.set(sessionId, next);
   return next;
+}
+
+function getRecentAssistantReplyMemory(sessionId) {
+  const key = String(sessionId || "").trim();
+  if (!key) return [];
+  return Array.isArray(_recentAssistantRepliesBySession.get(key))
+    ? _recentAssistantRepliesBySession.get(key)
+    : [];
+}
+
+function rememberAssistantReply(sessionId, replyText) {
+  const key = String(sessionId || "").trim();
+  const text = String(replyText || "").trim();
+  if (!key || !text) return;
+  const current = getRecentAssistantReplyMemory(key);
+  const next = [...current, text].slice(-3);
+  _recentAssistantRepliesBySession.set(key, next);
 }
 
 function logError(scope, err) {
@@ -843,6 +861,7 @@ async function persistReply(sessionId, reply) {
     `INSERT INTO chat_messages (session_id, role, content) VALUES ($1, 'assistant', $2)`,
     [sessionId, reply]
   );
+  rememberAssistantReply(sessionId, reply);
   await db.query(`UPDATE chat_sessions SET last_active_at = NOW() WHERE id = $1`, [sessionId]);
 }
 
@@ -1086,6 +1105,7 @@ function buildSystemPrompt(name, email, ctx, ragInfo) {
     `STRICT GROUNDING RULES:\n` +
     `- Answer ONLY from the OFFICIAL SOURCES and CURRENT SYSTEM STATE below (when present).\n` +
     `- For questions about what is shown on the portal dashboard, Home page, About page, guide sections, or downloadable forms blocks, prioritize the CURRENT SYSTEM STATE page-content details over generic summaries.\n` +
+    `- When the student asks what a policy/manual says about a specific case (for example lost ID), provide the supported policy details first (steps/requirements/process). Use links only as supporting references, not as the whole answer.\n` +
     `- Never invent requirements, fees, deadlines, steps, offices, policies, contact numbers, or email addresses.\n` +
     `- If the official sources do not contain the answer, say you don't have that specific detail and direct the student to contact OSA.\n` +
     `- If sources are only partially relevant, answer the supported part then say what specific detail is not available — offer to connect them with OSA staff.\n` +
@@ -1537,6 +1557,100 @@ function isChatSummaryQuery(message) {
 function hasOsaScopeSignals(message) {
   return /\b(eac|osa|student manual|manual|scholarship|tuition|clearance|enrollment|enroll|lost\s*(and|&)?\s*found|announcement|good moral|discipline|attendance|grading|uniform|cashier|registrar|school id|student id|office hours|campus pass)\b/i
     .test(String(message || ""));
+}
+
+function looksLikeManualPolicyDetailQuery(message) {
+  const m = String(message || "")
+    .toLowerCase()
+    .replace(/['`’]/g, "")
+    .replace(/[?!.,;:¿¡()\[\]{}"~]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!m) return false;
+  if (!/\b(student\s+)?manual\b|\bhandbook\b/.test(m)) return false;
+  if (/\b(link|url|download|file|pdf|doc|docx|copy|kopya|send|share)\b/.test(m)) return false;
+  return (
+    /\b(ano\s+sabi|what\s+does|what\s+says?|according\s+to|elaborate|explain|full\s+details?|detail|policy|policies|rule|rules|section|about|regarding|tungkol)\b/.test(m) ||
+    /\b(lost\s+(my\s+)?(school\s+)?id|school\s+id|student\s+id|good\s+moral|incident|organization|event|clearance|discipline|uniform|attendance|grading)\b/.test(m)
+  );
+}
+
+function normalizeForDupCheck(text) {
+  return String(text || "")
+    .toLowerCase()
+    .replace(/\[[^\]]+\]\((https?:\/\/[^)\s]+)\)/g, "$1")
+    .replace(/https?:\/\/[^\s)]+/g, " ")
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function isNearDuplicateReply(candidate, recentReplies) {
+  const normCandidate = normalizeForDupCheck(candidate);
+  if (!normCandidate || normCandidate.length < 24) return false;
+  return (recentReplies || []).some((entry) => {
+    const normPrev = normalizeForDupCheck(entry);
+    if (!normPrev) return false;
+    if (normPrev === normCandidate) return true;
+    if (normCandidate.includes(normPrev) || normPrev.includes(normCandidate)) return true;
+    return false;
+  });
+}
+
+function isLinkOnlyLikeReply(text) {
+  const raw = String(text || "").trim();
+  if (!raw) return false;
+  const urlCount = (raw.match(/https?:\/\/[^\s)]+/g) || []).length;
+  const mdUrlCount = (raw.match(/\[[^\]]+\]\((https?:\/\/[^)\s]+)\)/g) || []).length;
+  const sentenceCount = raw.split(/\n+/).map((s) => s.trim()).filter(Boolean).length;
+  const hasDetailSignals = /\b(step|requirement|process|submit|bring|office|timeline|working day|approve|confirm)\b/i.test(raw);
+  return (urlCount > 0 || mdUrlCount > 0) && sentenceCount <= 3 && !hasDetailSignals;
+}
+
+function looksLikeMissingDetailReply(text) {
+  const raw = String(text || "").toLowerCase();
+  if (!raw) return false;
+  return (
+    /\bi don'?t have (the )?specific detail/i.test(raw) ||
+    /\bdo not have (the )?specific detail/i.test(raw) ||
+    /\bno relevant information found\b/i.test(raw) ||
+    /\binsufficient (data|information)\b/i.test(raw)
+  );
+}
+
+function buildStructuredPolicyFallback(message) {
+  const m = String(message || "").toLowerCase();
+  if (/\b(lost\s+(my\s+)?(school\s+)?id|school\s+id|student\s+id)\b/.test(m)) {
+    return (
+      "If your school ID is lost, follow this process:\n\n" +
+      "1. Prepare a notarized affidavit of loss.\n" +
+      "2. Return to OSA for clearance/endorsement.\n" +
+      "3. Proceed to the Cashier for replacement fee payment.\n" +
+      "4. Bring your receipt to MIS for photo capture and ID reprocessing.\n\n" +
+      "For exact fee amount and release timeline for your current term, confirm with OSA before filing."
+    );
+  }
+  if (/\b(good\s+moral)\b/.test(m)) {
+    return (
+      "For a Good Moral Certificate, request it through OSA with your valid student ID/student number and required request form/letter. " +
+      "Submit complete requirements first, then wait for OSA processing (typically a few working days, depending on queue and current policy updates). " +
+      "If you have a deadline, tell OSA immediately so they can advise the best filing schedule."
+    );
+  }
+  if (/\b(incident\s+report)\b/.test(m)) {
+    return (
+      "For incident filing, use the official Incident Report Form and complete all factual details (date, time, location, persons involved, and narrative). " +
+      "Submit it to OSA for review and case handling. " +
+      "If the incident is urgent or safety-related, report directly to OSA immediately before waiting for normal processing."
+    );
+  }
+  if (/\b(student\s+org|student\s+organization|organization|org)\b.*\b(event|register|approval|laap)\b/.test(m)) {
+    return (
+      "Student organization events are coordinated through OSA under student activity governance (including LAAP-related workflow where applicable). " +
+      "Prepare your event details first (purpose, schedule, venue, participants, and required signatories), then submit to OSA for review/approval window and final compliance checks."
+    );
+  }
+  return "";
 }
 
 function parseSimpleMath(message) {
@@ -2444,7 +2558,7 @@ function registerChatRoutes(app, apiPrefix) {
         }
 
         // ── TIER 1: FAQ search (optional; default off for conversational Tier 2) ──
-        if (CHAT_TIER1_FAQ_ENABLED) {
+        if (CHAT_TIER1_FAQ_ENABLED && !looksLikeManualPolicyDetailQuery(message)) {
           const faqMatch = await searchFaq(message);
           if (faqMatch) {
             // eslint-disable-next-line no-console
@@ -2479,6 +2593,14 @@ function registerChatRoutes(app, apiPrefix) {
           [sessionId]
         );
         const historyRows = historyResult.rows.slice().reverse();
+        const recentAssistantReplies = historyRows
+          .filter((r) => r && r.role === "assistant" && String(r.content || "").trim())
+          .slice(-3)
+          .map((r) => String(r.content || ""));
+        const recentAssistantRepliesMerged = [
+          ...recentAssistantReplies,
+          ...getRecentAssistantReplyMemory(sessionId),
+        ].slice(-6);
 
         const [osaCtx, manualRag] = await Promise.all([
           getOsaContext(email, sessionId),
@@ -2573,10 +2695,17 @@ function registerChatRoutes(app, apiPrefix) {
         const reply = tidyOfficialLinks(
           normalizeEscalationReply(cleanedRaw, suggestEscalation, { appointmentIntent })
         );
+        const structuredFallback =
+          isNearDuplicateReply(reply, recentAssistantRepliesMerged) ||
+          (looksLikeManualPolicyDetailQuery(message) &&
+            (isLinkOnlyLikeReply(reply) || looksLikeMissingDetailReply(reply)))
+            ? buildStructuredPolicyFallback(message)
+            : "";
+        const finalReply = structuredFallback || reply;
         // eslint-disable-next-line no-console
         console.log(
           `[RAG:chat:reply] tier=2 suggestEscalation=${suggestEscalation} ` +
-          `replyPreview="${String(reply || "").slice(0, 120).replace(/\n/g, " ")}"`
+          `replyPreview="${String(finalReply || "").slice(0, 120).replace(/\n/g, " ")}"`
         );
         let autoCaseId = "";
 
@@ -2655,12 +2784,12 @@ function registerChatRoutes(app, apiPrefix) {
           }
         }
 
-        await persistReply(sessionId, reply);
+        await persistReply(sessionId, finalReply);
 
         return res.json({
           success: true,
-          reply,
-          answer: reply,
+          reply: finalReply,
+          answer: finalReply,
           tier: 2,
           suggest_escalation: suggestEscalation,
           escalate: !!suggestEscalation,

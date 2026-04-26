@@ -105,6 +105,14 @@ const FAQ_STOP_WORDS = new Set([
   "kapag",
   "kahit",
   "bago",
+  "student",
+  "students",
+  "manual",
+  "manuals",
+  "handbook",
+  "handbooks",
+  "form",
+  "forms",
 ]);
 
 async function searchFaq(message) {

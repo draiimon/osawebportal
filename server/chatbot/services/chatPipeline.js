@@ -23,6 +23,24 @@ const CHATBOT_RAG_MIN_CONFIDENCE = Math.max(
   0,
   Math.min(1, Number(process.env.CHATBOT_RAG_MIN_CONFIDENCE ?? process.env.CHAT_RAG_MIN_CONFIDENCE ?? 0.52))
 );
+const _recentAssistantRepliesByConversation = new Map();
+
+function getRecentAssistantReplyMemory(conversationId) {
+  const key = String(conversationId || "").trim();
+  if (!key) return [];
+  return Array.isArray(_recentAssistantRepliesByConversation.get(key))
+    ? _recentAssistantRepliesByConversation.get(key)
+    : [];
+}
+
+function rememberAssistantReply(conversationId, replyText) {
+  const key = String(conversationId || "").trim();
+  const text = String(replyText || "").trim();
+  if (!key || !text) return;
+  const current = getRecentAssistantReplyMemory(key);
+  const next = [...current, text].slice(-3);
+  _recentAssistantRepliesByConversation.set(key, next);
+}
 
 function logError(scope, error) {
   try {
@@ -141,6 +159,7 @@ function makeSystemPrompt(meta) {
     `- Use only the excerpts that actually match the student's question.\n` +
     `- If several excerpts clearly belong to the same topic, you may combine them into one natural answer.\n` +
     `- If the excerpts answer only part of the question, provide the supported part first, then briefly say what specific detail is not stated.\n` +
+    `- If the student asks what a policy says about a specific case (for example "manual about lost ID"), give the actual supported policy details first (steps/requirements/process). Use links only as supporting references, not as the whole answer.\n` +
     `- If no relevant official information is available for an EAC-specific question, say you don't have that specific detail and direct the student to contact OSA.\n\n` +
     `KNOWLEDGE FRESHNESS:\n` +
     `- EAC Cavite policies as documented may change each academic year.\n` +
@@ -447,13 +466,19 @@ function looksLikeFormsLinkQuery(message) {
   if (!raw) return null;
   if (raw.length > 220) return null;
 
+  const asksManualPolicyDetails =
+    /\b(student\s+)?manual\b/.test(raw) &&
+    (
+      /\b(ano\s+sabi|what\s+does|what\s+says?|according\s+to|elaborate|explain|full\s+details?|detail|policy|policies|rule|rules|section|about|regarding|tungkol)\b/.test(raw) ||
+      /\b(lost\s+(my\s+)?(school\s+)?id|school\s+id|student\s+id|good\s+moral|incident|organization|event|clearance|discipline|uniform|attendance|grading)\b/.test(raw)
+    ) &&
+    !/\b(link|url|download|file|pdf|doc|docx|send|share|copy|kopya)\b/.test(raw);
+  if (asksManualPolicyDetails) return null;
+
   // Words that signal "give me the file/URL/where can I get it".
   const wantsArtifact =
     /\b(link|links|url|urls|pdf|doc|docx|file|files|download|downloads|downloadable|downloadables|copy|share|send|kopya|share\s+mo)\b/.test(raw) ||
-    /\b(give|show|provide|send|share|list|kunin|saan|where|paano\s+(makuha|ma-?download))\b/.test(raw) ||
-    /\bforms?\b/.test(raw) ||
-    /\bmanuals?\b/.test(raw) ||
-    /\bhandbooks?\b/.test(raw);
+    /\b(give|show|provide|send|share|list|kunin|saan|where|paano\s+(makuha|ma-?download))\b/.test(raw);
 
   if (!wantsArtifact) return null;
 
@@ -625,6 +650,105 @@ function buildAssistantQuickReply(message) {
   return "";
 }
 
+function looksLikeManualPolicyDetailQuery(message) {
+  const m = String(message || "")
+    .toLowerCase()
+    .replace(/['`’]/g, "")
+    .replace(/[?!.,;:¿¡()\[\]{}"~]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!m) return false;
+  if (!/\b(student\s+)?manual\b|\bhandbook\b/.test(m)) return false;
+  if (/\b(link|url|download|file|pdf|doc|docx|copy|kopya|send|share)\b/.test(m)) return false;
+
+  return (
+    /\b(ano\s+sabi|what\s+does|what\s+says?|according\s+to|elaborate|explain|full\s+details?|detail|policy|policies|rule|rules|section|about|regarding|tungkol)\b/.test(m) ||
+    /\b(lost\s+(my\s+)?(school\s+)?id|school\s+id|student\s+id|good\s+moral|incident|organization|event|clearance|discipline|uniform|attendance|grading)\b/.test(m)
+  );
+}
+
+function normalizeForDupCheck(text) {
+  return String(text || "")
+    .toLowerCase()
+    .replace(/\[[^\]]+\]\((https?:\/\/[^)\s]+)\)/g, "$1")
+    .replace(/https?:\/\/[^\s)]+/g, " ")
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function isNearDuplicateReply(candidate, recentReplies) {
+  const normCandidate = normalizeForDupCheck(candidate);
+  if (!normCandidate || normCandidate.length < 24) return false;
+  return (recentReplies || []).some((entry) => {
+    const normPrev = normalizeForDupCheck(entry);
+    if (!normPrev) return false;
+    if (normPrev === normCandidate) return true;
+    if (normCandidate.includes(normPrev) || normPrev.includes(normCandidate)) return true;
+    return false;
+  });
+}
+
+function isLinkOnlyLikeReply(text) {
+  const raw = String(text || "").trim();
+  if (!raw) return false;
+  const urlCount = (raw.match(/https?:\/\/[^\s)]+/g) || []).length;
+  const mdUrlCount = (raw.match(/\[[^\]]+\]\((https?:\/\/[^)\s]+)\)/g) || []).length;
+  const sentenceCount = raw
+    .split(/\n+/)
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .length;
+  const hasDetailSignals = /\b(step|requirement|process|submit|bring|office|timeline|working day|approve|confirm)\b/i.test(raw);
+  return (urlCount > 0 || mdUrlCount > 0) && sentenceCount <= 3 && !hasDetailSignals;
+}
+
+function looksLikeMissingDetailReply(text) {
+  const raw = String(text || "").toLowerCase();
+  if (!raw) return false;
+  return (
+    /\bi don'?t have (the )?specific detail/i.test(raw) ||
+    /\bdo not have (the )?specific detail/i.test(raw) ||
+    /\bno relevant information found\b/i.test(raw) ||
+    /\binsufficient (data|information)\b/i.test(raw)
+  );
+}
+
+function buildStructuredPolicyFallback(message) {
+  const m = String(message || "").toLowerCase();
+  if (/\b(lost\s+(my\s+)?(school\s+)?id|school\s+id|student\s+id)\b/.test(m)) {
+    return (
+      "If your school ID is lost, follow this process:\n\n" +
+      "1. Prepare a notarized affidavit of loss.\n" +
+      "2. Return to OSA for clearance/endorsement.\n" +
+      "3. Proceed to the Cashier for replacement fee payment.\n" +
+      "4. Bring your receipt to MIS for photo capture and ID reprocessing.\n\n" +
+      "For exact fee amount and release timeline for your current term, confirm with OSA before filing."
+    );
+  }
+  if (/\b(good\s+moral)\b/.test(m)) {
+    return (
+      "For a Good Moral Certificate, request it through OSA with your valid student ID/student number and required request form/letter. " +
+      "Submit complete requirements first, then wait for OSA processing (typically a few working days, depending on queue and current policy updates). " +
+      "If you have a deadline, tell OSA immediately so they can advise the best filing schedule."
+    );
+  }
+  if (/\b(incident\s+report)\b/.test(m)) {
+    return (
+      "For incident filing, use the official Incident Report Form and complete all factual details (date, time, location, persons involved, and narrative). " +
+      "Submit it to OSA for review and case handling. " +
+      "If the incident is urgent or safety-related, report directly to OSA immediately before waiting for normal processing."
+    );
+  }
+  if (/\b(student\s+org|student\s+organization|organization|org)\b.*\b(event|register|approval|laap)\b/.test(m)) {
+    return (
+      "Student organization events are coordinated through OSA under student activity governance (including LAAP-related workflow where applicable). " +
+      "Prepare your event details first (purpose, schedule, venue, participants, and required signatories), then submit to OSA for review/approval window and final compliance checks."
+    );
+  }
+  return "";
+}
+
 function isDeterministicPortalQuery(message) {
   const m = String(message || "").toLowerCase().trim();
   if (!m) return false;
@@ -738,6 +862,7 @@ async function runChatPipeline({ message, conversationId, userId }) {
         try {
           await appendMemory(conversationId, "assistant", reply);
         } catch (err) { logError("memory-write-assistant-forms", err); }
+        rememberAssistantReply(conversationId, reply);
         return withAnswerFields({
           response: reply,
           provider: "forms-shortcircuit",
@@ -763,6 +888,7 @@ async function runChatPipeline({ message, conversationId, userId }) {
     try {
       await appendMemory(conversationId, "assistant", reply);
     } catch (err) { logError("memory-write-assistant-datetime", err); }
+    rememberAssistantReply(conversationId, reply);
     return withAnswerFields({
       response: reply,
       provider: "datetime-shortcircuit",
@@ -801,6 +927,7 @@ async function runChatPipeline({ message, conversationId, userId }) {
       try {
         await appendMemory(conversationId, "assistant", earlyText);
       } catch (err) { logError("memory-write-assistant-early-quick", err); }
+      rememberAssistantReply(conversationId, earlyText);
       return withAnswerFields({
         response: earlyText,
         provider: "domain-quick-reply",
@@ -822,7 +949,11 @@ async function runChatPipeline({ message, conversationId, userId }) {
   });
 
   // Deterministic portal intents should not be shadowed by stale cache.
-  if (!otpIntent && !deterministicPortalQuery) {
+  const shouldBypassCache =
+    otpIntent ||
+    deterministicPortalQuery ||
+    looksLikeManualPolicyDetailQuery(processed.cleanedText);
+  if (!shouldBypassCache) {
     try {
       const cached = await getCachedResponse(cacheKey);
       if (cached && cached.response) {
@@ -866,6 +997,14 @@ async function runChatPipeline({ message, conversationId, userId }) {
     logError("memory-read", error);
     return [];
   });
+  const recentAssistantReplies = (memory || [])
+    .filter((m) => m && m.role === "assistant" && String(m.content || "").trim())
+    .slice(-3)
+    .map((m) => String(m.content || ""));
+  const recentAssistantRepliesMerged = [
+    ...recentAssistantReplies,
+    ...getRecentAssistantReplyMemory(conversationId),
+  ].slice(-6);
 
   // Late-stage quick-reply path — handles the legacy string returns
   // from buildDomainQuickReply (currently: appointment booking). The
@@ -878,6 +1017,7 @@ async function runChatPipeline({ message, conversationId, userId }) {
   if (domainQuickReplyText) {
     await appendMemory(conversationId, "user", processed.cleanedText).catch((error) => logError("memory-write-user", error));
     await appendMemory(conversationId, "assistant", domainQuickReplyText).catch((error) => logError("memory-write-assistant", error));
+    rememberAssistantReply(conversationId, domainQuickReplyText);
     try {
       await saveCachedResponse(cacheKey, processed.cleanedText, domainQuickReplyText, "domain-quick-reply");
     } catch (error) {
@@ -900,6 +1040,7 @@ async function runChatPipeline({ message, conversationId, userId }) {
       "Hello! I can help with OSA services, forms, Lost & Found, and policies. How can I help today?";
     await appendMemory(conversationId, "user", processed.cleanedText).catch((error) => logError("memory-write-user", error));
     await appendMemory(conversationId, "assistant", greet).catch((error) => logError("memory-write-assistant", error));
+    rememberAssistantReply(conversationId, greet);
     try {
       await saveCachedResponse(cacheKey, processed.cleanedText, greet, "greeting-static");
     } catch (error) {
@@ -923,6 +1064,7 @@ async function runChatPipeline({ message, conversationId, userId }) {
       "I can identify your profile only after secure verification. Use the Verify email card in this chat, then ask again and I will show the signed-in name.";
     await appendMemory(conversationId, "user", processed.cleanedText).catch((error) => logError("memory-write-user", error));
     await appendMemory(conversationId, "assistant", idReply).catch((error) => logError("memory-write-assistant", error));
+    rememberAssistantReply(conversationId, idReply);
     try {
       await saveCachedResponse(cacheKey, processed.cleanedText, idReply, "identity-gated");
     } catch (error) {
@@ -946,6 +1088,7 @@ async function runChatPipeline({ message, conversationId, userId }) {
   if (assistantQuickReply) {
     await appendMemory(conversationId, "user", processed.cleanedText).catch((error) => logError("memory-write-user", error));
     await appendMemory(conversationId, "assistant", assistantQuickReply).catch((error) => logError("memory-write-assistant", error));
+    rememberAssistantReply(conversationId, assistantQuickReply);
     try {
       await saveCachedResponse(cacheKey, processed.cleanedText, assistantQuickReply, "assistant-quick-reply");
     } catch (error) {
@@ -984,6 +1127,7 @@ async function runChatPipeline({ message, conversationId, userId }) {
     }
     await appendMemory(conversationId, "user", processed.cleanedText).catch((error) => logError("memory-write-user", error));
     await appendMemory(conversationId, "assistant", mathReply).catch((error) => logError("memory-write-assistant", error));
+    rememberAssistantReply(conversationId, mathReply);
     try {
       await saveCachedResponse(cacheKey, processed.cleanedText, mathReply, "math-quick-reply");
     } catch (error) {
@@ -1006,6 +1150,7 @@ async function runChatPipeline({ message, conversationId, userId }) {
     const otpReply = otpHelperReply();
     await appendMemory(conversationId, "user", processed.cleanedText).catch((error) => logError("memory-write-user", error));
     await appendMemory(conversationId, "assistant", otpReply).catch((error) => logError("memory-write-assistant", error));
+    rememberAssistantReply(conversationId, otpReply);
     try {
       await saveCachedResponse(cacheKey, processed.cleanedText, otpReply, "otp-help");
     } catch (error) {
@@ -1058,6 +1203,7 @@ async function runChatPipeline({ message, conversationId, userId }) {
   async function persistTurn(response, provider) {
     await appendMemory(conversationId, "user", processed.cleanedText).catch((error) => logError("memory-write-user", error));
     await appendMemory(conversationId, "assistant", response).catch((error) => logError("memory-write-assistant", error));
+    rememberAssistantReply(conversationId, response);
     try {
       await saveCachedResponse(cacheKey, processed.cleanedText, response, provider);
     } catch (error) {
@@ -1065,7 +1211,7 @@ async function runChatPipeline({ message, conversationId, userId }) {
     }
   }
 
-  if (CHAT_TIER1_FAQ_ENABLED) {
+  if (CHAT_TIER1_FAQ_ENABLED && !looksLikeManualPolicyDetailQuery(processed.cleanedText)) {
     const faq = await searchFaq(processed.cleanedText);
     if (faq) {
       const rawFaqAnswer = cleanModelText(String((faq && faq.answer) || "").trim());
@@ -1092,6 +1238,11 @@ async function runChatPipeline({ message, conversationId, userId }) {
         } catch (_) {
           // LLM unavailable — raw FAQ answer is the safe fallback
         }
+      }
+
+      if (isNearDuplicateReply(reply, recentAssistantRepliesMerged)) {
+        const structured = buildStructuredPolicyFallback(processed.cleanedText);
+        if (structured) reply = structured;
       }
 
       await persistTurn(reply, "faq-tier1-ai");
@@ -1202,6 +1353,14 @@ async function runChatPipeline({ message, conversationId, userId }) {
   // Final formatting pass: enforce friendly link labels + paragraph spacing
   // around any URLs the model emitted (or that came from static replies).
   responseText = tidyOfficialLinks(responseText);
+  if (
+    isNearDuplicateReply(responseText, recentAssistantRepliesMerged) ||
+    (looksLikeManualPolicyDetailQuery(processed.cleanedText) &&
+      (isLinkOnlyLikeReply(responseText) || looksLikeMissingDetailReply(responseText)))
+  ) {
+    const structured = buildStructuredPolicyFallback(processed.cleanedText);
+    if (structured) responseText = structured;
+  }
 
   await persistTurn(responseText, selectedProvider);
 
