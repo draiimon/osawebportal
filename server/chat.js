@@ -18,6 +18,29 @@ const GEMINI_FALLBACK_MODELS = (
     : ["gemini-2.5-flash-8b", "gemini-2.0-flash-lite"]
 ).filter((m) => m !== GEMINI_MODEL);
 const GROQ_MODEL = String(process.env.GROQ_MODEL || "qwen/qwen3-32b").trim();
+
+/**
+ * Returns the public-facing portal base URL for use in outbound emails.
+ *
+ * Priority order:
+ *   1. PORTAL_URL env var — only used when it is NOT a localhost address.
+ *   2. RENDER_EXTERNAL_URL — auto-injected by Render on every deploy.
+ *   3. REPLIT_DEV_DOMAIN — auto-injected by Replit (no scheme prefix).
+ *   4. Empty string — no link rendered in the email.
+ */
+function getPortalUrl() {
+  const explicit = String(process.env.PORTAL_URL || "").trim().replace(/\/$/, "");
+  if (explicit && !/localhost|127\.0\.0\.1/i.test(explicit)) return explicit;
+
+  const render = String(process.env.RENDER_EXTERNAL_URL || "").trim().replace(/\/$/, "");
+  if (render) return render;
+
+  const replit = String(process.env.REPLIT_DEV_DOMAIN || "").trim();
+  if (replit) return `https://${replit}`;
+
+  return "";
+}
+
 const GROQ_BASE_URL = String(process.env.GROQ_BASE_URL || "https://api.groq.com/openai/v1")
   .trim()
   .replace(/\/+$/, "");
@@ -521,7 +544,7 @@ async function sendStaffNotificationEmail(caseId, studentName, studentEmail, con
     const sender    = (process.env.BREVO_SENDER_EMAIL || "").trim();
     if (!staffEmail || !apiKey || !sender) return;
 
-    const portalUrl  = (process.env.PORTAL_URL || "").replace(/\/$/, "");
+    const portalUrl  = getPortalUrl();
     const chatLink   = portalUrl
       ? `${portalUrl}/admin/modules/chat-support?case=${encodeURIComponent(caseId)}`
       : "";
@@ -573,7 +596,7 @@ async function sendStudentEscalationEmail(caseId, studentName, studentEmail, con
     if (!apiKey || !sender || !studentEmail) return;
 
     const isClaim = variant === "claim";
-    const portalUrl = (process.env.PORTAL_URL || "").replace(/\/$/, "");
+    const portalUrl = getPortalUrl();
     const chatLink = portalUrl ? `${portalUrl}/chat` : "";
     const btnHtml = chatLink
       ? `<p style="margin:20px 0"><a href="${chatLink}" style="display:inline-block;background:#841a2d;color:#fff;font-family:system-ui,sans-serif;font-size:14px;font-weight:700;padding:12px 24px;text-decoration:none;letter-spacing:0.03em">Open Chat Support →</a></p>`
