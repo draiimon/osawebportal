@@ -1521,12 +1521,15 @@ function registerChatRoutes(app, apiPrefix) {
           const resumable = await db.query(
             `SELECT case_id, ticket_type, status, concern, created_at,
                     cancelled_at, cancelled_reason, appointment_status,
-                    preferred_day, preferred_time_window
+                    preferred_day, preferred_time_window, resolution_reason
                FROM escalation_tickets
               WHERE student_email = $1
                 AND (
                   (status = 'cancelled' AND cancelled_at >= NOW() - INTERVAL '24 hours')
                   OR status IN ('open','in_progress')
+                  OR (status = 'resolved'
+                      AND resolution_reason IN ('abandoned','auto_closed_idle')
+                      AND updated_at >= NOW() - INTERVAL '24 hours')
                 )
               ORDER BY COALESCE(cancelled_at, updated_at, created_at) DESC
               LIMIT 1`,
@@ -1545,6 +1548,7 @@ function registerChatRoutes(app, apiPrefix) {
               appointment_status: r.appointment_status,
               preferred_day: r.preferred_day,
               preferred_time_window: r.preferred_time_window,
+              resolution_reason: r.resolution_reason,
             };
           }
         } catch (_) {}
@@ -1588,7 +1592,8 @@ function registerChatRoutes(app, apiPrefix) {
         }
         const sessionEmail = String((loaded.session && loaded.session.email) || "").toLowerCase();
         const ticketResult = await db.query(
-          `SELECT case_id, status, ticket_type, student_email, session_id
+          `SELECT case_id, status, ticket_type, student_email, session_id,
+                  resolution_reason, updated_at
              FROM escalation_tickets
             WHERE case_id = $1
             LIMIT 1`,
@@ -1602,18 +1607,60 @@ function registerChatRoutes(app, apiPrefix) {
           return res.status(403).json({ success: false, message: "This ticket is registered to a different email." });
         }
         if (ticket.status === "resolved") {
-          return res.status(400).json({ success: false, message: "This case is already resolved." });
+          // Auto-closed (idle / abandoned) tickets remain resumable for 24h
+          // so a student who briefly disconnected can pick the chat back up.
+          // A genuinely staff-resolved case stays closed.
+          const reason = String(ticket.resolution_reason || "").toLowerCase();
+          const isAutoClosed = reason === "abandoned" || reason === "auto_closed_idle";
+          const closedMs = ticket.updated_at ? new Date(ticket.updated_at).getTime() : 0;
+          const withinGrace = closedMs && (Date.now() - closedMs) <= 24 * 60 * 60 * 1000;
+          if (!isAutoClosed || !withinGrace) {
+            return res.status(400).json({ success: false, message: "This case is already resolved." });
+          }
         }
 
-        // Restore status: cancelled → open. Re-link session_id so the new
-        // session sees this as its active ticket.
-        const restoreStatus = ticket.status === "in_progress" ? "in_progress" : "open";
+        // Pick restore status: if any staff message exists for the prior
+        // session, the case was already engaged → restore to in_progress;
+        // otherwise treat it as a fresh open queue entry.
+        const oldSessionId = String(ticket.session_id || "");
+        let staffEngaged = false;
+        if (oldSessionId) {
+          try {
+            const eng = await db.query(
+              `SELECT 1 FROM chat_messages
+                WHERE session_id = $1
+                  AND role = 'assistant'
+                  AND content LIKE '[OSA Staff · %'
+                LIMIT 1`,
+              [oldSessionId]
+            );
+            staffEngaged = !!eng.rows.length;
+          } catch (_) {}
+        }
+        const restoreStatus =
+          ticket.status === "in_progress" || staffEngaged ? "in_progress" : "open";
+
+        // Migrate the prior conversation history onto the NEW session_id so
+        // the student widget — which loads /chat/session/:newId/messages —
+        // sees the full back-scroll instead of a blank thread.
+        if (oldSessionId && oldSessionId !== sessionId) {
+          try {
+            await db.query(
+              `UPDATE chat_messages SET session_id = $1 WHERE session_id = $2`,
+              [sessionId, oldSessionId]
+            );
+          } catch (err) {
+            logError("chat-resume-ticket-migrate", err);
+          }
+        }
+
         await db.query(
           `UPDATE escalation_tickets
               SET status = $2,
                   session_id = $3,
                   cancelled_at = NULL,
                   cancelled_reason = NULL,
+                  resolution_reason = NULL,
                   updated_at = NOW()
             WHERE case_id = $1`,
           [caseId, restoreStatus, sessionId]

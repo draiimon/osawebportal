@@ -2473,9 +2473,11 @@
       ? '<span style="font-size:10px;font-weight:800;background:#dbeafe;color:#1e40af;padding:2px 7px;border-radius:99px;margin-left:6px;letter-spacing:0.04em">VISIT</span>'
       : '';
     var statusClass = statusBadgeClass(t);
-    var endPrompt = t.needs_end_session_prompt
-      ? '<div class="ticket-item__time" style="margin-top:6px;color:#b45309;font-weight:700">● Idle — auto-close pending</div>'
-      : '';
+    // The on-card idle hint is intentionally suppressed — the background
+    // cleanup sweep already moves stale tickets to the Resolved tab with
+    // a distinct "Idle" / "Abandoned" badge, so a separate live warning
+    // is just noise for the staff.
+    var endPrompt = '';
     item.innerHTML =
       '<div class="ticket-item__head">' +
         '<div class="ticket-item__name">' + activeDot + escapeHtml(t.student_name) + lfBadge + '</div>' +
