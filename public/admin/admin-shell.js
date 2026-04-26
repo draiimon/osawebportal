@@ -404,10 +404,10 @@
       if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
       if (backdrop) backdrop.addEventListener('click', closeDrawer);
 
-      // Close on nav click (mobile)
+      // Close on nav click (mobile/tablet — hamburger active up to 1080px)
       drawer.querySelectorAll('.drawer-nav-item[href]').forEach(link => {
         link.addEventListener('click', () => {
-          if (window.innerWidth <= 900) closeDrawer();
+          if (window.innerWidth <= 1080) closeDrawer();
         });
       });
 
@@ -416,9 +416,9 @@
         if (e.key === 'Escape' && drawer.classList.contains('is-open')) closeDrawer();
       });
 
-      // Close drawer when resized to desktop
+      // Close drawer when resized back to desktop
       window.addEventListener('resize', () => {
-        if (window.innerWidth > 900) closeDrawer();
+        if (window.innerWidth > 1080) closeDrawer();
       });
     }
 
@@ -433,7 +433,7 @@
     let navRaf = 0;
     const syncNavOverflowMode = () => {
       if (!navEl || !navLinksEl || !navRightEl || !navBrandEl || !navHamburgerEl) return;
-      const mobileMode = window.innerWidth <= 900;
+      const mobileMode = window.innerWidth <= 1080;
       if (mobileMode) {
         navEl.classList.remove('admin-nav--overflow');
         return;
