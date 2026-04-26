@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#841a2d">
+  <title>Download Apps · OSA Transaction Guide Portal</title>
+  <link rel="icon" type="image/png" href="/assets/images/eac-emblem.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+      background:
+        radial-gradient(circle at 18% 12%, rgba(132, 26, 45, 0.14), transparent 52%),
+        radial-gradient(circle at 82% 0%, rgba(199, 154, 73, 0.16), transparent 48%),
+        #fffdf9;
+      min-height: 100vh;
+      color: #2c1a15;
+      padding: 32px 20px 64px;
+    }
+    .wrap { max-width: 880px; margin: 0 auto; }
+    .back {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 13px; font-weight: 600; color: #841a2d; text-decoration: none;
+      margin-bottom: 16px;
+    }
+    .back:hover { text-decoration: underline; }
+    .hero {
+      background: linear-gradient(135deg, #841a2d 0%, #5a1220 100%);
+      color: #fff;
+      padding: 40px 32px;
+      border-radius: 4px;
+      box-shadow: 0 18px 40px rgba(50, 25, 14, 0.18);
+      margin-bottom: 32px;
+    }
+    .hero .label {
+      font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+      color: #f3d39a; margin-bottom: 12px;
+    }
+    .hero h1 {
+      font-family: "Libre Baskerville", serif;
+      font-size: clamp(28px, 4vw, 40px); font-weight: 700;
+      letter-spacing: -0.02em; margin-bottom: 12px;
+    }
+    .hero p { font-size: 15px; line-height: 1.65; color: #ffe8c5; max-width: 640px; }
+    .grid { display: grid; gap: 24px; grid-template-columns: 1fr; }
+    @media (min-width: 720px) { .grid { grid-template-columns: 1fr 1fr; } }
+    .card {
+      background: #fff;
+      border: 1px solid rgba(132, 26, 45, 0.12);
+      border-left: 4px solid #c79a49;
+      border-radius: 4px;
+      padding: 28px 26px;
+      box-shadow: 0 10px 26px rgba(50, 25, 14, 0.08);
+      display: flex; flex-direction: column; gap: 14px;
+    }
+    .card.admin { border-left-color: #841a2d; }
+    .card .tag {
+      display: inline-block; align-self: flex-start;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 4px 10px; border-radius: 999px;
+      background: #fff8f0; color: #841a2d;
+    }
+    .card.admin .tag { background: #841a2d; color: #fff; }
+    .card h2 { font-size: 22px; font-weight: 800; letter-spacing: -0.01em; }
+    .card p { font-size: 14px; line-height: 1.55; color: #65574d; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 12px 18px; font-size: 14px; font-weight: 700;
+      background: #841a2d; color: #fff; border: none; border-radius: 4px;
+      text-decoration: none; cursor: pointer;
+      transition: background 0.15s ease, transform 0.05s ease;
+    }
+    .btn:hover { background: #6e1525; }
+    .btn:active { transform: translateY(1px); }
+    .btn[disabled], .btn.disabled {
+      background: #b59f95; cursor: not-allowed; opacity: 0.85;
+    }
+    .btn.ios { background: #1d1d1f; }
+    .btn.ios:hover { background: #000; }
+    .meta {
+      font-size: 12px; color: #8a7a70; display: flex; justify-content: space-between;
+      border-top: 1px dashed rgba(132, 26, 45, 0.18); padding-top: 10px; margin-top: auto;
+    }
+    .ios-section {
+      margin-top: 36px; padding: 26px 28px;
+      background: #fff; border-radius: 4px;
+      border: 1px solid rgba(132, 26, 45, 0.12); border-left: 4px solid #1d1d1f;
+      box-shadow: 0 10px 26px rgba(50, 25, 14, 0.06);
+    }
+    .ios-section h2 {
+      font-size: 20px; font-weight: 800; margin-bottom: 8px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .ios-section ol { padding-left: 22px; margin-top: 14px; }
+    .ios-section ol li { font-size: 14px; line-height: 1.7; color: #2c1a15; padding-left: 6px; }
+    .ios-section .note {
+      margin-top: 14px; padding: 12px 14px; background: #fffaf0;
+      border-left: 3px solid #c79a49; font-size: 13px; line-height: 1.55; color: #65574d;
+    }
+    .footer {
+      margin-top: 40px; padding-top: 20px;
+      border-top: 1px solid rgba(132, 26, 45, 0.14);
+      font-size: 12px; color: #8a7a70; text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <a class="back" href="/">← Back to portal</a>
+
+    <div class="hero">
+      <div class="label">Mobile Apps</div>
+      <h1>Download the OSA Portal</h1>
+      <p>Install the Office of Student Affairs portal on your phone for one-tap access. Available for Android (APK) and iOS (Add to Home Screen). Works offline once installed.</p>
+    </div>
+
+    <div class="grid">
+      <!-- STUDENT APP -->
+      <div class="card">
+        <span class="tag">Student</span>
+        <h2>OSA Student App</h2>
+        <p>Browse announcements, lost &amp; found, book appointments, and chat with OSA staff. For all EAC Cavite students.</p>
+        <a class="btn" href="/downloads/osa-student.apk" id="btn-student" download>
+          ⬇ Download for Android (APK)
+        </a>
+        <div class="meta">
+          <span>Android 7.0+</span>
+          <span id="size-student">—</span>
+        </div>
+      </div>
+
+      <!-- ADMIN APP -->
+      <div class="card admin">
+        <span class="tag">Admin</span>
+        <h2>OSA Admin App</h2>
+        <p>Manage announcements, lost &amp; found, the chat support queue, and the knowledge base. For OSA staff only.</p>
+        <a class="btn" href="/downloads/osa-admin.apk" id="btn-admin" download>
+          ⬇ Download for Android (APK)
+        </a>
+        <div class="meta">
+          <span>Android 7.0+</span>
+          <span id="size-admin">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- iOS instructions -->
+    <div class="ios-section">
+      <h2>📱 iOS / iPhone &amp; iPad</h2>
+      <p style="font-size:14px;line-height:1.6;color:#65574d">iOS doesn't allow APK installs, but you can install the portal as a real app icon on your home screen — works the same way and runs full-screen.</p>
+      <ol>
+        <li>Open <strong>Safari</strong> (not Chrome) on your iPhone or iPad.</li>
+        <li>Go to <a href="https://eac.osawebportal.ct.ws" style="color:#841a2d;font-weight:600">https://eac.osawebportal.ct.ws</a></li>
+        <li>Tap the <strong>Share button</strong> (square with arrow at the bottom).</li>
+        <li>Scroll down and tap <strong>"Add to Home Screen"</strong>.</li>
+        <li>Tap <strong>Add</strong>. Done — the OSA Portal icon now appears on your home screen.</li>
+      </ol>
+      <div class="note">
+        <strong>Admin users on iOS:</strong> after step 2, navigate to <code>/admin/</code> first, then perform the Add to Home Screen step. The icon will open the admin login directly.
+      </div>
+    </div>
+
+    <!-- Android sideload help -->
+    <div class="ios-section" style="border-left-color:#3ddc84">
+      <h2>🤖 Android — How to install the APK</h2>
+      <ol>
+        <li>Tap <strong>Download for Android</strong> above.</li>
+        <li>Open the downloaded <code>.apk</code> file from your Notifications or Files app.</li>
+        <li>If Android prompts <em>"Install unknown apps"</em> — tap <strong>Settings</strong> → enable for your browser → go back.</li>
+        <li>Tap <strong>Install</strong>. Done — the OSA Portal app icon will appear in your launcher.</li>
+      </ol>
+      <div class="note">
+        Android may show a Play Protect warning the first time. This is normal for apps installed outside the Play Store. Tap <strong>Install anyway</strong> to continue.
+      </div>
+    </div>
+
+    <div class="footer">
+      OSA Transaction Guide Portal · Office of Student Affairs · Emilio Aguinaldo College Cavite
+    </div>
+  </div>
+
+  <script>
+    // Hide download button if APK isn't published yet (HEAD check).
+    async function checkApk(id, url) {
+      try {
+        const res = await fetch(url, { method: "HEAD", cache: "no-store" });
+        const btn = document.getElementById(id);
+        if (!res.ok) {
+          btn.classList.add("disabled");
+          btn.removeAttribute("download");
+          btn.setAttribute("aria-disabled", "true");
+          btn.textContent = "Coming soon";
+          btn.addEventListener("click", (e) => e.preventDefault());
+        } else {
+          const len = res.headers.get("content-length");
+          const sizeId = id.replace("btn-", "size-");
+          const sizeEl = document.getElementById(sizeId);
+          if (len && sizeEl) sizeEl.textContent = (Number(len) / 1024 / 1024).toFixed(1) + " MB";
+        }
+      } catch (_e) { /* silent */ }
+    }
+    checkApk("btn-student", "/downloads/osa-student.apk");
+    checkApk("btn-admin", "/downloads/osa-admin.apk");
+  </script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+{
+  "name": "OSA Student Portal — EAC Cavite",
+  "short_name": "OSA Student",
+  "description": "Office of Student Affairs portal for Emilio Aguinaldo College Cavite. Browse announcements, lost & found, book appointments, and chat with OSA staff.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fffdf9",
+  "theme_color": "#841a2d",
+  "lang": "en-PH",
+  "dir": "ltr",
+  "categories": ["education", "productivity"],
+  "icons": [
+    {
+      "src": "/assets/images/eac-emblem.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/images/eac-emblem-large.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/assets/images/eac-social-card.png",
+      "sizes": "1200x630",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ]
+}

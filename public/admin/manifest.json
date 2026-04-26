@@ -1,0 +1,28 @@
+{
+  "name": "OSA Admin Portal — EAC Cavite",
+  "short_name": "OSA Admin",
+  "description": "Administrative dashboard for the EAC Cavite Office of Student Affairs. Manage announcements, lost & found, chat support, and the knowledge base.",
+  "start_url": "/admin/",
+  "scope": "/admin/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#fffdf9",
+  "theme_color": "#841a2d",
+  "lang": "en-PH",
+  "dir": "ltr",
+  "categories": ["education", "productivity", "business"],
+  "icons": [
+    {
+      "src": "/assets/images/eac-emblem.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/images/eac-emblem-large.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
