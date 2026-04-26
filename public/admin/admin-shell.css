@@ -137,7 +137,12 @@ input, select, textarea { font-family: var(--font-body); }
 .admin-nav__links {
   position: relative; z-index: 2;
   display: flex; align-items: center;
-  gap: 2px; flex: 1; height: 100%;
+  gap: 2px; flex: 1 1 0; height: 100%;
+  /* min-width: 0 is REQUIRED so this flex child can actually shrink
+     below its content width — without it, the nav links wrapper
+     refuses to give space and overlaps .admin-nav__right at narrow
+     viewports (the classic flex overflow trap). */
+  min-width: 0;
   overflow-x: auto; overflow-y: hidden;
   scrollbar-width: none; padding: 0 8px;
   justify-content: flex-end;
@@ -1339,9 +1344,11 @@ input, select, textarea { font-family: var(--font-body); }
 }
 
 /* ══════════════════════════════════════════════════════════════
-   RESPONSIVE — MID-WIDTH ≤1024px
+   RESPONSIVE — MID-WIDTH ≤1180px (was 1024px)
+   Shrink link padding + hide the admin name/email block sooner so
+   the four primary links + avatar + logout fit cleanly together.
    ══════════════════════════════════════════════════════════════ */
-@media (max-width: 1024px) {
+@media (max-width: 1180px) {
   .nav-link { padding: 0 11px; font-size: 0.78rem; }
   .nav-link::after { left: 11px; right: 11px; }
   .nav-badge { font-size: 0.55rem; min-width: 16px; height: 16px; padding: 0 4px; }
@@ -1351,9 +1358,13 @@ input, select, textarea { font-family: var(--font-body); }
 }
 
 /* ══════════════════════════════════════════════════════════════
-   RESPONSIVE — TABLET ≤900px
+   RESPONSIVE — TABLET ≤1080px (was 900px)
+   The previous 900px threshold left a tight 901-1080px range where
+   four nav links + avatar + logout overlapped on resize. Collapsing
+   to the hamburger drawer earlier (1080px) eliminates that zone —
+   below this width the entire desktop nav is replaced by the drawer.
    ══════════════════════════════════════════════════════════════ */
-@media (max-width: 900px) {
+@media (max-width: 1080px) {
   .nav-hamburger { display: flex; }
   .admin-nav__links { display: none; }
   .admin-nav__right { display: none; }
