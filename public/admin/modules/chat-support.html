@@ -2243,7 +2243,7 @@
         return r.json();
       })
       .then(function (data) {
-        if (reqSeq !== state.ticketsLoadSeq || statusSnapshot !== state.currentStatus || searchSnapshot !== state.currentSearch) {
+        if (statusSnapshot !== state.currentStatus || searchSnapshot !== state.currentSearch) {
           return;
         }
         if (data && data.success === false && /unauthorized/i.test(String(data.message || ''))) {
@@ -3867,10 +3867,6 @@
     }, 220);
   }
 
-  // Auto-refresh ticket list every 3s when no active conversation is selected
-  setInterval(function () {
-    if (!state.currentCaseId && !state.busy) loadTickets({ quiet: true });
-  }, 3000);
 
   window.addEventListener('beforeunload', stopAdminTicketStream);
 
