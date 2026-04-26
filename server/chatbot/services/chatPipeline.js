@@ -271,6 +271,65 @@ function withAnswerFields(obj) {
   };
 }
 
+function looksLikeDateTimeQuery(message) {
+  const m = String(message || "")
+    .toLowerCase()
+    .replace(/['`’]/g, "")
+    .replace(/[?!.,;:¿¡()\[\]{}"~]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!m) return false;
+  if (m.length > 80) return false;
+  if (/\b(office|business|operating|open)\s+hours\b/.test(m)) return false;
+  if (/\bwhat\s+(are\s+)?(the\s+)?hours\b/.test(m)) return false;
+  if (/^(time|date|day|year|month|today|oras|petsa|araw|buwan|taon|ngayon)$/.test(m)) return true;
+  if (/^(full|todays?|current)\s+(date|day|time|month|year)$/.test(m)) return true;
+  if (/^(date|day|time)\s+(now|today)$/.test(m)) return true;
+  if (/^(petsa|oras|araw|buwan|taon)\s+(ngayon|today)$/.test(m)) return true;
+  return (
+    /\bwhat(?:s|\s+is)\s+(?:the\s+)?(date|day|time|month|year|today)\b/.test(m) ||
+    /\bwhat\s+(time|day|date|year|month)\s+is\s+it\b/.test(m) ||
+    /\bwhat\s+day\s+(of\s+the\s+week\s+)?(is\s+it|today)\b/.test(m) ||
+    /\b(current|todays?|full)\s+(date|day|time|month|year)\b/.test(m) ||
+    /\b(date|day|time)\s+(today|now|right\s+now)\b/.test(m) ||
+    /\b(today|now)\s+(date|day|time)\b/.test(m) ||
+    /\bano(?:ng)?\s+(araw|petsa|oras|buwan|taon)\b/.test(m) ||
+    /\banong\s+oras\s+na\b/.test(m) ||
+    /\b(petsa|oras|araw)\s+ngayon\b/.test(m) ||
+    /\bngayon\s+(petsa|oras|araw)\b/.test(m)
+  );
+}
+
+function formatPhDateTime(now) {
+  const d = now instanceof Date ? now : new Date();
+  const tz = "Asia/Manila";
+  const dateStr = new Intl.DateTimeFormat("en-PH", {
+    timeZone: tz,
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  }).format(d);
+  const timeStr = new Intl.DateTimeFormat("en-PH", {
+    timeZone: tz,
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  }).format(d);
+  return { dateStr, timeStr, combined: `${dateStr}, ${timeStr} (PHT)` };
+}
+
+function buildDateTimeReply(rawMessage) {
+  const { dateStr, timeStr, combined } = formatPhDateTime();
+  const m = String(rawMessage || "").toLowerCase();
+  const wantsTimeOnly = /\b(time|oras)\b/.test(m) && !/\b(date|day|petsa|araw)\b/.test(m);
+  const wantsDateOnly =
+    /\b(date|day|petsa|araw|month|year|buwan|taon)\b/.test(m) && !/\b(time|oras)\b/.test(m);
+  if (wantsTimeOnly) return `It's ${timeStr} (Philippine Time) right now.`;
+  if (wantsDateOnly) return `Today is ${dateStr} (Philippine Time).`;
+  return `Right now in the Philippines it's ${combined}.`;
+}
+
 function hasSubstantialLiveCtx(liveCtx) {
   return Boolean(liveCtx && String(liveCtx).trim().length > 40);
 }
@@ -434,6 +493,29 @@ async function runChatPipeline({ message, conversationId, userId }) {
     return withAnswerFields({
       response: "Please type your question so I can help you.",
       provider: "none",
+      cached: false,
+      escalate: false,
+      intent: processed.intent,
+      complexity: processed.complexity,
+      conversationId: conversationId || null,
+      userId: userId || null,
+    });
+  }
+
+  // Direct, no-escalation answer for trivial date/time small-talk so the LLM
+  // never hallucinates ("Today is Friday, May 17, 2024") and the response
+  // never trips the "Verify email & escalate" card.
+  if (looksLikeDateTimeQuery(processed.cleanedText) || looksLikeDateTimeQuery(message)) {
+    const reply = buildDateTimeReply(processed.cleanedText || message);
+    try {
+      await appendMemory(conversationId, "user", processed.cleanedText);
+    } catch (err) { logError("memory-write-user-datetime", err); }
+    try {
+      await appendMemory(conversationId, "assistant", reply);
+    } catch (err) { logError("memory-write-assistant-datetime", err); }
+    return withAnswerFields({
+      response: reply,
+      provider: "datetime-shortcircuit",
       cached: false,
       escalate: false,
       intent: processed.intent,
