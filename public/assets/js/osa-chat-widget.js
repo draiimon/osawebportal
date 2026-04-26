@@ -142,6 +142,28 @@
     function renderAssistantText(raw) {
         var safe = escapeHtml(String(raw || '')).replace(/\r\n/g, '\n');
 
+        // Some upstream replies glue the first list item onto the intro line,
+        // e.g. "Here are all the items: * LF-1001: ...". The line-by-line
+        // bullet detector below only matches markers at the START of a line,
+        // so the first item would render as plain text with a literal "*"
+        // while later items become proper bullets. Normalize the input by
+        // inserting a newline before any inline bullet marker that follows
+        // sentence-ending punctuation or a colon. Runs in a loop to handle
+        // chained inline bullets ("X: * A * B * C"). The (?!\*) guard keeps
+        // **bold** emphasis intact.
+        var prev;
+        do {
+            prev = safe;
+            safe = safe.replace(/([:.!?)\]])\s+\*(?!\*)\s+/g, '$1\n* ');
+        } while (safe !== prev);
+        // Also split chained inline bullets that share a single line with the
+        // first bullet, e.g. "* A * B * C" → "* A\n* B\n* C". Restricted to
+        // lines that already start with a bullet marker so prose isn't split.
+        safe = safe.split('\n').map(function (ln) {
+            if (!/^\s*[*-]\s+/.test(ln)) return ln;
+            return ln.replace(/\s+\*(?!\*)\s+/g, '\n* ');
+        }).join('\n');
+
         function inlineFmt(s) {
             return s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
         }
