@@ -8,7 +8,7 @@ const { Server } = require("socket.io");
 const path = require("path");
 const fs = require("fs");
 const db = require("./db");
-const { registerOtpRoutes } = require("./otp");
+const { registerOtpRoutes, isOtpBypassEmail } = require("./otp");
 const { registerChatRoutes } = require("./chat");
 const { registerChatbot } = require("./chatbot");
 const { registerAuthRoutes } = require("./auth/routes");
@@ -56,16 +56,6 @@ function requireAdminKey(req, res, next) {
     return res.status(401).json({ success: false, message: "Unauthorized." });
   }
   return next();
-}
-
-function isOtpBypassEmail(rawEmail) {
-  const email = String(rawEmail || "").trim().toLowerCase();
-  if (!email) return false;
-  const allowed = String(process.env.OTP_TEST_BYPASS_EMAILS || "")
-    .split(",")
-    .map((v) => String(v || "").trim().toLowerCase())
-    .filter(Boolean);
-  return allowed.includes(email);
 }
 
 function isLocalRequest(req) {

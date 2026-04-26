@@ -14,15 +14,10 @@ function isProviderAvailable(provider) {
   return false;
 }
 
-function unique(values) {
-  return [...new Set(values)];
-}
-
 const PROVIDER_CHAIN = ["gemini", "groq"];
 
-function buildProviderChain(meta) {
-  void meta;
-  return unique(PROVIDER_CHAIN).filter(isProviderAvailable);
+function buildProviderChain() {
+  return PROVIDER_CHAIN.filter(isProviderAvailable);
 }
 
 module.exports = {

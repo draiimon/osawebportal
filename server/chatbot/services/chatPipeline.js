@@ -10,6 +10,7 @@ const { executeProvider } = require("./providers");
 const { searchRag } = require("./ragService");
 const db = require("../../db");
 const POLICY_VERSION = "v17-portal-page-aware-live-context";
+const CHATBOT_DEBUG = String(process.env.CHATBOT_DEBUG || "false").trim().toLowerCase() === "true";
 /**
  * FAQ tier for the guest widget — OFF by default so AI (RAG + LLM) is always
  * the primary responder. FAQ is only the last resort when ALL Gemini keys are
@@ -235,11 +236,13 @@ function makeGuestSystemPromptWithRag(meta, rag, liveCtx) {
       `- For any official school-specific question not supported here, say you don't have that specific detail and suggest contacting OSA.\n`;
   }
 
-  // eslint-disable-next-line no-console
-  console.log(
-    `[chatbot:prompt] chunks=${chunkCount} conf=${confidence.toFixed(3)} hasLiveCtx=${hasLiveCtx} ` +
-    `intent=${meta.intent}`
-  );
+  if (CHATBOT_DEBUG) {
+    // eslint-disable-next-line no-console
+    console.log(
+      `[chatbot:prompt] chunks=${chunkCount} conf=${confidence.toFixed(3)} hasLiveCtx=${hasLiveCtx} ` +
+      `intent=${meta.intent}`
+    );
+  }
 
   return base + ragBlock + liveBlock + groundingRules;
 }
@@ -1043,12 +1046,14 @@ async function runChatPipeline({ message, conversationId, userId }) {
     confidence,
   };
 
-  // eslint-disable-next-line no-console
-  console.log(
-    `[chatbot:rag] query="${processed.cleanedText.slice(0, 100)}" ` +
-    `chunks=${chunkCount} conf=${confidence.toFixed(3)} ` +
-    `tier=${ragResult?.tier || "ESCALATE"} hasLiveCtx=${liveOk}`
-  );
+  if (CHATBOT_DEBUG) {
+    // eslint-disable-next-line no-console
+    console.log(
+      `[chatbot:rag] query="${processed.cleanedText.slice(0, 100)}" ` +
+      `chunks=${chunkCount} conf=${confidence.toFixed(3)} ` +
+      `tier=${ragResult?.tier || "ESCALATE"} hasLiveCtx=${liveOk}`
+    );
+  }
 
   async function persistTurn(response, provider) {
     await appendMemory(conversationId, "user", processed.cleanedText).catch((error) => logError("memory-write-user", error));

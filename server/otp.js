@@ -399,4 +399,4 @@ function registerOtpRoutes(app, apiPrefix) {
   });
 }
 
-module.exports = { registerOtpRoutes };
+module.exports = { registerOtpRoutes, isOtpBypassEmail };
