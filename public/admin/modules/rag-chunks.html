@@ -11,6 +11,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/admin/admin-shell.css?v=20260426c">
   <style>
+    .admin-main > * { min-width: 0; }
+    .admin-main .panel { width: 100%; max-width: 100%; min-width: 0; overflow: hidden; }
+    .rag-grid, .rag-row, .rag-row__head, .rag-row__actions { min-width: 0; }
+
     .rag-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
     .rag-row {
       background: linear-gradient(180deg, rgba(255,253,249,0.98), rgba(255,248,240,0.94));
@@ -22,7 +26,12 @@
     .rag-row__head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
     .rag-row__title { font-weight: 700; color: var(--ink); line-height: 1.3; }
     .rag-row__meta { font-size: 0.72rem; color: var(--muted); letter-spacing: 0.03em; text-transform: uppercase; }
-    .rag-row__chunkid { font-family: ui-monospace,Menlo,Consolas,monospace; font-size: 0.72rem; color: var(--brand); font-weight: 800; }
+    .rag-row__chunkid {
+      font-family: ui-monospace,Menlo,Consolas,monospace;
+      font-size: 0.72rem; color: var(--brand); font-weight: 800;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
     .rag-row__kw { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
     .rag-chip { background: rgba(132,26,45,0.08); color: #841a2d; font-size: 0.72rem; font-weight: 700; padding: 3px 10px; border-radius: 999px; }
     .rag-row__content {
@@ -66,6 +75,10 @@
 
     /* Mobile responsiveness for knowledge base module */
     @media (max-width: 780px) {
+      .admin-main {
+        overflow-x: clip;
+      }
+
       .toolbar {
         display: grid;
         grid-template-columns: 1fr;
@@ -85,11 +98,34 @@
       .rag-row__head {
         gap: 8px;
       }
+
+      .rag-row__head > div,
+      .rag-row__title,
+      .rag-row__meta,
+      .rag-chip {
+        min-width: 0;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+      }
+
+      #search-panel > div[style*="display:flex"] {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+      }
+
+      #rag-test-query {
+        width: 100%;
+      }
+
+      #btn-run-search {
+        width: 100%;
+        justify-content: center;
+      }
     }
 
     @media (max-width: 600px) {
       .rag-row__actions .btn {
-        flex: 1 1 calc(50% - 6px);
+        flex: 1 1 100%;
         justify-content: center;
       }
 
