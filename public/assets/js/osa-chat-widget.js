@@ -1464,14 +1464,12 @@
                 statusLineEl.classList.toggle('is-staff',   next === 'staff');
                 statusLineEl.classList.toggle('is-waiting', next === 'waiting');
             }
-            // Hide the quick-topic chips whenever the user is in a human-support
-            // flow (either waiting or actively chatting with staff). Only the
-            // live-staff state animates the header (green shimmer); waiting
-            // gets a calmer amber accent instead.
+            // Hide the quick-topic chips only while actively chatting with a
+            // staff member (staff mode). The waiting state keeps chips visible
+            // so verified users can still navigate topics while queued.
             var isStaff   = next === 'staff';
             var isWaiting = next === 'waiting';
-            var isHuman   = isStaff || isWaiting;
-            if (chipsWrapEl) chipsWrapEl.classList.toggle('is-hidden-staff', isHuman);
+            if (chipsWrapEl) chipsWrapEl.classList.toggle('is-hidden-staff', isStaff);
             if (headerEl) {
                 headerEl.classList.toggle('is-staff-live',    isStaff);
                 headerEl.classList.toggle('is-staff-waiting', isWaiting);
@@ -1791,14 +1789,18 @@
                         lockVisitChipsInThread(ticket.case_id);
                     }
 
-                    if (!isApproved && !isStaffEngaged) {
+                    var ticketStatus = String(ticket.status || '').toLowerCase();
+                    var isActive = ticketStatus !== 'resolved' && ticketStatus !== 'cancelled';
+
+                    if (isActive && !isApproved && !isStaffEngaged) {
                         var startedAt = Date.parse(ticket.created_at) || Date.now();
                         renderWaitingBanner(ticket.case_id, startedAt, !!ticket.cancellable);
                     }
-                    // Only show "Live OSA Staff" once a staff member has actually
-                    // engaged (ticket.status === 'in_progress'). Otherwise keep
-                    // the header in the amber "Waiting for OSA Staff" state.
-                    setMode(isStaffEngaged ? 'staff' : 'waiting');
+                    // Only switch to human-support mode when the ticket is still
+                    // active. Resolved/cancelled tickets must not hide the chips.
+                    if (isActive) {
+                        setMode(isStaffEngaged ? 'staff' : 'waiting');
+                    }
                 })
                 .catch(function () { /* non-fatal */ });
         }
@@ -2276,7 +2278,7 @@
                     if (cid) {
                         appendBubble('assistant', lfPreferencePanelHtml(cid));
                         renderWaitingBanner(cid, Date.now(), true);
-                        setMode('staff');
+                        setMode('waiting');
                         // Auto-record this as a Claiming appointment (L&F is always claiming).
                         try {
                             postApi('/chat/claim/appointment-preference', {
