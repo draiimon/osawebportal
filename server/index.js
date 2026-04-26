@@ -149,16 +149,7 @@ app.use(express.json({ limit: "8mb" }));
 app.locals.limiters = { otpSendLimiter, otpVerifyLimiter, chatSessionLimiter, chatMsgLimiter };
 
 app.get("/", (_req, res) => {
-  const acceptsHtml = String(_req.headers.accept || "").toLowerCase().includes("text/html");
-  if (acceptsHtml) {
-    return res.sendFile(path.join(__dirname, "..", "public", "preview.html"));
-  }
-  return res.json({
-    success: true,
-    service: "osa-api",
-    message: "OSA API is running.",
-    docs: "/api/v1",
-  });
+  return res.sendFile(path.join(__dirname, "..", "public", "preview.html"));
 });
 
 app.get(`${API_PREFIX}`, (_req, res) => {
