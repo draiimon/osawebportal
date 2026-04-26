@@ -2181,8 +2181,13 @@
     if (searchSnapshot) {
       url += '&q=' + encodeURIComponent(searchSnapshot);
     }
-    fetch(url + '&_ts=' + Date.now(), { headers: apiHeaders(), cache: 'no-store' })
+    var abortCtrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    var fetchTimeout = window.setTimeout(function () {
+      if (abortCtrl) abortCtrl.abort();
+    }, 12000);
+    fetch(url + '&_ts=' + Date.now(), { headers: apiHeaders(), cache: 'no-store', signal: abortCtrl ? abortCtrl.signal : undefined })
       .then(function (r) {
+        window.clearTimeout(fetchTimeout);
         return r.json();
       })
       .then(function (data) {
@@ -2194,7 +2199,7 @@
           ticketList.innerHTML = '<div class="empty-tickets">Admin session expired. Please sign in again.</div>';
           return;
         }
-        if (!data.success || !data.tickets.length) {
+        if (!data || !data.success || !Array.isArray(data.tickets) || !data.tickets.length) {
           invalidateTicketCache();
           ticketList.innerHTML = '<div class="empty-tickets">No ' + state.currentStatus.replace('_', ' ') + ' tickets.</div>';
           openCount.textContent = '0';
@@ -2221,8 +2226,9 @@
         }
       })
       .catch(function () {
+        window.clearTimeout(fetchTimeout);
         invalidateTicketCache();
-        ticketList.innerHTML = '<div class="empty-tickets">Failed to load tickets.</div>';
+        ticketList.innerHTML = '<div class="empty-tickets">Failed to load tickets. Check server connection.</div>';
       });
   }
 
@@ -2307,7 +2313,11 @@
         sameCaseAsFocused &&
         presenceType === 'ticket_updated' &&
         String((payload && payload.status) || '').toLowerCase() === 'in_progress';
-      var shouldRefreshList = (!state.currentCaseId || sameCaseAsFocused) && !skipListRefreshForFocusedInProgress;
+      // Always refresh on new tickets so staff see incoming requests even
+      // while focused on a different case. Other events only refresh when
+      // the affected case matches the currently open one.
+      var isNewTicket = presenceType === 'ticket_created';
+      var shouldRefreshList = isNewTicket || ((!state.currentCaseId || sameCaseAsFocused) && !skipListRefreshForFocusedInProgress);
       if (shouldRefreshList) loadTickets({ quiet: true });
       if (state.currentSessionId && (!payload.case_id || payload.case_id === state.currentCaseId)) {
         // Debounced — coalesces a burst of SSE events into one fetch + diff

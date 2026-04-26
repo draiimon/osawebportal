@@ -213,3 +213,11 @@ ALTER TABLE escalation_tickets ADD COLUMN IF NOT EXISTS appointment_location TEX
 ALTER TABLE escalation_tickets ADD COLUMN IF NOT EXISTS appointment_notes TEXT;
 ALTER TABLE escalation_tickets ADD COLUMN IF NOT EXISTS appointment_approved_at TIMESTAMPTZ;
 ALTER TABLE escalation_tickets ADD COLUMN IF NOT EXISTS appointment_approved_by TEXT;
+ALTER TABLE escalation_tickets ADD COLUMN IF NOT EXISTS cancelled_at TIMESTAMPTZ;
+ALTER TABLE escalation_tickets ADD COLUMN IF NOT EXISTS cancelled_reason TEXT;
+ALTER TABLE escalation_tickets ADD COLUMN IF NOT EXISTS arrived_at TIMESTAMPTZ;
+ALTER TABLE escalation_tickets ADD COLUMN IF NOT EXISTS visit_completed_at TIMESTAMPTZ;
+-- Allow 'cancelled' status (orphaned-ticket auto-cancel) — drop old constraint and re-add
+ALTER TABLE escalation_tickets DROP CONSTRAINT IF EXISTS escalation_tickets_status_check;
+ALTER TABLE escalation_tickets ADD CONSTRAINT escalation_tickets_status_check
+  CHECK (status IN ('open','in_progress','resolved','cancelled'));
