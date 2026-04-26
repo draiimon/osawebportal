@@ -5,7 +5,7 @@ const OTP_EXPIRY_MS = 5 * 60 * 1000;
 const RESEND_COOLDOWN_MS = 30 * 1000;
 const MAX_VERIFY_ATTEMPTS = 5;
 const MAX_OTP_SENDS_PER_DAY = Math.max(1, Number(process.env.MAX_OTP_SENDS_PER_DAY || 5));
-const BREVO_URL = "https://api.brevo.com/v3/smtp/email";
+const EMAIL_API_URL = String(process.env.EMAIL_API_URL || "https://api.brevo.com/v3/smtp/email").trim();
 const OTP_DEV_BYPASS_CODE = String(process.env.OTP_DEV_BYPASS_CODE || "").replace(/\D/g, "");
 
 function getAllowedDomain() {
@@ -13,7 +13,21 @@ function getAllowedDomain() {
 }
 
 function getApiKey() {
-  return String(process.env.Brevo_API_KEY || "").trim();
+  return String(
+    process.env.EMAIL_API_KEY ||
+    process.env.Brevo_API_KEY ||
+    process.env.BREVO_API_KEY ||
+    ""
+  ).trim();
+}
+
+function getSenderEmail() {
+  return String(process.env.EMAIL_SENDER_EMAIL || process.env.BREVO_SENDER_EMAIL || "").trim();
+}
+
+function getSenderName() {
+  const raw = String(process.env.EMAIL_SENDER_NAME || process.env.BREVO_SENDER_NAME || "").trim();
+  return raw || "OSA System";
 }
 
 function normalizeEmail(raw) {
@@ -88,18 +102,18 @@ async function incrementDailyOtpQuota(email) {
   );
 }
 
-async function sendBrevoEmail(toEmail, otp) {
+async function sendOtpEmail(toEmail, otp) {
   const apiKey = getApiKey();
   if (!apiKey) {
-    throw new Error("Brevo API key is not configured.");
+    throw new Error("Email API key is not configured.");
   }
 
-  const senderEmail = String(process.env.BREVO_SENDER_EMAIL || "").trim();
+  const senderEmail = getSenderEmail();
   if (!senderEmail) {
-    throw new Error("BREVO_SENDER_EMAIL is not configured.");
+    throw new Error("Email sender address is not configured.");
   }
 
-  const senderName = String(process.env.BREVO_SENDER_NAME || "OSA System").trim() || "OSA System";
+  const senderName = getSenderName();
 
   const html =
     `<div style="font-family:system-ui,sans-serif;max-width:560px;color:#191412">` +
@@ -125,7 +139,7 @@ async function sendBrevoEmail(toEmail, otp) {
     htmlContent: html,
   };
 
-  const res = await fetch(BREVO_URL, {
+  const res = await fetch(EMAIL_API_URL, {
     method: "POST",
     headers: {
       accept: "application/json",
@@ -144,7 +158,7 @@ async function sendBrevoEmail(toEmail, otp) {
   }
 
   if (!res.ok) {
-    const msg = (json && (json.message || json.error)) || text || `Brevo HTTP ${res.status}`;
+    const msg = (json && (json.message || json.error)) || text || `Email API HTTP ${res.status}`;
     throw new Error(msg);
   }
 
@@ -224,7 +238,7 @@ function registerOtpRoutes(app, apiPrefix) {
       );
 
       try {
-        await sendBrevoEmail(email, otp);
+        await sendOtpEmail(email, otp);
       } catch (sendErr) {
         await db.query(`DELETE FROM email_otp_codes WHERE email = $1`, [email]);
         // eslint-disable-next-line no-console
