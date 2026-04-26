@@ -3,8 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>OSA Transaction Guide Portal · Home</title>
-    <link rel="canonical" href="/">
+    <title>OSA Transaction Guide Portal · EAC Cavite</title>
+    <link rel="canonical" href="https://eac.osawebportal.ct.ws/">
+    <meta name="title" content="OSA Transaction Guide Portal · EAC Cavite">
+    <meta name="description"
+        content="Get guided OSA support fast: announcements, lost & found, appointment flow, forms, and secure student chat in one official EAC Cavite portal.">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="OSA Transaction Guide Portal">
+    <meta property="og:locale" content="en_PH">
+    <meta property="og:url" content="https://eac.osawebportal.ct.ws/">
+    <meta property="og:title" content="OSA Transaction Guide Portal · EAC Cavite">
+    <meta property="og:description"
+        content="Get guided OSA support fast: announcements, lost & found, appointment flow, forms, and secure student chat in one official EAC Cavite portal.">
+    <meta property="og:image" content="https://eac.osawebportal.ct.ws/assets/images/osa-social-share-card.png">
+    <meta property="og:image:alt" content="OSA Transaction Guide Portal homepage preview">
+    <meta property="og:image:width" content="1024">
+    <meta property="og:image:height" content="512">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://eac.osawebportal.ct.ws/">
+    <meta name="twitter:title" content="OSA Transaction Guide Portal · EAC Cavite">
+    <meta name="twitter:description"
+        content="Get guided OSA support fast: announcements, lost & found, appointment flow, forms, and secure student chat in one official EAC Cavite portal.">
+    <meta name="twitter:image" content="https://eac.osawebportal.ct.ws/assets/images/osa-social-share-card.png">
+    <meta name="twitter:image:alt" content="OSA Transaction Guide Portal homepage preview">
     <style>
         body {
             margin: 0;
@@ -99,6 +120,18 @@
     </style>
     <script>
         (function () {
+            try {
+                var ua = String(navigator.userAgent || "");
+                var isInApp = /(FBAN|FBAV|FB_IAB|Instagram|Messenger|Line|Twitter|wv)/i.test(ua);
+                if (isInApp && /Android/i.test(ua) && sessionStorage.getItem("osa_external_browser_attempt") !== "1") {
+                    sessionStorage.setItem("osa_external_browser_attempt", "1");
+                    var current = new URL(window.location.href);
+                    var path = (current.pathname || "/") + (current.search || "") + (current.hash || "");
+                    var intentUrl = "intent://" + current.host + path + "#Intent;scheme=https;package=com.android.chrome;end";
+                    window.location.replace(intentUrl);
+                    return;
+                }
+            } catch (_error) { }
             fetch("/preview", { cache: "no-store" })
                 .then(function (response) {
                     if (!response.ok) throw new Error("Failed to load home page.");
