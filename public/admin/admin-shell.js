@@ -91,7 +91,7 @@
   <a class="admin-nav__brand" href="/admin/dashboard">
     <img class="admin-nav__logo" src="/assets/images/eac-emblem.png" alt="EAC" onerror="this.style.display='none'">
     <div class="admin-nav__title">
-      <strong>EAC Cavite</strong>
+      <strong>EAC Cavite <span class="admin-nav__title-sep" aria-hidden="true">·</span> Office of Student Affairs</strong>
       <span>OSA Admin Panel</span>
     </div>
   </a>
@@ -210,32 +210,44 @@
     document.querySelectorAll('[data-admin-email]').forEach(el => el.textContent = adminEmail);
     document.querySelectorAll('[data-admin-initials]').forEach(el => el.textContent = initials);
 
-    /* ── PH Clock with seconds ── */
+    /* ── PH Clock (HH:MM only — seconds dropped on purpose) ──
+       The seconds + AM/PM combo was making the navbar visibly twitch
+       every tick because digit widths and "AM"/"PM" widths differ.
+       Now we render only HH:MM, repaint once per minute, and pair it
+       with `font-variant-numeric: tabular-nums` in CSS so the digit
+       cells stay locked. The clock no longer pushes adjacent items. */
     const dtDates = Array.from(document.querySelectorAll('[data-ph-date]'));
     const dtTimes = Array.from(document.querySelectorAll('[data-ph-time]'));
 
     if (dtDates.length || dtTimes.length) {
+      const dateFmt = new Intl.DateTimeFormat('en-PH', {
+        timeZone: 'Asia/Manila',
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      });
+      const timeFmt = new Intl.DateTimeFormat('en-PH', {
+        timeZone: 'Asia/Manila',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      });
       const tickClock = () => {
         const now = new Date();
-        const dateText = new Intl.DateTimeFormat('en-PH', {
-            timeZone: 'Asia/Manila',
-            weekday: 'short',
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric'
-          }).format(now);
-        const timeText = new Intl.DateTimeFormat('en-PH', {
-            timeZone: 'Asia/Manila',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: true
-          }).format(now);
-        dtDates.forEach(el => { el.textContent = dateText; });
-        dtTimes.forEach(el => { el.textContent = timeText; });
+        const dateText = dateFmt.format(now);
+        const timeText = timeFmt.format(now);
+        dtDates.forEach(el => { if (el.textContent !== dateText) el.textContent = dateText; });
+        dtTimes.forEach(el => { if (el.textContent !== timeText) el.textContent = timeText; });
       };
       tickClock();
-      setInterval(tickClock, 1000);
+      // Align the first repaint to the start of the next minute so the
+      // displayed value flips exactly when the clock rolls over.
+      const msToNextMinute = 60000 - (Date.now() % 60000);
+      setTimeout(() => {
+        tickClock();
+        setInterval(tickClock, 60000);
+      }, msToNextMinute);
     }
 
     /* ── Admin nav stays fixed-size (no scroll compact) ── */

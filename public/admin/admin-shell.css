@@ -113,15 +113,21 @@ input, select, textarea { font-family: var(--font-body); }
 .admin-nav__title strong {
   display: block;
   font-family: var(--font-serif);
-  font-size: 0.9rem; color: #fffaf3;
+  font-size: 0.95rem; color: #fffaf3;
   line-height: 1.15; white-space: nowrap;
   transition: font-size 220ms;
 }
+.admin-nav__title-sep {
+  display: inline-block;
+  margin: 0 6px;
+  color: rgba(247, 215, 129, 0.65);
+  font-weight: 400;
+}
 .admin-nav.is-compact .admin-nav__title strong { font-size: 0.9rem; }
 .admin-nav__title span {
-  font-size: 0.58rem; font-weight: 800;
+  font-size: 0.62rem; font-weight: 800;
   letter-spacing: 0.17em; text-transform: uppercase;
-  color: rgba(255,220,175,0.72); white-space: nowrap;
+  color: rgba(255,220,175,0.78); white-space: nowrap;
 }
 
 .admin-nav__sep {
@@ -227,7 +233,10 @@ input, select, textarea { font-family: var(--font-body); }
   justify-content: center;
   gap: 6px;
   min-height: 40px;
-  min-width: 132px;
+  /* Locked width so a tick (e.g. "11:09 AM" → "11:10 AM") never
+     re-shifts the user-menu / nav-links sitting next to it. */
+  width: 96px;
+  flex: 0 0 96px;
   padding: 0 10px;
   margin: 0 8px;
   border: none;
@@ -237,12 +246,17 @@ input, select, textarea { font-family: var(--font-body); }
   font-weight: 700;
   border-radius: var(--radius-sm);
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .admin-nav-time strong {
   font-size: 0.95rem;
   letter-spacing: 0.02em;
   line-height: 1;
+  font-variant-numeric: tabular-nums;
+  /* Reserve a fixed digit cell so we don't twitch when "9" → "10". */
+  min-width: 56px;
+  text-align: left;
 }
 
 .admin-avatar {
@@ -511,12 +525,21 @@ input, select, textarea { font-family: var(--font-body); }
 }
 .admin-drawer.is-open { visibility: visible; pointer-events: auto; }
 
-/* Desktop overflow mode: keep desktop layout, just compact controls. */
+/* Desktop overflow mode: keep desktop layout, just compact controls.
+   Note: subtitle is intentionally kept visible — hiding it produced
+   the "navbar only says EAC Cavite" complaint. We tighten only the
+   secondary controls (links, clock, user menu) when space gets tight. */
 .admin-nav.admin-nav--overflow .admin-nav__brand {
   padding-right: 10px;
 }
+.admin-nav.admin-nav--overflow .admin-nav__title strong {
+  font-size: 0.85rem;
+}
+.admin-nav.admin-nav--overflow .admin-nav__title-sep {
+  margin: 0 4px;
+}
 .admin-nav.admin-nav--overflow .admin-nav__title span {
-  display: none;
+  font-size: 0.55rem;
 }
 .admin-nav.admin-nav--overflow .admin-nav__links {
   padding: 0 4px;
@@ -527,13 +550,15 @@ input, select, textarea { font-family: var(--font-body); }
   gap: 6px;
 }
 .admin-nav.admin-nav--overflow .admin-nav-time {
-  min-width: 96px;
+  width: 84px;
+  flex: 0 0 84px;
   margin: 0 4px;
   padding: 0 6px;
   font-size: 0.74rem;
 }
 .admin-nav.admin-nav--overflow .admin-nav-time strong {
   font-size: 0.82rem;
+  min-width: 50px;
 }
 .admin-nav.admin-nav--overflow .admin-user-trigger__label span {
   display: none;
