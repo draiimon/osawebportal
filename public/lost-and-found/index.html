@@ -1299,6 +1299,33 @@
             }
         }
 
+        @media (max-width: 960px) and (hover: none) and (pointer: coarse) {
+            *,
+            *::before,
+            *::after {
+                animation: none !important;
+                transition: none !important;
+            }
+
+            #lf-lightbox,
+            .lb-details-card,
+            .lf-card,
+            .lb-img-wrap img,
+            .lf-card-img img,
+            .lf-card-img-grid-cell img {
+                box-shadow: none !important;
+            }
+
+            .lf-card:hover,
+            .btn-claim:hover,
+            .btn-announcements:hover,
+            .lf-view-btn:hover,
+            .lf-share-btn:hover,
+            .lb-cta:hover {
+                transform: none !important;
+            }
+        }
+
         /* FAB stays visible (with chat icon in widget); lightbox CTA remains text-only */
     </style>
 </head>

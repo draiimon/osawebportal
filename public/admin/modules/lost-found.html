@@ -88,6 +88,24 @@
     @media (max-width: 380px) {
       .item-grid { grid-template-columns: 1fr; }
     }
+
+    /* Module-specific mobile layout hardening (prevents overlap) */
+    @media (max-width: 780px) {
+      .toolbar {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+      .search-input-wrap,
+      .filter-select {
+        width: 100%;
+        min-width: 0;
+      }
+      .view-toggle {
+        margin-left: 0 !important;
+        justify-content: flex-start;
+      }
+    }
   </style>
 </head>
 <body>
@@ -184,7 +202,7 @@
     </div>
 
     <!-- Stats -->
-    <div class="stats-row" style="grid-template-columns:repeat(4,1fr)">
+    <div class="stats-row">
       <div class="stat-card"><div class="stat-card__label">Total Items</div><div class="stat-card__value" id="s-total">0</div><div class="stat-card__sub">On record</div></div>
       <div class="stat-card gold"><div class="stat-card__label">Unclaimed</div><div class="stat-card__value" id="s-unclaimed">0</div><div class="stat-card__sub">Awaiting pickup</div></div>
       <div class="stat-card"><div class="stat-card__label">Claimed</div><div class="stat-card__value" id="s-claimed">0</div><div class="stat-card__sub">Returned</div></div>

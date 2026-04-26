@@ -1087,6 +1087,33 @@
                 justify-content: center;
             }
         }
+
+        @media (max-width: 960px) and (hover: none) and (pointer: coarse) {
+            *,
+            *::before,
+            *::after {
+                animation: none !important;
+                transition: none !important;
+            }
+
+            #announcement-modal,
+            .ann-modal-card,
+            .ann-card,
+            .ann-modal-img-wrap img,
+            .ann-media img,
+            .ann-media-grid-cell img {
+                box-shadow: none !important;
+            }
+
+            .ann-card:hover,
+            .ann-primary:hover,
+            .ann-secondary:hover,
+            .ann-view-btn:hover,
+            .ann-share-btn:hover,
+            .ann-modal-share:hover {
+                transform: none !important;
+            }
+        }
     </style>
 </head>
 

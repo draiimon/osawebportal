@@ -1733,6 +1733,43 @@ p {
     }
 }
 
+/* Aggressive mobile performance mode: prioritize responsiveness on phones */
+@media (max-width: 960px) and (hover: none) and (pointer: coarse) {
+    *,
+    *::before,
+    *::after {
+        animation: none !important;
+        transition-property: none !important;
+        transition-duration: 0ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    .site-navbar,
+    .site-navbar__bar,
+    .site-navbar__drawer,
+    .site-navbar__drawer-overlay,
+    .osa-loader,
+    .osa-loader__backdrop,
+    .osa-loader__card,
+    .panel,
+    .card,
+    .announcement-card,
+    .lf-listing-card,
+    .lf-lightbox,
+    .lf-lightbox__zoom-outer {
+        will-change: auto !important;
+    }
+
+    .panel,
+    .card,
+    .announcement-card,
+    .lf-listing-card,
+    .site-navbar,
+    .site-navbar__drawer {
+        box-shadow: none !important;
+    }
+}
+
 /* =========================================================================
    FOOTER — MOBILE LAYOUT FIXES
    ========================================================================= */
