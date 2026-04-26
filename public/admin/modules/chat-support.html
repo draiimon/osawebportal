@@ -3790,6 +3790,13 @@
   loadTickets();
   startAdminTicketStream();
 
+  // Polling fallback: refresh the ticket list every 10 s regardless of SSE.
+  // This guarantees new tickets appear even when SSE events are missed (e.g.
+  // admin opened the page before the student submitted, or SSE dropped).
+  window.setInterval(function () {
+    loadTickets({ quiet: true });
+  }, 10000);
+
   // First-load UX on phones: if there's no remembered ticket to restore,
   // pop the drawer open so the staff sees the list right away. We wait a
   // beat for the slide-in transition to feel intentional rather than
