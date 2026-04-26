@@ -17,6 +17,7 @@
       flex-wrap: wrap;
       margin-bottom: 20px;
       border-bottom: 2px solid var(--line);
+      min-width: 0;
     }
     .section-tab {
       padding: 9px 16px;
@@ -96,12 +97,14 @@
       display: grid;
       gap: 10px;
       margin-top: 12px;
+      min-width: 0;
     }
     .subtitle-row {
       display: grid;
       grid-template-columns: auto 1fr;
       gap: 10px;
       align-items: center;
+      min-width: 0;
     }
     .subtitle-index {
       width: 28px;
@@ -206,6 +209,38 @@
       }
     }
     @media (max-width: 600px) {
+      .section-tabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding-bottom: 2px;
+      }
+      .section-tabs::-webkit-scrollbar { display: none; }
+      .section-tab {
+        flex: 0 0 auto;
+      }
+
+      .panel,
+      .panel-body,
+      .form-grid,
+      .field {
+        min-width: 0;
+      }
+
+      .field input,
+      .field textarea,
+      .field select {
+        width: 100%;
+        min-width: 0;
+      }
+
+      #hero-title,
+      .hero-subtitle-input {
+        font-size: 16px; /* prevent iOS zoom and keep subtitle editor readable */
+      }
+
       .section-tab { padding: 8px 12px; font-size: 0.76rem; }
       .subtitle-row { grid-template-columns: 1fr; }
       .subtitle-index { display: none; }
