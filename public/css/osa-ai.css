@@ -2130,11 +2130,43 @@
     border-bottom-left-radius: 5px !important;
 }
 
-/* ── Welcome bubble inside chat-ui panel ──────────────────────
-   Reverted per request — the welcome bubble now inherits the same
-   neutral assistant bubble styling as every other AI reply. No
-   color overrides; the rotating tip carousel renders in the regular
-   dark text color so contrast stays clean. */
+/* ── Welcome bubble override inside chat-ui panel ──────────────
+   The generic .osa-ai-msg--assistant rule above paints every assistant
+   bubble white. The welcome bubble must escape that and keep the EAC
+   maroon-and-gold treatment, so we re-declare with higher specificity
+   (chat-ui panel + welcome modifier) and !important. Body text uses
+   pure white + a soft dark text-shadow so contrast is unmistakable. */
+.osa-launcher-panel--chat-ui .osa-ai-msg--assistant.osa-ai-msg--welcome .osa-ai-msg__bubble,
+.osa-launcher-panel--chat-ui .osa-ai-msg.osa-ai-msg--welcome .osa-ai-msg__bubble {
+    background:
+        radial-gradient(120% 140% at 0% 0%, rgba(247,215,129,0.18) 0%, rgba(247,215,129,0) 55%),
+        linear-gradient(135deg, #6b0f1f 0%, #5a0a18 55%, #3d0610 100%) !important;
+    border: 1px solid rgba(247, 215, 129, 0.42) !important;
+    color: #ffffff !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow:
+        0 1px 0 rgba(247, 215, 129, 0.28) inset,
+        0 8px 22px rgba(61, 6, 16, 0.36),
+        0 0 0 1px rgba(247, 215, 129, 0.12) !important;
+    padding-left: 18px !important;
+    border-bottom-left-radius: 5px !important;
+}
+.osa-launcher-panel--chat-ui .osa-ai-msg--welcome .osa-ai-msg__bubble p,
+.osa-launcher-panel--chat-ui .osa-ai-msg--welcome .osa-ai-msg__bubble span,
+.osa-launcher-panel--chat-ui .osa-ai-msg--welcome .osa-welcome-text {
+    color: #ffffff !important;
+    text-shadow: 0 1px 2px rgba(20, 0, 5, 0.45);
+}
+.osa-launcher-panel--chat-ui .osa-ai-msg--welcome .osa-ai-msg__bubble strong,
+.osa-launcher-panel--chat-ui .osa-ai-msg--welcome .osa-ai-msg__bubble b {
+    color: #ffe9a8 !important;
+    font-weight: 800;
+    text-shadow: 0 1px 2px rgba(20, 0, 5, 0.55);
+}
+.osa-launcher-panel--chat-ui .osa-ai-msg--welcome .osa-ai-msg__bubble a {
+    color: #ffe9a8 !important;
+}
 
 .osa-launcher-panel--chat-ui .osa-ai-msg__meta {
     color: rgba(100,80,70,0.65);
@@ -2717,19 +2749,110 @@
   .osa-staff-typing-pill { animation: none; }
 }
 
-/* ── Welcome bubble ───────────────────────────────────────────────
-   Reverted to the regular assistant bubble look per request — the
-   maroon-on-cream treatment didn't contrast cleanly against the
-   surrounding chat surface. The first greeting now uses the same
-   neutral bubble + default font color as every other AI bubble; the
-   only thing left is the rotating-tip carousel inside it. */
+/* ── Welcome bubble — EAC-themed (maroon + gold), high contrast ──
+   The first bubble keeps its premium institutional treatment (deep
+   maroon ground, warm gold accents, soft glow + shimmer) but the
+   typography is tuned for legibility: pure-white body text with a
+   subtle dark text-shadow so the words stay sharp against the
+   gradient. Bold weight + tight letter-spacing seals the contrast. */
 .osa-ai-msg.osa-ai-msg--welcome .osa-ai-msg__bubble {
-  /* No overrides — inherit the standard `.osa-ai-msg--assistant` bubble
-     (white background, dark text) so the welcome message blends with
-     the rest of the AI replies. */
+  background:
+    radial-gradient(120% 140% at 0% 0%, rgba(247,215,129,0.16) 0%, rgba(247,215,129,0) 55%),
+    linear-gradient(135deg, #6b0f1f 0%, #5a0a18 55%, #3d0610 100%) !important;
+  border: 1px solid rgba(247, 215, 129, 0.42) !important;
+  color: #ffffff !important;
+  padding-left: 18px !important;
+  box-shadow:
+    0 1px 0 rgba(247, 215, 129, 0.18) inset,
+    0 8px 20px rgba(61, 6, 16, 0.32),
+    0 0 0 1px rgba(247, 215, 129, 0.10);
+  position: relative;
+  overflow: hidden;
+  animation: osaWelcomeBubbleGlow 4.2s ease-in-out infinite;
 }
 
-/* Carousel inner — text that fades as tips rotate. */
+/* Gold left-edge ribbon — evokes the EAC seal's vertical accent. */
+.osa-ai-msg.osa-ai-msg--welcome .osa-ai-msg__bubble::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, #f7d781 0%, #c79a49 50%, #b6873a 100%);
+  box-shadow: 0 0 12px rgba(247, 215, 129, 0.55);
+  pointer-events: none;
+}
+
+/* High-contrast typography overrides. Pure white body text + a soft
+   dark text-shadow so it reads cleanly on the maroon ground. */
+.osa-ai-msg.osa-ai-msg--welcome .osa-ai-msg__bubble,
+.osa-ai-msg.osa-ai-msg--welcome .osa-ai-msg__bubble p,
+.osa-ai-msg.osa-ai-msg--welcome .osa-ai-msg__bubble span {
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(20, 0, 5, 0.45);
+}
+.osa-ai-msg.osa-ai-msg--welcome .osa-ai-msg__bubble strong,
+.osa-ai-msg.osa-ai-msg--welcome .osa-ai-msg__bubble b {
+  color: #ffe9a8 !important;
+  font-weight: 800;
+  text-shadow: 0 1px 2px rgba(20, 0, 5, 0.55);
+}
+.osa-ai-msg.osa-ai-msg--welcome .osa-ai-msg__bubble a {
+  color: #ffe9a8 !important;
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 233, 168, 0.55);
+  text-underline-offset: 2px;
+}
+.osa-ai-msg.osa-ai-msg--welcome .osa-ai-msg__bubble a:hover {
+  color: #fff5c8 !important;
+  text-decoration-color: #ffe9a8;
+}
+
+/* Soft looping gold shimmer that sweeps diagonally — keeps the
+   "alive / more tips coming" feel. */
+.osa-ai-msg.osa-ai-msg--welcome .osa-ai-msg__bubble::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    transparent 38%,
+    rgba(247, 215, 129, 0.18) 50%,
+    transparent 62%,
+    transparent 100%
+  );
+  background-size: 240% 100%;
+  background-position: 120% 0;
+  animation: osaWelcomeShimmer 5.5s ease-in-out infinite;
+  mix-blend-mode: screen;
+}
+
+@keyframes osaWelcomeBubbleGlow {
+  0%, 100% {
+    box-shadow:
+      0 1px 0 rgba(247, 215, 129, 0.18) inset,
+      0 8px 20px rgba(61, 6, 16, 0.32),
+      0 0 0 1px rgba(247, 215, 129, 0.10);
+  }
+  50% {
+    box-shadow:
+      0 1px 0 rgba(247, 215, 129, 0.28) inset,
+      0 10px 26px rgba(61, 6, 16, 0.42),
+      0 0 0 1px rgba(247, 215, 129, 0.22);
+  }
+}
+
+@keyframes osaWelcomeShimmer {
+  0%   { background-position: 120% 0; }
+  60%  { background-position: -120% 0; }
+  100% { background-position: -120% 0; }
+}
+
+/* Carousel inner — text that fades as tips rotate. Inherits the
+   white color from the bubble so we don't have to re-declare it. */
 .osa-welcome-carousel {
   display: block;
   position: relative;
@@ -2738,11 +2861,15 @@
   margin: 0;
   min-height: 2.6em;
   transition: opacity 220ms ease;
+  font-weight: 600;
+  letter-spacing: 0.005em;
 }
 .osa-welcome-text.is-fading { opacity: 0; }
 
 @media (prefers-reduced-motion: reduce) {
   .osa-welcome-text { transition: none; }
+  .osa-ai-msg.osa-ai-msg--welcome .osa-ai-msg__bubble,
+  .osa-ai-msg.osa-ai-msg--welcome .osa-ai-msg__bubble::before { animation: none; }
 }
 
 /* ── OSA Staff bubble: dynamic green pulsing UI removed per request.
