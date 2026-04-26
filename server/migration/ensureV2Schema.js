@@ -107,6 +107,13 @@ const statements = [
   `ALTER TABLE IF EXISTS escalation_tickets ADD CONSTRAINT escalation_tickets_status_check CHECK (status IN ('open','in_progress','resolved','cancelled'))`,
   `ALTER TABLE IF EXISTS escalation_tickets ADD COLUMN IF NOT EXISTS cancelled_at TIMESTAMPTZ`,
   `ALTER TABLE IF EXISTS escalation_tickets ADD COLUMN IF NOT EXISTS cancelled_reason TEXT`,
+  // Distinguishes how a ticket was closed so admins can tell at a glance
+  // whether a closed ticket was manually resolved by staff vs. auto-closed
+  // by the idle-cleanup sweep. NULL = manual / legacy resolution.
+  // Values used by the cleanup job:
+  //   'abandoned'        — student walked away before any staff engagement
+  //   'auto_closed_idle' — staff engaged then both sides went silent
+  `ALTER TABLE IF EXISTS escalation_tickets ADD COLUMN IF NOT EXISTS resolution_reason TEXT`,
   `CREATE INDEX IF NOT EXISTS idx_escalation_tickets_arrived ON escalation_tickets (arrived_at) WHERE arrived_at IS NOT NULL AND visit_completed_at IS NULL`,
   // Preserve OSA data: drop the original ON DELETE CASCADE on session_id and
   // replace with ON DELETE SET NULL, so resolved/approved tickets and chat

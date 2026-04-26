@@ -464,6 +464,9 @@
     .ticket-status-badge.resolved { background: #dcfce7; color: #166534; }
     .ticket-status-badge.approved { background: #dcfce7; color: #166534; }
     .ticket-status-badge.waiting { background: #fae8ff; color: #7e22ce; }
+    /* Auto-closed by idle sweep — distinguishable from a manual resolve */
+    .ticket-status-badge.idle { background: #fef3c7; color: #92400e; }
+    .ticket-status-badge.abandoned { background: #e5e7eb; color: #4b5563; }
 
     .empty-tickets {
       padding: 50px 24px;
@@ -2021,19 +2024,28 @@
     // While a ticket is open / in progress, the underlying status drives
     // the badge — even if the appointment has already been approved, the
     // ticket itself is not yet "approved". Inside the Resolved view we
-    // split the badge so staff can tell at a glance whether a closed
-    // ticket was a regular resolution or an approved appointment that
-    // was then completed.
+    // split the badge so staff can tell at a glance how a closed ticket
+    // was closed:
+    //   • approved          → fulfilled appointment / claim
+    //   • abandoned         → student left before any staff engagement
+    //   • idle              → admin engaged then both went silent
+    //   • resolved          → manual close by staff
     var status = String(t.status || '').toLowerCase();
-    if (status === 'resolved' && String(t.appointment_status || '').toLowerCase() === 'approved') {
-      return 'approved';
+    if (status === 'resolved') {
+      if (String(t.appointment_status || '').toLowerCase() === 'approved') return 'approved';
+      var reason = String(t.resolution_reason || '').toLowerCase();
+      if (reason === 'abandoned') return 'abandoned';
+      if (reason === 'auto_closed_idle') return 'idle';
     }
     return String(t.status || '').replace('_', ' ');
   }
   function statusBadgeClass(t) {
     var status = String(t.status || 'open').toLowerCase();
-    if (status === 'resolved' && String(t.appointment_status || '').toLowerCase() === 'approved') {
-      return 'approved';
+    if (status === 'resolved') {
+      if (String(t.appointment_status || '').toLowerCase() === 'approved') return 'approved';
+      var reason = String(t.resolution_reason || '').toLowerCase();
+      if (reason === 'abandoned') return 'abandoned';
+      if (reason === 'auto_closed_idle') return 'idle';
     }
     return String(t.status || 'open');
   }
@@ -2433,6 +2445,7 @@
       t.case_id,
       t.status || '',
       t.appointment_status || '',
+      t.resolution_reason || '',
       t.is_student_active ? 1 : 0,
       t.needs_end_session_prompt ? 1 : 0,
       t.ticket_type || '',

@@ -3412,7 +3412,8 @@ function registerChatRoutes(app, apiPrefix) {
                 t.preferred_day, t.preferred_time_window,
                 t.appointment_datetime, t.appointment_location, t.appointment_notes,
                 t.appointment_approved_at, t.appointment_approved_by,
-                t.arrived_at, t.visit_completed_at
+                t.arrived_at, t.visit_completed_at,
+                t.resolution_reason
          FROM escalation_tickets t
          LEFT JOIN LATERAL (
            SELECT MAX(created_at) AS last_staff_at
@@ -3859,12 +3860,16 @@ function registerChatRoutes(app, apiPrefix) {
   });
 
   // ── Background cleanup: idle / abandoned tickets ──────────────────
-  // Runs every 5 minutes. Mirrors the staff policy:
-  //   • UNAPPROVED + idle → DELETE the ticket (student abandoned the
-  //     queue before any admin engaged AND before approval).
-  //   • APPROVED general escalation + idle → AUTO-RESOLVE (admin and
-  //     student both went silent on a chat that's already engaged —
-  //     close it gracefully, no /end-session command needed).
+  // Runs every 5 minutes. Tickets are NEVER hard-deleted by this sweep
+  // — they are closed with a distinguishing resolution_reason so admins
+  // can tell at a glance what happened in the Resolved tab.
+  //
+  //   • UNAPPROVED + no staff engagement + idle
+  //         → status='resolved', resolution_reason='abandoned'
+  //         (student walked away before any admin replied)
+  //   • Engaged general escalation + idle
+  //         → status='resolved', resolution_reason='auto_closed_idle'
+  //         (admin replied at least once, then both sides went silent)
   //   • Approved appointment / claim tickets are LEFT ALONE — they hold
   //     a future scheduled date that must remain visible until manual
   //     resolution after the visit / pickup.
@@ -3873,8 +3878,8 @@ function registerChatRoutes(app, apiPrefix) {
     try {
       const idleSec = Math.max(60, Math.floor(STAFF_CHAT_IDLE_MS / 1000));
 
-      // 1) Delete unapproved + abandoned (no staff reply ever)
-      const del = await db.query(
+      // 1) Mark abandoned (unapproved, no staff reply ever) → resolved + 'abandoned'
+      const abandoned = await db.query(
         `WITH activity AS (
            SELECT t.case_id, t.session_id,
                   COALESCE((SELECT MAX(created_at) FROM chat_messages m
@@ -3886,20 +3891,24 @@ function registerChatRoutes(app, apiPrefix) {
            FROM escalation_tickets t
            WHERE t.status IN ('open', 'in_progress')
              AND COALESCE(t.appointment_status, '') <> 'approved'
+             AND COALESCE(t.resolution_reason, '') = ''
          )
-         DELETE FROM escalation_tickets
+         UPDATE escalation_tickets
+         SET status = 'resolved',
+             resolution_reason = 'abandoned',
+             updated_at = NOW()
          WHERE case_id IN (
            SELECT case_id FROM activity
            WHERE staff_engaged = false
              AND last_at < NOW() - ($1 || ' seconds')::interval
          )
-         RETURNING case_id, session_id`,
+         RETURNING case_id`,
         [String(idleSec)]
       );
 
-      // 2) Auto-resolve idle general escalations that the admin
-      //    engaged but everyone went quiet on.
-      const resolved = await db.query(
+      // 2) Auto-close idle general escalations that the admin engaged
+      //    but went quiet on → resolved + 'auto_closed_idle'
+      const idleClosed = await db.query(
         `WITH activity AS (
            SELECT t.case_id, t.session_id,
                   COALESCE((SELECT MAX(created_at) FROM chat_messages m
@@ -3908,9 +3917,12 @@ function registerChatRoutes(app, apiPrefix) {
            WHERE t.status = 'in_progress'
              AND COALESCE(t.ticket_type, 'general') = 'general'
              AND COALESCE(t.appointment_status, '') <> 'approved'
+             AND COALESCE(t.resolution_reason, '') = ''
          )
          UPDATE escalation_tickets
-         SET status = 'resolved', updated_at = NOW()
+         SET status = 'resolved',
+             resolution_reason = 'auto_closed_idle',
+             updated_at = NOW()
          WHERE case_id IN (
            SELECT case_id FROM activity
            WHERE last_at < NOW() - ($1 || ' seconds')::interval
@@ -3919,23 +3931,25 @@ function registerChatRoutes(app, apiPrefix) {
         [String(idleSec)]
       );
 
-      if (del.rows.length || resolved.rows.length) {
+      if (abandoned.rows.length || idleClosed.rows.length) {
         console.log(
-          `[chat-cleanup] idle sweep: deleted=${del.rows.length} resolved=${resolved.rows.length}`
+          `[chat-cleanup] idle sweep: abandoned=${abandoned.rows.length} auto_closed_idle=${idleClosed.rows.length}`
         );
-        del.rows.forEach((r) => {
-          pushToAdminTickets({
-            type: "ticket_deleted",
-            case_id: r.case_id,
-            status: "deleted",
-            timestamp: new Date().toISOString(),
-          });
-        });
-        resolved.rows.forEach((r) => {
+        abandoned.rows.forEach((r) => {
           pushToAdminTickets({
             type: "ticket_updated",
             case_id: r.case_id,
             status: "resolved",
+            resolution_reason: "abandoned",
+            timestamp: new Date().toISOString(),
+          });
+        });
+        idleClosed.rows.forEach((r) => {
+          pushToAdminTickets({
+            type: "ticket_updated",
+            case_id: r.case_id,
+            status: "resolved",
+            resolution_reason: "auto_closed_idle",
             timestamp: new Date().toISOString(),
           });
         });
