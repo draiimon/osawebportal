@@ -1991,10 +1991,7 @@
                 row.innerHTML =
                     '<div>' +
                     '  <div class="osa-ai-msg__bubble">' +
-                    '    <div class="osa-ai-otp__head">' +
-                    '      <span class="osa-ai-otp__eyebrow">Secure Verification</span>' +
-                    '      <p class="osa-ai-otp__desc">Verify your email to continue with protected OSA support requests.</p>' +
-                    '    </div>' +
+                    '    <p class="osa-ai-msg__text">Verify your email to continue with protected OSA support requests.</p>' +
                     '    <div class="osa-ai-otp" style="margin-top:0.5rem">' +
                     '      <div class="osa-ai-otp__field"><label for="' + id + '-n">Full name</label><input id="' + id + '-n" type="text" placeholder="Juan Dela Cruz" autocomplete="name"></div>' +
                     '      <div class="osa-ai-otp__field"><label for="' + id + '-e">Email</label><input id="' + id + '-e" type="email" placeholder="name@example.com" autocomplete="email" enterkeyhint="done"></div>' +

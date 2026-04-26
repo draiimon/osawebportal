@@ -1060,43 +1060,8 @@
 }
 
 /* Maroon header strip with gold eyebrow + cream description. */
-.osa-ai-otp__head {
-    margin: 0;
-    padding: 14px 16px 12px 18px;
-    background:
-        radial-gradient(120% 140% at 0% 0%, rgba(247,215,129,0.18) 0%, rgba(247,215,129,0) 55%),
-        linear-gradient(135deg, #6b0f1f 0%, #5a0a18 55%, #3d0610 100%);
-    border-bottom: 1px solid rgba(247, 215, 129, 0.32);
-    position: relative;
-}
-
-.osa-ai-otp__eyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: #f7d781 !important;
-    margin-bottom: 5px;
-    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
-}
-.osa-ai-otp__eyebrow::before {
-    content: "";
-    width: 14px;
-    height: 1.5px;
-    background: linear-gradient(90deg, #f7d781, rgba(247, 215, 129, 0));
-    border-radius: 2px;
-}
-
-.osa-ai-otp__desc {
-    margin: 0;
-    font-size: 12.5px;
-    line-height: 1.5;
-    color: #fef7e0 !important;
-    font-weight: 500;
-}
+/* .osa-ai-otp__head / __eyebrow / __desc — removed per request. The OTP
+   bubble now uses a plain intro line (.osa-ai-msg__text) above the form. */
 
 .osa-ai-otp__title {
     margin: 0 0 0.6rem;
@@ -1286,6 +1251,10 @@
    "Verify email in this chat", "Resume this case", "I'm still here",
    "Submit & Escalate to OSA Staff", etc. Same maroon-and-gold DNA
    as the OTP primary button + welcome bubble. */
+/* Clean, neutral chip-style button. Reverted from the maroon-and-gold
+   treatment per request — these CTAs now sit calmly inside the bubble
+   without competing with surrounding text. A soft outline keeps them
+   readable against white tip bubbles without using a colored fill. */
 .osa-escalate-btn,
 .osa-ai-actions .osa-escalate-btn {
     appearance: none;
@@ -1294,44 +1263,33 @@
     align-items: center;
     justify-content: center;
     gap: 6px;
-    min-height: 38px;
-    padding: 0 16px;
+    min-height: 34px;
+    padding: 0 14px;
     font-family: inherit;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.01em;
-    color: #fef7e0 !important;
-    background:
-        linear-gradient(135deg, #6b0f1f 0%, #5a0a18 55%, #3d0610 100%) !important;
-    border: 1px solid rgba(247, 215, 129, 0.55) !important;
-    border-radius: 10px !important;
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: 0;
+    color: #2a2419;
+    background: #ffffff;
+    border: 1px solid rgba(60, 50, 40, 0.22);
+    border-radius: 8px;
     cursor: pointer;
-    box-shadow:
-        0 1px 0 rgba(247, 215, 129, 0.32) inset,
-        0 6px 14px rgba(61, 6, 16, 0.28),
-        0 0 0 1px rgba(247, 215, 129, 0.10);
-    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.18);
-    transition: transform 0.12s ease, box-shadow 0.18s ease, filter 0.18s ease;
+    box-shadow: none;
+    text-shadow: none;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 .osa-escalate-btn:hover:not(:disabled),
 .osa-ai-actions .osa-escalate-btn:hover:not(:disabled) {
-    background:
-        linear-gradient(135deg, #6b0f1f 0%, #5a0a18 55%, #3d0610 100%) !important;
-    filter: brightness(1.1);
-    box-shadow:
-        0 1px 0 rgba(247, 215, 129, 0.45) inset,
-        0 8px 22px rgba(61, 6, 16, 0.42),
-        0 0 0 1px rgba(247, 215, 129, 0.28);
+    background: #f5efe4;
+    border-color: rgba(60, 50, 40, 0.35);
 }
 .osa-escalate-btn:active:not(:disabled) {
-    transform: translateY(1px);
+    background: #ece4d4;
 }
 .osa-escalate-btn:disabled {
-    background: #d8d2c5 !important;
-    color: #8a7f70 !important;
-    border-color: rgba(132, 26, 45, 0.12) !important;
-    box-shadow: none !important;
-    text-shadow: none !important;
+    background: #f3eee4;
+    color: #8a7f70;
+    border-color: rgba(60, 50, 40, 0.12);
     cursor: not-allowed;
 }
 
@@ -2359,23 +2317,6 @@
     margin: 6px 0 0 !important;
 }
 
-.osa-launcher-panel--chat-ui .osa-ai-otp__head {
-    margin: 0 !important;
-    padding: 11px 14px 10px 16px !important;
-}
-
-.osa-launcher-panel--chat-ui .osa-ai-otp__eyebrow {
-    font-size: 9.5px !important;
-    letter-spacing: 0.10em !important;
-    margin-bottom: 3px !important;
-}
-
-.osa-launcher-panel--chat-ui .osa-ai-otp__desc {
-    font-size: 11.5px !important;
-    line-height: 1.4 !important;
-    margin: 0 !important;
-}
-
 .osa-launcher-panel--chat-ui .osa-ai-otp__field {
     margin: 0 12px 8px 16px !important;
 }
@@ -2890,108 +2831,6 @@
   .osa-ai-msg.osa-ai-msg--welcome .osa-ai-msg__bubble::before { animation: none; }
 }
 
-/* ── OSA Staff "live" bubble — pulsing green glow ─────────────────
-   Applied to .osa-ai-msg--staff (set by appendBubble when a real
-   human staff member posts). Visually distinct from AI assistant
-   bubbles: subtle mint background, green left ribbon, and an outer
-   green glow that breathes (~2.2s) so students see "this is a live
-   human, online right now". A small pulsing dot in the meta label
-   reinforces the online-indicator metaphor. */
-.osa-ai-msg.osa-ai-msg--staff .osa-ai-msg__bubble {
-  position: relative;
-  background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 65%) !important;
-  border: 1px solid rgba(22, 163, 74, 0.32) !important;
-  color: #0f3d22 !important;
-  padding-left: 14px !important;
-  border-bottom-left-radius: 5px !important;
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.6) inset,
-    0 4px 14px rgba(22, 163, 74, 0.10),
-    0 0 0 0 rgba(22, 163, 74, 0.0);
-  animation: osaStaffBubblePulse 2.2s ease-in-out infinite;
-}
-
-/* Green left ribbon — same anatomy as the welcome gold ribbon, but
-   green to read as "live channel" rather than "official greeting". */
-.osa-ai-msg.osa-ai-msg--staff .osa-ai-msg__bubble::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: linear-gradient(180deg, #4ade80 0%, #22c55e 50%, #16a34a 100%);
-  box-shadow: 0 0 10px rgba(74, 222, 128, 0.6);
-  pointer-events: none;
-  animation: osaStaffRibbonPulse 2.2s ease-in-out infinite;
-}
-
-/* Outer breathing glow — what gives the "umiilaw" feel. */
-@keyframes osaStaffBubblePulse {
-  0%, 100% {
-    box-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.6) inset,
-      0 4px 14px rgba(22, 163, 74, 0.10),
-      0 0 0 0 rgba(22, 163, 74, 0.0);
-  }
-  50% {
-    box-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.7) inset,
-      0 6px 20px rgba(22, 163, 74, 0.22),
-      0 0 0 6px rgba(22, 163, 74, 0.16);
-  }
-}
-
-@keyframes osaStaffRibbonPulse {
-  0%, 100% { box-shadow: 0 0 8px rgba(74, 222, 128, 0.4); }
-  50%      { box-shadow: 0 0 16px rgba(74, 222, 128, 0.85); }
-}
-
-/* Pulsing live dot in the "OSA Staff" meta label — classic
-   online-indicator convention, ringed with a fading green halo. */
-.osa-ai-msg.osa-ai-msg--staff .osa-ai-msg__meta {
-  color: #166534 !important;
-  font-weight: 600;
-}
-.osa-ai-msg.osa-ai-msg--staff .osa-ai-msg__meta::before {
-  content: "";
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  margin-right: 6px;
-  vertical-align: middle;
-  border-radius: 50%;
-  background: #16a34a;
-  box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7);
-  animation: osaStaffLiveDot 1.6s ease-in-out infinite;
-}
-@keyframes osaStaffLiveDot {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.65); transform: scale(1); }
-  50%      { box-shadow: 0 0 0 5px rgba(22, 163, 74, 0); transform: scale(1.15); }
-}
-
-/* Chat-ui variant override — the generic .osa-ai-msg--assistant rule
-   inside the panel paints every bubble white with backdrop-blur, which
-   masks our pulsing glow. Re-declare with higher specificity so the
-   staff treatment always wins inside the launcher chat panel. */
-.osa-launcher-panel--chat-ui .osa-ai-msg--assistant.osa-ai-msg--staff .osa-ai-msg__bubble,
-.osa-launcher-panel--chat-ui .osa-ai-msg.osa-ai-msg--staff .osa-ai-msg__bubble {
-  background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 65%) !important;
-  border: 1px solid rgba(22, 163, 74, 0.32) !important;
-  color: #0f3d22 !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  padding-left: 14px !important;
-  border-bottom-left-radius: 5px !important;
-  /* keep the animated shadow from the base rule */
-}
-.osa-launcher-panel--chat-ui .osa-ai-msg--staff .osa-ai-msg__bubble p,
-.osa-launcher-panel--chat-ui .osa-ai-msg--staff .osa-ai-msg__bubble span {
-  color: #0f3d22 !important;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .osa-ai-msg.osa-ai-msg--staff .osa-ai-msg__bubble,
-  .osa-ai-msg.osa-ai-msg--staff .osa-ai-msg__bubble::before,
-  .osa-ai-msg.osa-ai-msg--staff .osa-ai-msg__meta::before { animation: none !important; }
-}
+/* ── OSA Staff bubble: dynamic green pulsing UI removed per request.
+   Staff messages now render with the same neutral assistant bubble as
+   the AI; the "OSA Staff" meta label is the only differentiator. */
