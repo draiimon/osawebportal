@@ -453,87 +453,91 @@
 .osa-ai-mode--ai    { color: rgba(255,255,255,0.88); background: rgba(255,255,255,0.16); }
 .osa-ai-mode--staff { color: #fca5a5; background: rgba(252,165,165,0.2); }
 
-/* Session-expiry countdown — inline capsule inside header sub-row.
-   Font matches the rest of the chat UI (SF Pro Text); tabular-nums keeps
-   the digits from jittering as the countdown ticks. */
+/* Session-expiry countdown — naked inline label inside the header sub-row.
+   No pill / box: just the OSA-cream icon + tabular-nums digits sitting on
+   the maroon header. Warm gold matches the welcome bubble accent so the
+   chrome reads as one consistent OSA theme. */
 .osa-ai-session-timer {
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    padding: 3px 9px;
+    padding: 0;
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
-    font-size: 11px;
+    font-size: 11.5px;
     font-weight: 600;
     font-variant-numeric: tabular-nums;
-    letter-spacing: 0.01em;
-    color: rgba(255,255,255,0.82);
-    background: rgba(255,255,255,0.12);
-    border: 1px solid rgba(255,255,255,0.22);
-    border-radius: 999px;
+    letter-spacing: 0.02em;
+    color: #f7d781;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
     white-space: nowrap;
-    transition: color 220ms ease, background-color 220ms ease, border-color 220ms ease;
+    transition: color 220ms ease;
 }
 .osa-ai-session-timer svg {
-    color: rgba(255,255,255,0.7);
+    color: #f7d781;
+    opacity: 0.92;
     flex-shrink: 0;
+    transition: color 220ms ease;
 }
-.osa-ai-session-timer.is-warning {
+.osa-ai-session-timer.is-warning,
+.osa-ai-session-timer.is-warning svg {
     color: #fcd34d;
-    background: rgba(252,211,77,0.22);
-    border-color: rgba(252,211,77,0.32);
 }
-.osa-ai-session-timer.is-warning svg { color: #fcd34d; }
-.osa-ai-session-timer.is-critical {
+.osa-ai-session-timer.is-critical,
+.osa-ai-session-timer.is-critical svg {
     color: #fca5a5;
-    background: rgba(252,165,165,0.25);
-    border-color: rgba(252,165,165,0.36);
     animation: osaiTimerPulse 1s ease infinite;
 }
-.osa-ai-session-timer.is-critical svg { color: #fca5a5; }
 @keyframes osaiTimerPulse {
     0%, 100% { opacity: 1; }
-    50%      { opacity: 0.7; }
+    50%      { opacity: 0.55; }
 }
 
-/* Sign-out pill — matches the header's translucent-glass language.
-   Hover/active feedback inspired by the close button. */
+/* Sign-out — naked inline label, no pill / box. Cream by default to match
+   the OSA brand tone, shifts to soft red on hover so the destructive
+   intent is still legible without a heavy container. */
 .osa-ai-header-signout {
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    padding: 3px 10px;
+    padding: 0;
     margin: 0;
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
-    font-size: 11px;
+    font-size: 11.5px;
     font-weight: 600;
-    letter-spacing: 0.01em;
-    color: rgba(255,255,255,0.86);
-    background: rgba(255,255,255,0.10);
-    border: 1px solid rgba(255,255,255,0.22);
-    border-radius: 999px;
+    letter-spacing: 0.02em;
+    color: #f7d781;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
     cursor: pointer;
     line-height: 1.5;
     white-space: nowrap;
     -webkit-appearance: none;
     appearance: none;
-    transition: background-color 180ms ease, border-color 180ms ease,
-                color 180ms ease, transform 120ms ease;
+    transition: color 180ms ease, transform 120ms ease, opacity 180ms ease;
 }
-.osa-ai-header-signout:hover {
-    background: rgba(252,165,165,0.22);
-    border-color: rgba(252,165,165,0.42);
-    color: #fee2e2;
+.osa-ai-header-signout:hover,
+.osa-ai-header-signout:hover .osa-ai-header-signout__icon {
+    color: #fca5a5;
 }
 .osa-ai-header-signout:active {
     transform: scale(0.96);
-    background: rgba(252,165,165,0.32);
+    opacity: 0.85;
 }
 .osa-ai-header-signout:focus-visible {
-    outline: 2px solid rgba(255,255,255,0.85);
-    outline-offset: 2px;
+    outline: 2px solid rgba(247,215,129,0.65);
+    outline-offset: 3px;
+    border-radius: 4px;
 }
 .osa-ai-header-signout[hidden] { display: none; }
-.osa-ai-header-signout__icon { flex-shrink: 0; }
+.osa-ai-header-signout__icon {
+    flex-shrink: 0;
+    color: #f7d781;
+    opacity: 0.92;
+    transition: color 180ms ease;
+}
 
 /* Scroll-to-latest — iOS floating glass capsule */
 .osa-ai-scroll-bottom {
@@ -1850,38 +1854,63 @@
     50%      { opacity: 0.6; box-shadow: 0 0 0 4px rgba(251,191,36,0.16); }
 }
 
-/* Session timer — inline pill, warm translucent on dark header.
-   Font matches the rest of the chat UI (SF Pro Text, tabular-nums). */
+/* Session timer (chat-ui shell variant) — naked OSA-cream label, no
+   container. Mirrors the base widget: warm gold by default, amber on
+   warning, soft red + pulse on critical. Sits cleanly on the maroon
+   header without competing with surrounding chrome. */
 .osa-launcher-panel--chat-ui .osa-ai-session-timer {
-    border-radius: 999px !important;
-    border: 1px solid rgba(255,255,255,0.22) !important;
-    background: rgba(255,255,255,0.12) !important;
-    color: rgba(255,255,255,0.82) !important;
+    border-radius: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    color: #f7d781 !important;
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif !important;
-    font-size: 11px !important;
+    font-size: 11.5px !important;
     font-weight: 600 !important;
     font-variant-numeric: tabular-nums !important;
-    letter-spacing: 0.01em !important;
-    padding: 3px 9px !important;
+    letter-spacing: 0.02em !important;
+    padding: 0 !important;
     gap: 5px !important;
     display: inline-flex !important;
     align-items: center !important;
 }
 
 .osa-launcher-panel--chat-ui .osa-ai-session-timer svg {
-    color: rgba(255,255,255,0.7);
+    color: #f7d781 !important;
+    opacity: 0.92;
 }
 
-.osa-launcher-panel--chat-ui .osa-ai-session-timer.is-warning {
-    background: rgba(251,191,36,0.22) !important;
+.osa-launcher-panel--chat-ui .osa-ai-session-timer.is-warning,
+.osa-launcher-panel--chat-ui .osa-ai-session-timer.is-warning svg {
+    background: transparent !important;
     color: #fcd34d !important;
-    border-color: rgba(251,191,36,0.32) !important;
+    border: 0 !important;
 }
 
-.osa-launcher-panel--chat-ui .osa-ai-session-timer.is-critical {
-    background: rgba(252,165,165,0.22) !important;
+.osa-launcher-panel--chat-ui .osa-ai-session-timer.is-critical,
+.osa-launcher-panel--chat-ui .osa-ai-session-timer.is-critical svg {
+    background: transparent !important;
     color: #fca5a5 !important;
-    border-color: rgba(252,165,165,0.32) !important;
+    border: 0 !important;
+}
+
+/* Sign-out (chat-ui shell variant) — naked label to match the timer. */
+.osa-launcher-panel--chat-ui .osa-ai-header-signout {
+    border-radius: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    color: #f7d781 !important;
+    padding: 0 !important;
+    font-size: 11.5px !important;
+}
+.osa-launcher-panel--chat-ui .osa-ai-header-signout:hover,
+.osa-launcher-panel--chat-ui .osa-ai-header-signout:hover .osa-ai-header-signout__icon {
+    background: transparent !important;
+    border: 0 !important;
+    color: #fca5a5 !important;
+}
+.osa-launcher-panel--chat-ui .osa-ai-header-signout__icon {
+    color: #f7d781 !important;
+    opacity: 0.92;
 }
 
 /* Mode badge on dark header */

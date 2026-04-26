@@ -11,7 +11,7 @@ const PRECACHE_URLS = [
   "/about-portal/",
   "/about-portal",
   "/css/osa-design.css?v=40",
-  "/css/osa-ai.css?v=54",
+  "/css/osa-ai.css?v=55",
   "/assets/js/portal-shell.js?v=44",
   "/assets/js/osa-api-client.js?v=2",
   "/assets/js/osa-chat-loader.js?v=74",
