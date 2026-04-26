@@ -6,7 +6,11 @@ artifacts
 .local
 .git
 .gitignore
-*.md
+scripts
+docs
 attached_assets
 prisma
 serve.js
+*.md
+README.md
+replit.md

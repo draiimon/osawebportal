@@ -4,12 +4,13 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm ci --omit=dev --prefer-offline
+RUN npm ci --omit=dev --no-audit --no-fund && npm cache clean --force
 
 COPY public ./public
 COPY server ./server
-COPY scripts ./scripts
-COPY docs ./docs
+COPY docker-entrypoint.sh ./
+
+RUN chmod +x docker-entrypoint.sh
 
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
@@ -17,4 +18,7 @@ ENV TRUST_PROXY=1
 
 EXPOSE 10000
 
-CMD ["sh", "-c", "API_PORT=${PORT:-10000} node server/index.js"]
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+  CMD wget -qO- http://localhost:${PORT:-10000}/api/v1/health || exit 1
+
+ENTRYPOINT ["./docker-entrypoint.sh"]
