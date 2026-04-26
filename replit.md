@@ -53,6 +53,23 @@ checkmarks under user bubbles in `public/assets/js/osa-chat-widget.js` and
 persisted in the `osaChatThread` localStorage record. Cache-bust pins:
 loader `v=70`, widget `v=75`, `osa-ai.css?v=46`, island css `v=18`.
 
+## Ticket status lifecycle (in_progress / resolved / cancelled)
+`in_progress` is reserved for tickets whose student is **actively online** in
+the chat. The instant the student leaves the live session — explicit "End
+Session", session expiry, or no SSE + idle past `ORPHAN_TICKET_DEAD_AIR_MS` —
+`cancelOrphanedTickets()` in `server/chat.js` closes every open/in_progress
+ticket attached to that session:
+- `appointment_status = 'approved'` → `status = 'resolved'`
+  (`resolution_reason = 'approved_<reason>'`)
+- otherwise → `status = 'cancelled'` (`cancelled_reason = <reason>`)
+
+`sweepDeadAirTickets()` runs every 30 s and applies the same rule to
+**both** `open` and `in_progress` tickets when the student goes offline, so
+approved appointments no longer dangle in `in_progress` after the student
+disconnects. Manual staff actions (`/approve-appointment`,
+`/schedule-appointment`, `/staff-message`, `/resolve`) are unchanged — they
+only set `in_progress` while the live conversation is happening.
+
 ## Visit Status (4-stage timeline)
 After OSA approves an appointment, the widget renders an in-thread "Visit Status"
 card with four steps: Submitted → Scheduled → Waiting at OSA → Completed.
