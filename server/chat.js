@@ -3,6 +3,7 @@ const db = require("./db");
 const { verifyAuthToken } = require("./auth/jwt");
 const { searchRag } = require("./chatbot/services/ragService");
 const { cleanModelText, NO_RELIABLE_KB_REPLY } = require("./chatbot/utils/responseCleaner");
+const { tidyOfficialLinks } = require("./chatbot/services/chatPipeline");
 const { buildPortalPageContext, looksLikePortalPageIntent } = require("./chatbot/utils/portalPageContext");
 const { looksLikeOtpHelpIntent } = require("./chatbot/utils/preprocessor");
 const { searchFaq } = require("./faqSearch");
@@ -22,10 +23,12 @@ const GROQ_BASE_URL = String(process.env.GROQ_BASE_URL || "https://api.groq.com/
   .replace(/\/+$/, "");
 const GROQ_FINAL_ONLY_INSTRUCTION =
   "Return only the final user-facing answer. Do not include reasoning traces or <think> tags.";
-/** Headroom for long grounded answers (Vision/Mission, handbook lists). Override via CHAT_MAX_OUTPUT_TOKENS. */
+/** Headroom for long grounded answers (Vision/Mission, scholarship explainers,
+ *  multi-form lists). Bumped from 1024 → 2048 so multi-section institutional
+ *  answers are not cut mid-sentence. Override via CHAT_MAX_OUTPUT_TOKENS. */
 const MAX_OUTPUT_TOKENS = Math.min(
   8192,
-  Math.max(128, Number(process.env.CHAT_MAX_OUTPUT_TOKENS ?? 1024))
+  Math.max(128, Number(process.env.CHAT_MAX_OUTPUT_TOKENS ?? 2048))
 );
 const TIER1_MAX_OUTPUT_TOKENS = Math.min(
   2048,
@@ -2408,7 +2411,7 @@ function registerChatRoutes(app, apiPrefix) {
             const aiTier1Reply = TIER1_REWRITE
               ? await generateTier1FaqReply(student_name, message, faqMatch)
               : "";
-            const reply = cleanModelText(aiTier1Reply || faqMatch.answer);
+            const reply = tidyOfficialLinks(cleanModelText(aiTier1Reply || faqMatch.answer));
 
             await persistReply(sessionId, reply);
 
@@ -2526,7 +2529,9 @@ function registerChatRoutes(app, apiPrefix) {
         }
         const suggestEscalation =
           needsEscalation(message, rawReply) || looksLikeNoKb || cleanedRaw === NO_RELIABLE_KB_REPLY;
-        const reply = normalizeEscalationReply(cleanedRaw, suggestEscalation, { appointmentIntent });
+        const reply = tidyOfficialLinks(
+          normalizeEscalationReply(cleanedRaw, suggestEscalation, { appointmentIntent })
+        );
         // eslint-disable-next-line no-console
         console.log(
           `[RAG:chat:reply] tier=2 suggestEscalation=${suggestEscalation} ` +

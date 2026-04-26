@@ -122,7 +122,8 @@ function makeSystemPrompt(meta) {
     `- Write in clear, natural English.\n` +
     `- Keep the reply concise, helpful, and easy to follow.\n` +
     `- Use bullets or numbered steps only when they improve clarity.\n` +
-    `- Match the student's phrasing level while staying respectful and professional.\n\n` +
+    `- Match the student's phrasing level while staying respectful and professional.\n` +
+    `- LINK FORMATTING: When you cite an official URL, ALWAYS wrap it in markdown link form using a short friendly label, e.g. \`[Scholarship Application Form](https://...)\` — never paste a long bare URL inline next to prose. Place each downloadable form link on its own line/paragraph (with a blank line above and below) so it never runs into the surrounding sentence.\n\n` +
     `OFFICIAL INFORMATION RULES:\n` +
     `- For EAC-specific policies, procedures, fees, schedules, requirements, office services, contact details, announcements, forms, and institutional facts, answer only from the CONTEXT EXCERPTS and CURRENT PORTAL DATA blocks below.\n` +
     `- For questions about what is shown on the portal dashboard, home page, about page, guide cards, manual/forms block, or module pages, prioritize CURRENT PORTAL DATA over generic summary chunks.\n` +
@@ -472,9 +473,9 @@ function buildFormsLinkReply(match) {
   if (!match || !Array.isArray(match.forms) || !match.forms.length) return "";
   if (match.type === "single") {
     const f = match.forms[0];
-    return `Here is the official link for the ${f.name}:\n\n• ${f.name} — ${f.url}\n\n${f.description} It opens directly from the portal's "Student Manual and Forms" section on the home page.`;
+    return `Here is the official link for the **${f.name}**:\n\n[${f.name}](${f.url})\n\n${f.description} You can also open it any time from the portal's "Student Manual and Forms" section on the home page.`;
   }
-  const lines = match.forms.map((f) => `• ${f.name} — ${f.url}`);
+  const lines = match.forms.map((f) => `- [${f.name}](${f.url})`);
   const heading =
     match.type === "all"
       ? "Here are the official OSA downloadable references and forms from the portal:"
@@ -484,13 +485,55 @@ function buildFormsLinkReply(match) {
 
 function buildOfficialFormsContextBlock() {
   const lines = OFFICIAL_FORMS.map(
-    (f) => `- ${f.name}: ${f.description} URL: ${f.url}`
+    (f) => `- ${f.name}: ${f.description} Markdown link to use verbatim: [${f.name}](${f.url})`
   );
   return (
-    "\n\nOFFICIAL OSA DOWNLOADABLE REFERENCES & FORMS (safe public URLs — you MAY cite these verbatim when a student asks for the manual, a form, or its link):\n" +
+    "\n\nOFFICIAL OSA DOWNLOADABLE REFERENCES & FORMS (safe public URLs — when a student asks for one of these, cite it using the exact markdown link form shown below; never paste the bare URL inline):\n" +
     lines.join("\n") +
     "\n"
   );
+}
+
+/**
+ * Defense-in-depth post-processor.
+ *
+ * Even with explicit prompt instructions, smaller free-tier models sometimes
+ * still emit bare URLs glued to the next sentence, like:
+ *   "...download it here: https://very/long/.doc For complete steps..."
+ * which the chat widget renders with no breathing room and a giant link
+ * label. This pass:
+ *   1. Replaces every known OFFICIAL_FORMS URL with `[Friendly Label](url)`.
+ *   2. Promotes every markdown link OR bare URL to its own paragraph (blank
+ *      line above + below), so it never collides with surrounding prose.
+ */
+function tidyOfficialLinks(text) {
+  if (!text) return text;
+  let out = String(text);
+
+  // 1. Replace bare OFFICIAL_FORMS URLs with markdown labels.
+  for (const f of OFFICIAL_FORMS) {
+    if (!f.url) continue;
+    const escapedUrl = f.url.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    // Skip if the URL is already inside a markdown link `](url)` — we do this
+    // by replacing only occurrences NOT preceded by `](`.
+    const bareRx = new RegExp(`(?<!\\]\\()${escapedUrl}`, "g");
+    out = out.replace(bareRx, `[${f.name}](${f.url})`);
+  }
+
+  // 2. Promote any markdown link `[label](http...)` to its own paragraph.
+  //    Inserts blank line BEFORE if preceded by non-blank text on the same
+  //    line, and AFTER if followed by non-blank text on the same line.
+  out = out.replace(/([^\n])\s*(\[[^\]]+\]\(https?:\/\/[^)\s]+\))/g, "$1\n\n$2");
+  out = out.replace(/(\[[^\]]+\]\(https?:\/\/[^)\s]+\))\s*([^\n])/g, "$1\n\n$2");
+
+  // 3. Same treatment for any remaining bare URLs (defense in depth).
+  out = out.replace(/([^\s\n(])(https?:\/\/[^\s)]+)/g, "$1 $2");
+  out = out.replace(/(https?:\/\/[^\s)]+)([^\s\n).,;!?])/g, "$1 $2");
+
+  // 4. Collapse runaway 3+ newlines to a max of 2 (one blank line).
+  out = out.replace(/\n{3,}/g, "\n\n");
+
+  return out.trim();
 }
 
 function buildDateTimeReply(rawMessage) {
@@ -1151,6 +1194,10 @@ async function runChatPipeline({ message, conversationId, userId }) {
     responseText === NO_RELIABLE_KB_REPLY ||
     /^\s*no relevant information found\b/im.test(String(responseText).trim());
 
+  // Final formatting pass: enforce friendly link labels + paragraph spacing
+  // around any URLs the model emitted (or that came from static replies).
+  responseText = tidyOfficialLinks(responseText);
+
   await persistTurn(responseText, selectedProvider);
 
   return withAnswerFields({
@@ -1168,4 +1215,5 @@ async function runChatPipeline({ message, conversationId, userId }) {
 
 module.exports = {
   runChatPipeline,
+  tidyOfficialLinks,
 };

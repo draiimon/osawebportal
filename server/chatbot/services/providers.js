@@ -11,10 +11,12 @@ const GROQ_MODEL = String(process.env.GROQ_MODEL || "qwen/qwen3-32b").trim();
 const OPENROUTER_MODEL = String(process.env.OPENROUTER_MODEL || "openai/gpt-oss-20b:free").trim();
 const HUGGINGFACE_MODEL = String(process.env.HUGGINGFACE_MODEL || "mistralai/Mistral-7B-Instruct-v0.2").trim();
 const { runWithGeminiFailover } = require("../../services/geminiKeyPool");
-/** Default raised so RAG-backed institutional answers are not cut mid-sentence (was 280). */
+/** Default raised so RAG-backed institutional answers (scholarships, multi-form
+ *  lists, vision/mission) are not cut mid-sentence. Was 1024 — too tight for
+ *  multi-section answers like the full scholarship explainer. */
 const MAX_OUTPUT_TOKENS = Math.min(
   8192,
-  Math.max(128, Number(process.env.CHATBOT_MAX_OUTPUT_TOKENS ?? 1024))
+  Math.max(128, Number(process.env.CHATBOT_MAX_OUTPUT_TOKENS ?? 2048))
 );
 const TEMPERATURE = Number(process.env.CHATBOT_TEMPERATURE || 0.3);
 
