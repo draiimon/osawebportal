@@ -778,11 +778,11 @@ function hasUnsafeGeneralTopicSignals(message) {
   return /\b(kill myself|suicide|harm myself|bomb|weapon|gun|hack|hacking|steal password|drugs|shabu|meth|porn)\b/i.test(String(message || ""));
 }
 
-// Off-topic ("harmless general AI") fallback is OFF by default. The portal
-// assistant is scoped to OSA / EAC topics. Set CHATBOT_ALLOW_GENERAL_FACTS=true
-// to let the bot answer general trivia, translations, jokes, and casual chat.
+// Off-topic ("harmless general AI") fallback is ON by default so the assistant
+// can respond naturally to simple non-OSA prompts without sounding robotic.
+// Set CHATBOT_ALLOW_GENERAL_FACTS=false to force strict OSA/EAC-only scope.
 const CHATBOT_ALLOW_GENERAL_FACTS =
-  String(process.env.CHATBOT_ALLOW_GENERAL_FACTS || "false").trim().toLowerCase() === "true";
+  String(process.env.CHATBOT_ALLOW_GENERAL_FACTS || "true").trim().toLowerCase() === "true";
 
 function mayUseHarmlessGeneralAiFallback(message, meta) {
   if (!CHATBOT_ALLOW_GENERAL_FACTS) return false;
