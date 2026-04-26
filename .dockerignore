@@ -1,0 +1,12 @@
+node_modules
+.env
+.env.*
+frontend
+artifacts
+.local
+.git
+.gitignore
+*.md
+attached_assets
+prisma
+serve.js
