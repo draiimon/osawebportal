@@ -434,12 +434,18 @@
     document.getElementById('f-content').value = chunk ? chunk.content : '';
     document.getElementById('f-active').checked = chunk ? chunk.isActive : true;
 
+    // Show the modal. The shared CSS reveals .modal-backdrop only
+    // when the `open` class is present — the previous code was adding
+    // `active`, which did nothing, so the Edit button looked broken.
     const modal = document.getElementById('chunk-modal');
-    modal.classList.add('active');
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
   }
 
   function closeModal() {
-    document.getElementById('chunk-modal').classList.remove('active');
+    const modal = document.getElementById('chunk-modal');
+    modal.classList.remove('open');
+    document.body.style.overflow = '';
     editingId = null;
   }
 
