@@ -52,43 +52,41 @@
     '/admin/modules/chat-logs': { title: 'Chat Logs', crumb: 'Testing & debug' },
   };
 
-  /* ── NAV HTML TEMPLATE ── */
+  /* ── NAV HTML TEMPLATE ──
+     Icon-free, count-badge-free links to mirror the public /preview navbar.
+     Only the Chat Support badge remains (live-chat queue indicator). */
   function buildNavHTML(activePage) {
     const pages = [
-      { href: '/admin/dashboard',     label: 'Dashboard',      icon: '<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>', badge: '' },
-      { href: '/admin/modules/announcements', label: 'Announcements', icon: '<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>', badge: 'ann' },
-      { href: '/admin/modules/lost-found',    label: 'Lost & Found',  icon: '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>', badge: 'lf' },
-      { href: '/admin/modules/home-content',  label: 'Home Content',  icon: '<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>', badge: '' },
-      { href: '/admin/modules/about',         label: 'About Page',    icon: '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>', badge: '' },
-      { href: '/admin/modules/chat-support', label: 'Chat Support',  icon: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>', badge: 'chat' },
-      { href: '/admin/modules/chat-logs',    label: 'Chat Logs',      icon: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>', badge: '' },
-      { href: '/admin/modules/rag-chunks',   label: 'Knowledge Base', icon: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>', badge: '' },
+      { href: '/admin/dashboard',             label: 'Dashboard',      badge: '' },
+      { href: '/admin/modules/announcements', label: 'Announcements',  badge: '' },
+      { href: '/admin/modules/lost-found',    label: 'Lost & Found',   badge: '' },
+      { href: '/admin/modules/home-content',  label: 'Home Content',   badge: '' },
+      { href: '/admin/modules/about',         label: 'About Page',     badge: '' },
+      { href: '/admin/modules/chat-support',  label: 'Chat Support',   badge: 'chat' },
+      { href: '/admin/modules/chat-logs',     label: 'Chat Logs',      badge: '' },
+      { href: '/admin/modules/rag-chunks',    label: 'Knowledge Base', badge: '' },
     ];
 
     const currentPath = normalizePath(activePage || window.location.pathname);
     const navLinks = pages.map(p => {
       const linkPath = normalizePath(p.href);
       const isActive = currentPath === linkPath;
-      const badgeHtml = p.badge ? `<span class="nav-badge" data-nav-badge="${p.badge}">0</span>` : '';
-      return `<a class="nav-link${isActive ? ' active' : ''}" href="${p.href}">
-        <svg viewBox="0 0 24 24">${p.icon}</svg>${p.label}${badgeHtml}
-      </a>`;
+      const badgeHtml = p.badge ? `<span class="nav-badge" data-nav-badge="${p.badge}" style="display:none">0</span>` : '';
+      return `<a class="nav-link${isActive ? ' active' : ''}" href="${p.href}">${p.label}${badgeHtml}</a>`;
     }).join('');
 
     const drawerLinks = pages.map(p => {
       const linkPath = normalizePath(p.href);
       const isActive = currentPath === linkPath;
-      const badgeHtml = p.badge ? `<span class="nav-badge" data-nav-badge="${p.badge}">0</span>` : '';
-      return `<a class="drawer-nav-item${isActive ? ' active' : ''}" href="${p.href}">
-        <svg viewBox="0 0 24 24">${p.icon}</svg>${p.label}${badgeHtml}
-      </a>`;
+      const badgeHtml = p.badge ? `<span class="nav-badge" data-nav-badge="${p.badge}" style="display:none">0</span>` : '';
+      return `<a class="drawer-nav-item${isActive ? ' active' : ''}" href="${p.href}">${p.label}${badgeHtml}</a>`;
     }).join('');
 
     return `
 <!-- TOP NAV -->
 <nav class="admin-nav" id="admin-nav" role="navigation" aria-label="Admin navigation">
   <button class="nav-hamburger" id="nav-hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="admin-drawer">
-    <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    <span class="nav-hamburger__icon" aria-hidden="true"><span></span><span></span><span></span></span>
   </button>
   <a class="admin-nav__brand" href="/admin/dashboard">
     <img class="admin-nav__logo" src="/assets/images/eac-emblem.png" alt="EAC" onerror="this.style.display='none'">
@@ -98,47 +96,7 @@
     </div>
   </a>
   <div class="admin-nav__sep" aria-hidden="true"></div>
-  <div class="admin-nav__links">
-    <a class="nav-link" href="/admin/dashboard">
-      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-      Dashboard
-    </a>
-    <a class="nav-link" href="/admin/modules/announcements">
-      <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-      Announcements
-      <span class="nav-badge" data-nav-badge="ann">0</span>
-    </a>
-    <a class="nav-link" href="/admin/modules/lost-found">
-      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      Lost &amp; Found
-      <span class="nav-badge" data-nav-badge="lf">0</span>
-    </a>
-    <a class="nav-link" href="/admin/modules/home-content">
-      <svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-      Home Content
-    </a>
-    <a class="nav-link" href="/admin/modules/about">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-      About Page
-    </a>
-    <a class="nav-link" href="/admin/modules/chat-support">
-      <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-      Chat Support
-      <span class="nav-badge" data-nav-badge="chat" style="display:none">0</span>
-    </a>
-    <a class="nav-link" href="/admin/modules/chat-logs">
-      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-      Chat Logs
-    </a>
-    <a class="nav-link" href="/admin/modules/rag-chunks">
-      <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-      Knowledge Base
-    </a>
-    <a class="nav-link" href="/" target="_blank" rel="noopener">
-      <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-      Live Portal
-    </a>
-  </div>
+  <div class="admin-nav__links">${navLinks}<a class="nav-link nav-link--portal" href="/" target="_blank" rel="noopener">Live Portal</a></div>
   <div class="admin-nav__right">
     <div class="admin-nav-time" aria-live="polite" aria-label="Philippine time">
       <span>PH</span>
@@ -202,55 +160,9 @@
           <span>OSA Admin Panel</span>
         </div>
       </div>
-      <button class="drawer-close" id="drawer-close" aria-label="Close menu">
-        <svg viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="M6 6 18 18"/></svg>
-      </button>
+      <button class="drawer-close" id="drawer-close" aria-label="Close menu">×</button>
     </div>
-    <nav class="drawer-nav">
-      <span class="drawer-section-label">Overview</span>
-      <a class="drawer-nav-item" href="/admin/dashboard">
-        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-        Dashboard
-      </a>
-      <span class="drawer-section-label">Content</span>
-      <a class="drawer-nav-item" href="/admin/modules/announcements">
-        <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-        Announcements
-        <span class="nav-badge" data-nav-badge="ann">0</span>
-      </a>
-      <a class="drawer-nav-item" href="/admin/modules/lost-found">
-        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        Lost &amp; Found
-        <span class="nav-badge" data-nav-badge="lf">0</span>
-      </a>
-      <a class="drawer-nav-item" href="/admin/modules/home-content">
-        <svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        Home Content
-      </a>
-      <a class="drawer-nav-item" href="/admin/modules/about">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        About Page
-      </a>
-      <a class="drawer-nav-item" href="/admin/modules/chat-support">
-        <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        Chat Support
-        <span class="nav-badge" data-nav-badge="chat" style="display:none">0</span>
-      </a>
-      <span class="drawer-section-label">Chatbot</span>
-      <a class="drawer-nav-item" href="/admin/modules/chat-logs">
-        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-        Chat Logs
-      </a>
-      <a class="drawer-nav-item" href="/admin/modules/rag-chunks">
-        <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-        Knowledge Base
-      </a>
-      <span class="drawer-section-label">Portal</span>
-      <a class="drawer-nav-item" href="/" target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-        View Live Portal
-      </a>
-    </nav>
+    <nav class="drawer-nav">${drawerLinks}<a class="drawer-nav-item drawer-nav-item--portal" href="/" target="_blank" rel="noopener">View Live Portal</a></nav>
     <div class="drawer-footer">
       <div class="drawer-profile">
         <div class="admin-avatar" data-admin-initials>AD</div>
@@ -340,7 +252,6 @@
       a.className = isDrawer ? 'drawer-nav-item' : 'nav-link';
       a.href = '/admin/modules/chat-support';
       a.innerHTML =
-        '<svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>' +
         'Chat Support' +
         '<span class="nav-badge" data-nav-badge="chat" style="display:none">0</span>';
       return a;
@@ -392,24 +303,18 @@
       document.title = stripHtmlExt(document.title);
     }
 
-    /* ── Badge counts ── */
+    /* ── Badge counts ──
+       Announcement + Lost & Found numeric badges removed by design.
+       Chat-support badge is still managed by the chat-support module. */
     const setBadge = (key, count) => {
       document.querySelectorAll(`[data-nav-badge="${key}"]`).forEach(el => {
         el.textContent = count;
         el.style.display = count ? '' : 'none';
       });
     };
-    setBadge('ann', 0);
-    setBadge('lf', 0);
-    Promise.all([
-      fetch('/api/v1/admin/announcements').then(r => (r.ok ? r.json() : Promise.reject(new Error('ann')))),
-      fetch('/api/v1/admin/lost-found').then(r => (r.ok ? r.json() : Promise.reject(new Error('lf'))))
-    ]).then(([annRes, lfRes]) => {
-      const annCount = Array.isArray(annRes && annRes.data) ? annRes.data.length : 0;
-      const lfCount = Array.isArray(lfRes && lfRes.data) ? lfRes.data.length : 0;
-      setBadge('ann', annCount);
-      setBadge('lf', lfCount);
-    }).catch(() => {});
+    /* Defensive: if any old cached markup still has ann/lf badges, hide them. */
+    document.querySelectorAll('[data-nav-badge="ann"], [data-nav-badge="lf"]').forEach(el => el.remove());
+    void setBadge;
 
     /* ── Logout ── */
     const performLogout = () => {
