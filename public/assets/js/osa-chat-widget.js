@@ -164,8 +164,28 @@
             return ln.replace(/\s+\*(?!\*)\s+/g, '\n* ');
         }).join('\n');
 
+        function linkify(s) {
+            // Auto-link bare http(s) URLs in assistant replies (escapeHtml has
+            // already run, so the URL contains no <, >, &, ", or ' chars).
+            // Trailing sentence punctuation is excluded from the link target.
+            return s.replace(/\bhttps?:\/\/[^\s<>"']+/g, function (url) {
+                var trail = '';
+                var m = url.match(/[.,;:!?)\]\}]+$/);
+                if (m) {
+                    trail = m[0];
+                    url = url.slice(0, -trail.length);
+                }
+                return (
+                    '<a href="' + url +
+                    '" target="_blank" rel="noopener noreferrer" class="osa-ai-link">' +
+                    url + '</a>' + trail
+                );
+            });
+        }
         function inlineFmt(s) {
-            return s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+            // Linkify FIRST so the URL never gets sliced by a bold marker, then
+            // apply **bold** emphasis around the resulting markup.
+            return linkify(s).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
         }
 
         var lines = safe.split('\n');

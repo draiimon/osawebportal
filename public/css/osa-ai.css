@@ -2834,3 +2834,41 @@
 /* ── OSA Staff bubble: dynamic green pulsing UI removed per request.
    Staff messages now render with the same neutral assistant bubble as
    the AI; the "OSA Staff" meta label is the only differentiator. */
+
+/* ── Auto-linked URLs in chat replies ─────────────────────────────
+   Applied by the widget's renderAssistantText linkify pass so that
+   the Student Manual / Scholarship Form URLs returned by the chat
+   pipeline render as clickable links instead of raw text. */
+.osa-ai-msg__bubble .osa-ai-link,
+.osa-launcher-panel--chat-ui .osa-ai-msg__bubble .osa-ai-link {
+    color: #6b0f1f;
+    text-decoration: underline;
+    text-decoration-color: rgba(107, 15, 31, 0.45);
+    text-underline-offset: 2px;
+    font-weight: 600;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    cursor: pointer;
+}
+.osa-ai-msg__bubble .osa-ai-link:hover,
+.osa-launcher-panel--chat-ui .osa-ai-msg__bubble .osa-ai-link:hover {
+    color: #4a0a15;
+    text-decoration-color: #6b0f1f;
+}
+.osa-ai-msg__bubble .osa-ai-link:visited,
+.osa-launcher-panel--chat-ui .osa-ai-msg__bubble .osa-ai-link:visited {
+    color: #6b0f1f;
+}
+
+/* Welcome bubble paints text in cream on maroon — flip the link palette
+   so URLs read as gold-on-maroon there and stay legible. */
+.osa-ai-msg.osa-ai-msg--welcome .osa-ai-msg__bubble .osa-ai-link,
+.osa-launcher-panel--chat-ui .osa-ai-msg--welcome .osa-ai-msg__bubble .osa-ai-link {
+    color: #f7d781;
+    text-decoration-color: rgba(247, 215, 129, 0.55);
+}
+.osa-ai-msg.osa-ai-msg--welcome .osa-ai-msg__bubble .osa-ai-link:hover,
+.osa-launcher-panel--chat-ui .osa-ai-msg--welcome .osa-ai-msg__bubble .osa-ai-link:hover {
+    color: #ffe7a3;
+    text-decoration-color: #f7d781;
+}
