@@ -2138,6 +2138,40 @@
     border-bottom-left-radius: 5px !important;
 }
 
+/* ── Welcome bubble override inside chat-ui panel ──────────────
+   The generic .osa-ai-msg--assistant rule above paints every assistant
+   bubble white. The welcome bubble must escape that and keep the EAC
+   maroon-and-gold treatment, so we re-declare with higher specificity
+   (chat-ui panel + welcome modifier) and !important. */
+.osa-launcher-panel--chat-ui .osa-ai-msg--assistant.osa-ai-msg--welcome .osa-ai-msg__bubble,
+.osa-launcher-panel--chat-ui .osa-ai-msg.osa-ai-msg--welcome .osa-ai-msg__bubble {
+    background:
+        radial-gradient(120% 140% at 0% 0%, rgba(247,215,129,0.18) 0%, rgba(247,215,129,0) 55%),
+        linear-gradient(135deg, #6b0f1f 0%, #5a0a18 55%, #3d0610 100%) !important;
+    border: 1px solid rgba(247, 215, 129, 0.42) !important;
+    color: #fef7e0 !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow:
+        0 1px 0 rgba(247, 215, 129, 0.28) inset,
+        0 8px 22px rgba(61, 6, 16, 0.36),
+        0 0 0 1px rgba(247, 215, 129, 0.12) !important;
+    padding-left: 18px !important;
+    border-bottom-left-radius: 5px !important;
+}
+.osa-launcher-panel--chat-ui .osa-ai-msg--welcome .osa-ai-msg__bubble p,
+.osa-launcher-panel--chat-ui .osa-ai-msg--welcome .osa-ai-msg__bubble span,
+.osa-launcher-panel--chat-ui .osa-ai-msg--welcome .osa-welcome-text {
+    color: #fef7e0 !important;
+}
+.osa-launcher-panel--chat-ui .osa-ai-msg--welcome .osa-ai-msg__bubble strong,
+.osa-launcher-panel--chat-ui .osa-ai-msg--welcome .osa-ai-msg__bubble b {
+    color: #f7d781 !important;
+}
+.osa-launcher-panel--chat-ui .osa-ai-msg--welcome .osa-ai-msg__bubble a {
+    color: #f7d781 !important;
+}
+
 .osa-launcher-panel--chat-ui .osa-ai-msg__meta {
     color: rgba(100,80,70,0.65);
     margin-top: 3px;
