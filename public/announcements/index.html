@@ -998,7 +998,7 @@
 
             .ann-modal-stage {
                 min-height: 50vh;
-                padding: 16px 8px;
+                padding: 16px 8px 74px;
             }
 
             .ann-modal-img-wrap {
@@ -1018,6 +1018,9 @@
             .ann-modal-nav {
                 width: 36px;
                 height: 36px;
+                top: auto;
+                bottom: 12px;
+                transform: none;
             }
 
             .ann-modal-close {
@@ -1029,11 +1032,12 @@
             }
 
             .ann-modal-prev {
-                left: 4px;
+                left: calc(50% - 44px);
             }
 
             .ann-modal-next {
-                right: 48px;
+                right: auto;
+                left: calc(50% + 8px);
             }
 
             .ann-modal-body {

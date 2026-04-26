@@ -1165,7 +1165,7 @@
 
             .lb-stage {
                 min-height: 50vh;
-                padding: 16px 8px;
+                padding: 16px 8px 74px;
             }
 
             .lb-img-wrap {
@@ -1185,6 +1185,9 @@
             .lb-nav-btn {
                 width: 36px;
                 height: 36px;
+                top: auto;
+                bottom: 12px;
+                transform: none;
             }
 
             .lb-close {
@@ -1196,11 +1199,12 @@
             }
 
             .lb-nav-prev {
-                left: 4px;
+                left: calc(50% - 44px);
             }
 
             .lb-nav-next {
-                right: 48px;
+                right: auto;
+                left: calc(50% + 8px);
             }
         }
 
