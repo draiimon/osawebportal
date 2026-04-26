@@ -748,10 +748,6 @@
                 opts.clientId = osaGenMsgId();
                 if (!opts.status) opts.status = 'queued';
             }
-            // Stop the welcome carousel as soon as any non-welcome bubble lands.
-            if (typeof html !== 'string' || html.indexOf('data-osa-welcome="1"') === -1) {
-                stopWelcomeCarousel();
-            }
             renderBubble(role, html, opts);
             if (opts.persist !== false) {
                 var arr = getLS(THREAD_KEY, []);
@@ -838,80 +834,17 @@
             });
         }
 
-        // ── Welcome carousel (in-bubble auto-rotating tips) ─────
-        var WELCOME_TIPS = [
-            'Hello! I can help with OSA services, forms, Lost &amp; Found, and policies. How can I help today?',
-            'Tip: Type your concern in your own words — English works best, but Tagalog and Taglish are also welcome.',
-            'Need an appointment? Just say "book appointment" and I\'ll guide you step by step.',
-            'Looking for a form? Ask "good moral request" or "scholarship form" and I\'ll point you to the right link.',
-            'Verify with your school email for unlimited messages, plus you can resume your ticket within 24 hours.'
-        ];
-        var welcomeCarouselTimer = null;
-
+        // ── Welcome bubble ───────────────────────────────────────
+        // Single, static greeting. (The previous in-bubble auto-rotating
+        // "tips" carousel was removed — it added visual noise without
+        // adding actionable value, and most students dismissed it.)
         function welcomeCarouselHtml() {
-            var dots = WELCOME_TIPS.map(function (_, i) {
-                return '<span class="osa-welcome-dot' + (i === 0 ? ' is-active' : '') + '" data-idx="' + i + '" aria-hidden="true"></span>';
-            }).join('');
-            return ''
-                + '<div class="osa-welcome-carousel" data-osa-welcome="1" data-idx="0">'
-                +   '<p class="osa-welcome-text" style="margin:0">' + WELCOME_TIPS[0] + '</p>'
-                +   '<div class="osa-welcome-meta">'
-                +     '<div class="osa-welcome-dots" role="tablist" aria-label="Welcome tips">' + dots + '</div>'
-                +     '<button type="button" class="osa-welcome-skip" data-osa-welcome-skip="1" aria-label="Skip tips">Skip</button>'
-                +   '</div>'
-                +   '<span class="osa-welcome-loop" aria-hidden="true"></span>'
-                + '</div>';
-        }
-
-        function stopWelcomeCarousel() {
-            if (welcomeCarouselTimer) {
-                window.clearInterval(welcomeCarouselTimer);
-                welcomeCarouselTimer = null;
-            }
-        }
-
-        function startWelcomeCarousel() {
-            stopWelcomeCarousel();
-            var root = thread.querySelector('[data-osa-welcome="1"]');
-            if (!root) return;
-            var textEl = root.querySelector('.osa-welcome-text');
-            var dotEls = root.querySelectorAll('.osa-welcome-dot');
-            var skipBtn = root.querySelector('[data-osa-welcome-skip="1"]');
-
-            function renderIdx(idx) {
-                if (!textEl) return;
-                root.setAttribute('data-idx', String(idx));
-                textEl.classList.add('is-fading');
-                window.setTimeout(function () {
-                    textEl.innerHTML = WELCOME_TIPS[idx];
-                    textEl.classList.remove('is-fading');
-                }, 180);
-                for (var i = 0; i < dotEls.length; i++) {
-                    if (i === idx) dotEls[i].classList.add('is-active');
-                    else dotEls[i].classList.remove('is-active');
-                }
-            }
-
-            welcomeCarouselTimer = window.setInterval(function () {
-                if (!document.body.contains(root)) { stopWelcomeCarousel(); return; }
-                var cur = Number(root.getAttribute('data-idx') || '0') || 0;
-                var next = (cur + 1) % WELCOME_TIPS.length;
-                renderIdx(next);
-            }, 4500);
-
-            if (skipBtn) {
-                skipBtn.addEventListener('click', function () {
-                    stopWelcomeCarousel();
-                    renderIdx(0);
-                    var meta = root.querySelector('.osa-welcome-meta');
-                    if (meta) meta.style.display = 'none';
-                }, { once: true });
-            }
+            return '<p style="margin:0">Hello! I can help with OSA services, forms, '
+                +  'Lost &amp; Found, and policies. How can I help today?</p>';
         }
 
         function restoreThread() {
             thread.innerHTML = '';
-            stopWelcomeCarousel();
             var raw = getLS(THREAD_KEY, []);
             var arr = Array.isArray(raw) ? raw : [];
             // #region agent log
@@ -926,11 +859,8 @@
             setLS(THREAD_KEY, arr);
             if (!arr.length) {
                 appendBubble('assistant', welcomeCarouselHtml(), { persist: true, rowClass: 'osa-ai-msg--welcome' });
-                window.requestAnimationFrame(startWelcomeCarousel);
                 return;
             }
-            // Re-arm the carousel if a previous session restored it.
-            window.setTimeout(startWelcomeCarousel, 50);
             arr.forEach(function (m) {
                 if (m.role === 'system') {
                     // The stored html was already escaped on persist.
