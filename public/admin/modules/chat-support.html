@@ -2181,13 +2181,8 @@
     if (searchSnapshot) {
       url += '&q=' + encodeURIComponent(searchSnapshot);
     }
-    var abortCtrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
-    var fetchTimeout = window.setTimeout(function () {
-      if (abortCtrl) abortCtrl.abort();
-    }, 12000);
-    fetch(url + '&_ts=' + Date.now(), { headers: apiHeaders(), cache: 'no-store', signal: abortCtrl ? abortCtrl.signal : undefined })
+    fetch(url + '&_ts=' + Date.now(), { headers: apiHeaders(), cache: 'no-store' })
       .then(function (r) {
-        window.clearTimeout(fetchTimeout);
         return r.json();
       })
       .then(function (data) {
@@ -2199,7 +2194,7 @@
           ticketList.innerHTML = '<div class="empty-tickets">Admin session expired. Please sign in again.</div>';
           return;
         }
-        if (!data || !data.success || !Array.isArray(data.tickets) || !data.tickets.length) {
+        if (!data.success || !data.tickets.length) {
           invalidateTicketCache();
           ticketList.innerHTML = '<div class="empty-tickets">No ' + state.currentStatus.replace('_', ' ') + ' tickets.</div>';
           openCount.textContent = '0';
@@ -2226,9 +2221,8 @@
         }
       })
       .catch(function () {
-        window.clearTimeout(fetchTimeout);
         invalidateTicketCache();
-        ticketList.innerHTML = '<div class="empty-tickets">Failed to load tickets. Check server connection.</div>';
+        ticketList.innerHTML = '<div class="empty-tickets">Failed to load tickets.</div>';
       });
   }
 
