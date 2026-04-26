@@ -770,6 +770,10 @@
                 opts.clientId = osaGenMsgId();
                 if (!opts.status) opts.status = 'queued';
             }
+            // Stop the welcome carousel as soon as any non-welcome bubble lands.
+            if (typeof html !== 'string' || html.indexOf('data-osa-welcome="1"') === -1) {
+                stopWelcomeCarousel();
+            }
             renderBubble(role, html, opts);
             if (opts.persist !== false) {
                 var arr = getLS(THREAD_KEY, []);
@@ -857,12 +861,55 @@
         }
 
         // ── Welcome bubble ───────────────────────────────────────
-        // Single, static greeting. (The previous in-bubble auto-rotating
-        // "tips" carousel was removed — it added visual noise without
-        // adding actionable value, and most students dismissed it.)
+        // Auto-rotating greeting/tips. The bubble itself stays minimal —
+        // just the text fading in and out — so the tips remain useful
+        // without the previous Skip button / dots / progress-bar chrome
+        // cluttering the look.
+        var WELCOME_TIPS = [
+            'Hello! I can help with OSA services, forms, Lost &amp; Found, and policies. How can I help today?',
+            'Tip: Type your concern in your own words — English works best, but Tagalog and Taglish are also welcome.',
+            'Need an appointment? Just say "book appointment" and I\'ll guide you step by step.',
+            'Looking for a form? Ask "good moral request" or "scholarship form" and I\'ll point you to the right link.',
+            'Verify with your school email for unlimited messages, plus you can resume your ticket within 24 hours.'
+        ];
+        var welcomeCarouselTimer = null;
+
         function welcomeCarouselHtml() {
-            return '<p style="margin:0">Hello! I can help with OSA services, forms, '
-                +  'Lost &amp; Found, and policies. How can I help today?</p>';
+            return ''
+                + '<div class="osa-welcome-carousel" data-osa-welcome="1" data-idx="0">'
+                +   '<p class="osa-welcome-text" style="margin:0">' + WELCOME_TIPS[0] + '</p>'
+                + '</div>';
+        }
+
+        function stopWelcomeCarousel() {
+            if (welcomeCarouselTimer) {
+                window.clearInterval(welcomeCarouselTimer);
+                welcomeCarouselTimer = null;
+            }
+        }
+
+        function startWelcomeCarousel() {
+            stopWelcomeCarousel();
+            var root = thread.querySelector('[data-osa-welcome="1"]');
+            if (!root) return;
+            var textEl = root.querySelector('.osa-welcome-text');
+            if (!textEl) return;
+
+            function renderIdx(idx) {
+                root.setAttribute('data-idx', String(idx));
+                textEl.classList.add('is-fading');
+                window.setTimeout(function () {
+                    textEl.innerHTML = WELCOME_TIPS[idx];
+                    textEl.classList.remove('is-fading');
+                }, 180);
+            }
+
+            welcomeCarouselTimer = window.setInterval(function () {
+                if (!document.body.contains(root)) { stopWelcomeCarousel(); return; }
+                var cur = Number(root.getAttribute('data-idx') || '0') || 0;
+                var next = (cur + 1) % WELCOME_TIPS.length;
+                renderIdx(next);
+            }, 4500);
         }
 
         function restoreThread() {
@@ -878,11 +925,33 @@
                 if (html.indexOf('osa-visit-timeline') !== -1) return false;
                 return true;
             });
+            // Migrate stale welcome bubbles persisted by older widget versions
+            // (they shipped the carousel chrome — Skip button / dots / loop bar
+            // — which is no longer rendered or styled, so it would appear as
+            // dead artifacts on reload). Detect any of those leftover markers
+            // and rewrite the entry to the current minimal welcome HTML.
+            var staleWelcomeMarkers = ['osa-welcome-skip', 'osa-welcome-dots', 'osa-welcome-loop', 'osa-welcome-meta'];
+            var migrated = false;
+            arr = arr.map(function (m) {
+                if (!m || !m.html || (m.rowClass || '').indexOf('osa-ai-msg--welcome') === -1) return m;
+                var html = String(m.html);
+                for (var i = 0; i < staleWelcomeMarkers.length; i++) {
+                    if (html.indexOf(staleWelcomeMarkers[i]) !== -1) {
+                        migrated = true;
+                        return Object.assign({}, m, { html: welcomeCarouselHtml() });
+                    }
+                }
+                return m;
+            });
             setLS(THREAD_KEY, arr);
+            void migrated;
             if (!arr.length) {
                 appendBubble('assistant', welcomeCarouselHtml(), { persist: true, rowClass: 'osa-ai-msg--welcome' });
+                window.requestAnimationFrame(startWelcomeCarousel);
                 return;
             }
+            // Re-arm the carousel for any restored welcome bubble.
+            window.setTimeout(startWelcomeCarousel, 50);
             arr.forEach(function (m) {
                 if (m.role === 'system') {
                     // The stored html was already escaped on persist.

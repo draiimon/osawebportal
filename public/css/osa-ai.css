@@ -2673,7 +2673,23 @@
   100% { background-position: -120% 0; }
 }
 
+/* Welcome carousel — no container chrome (no Skip button, dots, or
+   progress strip). Just a smooth opacity fade as the tip text rotates,
+   plus a min-height so the bubble doesn't reflow as tip lengths vary. */
+.osa-welcome-carousel {
+  display: block;
+  position: relative;
+}
+.osa-welcome-text {
+  margin: 0;
+  color: #4a2c10;
+  min-height: 2.6em;
+  transition: opacity 180ms ease;
+}
+.osa-welcome-text.is-fading { opacity: 0; }
+
 @media (prefers-reduced-motion: reduce) {
+  .osa-welcome-text { transition: none; }
   .osa-ai-msg.osa-ai-msg--welcome .osa-ai-msg__bubble,
   .osa-ai-msg.osa-ai-msg--welcome .osa-ai-msg__bubble::before { animation: none; }
 }
