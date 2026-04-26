@@ -151,7 +151,7 @@ app.locals.limiters = { otpSendLimiter, otpVerifyLimiter, chatSessionLimiter, ch
 app.get("/", (_req, res) => {
   const acceptsHtml = String(_req.headers.accept || "").toLowerCase().includes("text/html");
   if (acceptsHtml) {
-    return res.redirect(302, "/preview");
+    return res.sendFile(path.join(__dirname, "..", "public", "preview.html"));
   }
   return res.json({
     success: true,
