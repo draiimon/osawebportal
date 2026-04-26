@@ -104,14 +104,28 @@ async function build({ name, bgSvg }) {
   const out1024 = path.join(OUT_DIR, `app-icon-${name}-1024.png`);
   const out512 = path.join(OUT_DIR, `app-icon-${name}-512.png`);
   const out192 = path.join(OUT_DIR, `app-icon-${name}-192.png`);
+  const out180 = path.join(OUT_DIR, `app-icon-${name}-180.png`);
+  const out167 = path.join(OUT_DIR, `app-icon-${name}-167.png`);
+  const out152 = path.join(OUT_DIR, `app-icon-${name}-152.png`);
+  const out120 = path.join(OUT_DIR, `app-icon-${name}-120.png`);
 
-  fs.writeFileSync(out1024, composed);
-  await sharp(composed).resize(512, 512).png({ compressionLevel: 9 }).toFile(out512);
-  await sharp(composed).resize(192, 192).png({ compressionLevel: 9 }).toFile(out192);
+  // Flatten alpha channel — iOS rejects icons with transparency on the home
+  // screen and renders them with a white square halo if any pixels are
+  // transparent. Force solid white background.
+  const flattened = await sharp(composed)
+    .flatten({ background: { r: 255, g: 255, b: 255 } })
+    .png({ compressionLevel: 9 })
+    .toBuffer();
 
-  console.log(`✓ ${name} 1024 → ${out1024}`);
-  console.log(`✓ ${name}  512 → ${out512}`);
-  console.log(`✓ ${name}  192 → ${out192}`);
+  fs.writeFileSync(out1024, flattened);
+  await sharp(flattened).resize(512, 512).png({ compressionLevel: 9 }).toFile(out512);
+  await sharp(flattened).resize(192, 192).png({ compressionLevel: 9 }).toFile(out192);
+  await sharp(flattened).resize(180, 180).png({ compressionLevel: 9 }).toFile(out180);
+  await sharp(flattened).resize(167, 167).png({ compressionLevel: 9 }).toFile(out167);
+  await sharp(flattened).resize(152, 152).png({ compressionLevel: 9 }).toFile(out152);
+  await sharp(flattened).resize(120, 120).png({ compressionLevel: 9 }).toFile(out120);
+
+  console.log(`✓ ${name}: 1024, 512, 192, 180, 167, 152, 120 written.`);
 }
 
 (async () => {
