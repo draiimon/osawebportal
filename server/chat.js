@@ -972,12 +972,19 @@ function buildNoKbGuidancePrompt(name, email) {
   return (
     `You are the OSA (Office of Student Affairs) Assistant for EAC Cavite.\n` +
     `Today is ${nowStr}. You may answer date / time questions directly using this value — do not say you cannot tell the date.\n\n` +
+    // ── MEMORY DIRECTIVE (mirrors buildSystemPrompt) ───────────────
+    // Without this the no-KB path was triggering "I have no memory of past
+    // conversations" hallucinations even though the prior chat turns are
+    // included in the messages array sent to the LLM.
+    `MEMORY: You DO have access to the full conversation history above (every prior user and assistant turn in this session is included in the messages list). Treat that history AS your memory. Never say "I do not retain memories", "I don't remember", "each interaction is new for me", "I cannot recall past conversations", or any similar disclaimer. If the student asks what was discussed earlier, what they last said, or asks for a recap, look at the conversation history above and answer from it directly.\n\n` +
     `The student's question doesn't have matching official EAC records available right now.\n` +
     `Your role is to give a brief, genuinely helpful general response — practical tips or general guidance ` +
     `about the topic — without inventing any specific EAC policy, fee, deadline, or institutional data.\n\n` +
     `RULES:\n` +
     `- Give 2–4 short, practical general tips relevant to what the student asked.\n` +
     `- Never invent specific EAC figures, dates, names, or requirements.\n` +
+    `- If the student asks to talk to a real / live OSA staff member, give them the actual steps to escalate within this same secure chat (they are already verified): tell them OSA staff will be notified once they confirm their concern, or that they can request an appointment using the buttons in this chat.\n` +
+    `- If the student asks "how?" or "paano?" as a short follow-up, treat it as a follow-up to YOUR previous reply in the conversation history above — do not ask them to clarify what they mean.\n` +
     `- Always end by directing the student to contact OSA for official confirmation:\n` +
     `  "For the exact details, please visit the OSA office or type /chat staff to connect with a staff member directly."\n` +
     `- Always write the entire reply in clear English, even if the student writes in Filipino, Taglish, or any other language. Do not switch to Filipino or any non-English language.\n` +
@@ -1452,11 +1459,26 @@ function isNameQuery(message) {
 function isChatSummaryQuery(message) {
   const m = String(message || "").toLowerCase().replace(/[?!.,]+/g, " ").replace(/\s+/g, " ").trim();
   if (!m) return false;
+  // ── Looser "summarize" matcher ─────────────────────────────────────
+  // Catches common typos the previous strict regex missed
+  // (smmarize / summraize / sumarize / summarie / summery / smarize / sumary).
+  const summarizeWord = /\b(?:summari[sz]e|summari[sz]es?|summary|sumary|summery|sumarize|sumarise|smmarize|smmarise|summraize|summraise|summarie|summaryze|smarize|smarise|recap|tldr)\b/;
   // English: summarize / summary / recap / what did we talk about / what have we discussed
+  if (summarizeWord.test(m) && /\b(chat|convo|conversation|talk|discussion|usapan|napag-?usapan|pinag-?usapan)\b/.test(m)) return true;
   if (/\b(summari[sz]e|summary|recap|tldr|tl\s*;?\s*dr)\b.*\b(chat|convo|conversation|talk|discussion|usapan)\b/.test(m)) return true;
   if (/\b(summari[sz]e|recap|tldr)\s+(this|the|our|na\s+)?(chat|convo|conversation|usapan)?\b/.test(m)) return true;
+  if (summarizeWord.test(m) && /\b(this|the|our|naten|natin|namin)\b/.test(m)) return true;
   if (/\b(what|ano)\s+(did|have)\s+we\s+(talk|talked|discuss|discussed)\s+(about)?\b/.test(m)) return true;
   if (/\b(give|show)\s+(me\s+)?(a\s+)?(brief\s+|short\s+|quick\s+)?(summary|recap|overview)\s+(of\s+)?(this|our|the)?\s*(chat|convo|conversation)?\b/.test(m)) return true;
+  // ── "What did I say earlier" / "ano ung last kong sinabi" ──────────
+  // The student asks the AI to recall their own previous turns. Treat
+  // this as a summary request so the DB-backed transcript handler runs
+  // instead of the LLM hallucinating "I have no memory".
+  if (/\bwhat\s+(did|was)\s+(i|my)\s+(say|said|last\s+(say|said|message))\b/.test(m)) return true;
+  if (/\b(my|the)\s+last\s+(message|question|reply|sinabi)\b/.test(m)) return true;
+  if (/\b(ano|anong)\s+(ung|yung|ang)?\s*(last|huling)\s+(ko(?:ng)?\s+)?(?:mga\s+)?(sinabi|tinanong|message|reply|sabi)\b/.test(m)) return true;
+  if (/\b(ano|anong)\s+(ung|yung|ang)?\s*(sinabi|tinanong|sabi)\s+ko\b/.test(m)) return true;
+  if (/\b(remember|recall)\s+what\s+(i|we)\s+(said|talked|discussed)\b/.test(m)) return true;
   // Tagalog/Taglish: "paki summarize", "i-summarize mo", "buod ng usapan", "ano usapan natin",
   // "summary ng chat naten/natin", "pakirecap"
   if (/\b(paki|pa-?ki|pwede|puwede|paki(?:usap|hingi)?)\s+(summari[sz]e|summary|recap|i-?summarize|i-?recap)\b/.test(m)) return true;
@@ -2105,6 +2127,72 @@ function registerChatRoutes(app, apiPrefix) {
             console.warn("[chat-summary] outer failure:", sumOuterErr?.message || sumOuterErr);
             // Fall through to normal pipeline if anything blows up.
           }
+        }
+
+        // ── LIVE-STAFF / ESCALATION QUICK-REPLY (verified chat) ──────
+        // Mirrors the guest pipeline fix in chatPipeline.js. Catches
+        //   "i wanna ask the staff" / "live staff of osa" /
+        //   "talk to a real staff" / Taglish "kausapin ko staff" /
+        //   bare "how?" or "paano?" follow-up to a prior escalation reply.
+        // Runs BEFORE the LLM call so a stale or no-KB path can't shadow
+        // it with "I have no information on staff currently on duty".
+        try {
+          const lcMsg = String(message || "").toLowerCase().replace(/[?!.,]+/g, " ").replace(/\s+/g, " ").trim();
+          const wantsLiveStaff =
+            /\b(live|real|human|actual)\s+(staff|person|agent|representative|rep)\b/.test(lcMsg) ||
+            /\b(talk|speak|chat|connect|message|contact)\s+(to|with)?\s*(an?\s+)?(real|live|human|actual|osa)?\s*(staff|person|agent|representative|rep|someone)\b/.test(lcMsg) ||
+            /\b(i\s+)?(wanna|want\s+to|would\s+like\s+to|need\s+to|gusto\s+ko|gusto\s+kong|kailangan\s+ko)\s+(?:to\s+)?(?:talk|speak|ask|message|chat|kausapin|magtanong|mag-?usap|makausap)\s+(?:sa\s+|to\s+|with\s+|the\s+|a\s+|an\s+)?(?:real|live|human|actual|osa)?\s*(?:staff|person|tao)\b/.test(lcMsg) ||
+            /\b(kausapin|makausap|kakausapin|magtanong\s+sa|tanungin)\s+(ko\s+)?(ung|yung|ang|si|sa)?\s*(real|live|human|tunay|totoong)?\s*(osa\s+)?staff\b/.test(lcMsg) ||
+            /\bstaff\s+(of\s+|ng\s+|sa\s+)?osa\b.*\b(now|please|please\s+na|naman|asap)?\b/.test(lcMsg) ||
+            /^\s*live\s+staff\b/.test(lcMsg);
+
+          // "how?" / "paano?" follow-up to a prior assistant reply that
+          // already mentioned escalation — give the actual steps instead
+          // of a generic "please clarify".
+          let isEscalationFollowup = false;
+          if (/^(how|paano|pano|then\s+how|so\s+how|what\s+now|then\s+what)\s*$/.test(lcMsg)) {
+            try {
+              const lastAsstResult = await db.query(
+                `SELECT content FROM chat_messages
+                  WHERE session_id = $1 AND role = 'assistant'
+                  ORDER BY created_at DESC LIMIT 1`,
+                [sessionId]
+              );
+              const lastAsst = String((lastAsstResult.rows || [])[0]?.content || "").toLowerCase();
+              if (/escalat|connect.*staff|speak.*staff|talk.*staff|\/chat\s+staff|live\s+staff|human\s+(support|staff)/i.test(lastAsst)) {
+                isEscalationFollowup = true;
+              }
+            } catch (_) {
+              // ignore — fall through to normal pipeline
+            }
+          }
+
+          if (wantsLiveStaff || isEscalationFollowup) {
+            const liveStaffReply = isEscalationFollowup
+              ? `Here's how to reach a live OSA staff member from this same chat:\n\n` +
+                `1. Type **/chat staff** or simply say *"I want to talk to OSA staff"* — this flags your session for human support.\n` +
+                `2. Briefly state your concern (one or two sentences) so the staff can prepare.\n` +
+                `3. If you'd prefer an in-person visit, request an appointment using the chat buttons (or type *"book an appointment"*) and share your preferred weekday and time window (Morning or Afternoon).\n\n` +
+                `Once flagged, OSA staff will join this chat and you'll see their messages here. If no one replies within 5 minutes, we automatically send them a reminder.`
+              : `Sure — to connect with a live OSA staff member, type **/chat staff** here (or simply say *"I want to talk to OSA staff"*). ` +
+                `Briefly describe your concern and OSA staff will join this chat. ` +
+                `If you'd rather book an in-person visit, request an appointment using the chat buttons and share your preferred weekday and time window.`;
+
+            await persistReply(sessionId, liveStaffReply);
+            return res.json({
+              success: true,
+              reply: liveStaffReply,
+              answer: liveStaffReply,
+              tier: 2,
+              suggest_escalation: true,
+              escalate: true,
+              provider: "domain-quick-reply",
+            });
+          }
+        } catch (liveStaffErr) {
+          // eslint-disable-next-line no-console
+          console.warn("[chat-live-staff] check failed:", liveStaffErr?.message || liveStaffErr);
+          // Fall through to the rest of the pipeline.
         }
 
         // OTP / re-verification UX (not a knowledge-base question).
