@@ -68,6 +68,12 @@ function readQuota(key) {
   return { count: rec.count, dayKey: rec.dayKey, burstTimes };
 }
 
+function isInstalledAppRequest(req) {
+  if (!req || !req.headers) return false;
+  const flag = String(req.headers["x-osa-app"] || "").trim();
+  return flag === "1" || flag.toLowerCase() === "true";
+}
+
 function getQuotaSnapshot(req) {
   const key = getQuotaKey(req);
   const rec = readQuota(key);
@@ -78,7 +84,7 @@ function getQuotaSnapshot(req) {
       (req && req.query && req.query.session_id) ||
       ""
   ).trim();
-  const unlimited = isSessionVerified(sessionId);
+  const unlimited = isSessionVerified(sessionId) || isInstalledAppRequest(req);
   return {
     used,
     limit: unlimited ? null : DAILY_LIMIT,
@@ -133,9 +139,9 @@ function dailyQuotaMiddleware(req, res, next) {
         (req.query && req.query.session_id) ||
         ""
     ).trim();
-    const unlimited = isSessionVerified(sessionId);
+    const unlimited = isSessionVerified(sessionId) || isInstalledAppRequest(req);
 
-    // Daily limit gate — skipped for OTP-verified sessions.
+    // Daily limit gate — skipped for OTP-verified sessions and installed-app clients.
     if (!unlimited && rec.count >= DAILY_LIMIT) {
       return res.status(429).json({
         success: false,

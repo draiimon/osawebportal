@@ -1168,9 +1168,17 @@
             // backoff before letting the outer attempt fall through.
             var MAX_NETWORK_RETRIES = 2;
             function attemptOnce(retryLeft) {
+                var headers = { 'Content-Type': 'application/json', Accept: 'application/json' };
+                try {
+                    var isStandalone =
+                        (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+                        window.navigator.standalone === true ||
+                        document.referrer.indexOf('android-app://') === 0;
+                    if (isStandalone) headers['X-OSA-App'] = '1';
+                } catch (_e) { /* ignore */ }
                 return fetch(base + '/api/v1' + path, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                    headers: headers,
                     body: JSON.stringify(body || {})
                 }).then(function (res) {
                     return res.text().then(function (text) {
