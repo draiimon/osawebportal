@@ -2,7 +2,7 @@
 
 // Generates two app icons (student + admin) by compositing the EAC emblem
 // over distinct branded backgrounds. The emblem itself is never modified.
-// Output: 512x512 PNG (PWA / APK), 192x192 PNG (manifest minimum).
+// Outputs 1024, 512, and 192 px PNGs for both variants.
 
 const fs = require("fs");
 const path = require("path");
@@ -12,10 +12,16 @@ const ROOT = path.resolve(__dirname, "..");
 const EMBLEM_SRC = path.join(ROOT, "public", "assets", "images", "eac-emblem-large.png");
 const OUT_DIR = path.join(ROOT, "public", "assets", "images");
 
-const SIZE = 512;
-const EMBLEM_SIZE = 340; // emblem inset inside the 512 canvas
+const SIZE = 1024;
+const PADDING = 56;                // outer rounded-square inset
+const RIBBON_W = 520;
+const RIBBON_H = 104;
+const RIBBON_Y = 880;              // y-center of the badge ribbon
+const EMBLEM_SIZE = 720;           // emblem dimensions inside the canvas
+const EMBLEM_TOP = 130;            // distance from top to emblem
+const CORNER = 192;                // outer corner radius (for app-icon look)
 
-const STUDENT_BG_SVG = `
+const studentSvg = `
 <svg width="${SIZE}" height="${SIZE}" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -28,21 +34,22 @@ const STUDENT_BG_SVG = `
       <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
     </radialGradient>
   </defs>
-  <rect width="${SIZE}" height="${SIZE}" rx="96" ry="96" fill="url(#bg)"/>
-  <rect x="14" y="14" width="${SIZE - 28}" height="${SIZE - 28}" rx="84" ry="84"
-        fill="none" stroke="#c79a49" stroke-width="6" stroke-opacity="0.55"/>
-  <rect x="28" y="28" width="${SIZE - 56}" height="${SIZE - 56}" rx="74" ry="74"
-        fill="url(#glow)"/>
-  <g transform="translate(${SIZE / 2}, 438)">
-    <rect x="-130" y="-26" width="260" height="52" rx="26" ry="26" fill="#841a2d"/>
-    <text x="0" y="6" text-anchor="middle"
+  <rect width="${SIZE}" height="${SIZE}" rx="${CORNER}" ry="${CORNER}" fill="url(#bg)"/>
+  <rect x="28" y="28" width="${SIZE - 56}" height="${SIZE - 56}" rx="${CORNER - 12}" ry="${CORNER - 12}"
+        fill="none" stroke="#c79a49" stroke-width="12" stroke-opacity="0.55"/>
+  <rect x="${PADDING}" y="${PADDING}" width="${SIZE - PADDING * 2}" height="${SIZE - PADDING * 2}"
+        rx="${CORNER - 24}" ry="${CORNER - 24}" fill="url(#glow)"/>
+  <g transform="translate(${SIZE / 2}, ${RIBBON_Y})">
+    <rect x="${-RIBBON_W / 2}" y="${-RIBBON_H / 2}" width="${RIBBON_W}" height="${RIBBON_H}"
+          rx="${RIBBON_H / 2}" ry="${RIBBON_H / 2}" fill="#841a2d"/>
+    <text x="0" y="14" text-anchor="middle"
           font-family="'Segoe UI', 'Arial', sans-serif"
-          font-size="22" font-weight="800" letter-spacing="6"
+          font-size="44" font-weight="800" letter-spacing="12"
           fill="#fbecd0">STUDENT</text>
   </g>
 </svg>`;
 
-const ADMIN_BG_SVG = `
+const adminSvg = `
 <svg width="${SIZE}" height="${SIZE}" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -51,48 +58,65 @@ const ADMIN_BG_SVG = `
       <stop offset="100%" stop-color="#5a1220"/>
     </linearGradient>
     <radialGradient id="ring" cx="50%" cy="44%" r="56%">
-      <stop offset="0%" stop-color="#ffe8c5" stop-opacity="0.18"/>
+      <stop offset="0%" stop-color="#ffe8c5" stop-opacity="0.20"/>
       <stop offset="100%" stop-color="#ffe8c5" stop-opacity="0"/>
     </radialGradient>
   </defs>
-  <rect width="${SIZE}" height="${SIZE}" rx="96" ry="96" fill="url(#bg)"/>
-  <rect x="14" y="14" width="${SIZE - 28}" height="${SIZE - 28}" rx="84" ry="84"
-        fill="none" stroke="#f3d39a" stroke-width="6" stroke-opacity="0.85"/>
-  <rect x="28" y="28" width="${SIZE - 56}" height="${SIZE - 56}" rx="74" ry="74"
-        fill="url(#ring)"/>
-  <circle cx="${SIZE / 2}" cy="232" r="190" fill="#fffdf9" opacity="0.97"/>
-  <g transform="translate(${SIZE / 2}, 438)">
-    <rect x="-130" y="-26" width="260" height="52" rx="26" ry="26"
-          fill="#fbecd0" stroke="#c79a49" stroke-width="3"/>
-    <text x="0" y="6" text-anchor="middle"
+  <rect width="${SIZE}" height="${SIZE}" rx="${CORNER}" ry="${CORNER}" fill="url(#bg)"/>
+  <rect x="28" y="28" width="${SIZE - 56}" height="${SIZE - 56}" rx="${CORNER - 12}" ry="${CORNER - 12}"
+        fill="none" stroke="#f3d39a" stroke-width="12" stroke-opacity="0.85"/>
+  <rect x="${PADDING}" y="${PADDING}" width="${SIZE - PADDING * 2}" height="${SIZE - PADDING * 2}"
+        rx="${CORNER - 24}" ry="${CORNER - 24}" fill="url(#ring)"/>
+  <circle cx="${SIZE / 2}" cy="${EMBLEM_TOP + EMBLEM_SIZE / 2}" r="${EMBLEM_SIZE / 2 + 24}"
+          fill="#fffdf9" opacity="0.97"/>
+  <g transform="translate(${SIZE / 2}, ${RIBBON_Y})">
+    <rect x="${-RIBBON_W / 2}" y="${-RIBBON_H / 2}" width="${RIBBON_W}" height="${RIBBON_H}"
+          rx="${RIBBON_H / 2}" ry="${RIBBON_H / 2}" fill="#fbecd0" stroke="#c79a49" stroke-width="6"/>
+    <text x="0" y="14" text-anchor="middle"
           font-family="'Segoe UI', 'Arial', sans-serif"
-          font-size="22" font-weight="800" letter-spacing="6"
+          font-size="44" font-weight="800" letter-spacing="12"
           fill="#841a2d">ADMIN</text>
   </g>
 </svg>`;
 
-async function build({ name, bgSvg, emblemSize }) {
+async function build({ name, bgSvg }) {
   const emblem = await sharp(EMBLEM_SRC)
-    .resize({ width: emblemSize, height: emblemSize, fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+    .resize({
+      width: EMBLEM_SIZE,
+      height: EMBLEM_SIZE,
+      fit: "contain",
+      background: { r: 0, g: 0, b: 0, alpha: 0 },
+    })
     .png()
     .toBuffer();
 
   const composed = await sharp(Buffer.from(bgSvg))
-    .composite([{ input: emblem, gravity: "north", top: 70, left: Math.round((SIZE - emblemSize) / 2) }])
+    .composite([
+      {
+        input: emblem,
+        top: EMBLEM_TOP,
+        left: Math.round((SIZE - EMBLEM_SIZE) / 2),
+      },
+    ])
     .png({ compressionLevel: 9 })
     .toBuffer();
 
+  const out1024 = path.join(OUT_DIR, `app-icon-${name}-1024.png`);
   const out512 = path.join(OUT_DIR, `app-icon-${name}-512.png`);
   const out192 = path.join(OUT_DIR, `app-icon-${name}-192.png`);
-  fs.writeFileSync(out512, composed);
+
+  fs.writeFileSync(out1024, composed);
+  await sharp(composed).resize(512, 512).png({ compressionLevel: 9 }).toFile(out512);
   await sharp(composed).resize(192, 192).png({ compressionLevel: 9 }).toFile(out192);
-  console.log(`✓ ${name}: ${out512}`);
-  console.log(`✓ ${name}: ${out192}`);
+
+  console.log(`✓ ${name} 1024 → ${out1024}`);
+  console.log(`✓ ${name}  512 → ${out512}`);
+  console.log(`✓ ${name}  192 → ${out192}`);
 }
 
 (async () => {
-  await build({ name: "student", bgSvg: STUDENT_BG_SVG, emblemSize: EMBLEM_SIZE });
-  await build({ name: "admin", bgSvg: ADMIN_BG_SVG, emblemSize: EMBLEM_SIZE });
+  await build({ name: "student", bgSvg: studentSvg });
+  await build({ name: "admin", bgSvg: adminSvg });
   console.log("\nDone.");
 })().catch((e) => {
   console.error(e);
