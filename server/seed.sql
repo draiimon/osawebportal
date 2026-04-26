@@ -1,32 +1,11 @@
 -- Seed sample rows
 -- Run after schema.sql
-
-INSERT INTO announcements (title, category, urgency, details, date_label, time_label, images)
-VALUES
-(
-  'Lost & Found Verification Advisory',
-  'Reminder',
-  '',
-  'Claimants for Lost & Found postings should prepare the correct item number, proof of ownership, and their official EAC email before opening the verification flow.',
-  'April 16, 2026',
-  '02:00 PM',
-  ARRAY[
-    'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1200&q=80',
-    'https://images.unsplash.com/photo-1496171367470-9ed9a91ea931?w=1200&q=80'
-  ]::TEXT[]
-),
-(
-  'Student Leadership Orientation Briefing',
-  'Event',
-  '',
-  'All newly recognized student organization officers are requested to attend the orientation briefing on campus leadership protocols and event coordination timelines.',
-  'April 14, 2026',
-  '01:30 PM',
-  ARRAY[
-    'https://images.unsplash.com/photo-1511578314322-379afb476865?w=1200&q=80'
-  ]::TEXT[]
-)
-ON CONFLICT DO NOTHING;
+--
+-- NOTE: Sample announcements have been intentionally REMOVED from this
+-- seed file. The announcements table has no natural unique key, so
+-- re-running `npm run db:setup` would otherwise insert duplicate rows
+-- every time. Real announcements are managed by admins via the
+-- /admin/modules/announcements page — there is no need to seed any.
 
 INSERT INTO lost_found_items (item_number, date_label, status, title, tag, caption, images)
 VALUES
