@@ -1496,7 +1496,7 @@ function isChatSummaryQuery(message) {
   if (summarizeWord.test(m) && /\b(this|the|our|naten|natin|namin)\b/.test(m)) return true;
   if (/\b(what|ano)\s+(did|have)\s+we\s+(talk|talked|discuss|discussed)\s+(about)?\b/.test(m)) return true;
   if (/\b(give|show)\s+(me\s+)?(a\s+)?(brief\s+|short\s+|quick\s+)?(summary|recap|overview)\s+(of\s+)?(this|our|the)?\s*(chat|convo|conversation)?\b/.test(m)) return true;
-  // ── "What did I say earlier" / "ano ung last kong sinabi" ──────────
+  // ── "What did I say earlier" / Tagalog equivalents ──────────────────
   // The student asks the AI to recall their own previous turns. Treat
   // this as a summary request so the DB-backed transcript handler runs
   // instead of the LLM hallucinating "I have no memory".
@@ -1505,8 +1505,8 @@ function isChatSummaryQuery(message) {
   if (/\b(ano|anong)\s+(ung|yung|ang)?\s*(last|huling)\s+(ko(?:ng)?\s+)?(?:mga\s+)?(sinabi|tinanong|message|reply|sabi)\b/.test(m)) return true;
   if (/\b(ano|anong)\s+(ung|yung|ang)?\s*(sinabi|tinanong|sabi)\s+ko\b/.test(m)) return true;
   if (/\b(remember|recall)\s+what\s+(i|we)\s+(said|talked|discussed)\b/.test(m)) return true;
-  // Tagalog/Taglish: "paki summarize", "i-summarize mo", "buod ng usapan", "ano usapan natin",
-  // "summary ng chat naten/natin", "pakirecap"
+  // Tagalog/Taglish summary requests (e.g. "paki summarize", "buod ng usapan",
+  // "summary ng chat natin", "pakirecap").
   if (/\b(paki|pa-?ki|pwede|puwede|paki(?:usap|hingi)?)\s+(summari[sz]e|summary|recap|i-?summarize|i-?recap)\b/.test(m)) return true;
   if (/\b(i-?summarize|i-?recap|mag-?summarize|magbigay\s+ng\s+(summary|buod))\b/.test(m)) return true;
   if (/\b(buod|bu-?od)\s+(ng\s+)?(usapan|chat|conversation|napag-?usapan)\b/.test(m)) return true;

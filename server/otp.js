@@ -6,13 +6,6 @@ const RESEND_COOLDOWN_MS = 30 * 1000;
 const MAX_VERIFY_ATTEMPTS = 5;
 const MAX_OTP_SENDS_PER_DAY = Math.max(1, Number(process.env.MAX_OTP_SENDS_PER_DAY || 5));
 const BREVO_URL = "https://api.brevo.com/v3/smtp/email";
-/**
- * Dev bypass code — when set, entering this code on the verify step issues a
- * chat token immediately, without checking the real OTP. Real OTP emails are
- * still sent normally. Useful for testing end-to-end flows without needing to
- * copy the code from the email each time.
- * Set OTP_DEV_BYPASS_CODE in env vars to enable.
- */
 const OTP_DEV_BYPASS_CODE = String(process.env.OTP_DEV_BYPASS_CODE || "").replace(/\D/g, "");
 
 function getAllowedDomain() {
@@ -253,10 +246,9 @@ function registerOtpRoutes(app, apiPrefix) {
         success: true,
         message: "Verification code sent.",
         cooldownSeconds: Math.ceil(RESEND_COOLDOWN_MS / 1000),
-        dailyLimit: bypassLimits ? "bypassed" : updatedQuota.limit,
-        dailyUsed: bypassLimits ? 0 : updatedQuota.used,
-        dailyRemaining: bypassLimits ? "unlimited" : Math.max(0, updatedQuota.limit - updatedQuota.used),
-        testBypass: bypassLimits,
+        dailyLimit: updatedQuota.limit,
+        dailyUsed: updatedQuota.used,
+        dailyRemaining: Math.max(0, updatedQuota.limit - updatedQuota.used),
       });
     } catch (error) {
       // eslint-disable-next-line no-console

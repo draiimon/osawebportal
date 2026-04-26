@@ -17,4 +17,13 @@
 Thumbs.db
 
 # Editor / local tooling
-.cursor/debug*.log
+.cursor/
+.windsurf/
+.claude/
+.codex
+.replit
+replit.md
+*.replit
+.aider*
+.continue/
+.copilot/
