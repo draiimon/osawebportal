@@ -105,9 +105,12 @@ async function getPublicLiveContext() {
     if (ctx) {
       ctx = "\n\nCURRENT PORTAL DATA (authoritative live data from the OSA database):" + ctx;
     }
+    // Always append the official downloadable references / forms list so the
+    // LLM can cite their URLs verbatim instead of refusing.
+    ctx += buildOfficialFormsContextBlock();
     return ctx;
   } catch (_err) {
-    return "";
+    return buildOfficialFormsContextBlock();
   }
 }
 
@@ -125,6 +128,7 @@ function makeSystemPrompt(meta) {
     `- For questions about what is shown on the portal dashboard, home page, about page, guide cards, manual/forms block, or module pages, prioritize CURRENT PORTAL DATA over generic summary chunks.\n` +
     `- Never invent EAC facts, deadlines, fees, office processes, or policy details.\n` +
     `- Never paste localhost URLs, raw internal URLs, or unsafe external links in replies.\n` +
+    `- You MAY cite the URLs listed in the "OFFICIAL OSA DOWNLOADABLE REFERENCES & FORMS" block verbatim — these are the safe, official portal links for the Student Manual and OSA forms, so include the matching URL when a student asks for the manual, a form, or its link.\n` +
     `- Do not mention retrieval, chunks, providers, or internal tooling in user-facing text.\n` +
     `- Speak as if you simply know this information — never say "based on my knowledge", "according to my data", "based on the information provided", "from what I know", "ayon sa aming data", or any phrase that reveals internal processes.\n\n` +
     `WHEN GENERAL AI HELP IS ALLOWED:\n` +
@@ -319,6 +323,106 @@ function formatPhDateTime(now) {
   return { dateStr, timeStr, combined: `${dateStr}, ${timeStr} (PHT)` };
 }
 
+/**
+ * Authoritative list of OSA downloadable forms / references shown on the
+ * portal home page ("Student Manual and Forms" section). Keeping the list
+ * here lets the chat pipeline answer link/form questions deterministically
+ * — the LLM is no longer asked to guess (and refuse) URLs.
+ *
+ * Keep this list in sync with public/preview.html and public/index.html
+ * (the manual-highlight + manual-forms-grid blocks).
+ */
+const OFFICIAL_FORMS = [
+  {
+    key: "manual",
+    name: "EAC-C Student Manual",
+    description: "Primary handbook for student rights, responsibilities, and academic norms.",
+    url: "https://drive.google.com/file/d/1Sk4s2GnO7SGkEaDnmXNBqjZP1a10Y9qR/view?usp=sharing",
+    matchers: [/\b(student\s+)?manual\b/, /\bhandbook\b/, /\bstudent[-\s]+handbook\b/],
+  },
+  {
+    key: "scholarship",
+    name: "Scholarship Application Form",
+    description: "Application form for OSA-handled scholarships.",
+    url: "https://www.eac.edu.ph/wp-content/uploads/2021/08/QF-OSA-010-07.15.2021-Rev.01-Scholarship-Application-OSA-FORMS-2021-2.doc",
+    matchers: [/\bscholarship\b.*\b(form|application|app|apply|link|download|file)\b/, /\b(form|application|apply)\b.*\bscholarship\b/, /\bscholarship\s+form\b/, /\bscholarship\s+application\b/],
+  },
+  {
+    key: "incident",
+    name: "Incident Report Form",
+    description: "Use for conduct-related filing.",
+    url: "https://www.eac.edu.ph/wp-content/uploads/2021/08/QF-OSA-012-07.15.2021-Rev.01-Incident-Report.doc",
+    matchers: [/\bincident\s+report\b/, /\bincident\s+form\b/, /\breport\s+form\b/],
+  },
+  {
+    key: "academic_leave",
+    name: "Academic Leave of Absence Form",
+    description: "Leave of absence application.",
+    url: "https://www.eac.edu.ph/wp-content/uploads/2021/08/QF-OSA-013-07.15.2021-Rev.0Academic-Leave-of-Absence-Application-Form.doc",
+    matchers: [/\bacademic\s+leave\b/, /\bleave\s+of\s+absence\b/, /\b(loa|aloa)\b/, /\bleave\s+form\b/],
+  },
+];
+
+function looksLikeFormsLinkQuery(message) {
+  const raw = String(message || "")
+    .toLowerCase()
+    .replace(/['`’]/g, "")
+    .replace(/[?!.,;:¿¡()\[\]{}"~]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!raw) return null;
+  if (raw.length > 220) return null;
+
+  // Words that signal "give me the file/URL/where can I get it".
+  const wantsArtifact =
+    /\b(link|links|url|urls|pdf|doc|docx|file|files|download|downloads|downloadable|downloadables|copy|share|send|kopya|share\s+mo)\b/.test(raw) ||
+    /\b(give|show|provide|send|share|list|kunin|saan|where|paano\s+(makuha|ma-?download))\b/.test(raw) ||
+    /\bforms?\b/.test(raw) ||
+    /\bmanuals?\b/.test(raw) ||
+    /\bhandbooks?\b/.test(raw);
+
+  if (!wantsArtifact) return null;
+
+  // Catch-all "all forms / list of forms / list ng forms" ask.
+  if (
+    /\b(all|list|complete|every|lahat)\b.*\b(forms?|manuals?|references?)\b/.test(raw) ||
+    /\b(forms?|manuals?|references?)\b.*\b(all|list|complete|every|lahat)\b/.test(raw) ||
+    /\b(forms?\s+(and|at)\s+manuals?|manuals?\s+(and|at)\s+forms?)\b/.test(raw) ||
+    /\b(downloadable|downloadables)\b/.test(raw)
+  ) {
+    return { type: "all", forms: OFFICIAL_FORMS };
+  }
+
+  const matched = OFFICIAL_FORMS.filter((f) => f.matchers.some((rx) => rx.test(raw)));
+  if (!matched.length) return null;
+  return { type: matched.length === 1 ? "single" : "multi", forms: matched };
+}
+
+function buildFormsLinkReply(match) {
+  if (!match || !Array.isArray(match.forms) || !match.forms.length) return "";
+  if (match.type === "single") {
+    const f = match.forms[0];
+    return `Here is the official link for the ${f.name}:\n\n• ${f.name} — ${f.url}\n\n${f.description} It opens directly from the portal's "Student Manual and Forms" section on the home page.`;
+  }
+  const lines = match.forms.map((f) => `• ${f.name} — ${f.url}`);
+  const heading =
+    match.type === "all"
+      ? "Here are the official OSA downloadable references and forms from the portal:"
+      : "Here are the official OSA links you asked about:";
+  return `${heading}\n\n${lines.join("\n")}\n\nYou can also open these any time from the "Student Manual and Forms" section on the portal home page.`;
+}
+
+function buildOfficialFormsContextBlock() {
+  const lines = OFFICIAL_FORMS.map(
+    (f) => `- ${f.name}: ${f.description} URL: ${f.url}`
+  );
+  return (
+    "\n\nOFFICIAL OSA DOWNLOADABLE REFERENCES & FORMS (safe public URLs — you MAY cite these verbatim when a student asks for the manual, a form, or its link):\n" +
+    lines.join("\n") +
+    "\n"
+  );
+}
+
 function buildDateTimeReply(rawMessage) {
   const { dateStr, timeStr, combined } = formatPhDateTime();
   const m = String(rawMessage || "").toLowerCase();
@@ -500,6 +604,36 @@ async function runChatPipeline({ message, conversationId, userId }) {
       conversationId: conversationId || null,
       userId: userId || null,
     });
+  }
+
+  // Direct, no-escalation answer for "give me the link to the student manual /
+  // scholarship application form / etc." The LLM was previously refusing to
+  // share URLs ("I cannot provide direct links here"), so we bypass it
+  // entirely with the authoritative list from OFFICIAL_FORMS.
+  {
+    const formsMatch =
+      looksLikeFormsLinkQuery(processed.cleanedText) || looksLikeFormsLinkQuery(message);
+    if (formsMatch) {
+      const reply = buildFormsLinkReply(formsMatch);
+      if (reply) {
+        try {
+          await appendMemory(conversationId, "user", processed.cleanedText);
+        } catch (err) { logError("memory-write-user-forms", err); }
+        try {
+          await appendMemory(conversationId, "assistant", reply);
+        } catch (err) { logError("memory-write-assistant-forms", err); }
+        return withAnswerFields({
+          response: reply,
+          provider: "forms-shortcircuit",
+          cached: false,
+          escalate: false,
+          intent: processed.intent,
+          complexity: processed.complexity,
+          conversationId: conversationId || null,
+          userId: userId || null,
+        });
+      }
+    }
   }
 
   // Direct, no-escalation answer for trivial date/time small-talk so the LLM

@@ -131,3 +131,25 @@ as the GET endpoints. The page UI adds: a per-row trash button, a
 "Delete this session/conversation" bulk button (enabled only when the Session/
 Conversation ID filter is filled), and a "Delete shown rows" iterator. Cache
 bust is pinned at `?v=20260424b` for `admin-shell.css` and `admin-shell.js`.
+
+## Chat pipeline short-circuits (`server/chatbot/services/chatPipeline.js`)
+The guest widget posts to `/api/v1/chatbot/message` → `runChatPipeline()`.
+Two deterministic short-circuits run BEFORE cache, RAG, and LLM so they
+return `escalate: false` (no "Verify email & escalate" card) and never
+hallucinate:
+
+1. **Date/time** (`looksLikeDateTimeQuery` + `formatPhDateTime` +
+   `buildDateTimeReply`) — handles "date today", "what time is it", "anong
+   oras na", "petsa ngayon", apostrophes/punctuation, Tagalog single-words,
+   while suppressing "office hours" / "what are your hours".
+
+2. **Official forms / Student Manual links** (`OFFICIAL_FORMS` +
+   `looksLikeFormsLinkQuery` + `buildFormsLinkReply`) — answers "student
+   manual link", "scholarship form", "give me all the forms", "saan po yung
+   scholarship form", "lahat ng forms", etc. with the real URLs from the
+   home-page "Student Manual and Forms" block. The same list is appended
+   to the live context (`buildOfficialFormsContextBlock`) and the system
+   prompt explicitly allows the LLM to cite those URLs verbatim, so even
+   non-short-circuited multi-topic questions get correct links.
+   **Keep `OFFICIAL_FORMS` in sync with `public/preview.html` and
+   `public/index.html` (manual-highlight + manual-forms-grid).**
