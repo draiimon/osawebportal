@@ -747,3 +747,34 @@ httpServer.listen(PORT, () => {
   // eslint-disable-next-line no-console
   console.log(`OSA API running on http://localhost:${PORT}${API_PREFIX}`);
 });
+
+// ── Graceful shutdown (SIGTERM from Render/Docker, SIGINT from Ctrl+C) ──────
+function shutdown(signal) {
+  // eslint-disable-next-line no-console
+  console.log(`[shutdown] ${signal} received — closing server...`);
+  httpServer.close(() => {
+    // eslint-disable-next-line no-console
+    console.log("[shutdown] HTTP server closed. Exiting.");
+    process.exit(0);
+  });
+  // Force-exit if graceful close takes too long (Render gives 30 s before SIGKILL)
+  setTimeout(() => {
+    // eslint-disable-next-line no-console
+    console.error("[shutdown] Forced exit after timeout.");
+    process.exit(1);
+  }, 25000).unref();
+}
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+process.on("SIGINT",  () => shutdown("SIGINT"));
+
+// ── Crash guards — log then exit so Render/Docker auto-restarts the container ─
+process.on("uncaughtException", (err) => {
+  // eslint-disable-next-line no-console
+  console.error("[crash] uncaughtException:", err && (err.stack || err.message || err));
+  process.exit(1);
+});
+process.on("unhandledRejection", (reason) => {
+  // eslint-disable-next-line no-console
+  console.error("[crash] unhandledRejection:", reason && (reason.stack || reason.message || reason));
+  process.exit(1);
+});
