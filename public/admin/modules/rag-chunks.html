@@ -63,6 +63,41 @@
     .rag-conf--MEDIUM   { background: #fef3c7; color: #92400e; }
     .rag-conf--LOW      { background: #ffedd5; color: #9a3412; }
     .rag-conf--ESCALATE { background: #fee2e2; color: #991b1b; }
+
+    /* Mobile responsiveness for knowledge base module */
+    @media (max-width: 780px) {
+      .toolbar {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+
+      .search-input-wrap,
+      .filter-select {
+        width: 100%;
+        min-width: 0;
+      }
+
+      .rag-row {
+        padding: 12px;
+      }
+
+      .rag-row__head {
+        gap: 8px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .rag-row__actions .btn {
+        flex: 1 1 calc(50% - 6px);
+        justify-content: center;
+      }
+
+      .rag-search-result__head {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
   </style>
 </head>
 <body>
@@ -166,7 +201,7 @@
     </div>
 
     <!-- Stats -->
-    <div class="stats-row" style="grid-template-columns:repeat(3,1fr)">
+    <div class="stats-row">
       <div class="stat-card"><div class="stat-card__label">Total Chunks</div><div class="stat-card__value" id="s-total">0</div><div class="stat-card__sub">In knowledge base</div></div>
       <div class="stat-card gold"><div class="stat-card__label">Active</div><div class="stat-card__value" id="s-active">0</div><div class="stat-card__sub">Available to chatbot</div></div>
       <div class="stat-card"><div class="stat-card__label">Embedded</div><div class="stat-card__value" id="s-embedded">0</div><div class="stat-card__sub">Gemini vectors (768-d)</div></div>
@@ -176,7 +211,7 @@
     <div class="panel rag-search-panel" id="search-panel" style="padding: 16px;">
       <div class="panel-head"><h2>Test RAG Retrieval</h2></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-        <input type="search" id="rag-test-query" placeholder="e.g., how do I apply for a scholarship?" style="flex:1;min-width:250px;padding:10px 14px;border:1px solid var(--line);border-radius:8px;font-size:0.88rem">
+        <input type="search" id="rag-test-query" placeholder="e.g., how do I apply for a scholarship?" style="flex:1;min-width:0;padding:10px 14px;border:1px solid var(--line);border-radius:8px;font-size:0.88rem">
         <button class="btn btn-primary" id="btn-run-search">Search</button>
       </div>
       <div id="search-results" class="rag-search-results"></div>
