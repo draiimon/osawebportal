@@ -14,6 +14,38 @@
  */
 (function () {
     /* ----------------------------------------------------------------
+     * Standalone (installed-PWA) detection — locks viewport to non-zoomable
+     * so iOS/Android home-screen launches feel like a native mobile app
+     * rather than a webpage. In a regular browser tab we leave the
+     * viewport untouched so accessibility pinch-zoom keeps working.
+     * ---------------------------------------------------------------- */
+    (function lockStandaloneViewport() {
+        try {
+            var isStandaloneApp = (
+                (typeof window.matchMedia === 'function' && window.matchMedia('(display-mode: standalone)').matches) ||
+                window.navigator.standalone === true ||
+                (typeof document.referrer === 'string' && document.referrer.startsWith('android-app://'))
+            );
+            if (!isStandaloneApp) return;
+            document.documentElement.classList.add('is-standalone-app');
+            var apply = function () {
+                var vp = document.querySelector('meta[name="viewport"]');
+                if (!vp) {
+                    vp = document.createElement('meta');
+                    vp.setAttribute('name', 'viewport');
+                    document.head.appendChild(vp);
+                }
+                vp.setAttribute(
+                    'content',
+                    'width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover'
+                );
+            };
+            apply();
+            document.addEventListener('DOMContentLoaded', apply);
+        } catch (_e) { /* non-fatal */ }
+    })();
+
+    /* ----------------------------------------------------------------
      * Context-aware loading indicator
      * ---------------------------------------------------------------- */
     (function initLoader() {

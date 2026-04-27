@@ -3,6 +3,28 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <script>
+    (function lockStandaloneViewport() {
+      try {
+        var standalone =
+          (typeof window.matchMedia === 'function' && window.matchMedia('(display-mode: standalone)').matches) ||
+          window.navigator.standalone === true ||
+          (typeof document.referrer === 'string' && document.referrer.startsWith('android-app://'));
+        if (!standalone) return;
+        var vp = document.querySelector('meta[name="viewport"]');
+        if (!vp) {
+          vp = document.createElement('meta');
+          vp.setAttribute('name', 'viewport');
+          document.head.appendChild(vp);
+        }
+        vp.setAttribute(
+          'content',
+          'width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover'
+        );
+        document.documentElement.classList.add('is-standalone-app');
+      } catch (_e) { /* non-fatal */ }
+    })();
+  </script>
   <meta name="color-scheme" content="light">
   <meta name="robots" content="noindex, nofollow">
   <title>Admin Login · OSA Portal</title>
@@ -531,9 +553,37 @@
       sessionStorage.setItem('osa_admin_email', email);
     }
 
-    if (localStorage.getItem('osa_admin_token') || sessionStorage.getItem('osa_admin_token')) {
-      window.location.replace(getAdminRedirectTarget());
+    function decodeJwtExp(token) {
+      try {
+        const part = String(token).split('.')[1];
+        if (!part) return null;
+        const b64 = part.replace(/-/g, '+').replace(/_/g, '/');
+        const padded = b64 + '==='.slice((b64.length + 3) % 4);
+        const payload = JSON.parse(decodeURIComponent(escape(atob(padded))));
+        return typeof payload.exp === 'number' ? payload.exp : null;
+      } catch (_e) { return null; }
     }
+    function clearAdminTokens() {
+      ['osa_admin_token', 'osa_admin_name', 'osa_admin_email'].forEach((key) => {
+        try { localStorage.removeItem(key); } catch (_e) {}
+        try { sessionStorage.removeItem(key); } catch (_e) {}
+      });
+    }
+    (function bootAdminLogin() {
+      const params = new URLSearchParams(window.location.search || '');
+      const reason = params.get('reason');
+      if (reason === 'expired') clearAdminTokens();
+
+      const existing = localStorage.getItem('osa_admin_token') || sessionStorage.getItem('osa_admin_token');
+      if (existing) {
+        const exp = decodeJwtExp(existing);
+        if (exp !== null && Math.floor(Date.now() / 1000) >= exp) {
+          clearAdminTokens();
+        } else {
+          window.location.replace(getAdminRedirectTarget());
+        }
+      }
+    })();
 
     const form     = document.getElementById('login-form');
     const btn      = document.getElementById('login-btn');
@@ -541,6 +591,15 @@
     const errTxt   = document.getElementById('error-text');
     const pwInput  = document.getElementById('password');
     const pwToggle = document.getElementById('pw-toggle');
+
+    (function showReasonNotice() {
+      const params = new URLSearchParams(window.location.search || '');
+      const reason = params.get('reason');
+      if (reason === 'expired') {
+        errTxt.textContent = 'Your session has expired. Please sign in again.';
+        errBox.classList.add('visible');
+      }
+    })();
 
     pwToggle.addEventListener('click', () => {
       const show = pwInput.type === 'password';

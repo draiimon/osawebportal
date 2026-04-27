@@ -6,6 +6,34 @@
 (function () {
   'use strict';
 
+  /* ── STANDALONE (PWA) DETECTION + NO-ZOOM VIEWPORT ──
+     When the admin app is launched from the home-screen icon (iOS/Android
+     installed PWA), force a non-zoomable viewport so it feels like a native
+     mobile app instead of a webpage. In a normal browser tab we leave the
+     viewport alone so accessibility zoom still works. */
+  const isStandaloneApp = (
+    (typeof window.matchMedia === 'function' && window.matchMedia('(display-mode: standalone)').matches) ||
+    window.navigator.standalone === true ||
+    document.referrer.startsWith('android-app://')
+  );
+  if (isStandaloneApp) {
+    const lockViewport = () => {
+      let vp = document.querySelector('meta[name="viewport"]');
+      if (!vp) {
+        vp = document.createElement('meta');
+        vp.setAttribute('name', 'viewport');
+        document.head.appendChild(vp);
+      }
+      vp.setAttribute(
+        'content',
+        'width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover'
+      );
+    };
+    lockViewport();
+    document.addEventListener('DOMContentLoaded', lockViewport);
+    document.documentElement.classList.add('is-standalone-app');
+  }
+
   /* ── AUTH GUARD ── */
   const PUBLIC_PATHS = ['/admin/', '/admin', '/admin/index'];
   const isPublic = PUBLIC_PATHS.some(p =>
@@ -14,15 +42,107 @@
     window.location.pathname.endsWith('/admin/')
   );
 
-  if (!isPublic) {
-    const token =
+  /* ── SESSION VALIDATION ──
+     Reads the JWT exp claim (without verifying the signature — server still
+     does that on every API call). If the token is missing or already past
+     its exp, we wipe credentials and bounce back to the login page. This
+     fixes the bug where opening the installed admin app with a stale token
+     would still render protected screens until an API call happened to
+     401. */
+  const TOKEN_KEYS = ['osa_admin_token', 'osa_admin_name', 'osa_admin_email'];
+  function readStoredToken() {
+    return (
       localStorage.getItem('osa_admin_token') ||
-      sessionStorage.getItem('osa_admin_token');
-    if (!token) {
-      var returnTo = window.location.pathname + window.location.search + window.location.hash;
-      window.location.replace('/admin?return_to=' + encodeURIComponent(returnTo));
+      sessionStorage.getItem('osa_admin_token') ||
+      ''
+    );
+  }
+  function decodeJwtPayload(token) {
+    try {
+      const part = String(token).split('.')[1];
+      if (!part) return null;
+      const b64 = part.replace(/-/g, '+').replace(/_/g, '/');
+      const padded = b64 + '==='.slice((b64.length + 3) % 4);
+      return JSON.parse(decodeURIComponent(escape(atob(padded))));
+    } catch (_e) {
+      return null;
+    }
+  }
+  function tokenIsExpired(token) {
+    if (!token) return true;
+    const payload = decodeJwtPayload(token);
+    if (!payload || typeof payload.exp !== 'number') return false; // unknown shape: defer to server
+    return Math.floor(Date.now() / 1000) >= payload.exp;
+  }
+  function clearAdminSession() {
+    TOKEN_KEYS.forEach((key) => {
+      try { localStorage.removeItem(key); } catch (_e) {}
+      try { sessionStorage.removeItem(key); } catch (_e) {}
+    });
+  }
+  let redirectingToLogin = false;
+  function redirectToLogin(reason) {
+    if (redirectingToLogin) return;
+    redirectingToLogin = true;
+    clearAdminSession();
+    const returnTo = window.location.pathname + window.location.search + window.location.hash;
+    const params = new URLSearchParams();
+    params.set('return_to', returnTo);
+    if (reason) params.set('reason', reason);
+    window.location.replace('/admin?' + params.toString());
+  }
+
+  if (!isPublic) {
+    const token = readStoredToken();
+    if (!token || tokenIsExpired(token)) {
+      redirectToLogin(token ? 'expired' : 'missing');
       return;
     }
+  }
+
+  /* Expose for use by adminApi + periodic checks below. */
+  window.__osaAdminAuth = {
+    readStoredToken,
+    tokenIsExpired,
+    clearAdminSession,
+    redirectToLogin,
+    isPublic,
+  };
+
+  /* ── GLOBAL FETCH INTERCEPTOR ──
+     Module pages call fetch() directly (not via adminApi). Wrap window.fetch
+     so every same-origin /api request automatically carries the bearer
+     token, and any 401 triggers an immediate logout + redirect to /admin.
+     Without this, an expired-session admin could still stare at cached
+     screen content until they tried to do something. */
+  if (!isPublic && typeof window.fetch === 'function') {
+    const originalFetch = window.fetch.bind(window);
+    window.fetch = function patchedFetch(input, init) {
+      let url = '';
+      try {
+        if (typeof input === 'string') url = input;
+        else if (input && typeof input.url === 'string') url = input.url;
+      } catch (_e) { url = ''; }
+
+      const isApi = /^\/api\//.test(url) || /^https?:\/\/[^/]+\/api\//.test(url);
+      let nextInit = init;
+      if (isApi) {
+        nextInit = Object.assign({}, init || {});
+        const headers = new Headers((nextInit.headers) || (typeof input !== 'string' && input && input.headers) || {});
+        if (!headers.has('Authorization')) {
+          const token = readStoredToken();
+          if (token) headers.set('Authorization', 'Bearer ' + token);
+        }
+        nextInit.headers = headers;
+      }
+
+      return originalFetch(input, nextInit).then((res) => {
+        if (isApi && res && res.status === 401 && !redirectingToLogin) {
+          redirectToLogin('expired');
+        }
+        return res;
+      });
+    };
   }
 
   function normalizePath(pathname) {
@@ -604,9 +724,29 @@
   };
 
   /* ── API HELPERS ── */
+  function authHeaders(extra) {
+    const auth = window.__osaAdminAuth;
+    const headers = Object.assign({}, extra || {});
+    if (auth) {
+      const token = auth.readStoredToken();
+      if (token) headers['Authorization'] = 'Bearer ' + token;
+    }
+    return headers;
+  }
+  function handleAuthFailure(res) {
+    if (res && res.status === 401) {
+      const auth = window.__osaAdminAuth;
+      if (auth && !auth.isPublic) {
+        auth.redirectToLogin('expired');
+      }
+      return true;
+    }
+    return false;
+  }
   window.adminApi = {
     async get(path) {
-      const res = await fetch(`/api/v1${path}`);
+      const res = await fetch(`/api/v1${path}`, { headers: authHeaders() });
+      if (handleAuthFailure(res)) throw new Error('Session expired.');
       const data = await res.json().catch(() => ({}));
       if (!res.ok || data.success === false) throw new Error(data.message || `HTTP ${res.status}`);
       return data;
@@ -614,14 +754,37 @@
     async post(path, body) {
       const res = await fetch(`/api/v1${path}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify(body || {})
       });
+      if (handleAuthFailure(res)) throw new Error('Session expired.');
       const data = await res.json().catch(() => ({}));
       if (!res.ok || data.success === false) throw new Error(data.message || `HTTP ${res.status}`);
       return data;
     }
   };
+
+  /* ── PERIODIC SESSION CHECK ──
+     Catches the case where the admin leaves the installed app open in the
+     background long enough for the JWT to expire. We poll the local exp
+     claim every 30s and on tab/visibility focus events, since installed
+     PWAs on iOS/Android may resume from a frozen state without firing a
+     full page load. */
+  if (!isPublic) {
+    const checkSessionStillValid = () => {
+      if (redirectingToLogin) return;
+      const token = readStoredToken();
+      if (!token || tokenIsExpired(token)) {
+        redirectToLogin('expired');
+      }
+    };
+    setInterval(checkSessionStillValid, 30000);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) checkSessionStillValid();
+    });
+    window.addEventListener('focus', checkSessionStillValid);
+    window.addEventListener('pageshow', checkSessionStillValid);
+  }
 
   /* ── IMAGE UPLOAD PREVIEW ── */
   window.initImageUpload = function (inputId, previewId) {
