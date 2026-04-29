@@ -584,7 +584,23 @@ async function sweepDeadAirTickets() {
       }
     }
   } catch (error) {
-    logError("ticket-sweep", error);
+    // Postgres connection drops are expected on free-tier hosts that sleep
+    // (Render, Supabase pooler restarts, etc.). The sweep retries on the next
+    // interval, so silence the routine "connection terminated" noise instead
+    // of spamming the log on every cold start.
+    const msg = String(error && (error.message || error)).toLowerCase();
+    const isTransientConnLoss =
+      msg.includes("terminating connection") ||
+      msg.includes("connection terminated") ||
+      msg.includes("connection ended") ||
+      msg.includes("server closed the connection") ||
+      msg.includes("read econnreset") ||
+      msg.includes("connection refused") ||
+      error?.code === "57P01" ||
+      error?.code === "ECONNRESET";
+    if (!isTransientConnLoss) {
+      logError("ticket-sweep", error);
+    }
   }
 }
 

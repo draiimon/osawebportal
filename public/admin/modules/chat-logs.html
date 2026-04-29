@@ -390,9 +390,17 @@
         return;
       }
       if (!r.ok || !j.success) {
-        status.textContent = 'Error: ' + (j.message || r.status);
+        if (r.status === 401 || r.status === 403) {
+          status.textContent = 'Your admin session has expired. Please reload the admin page and sign in again.';
+          try {
+            sessionStorage.removeItem('osa_admin_token');
+            sessionStorage.removeItem('osa_admin_authed');
+          } catch (_e) {}
+        } else {
+          status.textContent = 'Error: ' + (j.message || ('HTTP ' + r.status));
+        }
         document.getElementById('log-thead').innerHTML = '';
-        document.getElementById('log-body').innerHTML = '';
+        document.getElementById('log-body').innerHTML = '<tr><td colspan="6" style="padding:24px;text-align:center;color:#65574d;font-size:13px">Could not load chat logs.</td></tr>';
         lastPayload = null;
         lastRows = [];
         document.getElementById('json-out').value = '';
@@ -403,9 +411,17 @@
       lastRows = Array.isArray(j.messages) ? j.messages : [];
       document.getElementById('json-out').value = JSON.stringify(j, null, 2);
       var note = j.note ? (' ' + j.note) : '';
-      status.textContent = 'Showing ' + j.count + ' message(s) (limit ' + j.limit + ').' + note;
-      if (guest) renderGuest(lastRows);
-      else renderOtp(lastRows);
+      if (j.count === 0) {
+        status.textContent = guest
+          ? 'No guest chatbot conversations yet. Once visitors chat with the AI assistant on the homepage, their messages will appear here.'
+          : 'No OTP-verified secure chat messages yet. Once a student verifies their email and chats with OSA, the transcript will appear here.';
+        document.getElementById('log-thead').innerHTML = '';
+        document.getElementById('log-body').innerHTML = '<tr><td colspan="6" style="padding:24px;text-align:center;color:#65574d;font-size:13px">No messages to display.</td></tr>';
+      } else {
+        status.textContent = 'Showing ' + j.count + ' message(s) (limit ' + j.limit + ').' + note;
+        if (guest) renderGuest(lastRows);
+        else renderOtp(lastRows);
+      }
       refreshBulkButtons();
     } catch (e) {
       status.textContent = 'Network error: ' + (e && e.message);
