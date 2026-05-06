@@ -224,10 +224,6 @@
             <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             Test Search
           </button>
-          <button class="btn btn-ghost" id="btn-reembed-all" title="Regenerate embeddings for all active chunks">
-            <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/><path d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14"/></svg>
-            Re-embed All
-          </button>
           <button class="btn btn-primary" id="btn-new-chunk">
             <svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
             New Chunk
@@ -415,7 +411,6 @@
         <div class="rag-row__actions">
           <button class="btn btn-ghost" data-act="expand">Show full</button>
           <button class="btn btn-ghost" data-act="edit">Edit</button>
-          <button class="btn btn-ghost" data-act="reembed" title="Regenerate embedding for this chunk">Re-embed</button>
           <button class="btn btn-ghost" data-act="toggle">${c.isActive ? 'Deactivate' : 'Activate'}</button>
           <button class="btn btn-ghost" data-act="delete" style="color:var(--brand)">Delete</button>
         </div>
@@ -464,19 +459,6 @@
         await loadChunks();
       } catch (err) {
         alert('Failed to toggle: ' + err.message);
-      }
-    }
-
-    if (action === 'reembed') {
-      try {
-        const btn = rowEl.querySelector('[data-act="reembed"]');
-        if (btn) { btn.disabled = true; btn.textContent = 'Embedding…'; }
-        const r = await adminApi.post('/admin/rag/chunks/reembed', { id: chunk.id });
-        await loadChunks();
-        alert(`Re-embedded ${r.embedded}/${r.total}. ${r.failures.length ? 'Failures: ' + JSON.stringify(r.failures) : ''}`);
-      } catch (err) {
-        alert('Re-embed failed: ' + err.message);
-        await loadChunks();
       }
     }
 
@@ -545,7 +527,7 @@
     try {
       const r = await adminApi.post('/admin/rag/chunks/upsert', payload);
       if (r.embedError) {
-        alert('Saved, but embedding failed: ' + r.embedError + '\n\nUse "Re-embed" to retry.');
+        alert('Saved, but embedding failed: ' + r.embedError + '\n\nYou can re-save the chunk to retry embedding.');
       }
       await loadChunks();
       closeModal();
@@ -554,23 +536,6 @@
     } finally {
       btn.disabled = false;
       btn.innerHTML = originalHtml;
-    }
-  }
-
-  async function reembedAll() {
-    if (!confirm('Re-generate embeddings for all ACTIVE chunks? This may take ~30 seconds and uses Gemini API quota.')) return;
-    const btn = document.getElementById('btn-reembed-all');
-    btn.disabled = true;
-    btn.textContent = 'Re-embedding all…';
-    try {
-      const r = await adminApi.post('/admin/rag/chunks/reembed', {});
-      alert(`Re-embedded ${r.embedded}/${r.total} chunks.\n${r.failures.length ? 'Failures: ' + JSON.stringify(r.failures, null, 2) : 'All successful.'}`);
-      await loadChunks();
-    } catch (err) {
-      alert('Re-embed failed: ' + err.message);
-    } finally {
-      btn.disabled = false;
-      btn.innerHTML = '<svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"/><path d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14"/></svg> Re-embed All';
     }
   }
 
@@ -608,7 +573,6 @@
   document.getElementById('filter-status').addEventListener('change', renderGrid);
   document.getElementById('btn-new-chunk').addEventListener('click', () => openModal(null));
   document.getElementById('btn-save-chunk').addEventListener('click', saveChunk);
-  document.getElementById('btn-reembed-all').addEventListener('click', reembedAll);
   document.getElementById('btn-toggle-search').addEventListener('click', () => {
     document.getElementById('search-panel').classList.toggle('open');
   });

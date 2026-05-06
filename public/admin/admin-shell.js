@@ -793,14 +793,28 @@
     if (!input || !preview) return;
     let files = [];
 
-    input.addEventListener('change', () => {
-      Array.from(input.files).forEach(file => {
+    function processFiles(fileList) {
+      Array.from(fileList).forEach(file => {
+        if (!file.type.startsWith('image/')) return;
         const reader = new FileReader();
         reader.onload = e => { files.push({ name: file.name, src: e.target.result }); renderPreviews(); };
         reader.readAsDataURL(file);
       });
+    }
+
+    input.addEventListener('change', () => {
+      processFiles(input.files);
       input.value = '';
     });
+
+    const zone = input.closest('.upload-zone');
+    if (zone) {
+      zone.addEventListener('drop', e => {
+        e.preventDefault();
+        zone.classList.remove('drag-over');
+        if (e.dataTransfer && e.dataTransfer.files) processFiles(e.dataTransfer.files);
+      });
+    }
 
     function renderPreviews() {
       preview.innerHTML = files.map((f, i) => `
@@ -815,6 +829,7 @@
       if (inputId === inp && previewId === prev) { files.splice(i, 1); renderPreviews(); }
     };
     input._getFiles = () => files;
+    input._setFiles = (newFiles) => { files = newFiles.slice(); renderPreviews(); };
   };
 
 })();

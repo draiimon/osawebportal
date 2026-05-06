@@ -490,7 +490,8 @@
     document.getElementById('lf-date').value        = new Date().toISOString().split('T')[0];
     document.getElementById('lf-location').value    = '';
     document.getElementById('lf-description').value = '';
-    document.getElementById('lf-img-preview').innerHTML = '';
+    const _imgInNew = document.getElementById('lf-images');
+    if (_imgInNew && _imgInNew._setFiles) _imgInNew._setFiles([]);
     syncCategoryCustomUI();
     openModal('lf-modal');
   }
@@ -515,7 +516,10 @@
     document.getElementById('lf-date').value        = item.date        || '';
     document.getElementById('lf-location').value    = '';
     document.getElementById('lf-description').value = item.description || '';
-    document.getElementById('lf-img-preview').innerHTML = '';
+    const _imgInEdit = document.getElementById('lf-images');
+    if (_imgInEdit && _imgInEdit._setFiles) {
+      _imgInEdit._setFiles((item.images || []).map((src, i) => ({ name: 'photo-' + (i + 1), src })));
+    }
     openModal('lf-modal');
   };
 
