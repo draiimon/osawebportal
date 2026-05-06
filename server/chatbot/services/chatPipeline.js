@@ -150,7 +150,8 @@ function makeSystemPrompt(meta) {
     `- Never paste localhost URLs, raw internal URLs, or unsafe external links in replies.\n` +
     `- You MAY cite the URLs listed in the "OFFICIAL OSA DOWNLOADABLE REFERENCES & FORMS" block verbatim — these are the safe, official portal links for the Student Manual and OSA forms, so include the matching URL when a student asks for the manual, a form, or its link.\n` +
     `- Do not mention retrieval, chunks, providers, or internal tooling in user-facing text.\n` +
-    `- Speak as if you simply know this information — never say "based on my knowledge", "according to my data", "based on the information provided", "from what I know", "ayon sa aming data", or any phrase that reveals internal processes.\n\n` +
+    `- Speak as if you simply know this information — never say "based on my knowledge", "according to my data", "based on the information provided", "from what I know", "ayon sa aming data", or any phrase that reveals internal processes.\n` +
+    `- SOURCE ATTRIBUTION: Do NOT say "according to the Student Manual" or "the Student Manual states" unless the knowledge excerpt header explicitly shows the source is the Student Manual. If the source is "OSA Staff" or any other source, simply state the information as an OSA fact without citing a document.\n\n` +
     `WHEN GENERAL AI HELP IS ALLOWED:\n` +
     `- If the student's prompt is a harmless conversational or simple common-sense question that does not require official EAC information, you may answer briefly in your own words.\n` +
     `- Never present a general AI reply as an official school policy, school record, or confirmed institutional fact.\n` +
@@ -214,10 +215,11 @@ function makeGuestSystemPromptWithRag(meta, rag, liveCtx) {
 
   const ragBlock = chunkCount > 0 && ragText
     ? (
-        `\n\nCONTEXT EXCERPTS (official EAC Student Manual / portal knowledge base — use ONLY these for policy and procedural answers):\n` +
+        `\n\nCONTEXT EXCERPTS (official EAC OSA knowledge base — use ONLY these for policy and procedural answers):\n` +
+        `Each excerpt shows its source in the header as "from: <source name>". Only cite "Student Manual" if the excerpt header explicitly says the source is the Student Manual. If the source says "OSA Staff" or anything else, do not attribute it to the Student Manual.\n` +
         ragText + `\n`
       )
-    : `\n\nCONTEXT EXCERPTS: No manual or policy chunks matched this query.\n`;
+    : `\n\nCONTEXT EXCERPTS: No knowledge base chunks matched this query.\n`;
 
   const liveBlock = hasLiveCtx
     ? `\n${String(liveCtx).trim()}\n`

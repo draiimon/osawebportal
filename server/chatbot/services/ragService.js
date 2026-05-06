@@ -579,7 +579,8 @@ function buildContext(rows, maxTokens) {
   const parts = [];
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
-    const header = `[Source ${i + 1} | ${row.chunk_id} | ${row.section || row.topic || ""}]`;
+    const src = String(row.source || "OSA Knowledge Base").trim();
+    const header = `[Source ${i + 1} | ${row.chunk_id} | ${row.section || row.topic || ""} | from: ${src}]`;
     const block = `${header}\n${String(row.content || "").trim()}\n---`;
     const t = estimateTokens(block);
     if (total + t > maxTokens) break;
