@@ -27,3 +27,8 @@ replit.md
 .aider*
 .continue/
 .copilot/
+
+# Replit internals — never push
+.replit-artifact/
+.local/
+artifacts/mockup-sandbox/.replit-artifact/
