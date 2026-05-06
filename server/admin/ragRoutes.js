@@ -159,16 +159,28 @@ function registerRagAdminRoutes(app, apiPrefix) {
     }
   });
 
-  // Delete a chunk
+  // Delete a chunk — also clears the full chatbot response cache so stale answers are gone immediately
   app.post(`${apiPrefix}/admin/rag/chunks/delete`, async (req, res) => {
     const id = String((req.body && req.body.id) || "").trim();
     if (!id) return res.status(400).json({ success: false, message: "id is required." });
     try {
       const r = await db.query(`DELETE FROM rag_chunks WHERE id = $1 RETURNING id`, [id]);
       if (!r.rows.length) return res.status(404).json({ success: false, message: "Chunk not found." });
-      return res.json({ success: true, id });
+      // Purge response cache so the chatbot can't serve stale answers from deleted chunks
+      await db.query(`DELETE FROM chatbot_response_cache`).catch(() => {});
+      return res.json({ success: true, id, cacheCleared: true });
     } catch (error) {
       return apiError(res, "admin-rag-delete", error);
+    }
+  });
+
+  // Clear chatbot response cache manually
+  app.post(`${apiPrefix}/admin/rag/clear-cache`, async (req, res) => {
+    try {
+      const r = await db.query(`DELETE FROM chatbot_response_cache`);
+      return res.json({ success: true, cleared: r.rowCount });
+    } catch (error) {
+      return apiError(res, "admin-rag-clear-cache", error);
     }
   });
 
