@@ -199,7 +199,8 @@ function classifyGeminiError(error) {
   if (
     status === 401 ||
     status === 403 ||
-    /invalid api key|api key not valid|permission denied|unauthorized|forbidden|billing|api_key_invalid/i.test(message)
+    /"code":\s*40[13]\b/.test(message) ||
+    /invalid api key|api key not valid|permission.denied|permission_denied|unauthorized|forbidden|billing|api_key_invalid|reported as leaked|api key.*leaked|leaked.*api key/i.test(message)
   ) {
     return {
       type: "auth",
