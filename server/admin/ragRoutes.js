@@ -314,12 +314,41 @@ Respond ONLY with a valid JSON object — no markdown fences, no extra text:
       }
 
       const rawText = String(payload?.choices?.[0]?.message?.content || "").trim();
-      const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+
+      // Strip markdown fences if Groq wraps in ```json ... ```
+      const stripped = rawText.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/, "").trim();
+
+      const jsonMatch = stripped.match(/\{[\s\S]*\}/);
       if (!jsonMatch) return res.status(502).json({ success: false, message: "AI did not return valid JSON." });
 
       let parsed;
       try { parsed = JSON.parse(jsonMatch[0]); }
       catch (_) { return res.status(502).json({ success: false, message: "Failed to parse AI response." }); }
+
+      // Normalize: content must be a plain string (Groq sometimes returns nested object)
+      if (parsed.content && typeof parsed.content !== "string") {
+        try {
+          const parts = [];
+          function flattenToLines(obj, prefix) {
+            if (typeof obj === "string") { parts.push(prefix ? `${prefix} ${obj}` : obj); return; }
+            if (Array.isArray(obj)) { obj.forEach(v => flattenToLines(v, "")); return; }
+            if (typeof obj === "object" && obj !== null) {
+              Object.entries(obj).forEach(([k, v]) => flattenToLines(v, k));
+            }
+          }
+          flattenToLines(parsed.content, "");
+          parsed.content = parts.join("\n");
+        } catch (_) {
+          parsed.content = JSON.stringify(parsed.content);
+        }
+      }
+
+      // Normalize: keywords must be array of strings
+      if (!Array.isArray(parsed.keywords)) {
+        parsed.keywords = typeof parsed.keywords === "string"
+          ? parsed.keywords.split(",").map(k => k.trim()).filter(Boolean)
+          : [];
+      }
 
       return res.json({ success: true, data: parsed });
     } catch (err) {
