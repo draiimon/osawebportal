@@ -260,18 +260,31 @@ function registerRagAdminRoutes(app, apiPrefix) {
     if (!content) return res.status(400).json({ success: false, message: "content is required." });
     if (!GROQ_API_KEY) return res.status(503).json({ success: false, message: "Groq API key not configured." });
 
-    const systemPrompt = `You are helping an admin at Emilio Aguinaldo College (EAC Cavite) structure knowledge base chunks for their student affairs chatbot (OSA - Office of Student Affairs).
+    const systemPrompt = `You are helping an admin at Emilio Aguinaldo College (EAC Cavite) structure knowledge base chunks for the OSA (Office of Student Affairs) student chatbot.
 
-Your task: given raw content, rewrite it into a clean, well-structured format that the chatbot can use accurately. Do NOT add new information. Do NOT remove any facts. Keep the exact same meaning.
+CONTENT RULES:
+- Do NOT add any new information. Do NOT remove any facts. Keep the exact same meaning.
+- Rewrite content in a clean, labeled structure. Use ALL-CAPS labels followed by a colon for each major concept (e.g., "PHILOSOPHY:", "REQUIREMENTS:", "POLICY:").
+- Use numbered format "(1), (2), (3)..." for lists.
+- Each labeled section should be on its own line.
+- Keep it factual, concise, and easy for a chatbot to read and quote directly.
+- If the content has multiple distinct concepts, separate them clearly with labels.
 
-Also suggest metadata. Respond ONLY with a valid JSON object — no markdown fences, no explanation:
+METADATA RULES:
+- topic: Short, descriptive title (e.g., "School Philosophy, Vision, Mission & Core Values")
+- article: Broad category this belongs to (e.g., "Institutional Information", "Admission Policies", "Student Discipline", "Academic Regulations"). Use a logical grouping — NOT the content itself.
+- section: More specific sub-topic within the article (e.g., "Philosophy, Vision, Mission, Core Values", "Freshman Admission Requirements", "Scholarship Guidelines"). This should be more specific than article.
+- keywords: 6–10 comma-separated keywords a student might use when asking about this topic.
+- botRouting: One clear sentence — when should the chatbot use this chunk? (e.g., "When a student asks about EAC's mission, vision, values, or school identity.")
+
+Respond ONLY with a valid JSON object — no markdown fences, no extra text:
 {
-  "content": "the rewritten content, clear and well-structured",
+  "content": "the rewritten content with labeled structure",
   "topic": "short descriptive topic title",
-  "article": "article reference if applicable, else empty string",
-  "section": "section reference if applicable, else empty string",
-  "keywords": ["5 to 10 relevant keywords"],
-  "botRouting": "One sentence: when should the chatbot use this chunk?"
+  "article": "broad category (e.g., Institutional Information)",
+  "section": "specific sub-topic (e.g., Philosophy, Vision, Mission, Core Values)",
+  "keywords": ["keyword1", "keyword2", "..."],
+  "botRouting": "When a student asks about..."
 }`;
 
     const userMessage = `Improve this knowledge base chunk:\n\n${content}`;

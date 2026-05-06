@@ -328,7 +328,7 @@
           </div>
           <div class="field">
             <label for="f-source">Source</label>
-            <input type="text" id="f-source" value="EAC Student Manual 2021">
+            <input type="text" id="f-source" value="OSA Staff">
           </div>
         </div>
         <div class="field">
@@ -523,7 +523,7 @@
     document.getElementById('chunk-modal-title').textContent = chunk ? 'Edit Chunk' : 'New Chunk';
     document.getElementById('f-chunkid').value = chunk ? chunk.chunkId : '';
     document.getElementById('f-chunkid').disabled = !!chunk;
-    document.getElementById('f-source').value = chunk ? (chunk.source || 'EAC Student Manual 2021') : 'EAC Student Manual 2021';
+    document.getElementById('f-source').value = chunk ? (chunk.source || 'OSA Staff') : 'OSA Staff';
     document.getElementById('f-topic').value = chunk ? chunk.topic : '';
     document.getElementById('f-article').value = chunk ? chunk.article : '';
     document.getElementById('f-section').value = chunk ? chunk.section : '';
@@ -608,7 +608,7 @@
       keywords: document.getElementById('f-keywords').value.split(',').map(s => s.trim()).filter(Boolean),
       botRouting: document.getElementById('f-routing').value.trim(),
       content: document.getElementById('f-content').value.trim(),
-      source: document.getElementById('f-source').value.trim() || 'EAC Student Manual 2021',
+      source: document.getElementById('f-source').value.trim() || 'OSA Staff',
       isActive: document.getElementById('f-active').checked,
     };
 
