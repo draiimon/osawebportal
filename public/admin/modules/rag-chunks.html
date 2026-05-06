@@ -73,6 +73,37 @@
     .rag-conf--LOW      { background: #ffedd5; color: #9a3412; }
     .rag-conf--ESCALATE { background: #fee2e2; color: #991b1b; }
 
+    .embed-status-bar {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 16px; border-radius: 8px; font-size: 0.82rem;
+      font-weight: 600; margin-bottom: 4px;
+      border: 1px solid transparent;
+    }
+    .embed-status-bar.checking { background: #f3f4f6; color: #6b7280; border-color: #e5e7eb; }
+    .embed-status-bar.ok       { background: #dcfce7; color: #166534; border-color: #bbf7d0; }
+    .embed-status-bar.error    { background: #fee2e2; color: #991b1b; border-color: #fecaca; }
+    .embed-status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .embed-status-bar.checking .embed-status-dot { background: #9ca3af; }
+    .embed-status-bar.ok       .embed-status-dot { background: #16a34a; }
+    .embed-status-bar.error    .embed-status-dot { background: #dc2626; }
+
+    .ai-revise-banner {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      background: linear-gradient(135deg, #fef9f0, #fff8f0);
+      border: 1px solid #fde68a; border-radius: 8px;
+      padding: 10px 14px; margin-bottom: 8px; flex-wrap: wrap;
+    }
+    .ai-revise-banner__text { font-size: 0.82rem; color: #92400e; flex: 1; min-width: 0; }
+    .btn-ai-revise {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: linear-gradient(135deg, #841a2d, #a32035);
+      color: #fff; border: none; border-radius: 7px;
+      padding: 7px 14px; font-size: 0.8rem; font-weight: 700;
+      cursor: pointer; white-space: nowrap; transition: opacity 0.15s;
+    }
+    .btn-ai-revise:disabled { opacity: 0.55; cursor: not-allowed; }
+    .btn-ai-revise:not(:disabled):hover { opacity: 0.88; }
+
     /* Mobile responsiveness for knowledge base module */
     @media (max-width: 780px) {
       .admin-main {
@@ -239,6 +270,13 @@
       <div class="stat-card"><div class="stat-card__label">Embedded</div><div class="stat-card__value" id="s-embedded">0</div><div class="stat-card__sub">Gemini vectors (768-d)</div></div>
     </div>
 
+    <!-- Embed API Status -->
+    <div class="embed-status-bar checking" id="embed-status-bar">
+      <div class="embed-status-dot"></div>
+      <span id="embed-status-text">Checking embed API…</span>
+      <button onclick="checkEmbedStatus()" style="margin-left:auto;background:none;border:none;font-size:0.75rem;cursor:pointer;color:inherit;opacity:0.7;text-decoration:underline">Recheck</button>
+    </div>
+
     <!-- Test Search Panel -->
     <div class="panel rag-search-panel" id="search-panel" style="padding: 16px;">
       <div class="panel-head"><h2>Test RAG Retrieval</h2></div>
@@ -317,6 +355,13 @@
         </div>
         <div class="field">
           <label for="f-content">Content <span style="color:var(--brand)">*</span></label>
+          <div class="ai-revise-banner">
+            <span class="ai-revise-banner__text">✨ Let AI restructure this content — same meaning, better format for the chatbot.</span>
+            <button type="button" class="btn-ai-revise" id="btn-ai-revise">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+              AI Revise
+            </button>
+          </div>
           <textarea id="f-content" style="min-height:220px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.82rem" placeholder="Full chunk text that the chatbot will use as authoritative source…"></textarea>
           <small style="color:var(--muted);font-size:0.72rem">Changes to content auto-regenerate the embedding.</small>
         </div>
@@ -502,6 +547,57 @@
     editingId = null;
   }
 
+  async function checkEmbedStatus() {
+    const bar = document.getElementById('embed-status-bar');
+    const text = document.getElementById('embed-status-text');
+    bar.className = 'embed-status-bar checking';
+    text.textContent = 'Checking embed API…';
+    try {
+      const r = await adminApi.get('/admin/rag/embed-status');
+      if (r.working) {
+        bar.className = 'embed-status-bar ok';
+        text.textContent = `Embed API working — ${r.dimensions}-d vectors ready`;
+      } else {
+        bar.className = 'embed-status-bar error';
+        text.textContent = 'Embed API not working — new chunks will save without embedding. ' + (r.error || '');
+      }
+    } catch (err) {
+      bar.className = 'embed-status-bar error';
+      text.textContent = 'Could not reach embed API: ' + err.message;
+    }
+  }
+
+  async function aiReviseContent() {
+    const content = document.getElementById('f-content').value.trim();
+    if (!content) { alert('Please enter some content first before using AI Revise.'); return; }
+
+    const btn = document.getElementById('btn-ai-revise');
+    const original = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '⏳ Revising…';
+
+    try {
+      const r = await adminApi.post('/admin/rag/ai-revise', { content });
+      const d = r.data || {};
+
+      if (d.content)    document.getElementById('f-content').value  = d.content;
+      if (d.topic)      document.getElementById('f-topic').value    = d.topic;
+      if (d.article)    document.getElementById('f-article').value  = d.article;
+      if (d.section)    document.getElementById('f-section').value  = d.section;
+      if (d.botRouting) document.getElementById('f-routing').value  = d.botRouting;
+      if (Array.isArray(d.keywords) && d.keywords.length) {
+        document.getElementById('f-keywords').value = d.keywords.join(', ');
+      }
+
+      btn.innerHTML = '✓ Done!';
+      setTimeout(() => { btn.innerHTML = original; btn.disabled = false; }, 2000);
+    } catch (err) {
+      alert('AI Revise failed: ' + err.message);
+      btn.innerHTML = original;
+      btn.disabled = false;
+    }
+  }
+
   async function saveChunk() {
     const payload = {
       id: editingId || undefined,
@@ -527,7 +623,11 @@
     try {
       const r = await adminApi.post('/admin/rag/chunks/upsert', payload);
       if (r.embedError) {
-        alert('Saved, but embedding failed: ' + r.embedError + '\n\nYou can re-save the chunk to retry embedding.');
+        const bar = document.getElementById('embed-status-bar');
+        const text = document.getElementById('embed-status-text');
+        bar.className = 'embed-status-bar error';
+        text.textContent = 'Chunk saved but embedding failed — ' + r.embedError;
+        alert('Chunk saved, but embedding failed:\n\n' + r.embedError + '\n\nThe chunk is stored but won\'t appear in chatbot search until re-embedded.');
       }
       await loadChunks();
       closeModal();
@@ -573,6 +673,7 @@
   document.getElementById('filter-status').addEventListener('change', renderGrid);
   document.getElementById('btn-new-chunk').addEventListener('click', () => openModal(null));
   document.getElementById('btn-save-chunk').addEventListener('click', saveChunk);
+  document.getElementById('btn-ai-revise').addEventListener('click', aiReviseContent);
   document.getElementById('btn-toggle-search').addEventListener('click', () => {
     document.getElementById('search-panel').classList.toggle('open');
   });
@@ -588,6 +689,7 @@
 
   // Initial load
   loadChunks();
+  checkEmbedStatus();
 </script>
 </body>
 </html>

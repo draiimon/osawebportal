@@ -2,6 +2,10 @@ const db = require("../db");
 const { generateEmbedding, vectorToPgLiteral } = require("../chatbot/services/embeddingService");
 const { searchRag, explainRetrieval } = require("../chatbot/services/ragService");
 
+const GROQ_BASE_URL = String(process.env.GROQ_BASE_URL || "https://api.groq.com/openai/v1").trim();
+const GROQ_API_KEY = String(process.env.GROQ_API_KEY || "").trim();
+const GROQ_MODEL = String(process.env.GROQ_MODEL || "llama-3.1-8b-instant").trim();
+
 function logError(scope, err) {
   // eslint-disable-next-line no-console
   console.error(`[${scope}]`, err && (err.stack || err.message || err));
@@ -236,6 +240,77 @@ function registerRagAdminRoutes(app, apiPrefix) {
       });
     } catch (error) {
       return apiError(res, "admin-rag-search", error);
+    }
+  });
+
+  // Embed API health check
+  app.get(`${apiPrefix}/admin/rag/embed-status`, async (_req, res) => {
+    try {
+      const vec = await generateEmbedding("embed api status check");
+      const working = Array.isArray(vec) && vec.length > 0;
+      return res.json({ success: true, working, dimensions: working ? vec.length : 0 });
+    } catch (err) {
+      return res.json({ success: true, working: false, error: err?.message || String(err) });
+    }
+  });
+
+  // AI Revise — uses Groq to rewrite content and suggest metadata
+  app.post(`${apiPrefix}/admin/rag/ai-revise`, async (req, res) => {
+    const content = String((req.body && req.body.content) || "").trim();
+    if (!content) return res.status(400).json({ success: false, message: "content is required." });
+    if (!GROQ_API_KEY) return res.status(503).json({ success: false, message: "Groq API key not configured." });
+
+    const systemPrompt = `You are helping an admin at Emilio Aguinaldo College (EAC Cavite) structure knowledge base chunks for their student affairs chatbot (OSA - Office of Student Affairs).
+
+Your task: given raw content, rewrite it into a clean, well-structured format that the chatbot can use accurately. Do NOT add new information. Do NOT remove any facts. Keep the exact same meaning.
+
+Also suggest metadata. Respond ONLY with a valid JSON object — no markdown fences, no explanation:
+{
+  "content": "the rewritten content, clear and well-structured",
+  "topic": "short descriptive topic title",
+  "article": "article reference if applicable, else empty string",
+  "section": "section reference if applicable, else empty string",
+  "keywords": ["5 to 10 relevant keywords"],
+  "botRouting": "One sentence: when should the chatbot use this chunk?"
+}`;
+
+    const userMessage = `Improve this knowledge base chunk:\n\n${content}`;
+
+    try {
+      const response = await fetch(`${GROQ_BASE_URL}/chat/completions`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${GROQ_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: GROQ_MODEL,
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userMessage },
+          ],
+          temperature: 0.3,
+          max_completion_tokens: 1024,
+        }),
+      });
+
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const msg = payload?.error?.message || `Groq HTTP ${response.status}`;
+        return res.status(502).json({ success: false, message: msg });
+      }
+
+      const rawText = String(payload?.choices?.[0]?.message?.content || "").trim();
+      const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) return res.status(502).json({ success: false, message: "AI did not return valid JSON." });
+
+      let parsed;
+      try { parsed = JSON.parse(jsonMatch[0]); }
+      catch (_) { return res.status(502).json({ success: false, message: "Failed to parse AI response." }); }
+
+      return res.json({ success: true, data: parsed });
+    } catch (err) {
+      return apiError(res, "admin-rag-ai-revise", err);
     }
   });
 
