@@ -2,6 +2,9 @@
   "name": "osa-transaction-guide-portal",
   "private": true,
   "description": "Static OSA portal - optional minify step for production assets",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "minify": "node scripts/minify-assets.mjs",
     "api:start": "node server/index.js",

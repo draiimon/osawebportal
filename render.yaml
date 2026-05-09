@@ -9,6 +9,7 @@ services:
     region: oregon
     buildCommand: npm install
     startCommand: npm run api:start
+    healthCheckPath: /api/v1/health
     envVars:
       - key: NODE_ENV
         value: production

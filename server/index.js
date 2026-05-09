@@ -21,6 +21,7 @@ const app = express();
 const httpServer = http.createServer(app);
 // Render/Heroku/Fly inject PORT; local dev uses API_PORT or 8787.
 const PORT = Number(process.env.PORT || process.env.API_PORT || 8787);
+const HOST = String(process.env.HOST || "0.0.0.0").trim() || "0.0.0.0";
 const API_PREFIX = "/api/v1";
 
 // Behind a reverse proxy (Render, Heroku, nginx, Cloudflare), honour
@@ -725,9 +726,9 @@ const io = new Server(httpServer, {
 registerRealtimeChat(io);
 ensureV2Schema().catch((error) => logError("schema-v2-bootstrap", error));
 
-httpServer.listen(PORT, () => {
+httpServer.listen(PORT, HOST, () => {
   // eslint-disable-next-line no-console
-  console.log(`OSA API running on http://localhost:${PORT}${API_PREFIX}`);
+  console.log(`OSA API http://${HOST}:${PORT}${API_PREFIX} (PORT from env: ${Boolean(process.env.PORT)})`);
 });
 
 // ── Graceful shutdown (SIGTERM from Render/Docker, SIGINT from Ctrl+C) ──────
