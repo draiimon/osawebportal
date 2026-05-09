@@ -19,7 +19,8 @@ const { registerChatLogAdminRoutes } = require("./admin/chatLogRoutes");
 
 const app = express();
 const httpServer = http.createServer(app);
-const PORT = Number(process.env.API_PORT || 8787);
+// Render/Heroku/Fly inject PORT; local dev uses API_PORT or 8787.
+const PORT = Number(process.env.PORT || process.env.API_PORT || 8787);
 const API_PREFIX = "/api/v1";
 
 // Behind a reverse proxy (Render, Heroku, nginx, Cloudflare), honour
