@@ -1,0 +1,21 @@
+gemini-pool] guest-chat Gemini generation (gemini-2.5-flash) using GEMINI_API_KEY (AIza...qArA).
+[gemini-pool] guest-chat Gemini generation (gemini-2.5-flash) using GEMINI_API_KEY2 (AIza...-r-0).
+[gemini-pool] guest-chat Gemini generation (gemini-2.5-flash) failed on GEMINI_API_KEY (AIza...qArA) [auth]. {"error":{"code":403,"message":"Your API key was reported as leaked. Please use another API key.","status":"PERMISSION_DENIED"}} Cooldown: 21600s. Active key switched to GEMINI_API_KEY2 (AIza...-r-0).
+[gemini-pool] guest-chat Gemini generation (gemini-2.5-flash) failed on GEMINI_API_KEY2 (AIza...-r-0) [auth]. {"error":{"code":403,"message":"Your API key was reported as leaked. Please use another API key.","status":"PERMISSION_DENIED"}} Cooldown: 21600s. Active key switched to GEMINI_API_KEY3 (AIza...bV4o).
+[gemini-pool] guest-chat Gemini generation (gemini-2.5-flash) using GEMINI_API_KEY3 (AIza...bV4o).
+[gemini-pool] guest-chat Gemini generation (gemini-2.5-flash) failed on GEMINI_API_KEY3 (AIza...bV4o) [auth]. {"error":{"code":403,"message":"Your API key was reported as leaked. Please use another API key.","status":"PERMISSION_DENIED"}} Cooldown: 21600s. Active key switched to GEMINI_API_KEY4 (AIza...ALME).
+[gemini-pool] guest-chat Gemini generation (gemini-2.5-flash) using GEMINI_API_KEY4 (AIza...ALME).
+[gemini-pool] guest-chat Gemini generation (gemini-2.5-flash) failed on GEMINI_API_KEY4 (AIza...ALME) [auth]. {"error":{"code":403,"message":"Your API key was reported as leaked. Please use another API key.","status":"PERMISSION_DENIED"}} Cooldown: 21600s. Active key switched to GEMINI_API_KEY5 (AIza...3Y74).
+[gemini-pool] guest-chat Gemini generation (gemini-2.5-flash) using GEMINI_API_KEY5 (AIza...3Y74).
+Menu
+[gemini-pool] guest-chat Gemini generation (gemini-2.5-flash) failed on GEMINI_API_KEY5 (AIza...3Y74) [auth]. {"error":{"code":403,"message":"Your API key was reported as leaked. Please use another API key.","status":"PERMISSION_DENIED"}} Cooldown: 21600s. Active key switched to GEMINI_API_KEY6 (AIza...f62M).
+[gemini-pool] guest-chat Gemini generation (gemini-2.5-flash) using GEMINI_API_KEY6 (AIza...f62M).
+[gemini-pool] guest-chat Gemini generation (gemini-2.5-flash) failed on GEMINI_API_KEY6 (AIza...f62M) [auth]. {"error":{"code":403,"message":"Your API key was reported as leaked. Please use another API key.","status":"PERMISSION_DENIED"}} Cooldown: 21600s. Active key switched to GEMINI_API_KEY7 (AIza...kpeY).
+[gemini-pool] guest-chat Gemini generation (gemini-2.5-flash) using GEMINI_API_KEY7 (AIza...kpeY).
+[gemini-pool] guest-chat Gemini generation (gemini-2.5-flash) failed on GEMINI_API_KEY7 (AIza...kpeY) [auth]. {"error":{"code":403,"message":"Your API key was reported as leaked. Please use another API key.","status":"PERMISSION_DENIED"}} Cooldown: 21600s. Active key switched to GEMINI_API_KEY8 (AIza...im4g).
+[gemini-pool] guest-chat Gemini generation (gemini-2.5-flash) using GEMINI_API_KEY8 (AIza...im4g).
+[gemini-pool] guest-chat Gemini generation (gemini-2.5-flash) failed on GEMINI_API_KEY8 (AIza...im4g) [auth]. {"error":{"code":403,"message":"Your API key was reported as leaked. Please use another API key.","status":"PERMISSION_DENIED"}} Cooldown: 21600s. Active key switched to GEMINI_API_KEY9 (AIza...TTgY).
+[gemini-pool] guest-chat Gemini generation (gemini-2.5-flash) using GEMINI_API_KEY9 (AIza...TTgY).
+[gemini-pool] guest-chat Gemini generation (gemini-2.5-flash) failed on GEMINI_API_KEY9 (AIza...TTgY) [auth]. {"error":{"code":403,"message":"Your API key was reported as leaked. Please use another API key.","status":"PERMISSION_DENIED"}} Cooldown: 21600s. No other Gemini key is immediately available.
+[chatbot:provider-fallback] all Gemini API keys failed; attempting Groq emergency fallback.
+[chatbot:provider-gemini] ApiError: {"error":{"code":403,"message":"Your API key was reported as leaked. Please use another API key.","status":"PERMISSION_DENIED"}}

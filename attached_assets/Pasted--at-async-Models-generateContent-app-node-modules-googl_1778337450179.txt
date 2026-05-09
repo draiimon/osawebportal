@@ -1,0 +1,51 @@
+    at async Models.generateContent (/app/node_modules/@google/genai/dist/node/index.cjs:14523:24)
+    at async runWithGeminiFailover (/app/server/services/geminiKeyPool.js:296:22)
+    at async callGeminiModel (/app/server/chatbot/services/providers.js:51:18)
+    at async callGemini (/app/server/chatbot/services/providers.js:70:20)
+    at async runChatPipeline (/app/server/chatbot/services/chatPipeline.js:1404:21)
+    at async /app/server/chatbot/routes/chatbotRoutes.js:18:22
+Menu
+[chatbot:provider-groq] Error: Invalid API Key
+    at callGroq (/app/server/chatbot/services/providers.js:100:27)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async runChatPipeline (/app/server/chatbot/services/chatPipeline.js:1404:21)
+    at async /app/server/chatbot/routes/chatbotRoutes.js:18:22
+[chatbot:provider-fallback] exhausted provider chain (last="groq" auth) → escalation
+[rag:vector] {"error":{"code":400,"message":"User location is not supported for the API use.","status":"FAILED_PRECONDITION"}}
+[gemini-pool] guest-chat Gemini generation (gemini-2.5-flash) using GEMINI_API_KEY (AIza...9BdM).
+[gemini-pool] guest-chat Gemini generation (gemini-2.5-flash) failed on GEMINI_API_KEY (AIza...9BdM) [generic]. {"error":{"code":400,"message":"User location is not supported for the API use.","status":"FAILED_PRECONDITION"}} Staying on the current active Gemini key.
+[chatbot:provider-gemini] ApiError: {"error":{"code":400,"message":"User location is not supported for the API use.","status":"FAILED_PRECONDITION"}}
+    at throwErrorIfNotOK (/app/node_modules/@google/genai/dist/node/index.cjs:13415:30)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async /app/node_modules/@google/genai/dist/node/index.cjs:13118:13
+    at async Models.generateContent (/app/node_modules/@google/genai/dist/node/index.cjs:14523:24)
+    at async runWithGeminiFailover (/app/server/services/geminiKeyPool.js:296:22)
+    at async callGeminiModel (/app/server/chatbot/services/providers.js:51:18)
+    at async callGemini (/app/server/chatbot/services/providers.js:70:20)
+    at async runChatPipeline (/app/server/chatbot/services/chatPipeline.js:1404:21)
+    at async /app/server/chatbot/routes/chatbotRoutes.js:18:22
+[chatbot:provider-groq] Error: Invalid API Key
+    at callGroq (/app/server/chatbot/services/providers.js:100:27)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async runChatPipeline (/app/server/chatbot/services/chatPipeline.js:1404:21)
+    at async /app/server/chatbot/routes/chatbotRoutes.js:18:22
+[chatbot:provider-fallback] exhausted provider chain (last="groq" auth) → escalation
+[rag:vector] {"error":{"code":400,"message":"User location is not supported for the API use.","status":"FAILED_PRECONDITION"}}
+[gemini-pool] guest-chat Gemini generation (gemini-2.5-flash) using GEMINI_API_KEY (AIza...9BdM).
+[gemini-pool] guest-chat Gemini generation (gemini-2.5-flash) failed on GEMINI_API_KEY (AIza...9BdM) [generic]. {"error":{"code":400,"message":"User location is not supported for the API use.","status":"FAILED_PRECONDITION"}} Staying on the current active Gemini key.
+[chatbot:provider-gemini] ApiError: {"error":{"code":400,"message":"User location is not supported for the API use.","status":"FAILED_PRECONDITION"}}
+    at throwErrorIfNotOK (/app/node_modules/@google/genai/dist/node/index.cjs:13415:30)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async /app/node_modules/@google/genai/dist/node/index.cjs:13118:13
+    at async Models.generateContent (/app/node_modules/@google/genai/dist/node/index.cjs:14523:24)
+    at async runWithGeminiFailover (/app/server/services/geminiKeyPool.js:296:22)
+    at async callGeminiModel (/app/server/chatbot/services/providers.js:51:18)
+    at async callGemini (/app/server/chatbot/services/providers.js:70:20)
+    at async runChatPipeline (/app/server/chatbot/services/chatPipeline.js:1404:21)
+    at async /app/server/chatbot/routes/chatbotRoutes.js:18:22
+[chatbot:provider-groq] Error: Invalid API Key
+    at callGroq (/app/server/chatbot/services/providers.js:100:27)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async runChatPipeline (/app/server/chatbot/services/chatPipeline.js:1404:21)
+    at async /app/server/chatbot/routes/chatbotRoutes.js:18:22
+[chatbot:provider-fallback] exhausted provider chain (last="groq" auth) → escalation
