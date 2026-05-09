@@ -3,7 +3,7 @@
   "private": true,
   "description": "Static OSA portal - optional minify step for production assets",
   "engines": {
-    "node": ">=20"
+    "node": ">=18"
   },
   "scripts": {
     "minify": "node scripts/minify-assets.mjs",
