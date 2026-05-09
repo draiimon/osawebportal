@@ -1,0 +1,18 @@
+# Render Blueprint — deploy API in US West (Oregon) so egress IP is US-based (may help Gemini vs PH-only blocks).
+# Dashboard: New → Blueprint → connect repo, or link existing service to this file.
+# Set DATABASE_URL, secrets, and keys in Render Environment (never commit real keys).
+
+services:
+  - type: web
+    name: osa-portal-api
+    runtime: node
+    region: oregon
+    buildCommand: npm install
+    startCommand: npm run api:start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: TRUST_PROXY
+        value: "1"
