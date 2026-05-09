@@ -20,9 +20,58 @@ const MAX_OUTPUT_TOKENS = Math.min(
 );
 const TEMPERATURE = Number(process.env.CHATBOT_TEMPERATURE || 0.3);
 
-const GROQ_API_KEY = String(process.env.GROQ_API_KEY || "").trim();
 const OPENROUTER_API_KEY = String(process.env.OPENROUTER_API_KEY || "").trim();
 const HUGGINGFACE_API_KEY = String(process.env.HUGGINGFACE_API_KEY || "").trim();
+
+// ── Groq FIFO key pool ────────────────────────────────────────────
+const GROQ_KEY_COOLDOWN_MS = 15 * 60 * 1000; // 15 min on 429
+const GROQ_AUTH_COOLDOWN_MS = 6 * 60 * 60 * 1000; // 6 hr on invalid key
+
+function collectGroqKeys() {
+  const keys = [];
+  for (let i = 1; i <= 20; i++) {
+    const name = i === 1 ? "GROQ_API_KEY" : `GROQ_API_KEY${i}`;
+    const val = String(process.env[name] || "").trim();
+    if (val) keys.push({ name, key: val, cooledUntil: 0 });
+  }
+  return keys;
+}
+
+const _groqPool = collectGroqKeys();
+let _groqActiveIdx = 0;
+
+function maskGroqKey(key) {
+  const k = String(key || "");
+  return k.length > 10 ? `${k.slice(0, 6)}...${k.slice(-4)}` : "***";
+}
+
+function nextGroqKey() {
+  const now = Date.now();
+  for (let i = 0; i < _groqPool.length; i++) {
+    const idx = (_groqActiveIdx + i) % _groqPool.length;
+    if (_groqPool[idx].cooledUntil <= now) {
+      _groqActiveIdx = idx;
+      return _groqPool[idx];
+    }
+  }
+  return null; // all on cooldown
+}
+
+function groqKeyCooldown(entry, ms) {
+  entry.cooledUntil = Date.now() + ms;
+  // eslint-disable-next-line no-console
+  console.warn(`[groq-pool] key ${maskGroqKey(entry.key)} on cooldown for ${Math.round(ms / 60000)}min`);
+  // advance to next
+  _groqActiveIdx = (_groqActiveIdx + 1) % _groqPool.length;
+}
+
+if (_groqPool.length > 0) {
+  // eslint-disable-next-line no-console
+  console.log(`[groq-pool] loaded ${_groqPool.length} key(s): ${_groqPool.map(e => maskGroqKey(e.key)).join(", ")}`);
+} else {
+  // eslint-disable-next-line no-console
+  console.warn("[groq-pool] no Groq API keys found");
+}
 
 function toOpenAiMessages(systemPrompt, messages) {
   const payload = [];
@@ -82,23 +131,45 @@ async function callGemini(args) {
 }
 
 async function callGroq({ systemPrompt, messages }) {
-  if (!GROQ_API_KEY) throw new Error("Groq unavailable");
-  const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${GROQ_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: GROQ_MODEL,
-      messages: toOpenAiMessages(systemPrompt, messages),
-      temperature: TEMPERATURE > 0 ? TEMPERATURE : 0.00000001,
-      max_completion_tokens: MAX_OUTPUT_TOKENS,
-    }),
-  });
-  const payload = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(payload?.error?.message || `Groq HTTP ${response.status}`);
-  return extractOpenAiText(payload);
+  if (_groqPool.length === 0) throw new Error("Groq unavailable — no keys configured");
+  let lastError = null;
+  for (let attempt = 0; attempt < _groqPool.length; attempt++) {
+    const entry = nextGroqKey();
+    if (!entry) throw new Error("Groq unavailable — all keys on cooldown");
+    try {
+      const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${entry.key}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: GROQ_MODEL,
+          messages: toOpenAiMessages(systemPrompt, messages),
+          temperature: TEMPERATURE > 0 ? TEMPERATURE : 0.00000001,
+          max_completion_tokens: MAX_OUTPUT_TOKENS,
+        }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const msg = String(payload?.error?.message || `Groq HTTP ${response.status}`);
+        const is429 = response.status === 429 || /rate.?limit|quota/i.test(msg);
+        const isAuth = response.status === 401 || /invalid api key|unauthorized/i.test(msg);
+        if (is429) { groqKeyCooldown(entry, GROQ_KEY_COOLDOWN_MS); lastError = new Error(msg); continue; }
+        if (isAuth) { groqKeyCooldown(entry, GROQ_AUTH_COOLDOWN_MS); lastError = new Error(msg); continue; }
+        throw new Error(msg);
+      }
+      return extractOpenAiText(payload);
+    } catch (err) {
+      const msg = String(err?.message || "");
+      const is429 = /rate.?limit|quota|429/i.test(msg);
+      const isAuth = /invalid api key|unauthorized|401/i.test(msg);
+      if (is429) { groqKeyCooldown(entry, GROQ_KEY_COOLDOWN_MS); lastError = err; continue; }
+      if (isAuth) { groqKeyCooldown(entry, GROQ_AUTH_COOLDOWN_MS); lastError = err; continue; }
+      throw err;
+    }
+  }
+  throw lastError || new Error("Groq unavailable — all keys exhausted");
 }
 
 async function callOpenRouter({ systemPrompt, messages }) {
